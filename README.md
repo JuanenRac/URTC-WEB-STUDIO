@@ -1,6 +1,8 @@
 # 🚀 URTC Web Studio
 
-![URTC Web Studio Header](docs/images/urtc_web_dashboard_1785850890887.jpg)
+<p align="center">
+  <img src="docs/images/urtc_web_dashboard_1785850890887.jpg" alt="URTC Web Studio Header" width="100%">
+</p>
 
 Welcome to **URTC Web Studio**, the ultimate web-based companion for the **Universal Robot Tool Controller (URTC)**. This application provides a modern, sleek, and highly interactive interface to monitor, control, and update your URTC hardware directly from your browser.
 
@@ -21,15 +23,21 @@ Welcome to **URTC Web Studio**, the ultimate web-based companion for the **Unive
 
 ### 🎛️ Dashboard & Live Control
 Monitor active tools, override setpoints, and interact with the hardware in real time.
-![Live Control](ocs/images/urtc_web_dashboard_1785850890887.jpg)
+<p align="center">
+  <img src="docs/images/urtc_web_dashboard_1785850890887.jpg" alt="Live Control" width="100%">
+</p>
 
 ### 📡 CAN Bus Protocol Analyzer
 A low-latency, real-time telemetry analyzer and watchdog pinger.
-![CAN Bus Analyzer](docs/images/urtc_web_can_analyzer_1785850905220.jpg)
+<p align="center">
+  <img src="docs/images/urtc_web_can_analyzer_1785850905220.jpg" alt="CAN Bus Analyzer" width="100%">
+</p>
 
 ### 🔄 Flasher Studio
 Update your URTC nodes securely and quickly.
-![Flasher Studio](docs/images/urtc_web_flasher_1785850922698.jpg)
+<p align="center">
+  <img src="docs/images/urtc_web_flasher_1785850922698.jpg" alt="Flasher Studio" width="100%">
+</p>
 
 ---
 
