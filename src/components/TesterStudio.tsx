@@ -6,28 +6,15 @@ interface TesterStudioProps {
   hardwareState: HardwareState;
   activeToolName: string;
   canFrames: CanFrame[];
+  onSendFrame?: (id: number, data: number[]) => Promise<void>;
 }
 
-export const TesterStudio: React.FC<TesterStudioProps> = ({ hardwareState, activeToolName, canFrames }) => {
-  const [comPort, setComPort] = useState('COM3');
-  const [bitrate, setBitrate] = useState('500 kbit/s');
-  const [connected, setConnected] = useState(false);
-  const [selfTestRunning, setSelfTestRunning] = useState(false);
-  const [selfTestProgress, setSelfTestProgress] = useState(0);
-
-  const runSelfTest = () => {
-    setSelfTestRunning(true);
-    setSelfTestProgress(0);
-    const interval = setInterval(() => {
-      setSelfTestProgress(p => {
-        if (p >= 100) {
-          clearInterval(interval);
-          setSelfTestRunning(false);
-          return 100;
-        }
-        return p + 5;
-      });
-    }, 100);
+export const TesterStudio: React.FC<TesterStudioProps> = ({ hardwareState, activeToolName, canFrames, onSendFrame }) => {
+  const handleDetectHardware = () => {
+    if (onSendFrame) {
+      onSendFrame(0x110, []); // CAN_ID_QUERY_ACTIVE_TOOL
+      onSendFrame(0x7F8, [0]); // CAN_ID_QUERY_VERSION
+    }
   };
 
   const exportDebugBundle = () => {
@@ -42,71 +29,45 @@ export const TesterStudio: React.FC<TesterStudioProps> = ({ hardwareState, activ
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-      <div className="lg:col-span-8 space-y-6">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+      <div className="lg:col-span-8 space-y-4">
         
         {/* Connection Panel */}
-        <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl relative overflow-hidden">
+        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl relative overflow-hidden">
           <div className="flex items-center gap-3 mb-5">
             <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-400">
               <Usb className="w-5 h-5" />
             </div>
             <div>
               <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
-                Connect to USB-CAN Adapter
+                Hardware Connection
               </h2>
-              <p className="text-xs text-slate-400">Serial SLCAN Interface Configuration</p>
+              <p className="text-xs text-slate-400">Serial SLCAN Interface</p>
             </div>
           </div>
           
           <div className="flex flex-wrap items-end gap-4 p-4 rounded-xl bg-slate-950/50 border border-slate-800">
             <div className="space-y-1.5 flex-1 min-w-[120px]">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">COM Port</label>
-              <select 
-                value={comPort}
-                onChange={e => setComPort(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none focus:border-purple-500"
-              >
-                <option>COM1</option>
-                <option>COM3</option>
-                <option>COM4</option>
-                <option>/dev/ttyACM0</option>
-              </select>
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Interface Status</label>
+              <div className="text-sm text-slate-300 py-2">
+                Hardware connection is managed globally via the top Header (Web Serial API).
+              </div>
             </div>
-            <div className="space-y-1.5 flex-1 min-w-[120px]">
-              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Bitrate</label>
-              <select 
-                value={bitrate}
-                onChange={e => setBitrate(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 outline-none focus:border-purple-500"
-              >
-                <option>250 kbit/s</option>
-                <option>500 kbit/s</option>
-                <option>1 Mbit/s</option>
-              </select>
-            </div>
-            <button className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-semibold transition">
-              Auto-detect
-            </button>
             <button 
-              onClick={() => setConnected(!connected)}
-              className={`px-6 py-2 rounded-lg text-sm font-semibold transition ${
-                connected 
-                  ? 'bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/20' 
-                  : 'bg-purple-500 hover:bg-purple-400 text-slate-950'
-              }`}
+              className="px-6 py-2 bg-slate-800 text-slate-300 font-semibold rounded-lg hover:bg-slate-700 transition-colors flex items-center gap-2 text-sm whitespace-nowrap"
             >
-              {connected ? 'Disconnect' : 'Connect'}
+              <ShieldCheck className="w-4 h-4" />
+              <span>Diagnostic Mode Ready</span>
             </button>
           </div>
           
           <div className="mt-4 flex items-center gap-2 text-sm font-semibold">
-            Status: {connected ? <span className="text-emerald-400 flex items-center gap-1"><CheckCircle2 className="w-4 h-4" /> Connected</span> : <span className="text-red-400">Not connected</span>}
+            Status: <span className="text-emerald-400 flex items-center gap-1"><CheckCircle2 className="w-4 h-4" /> Ready</span>
           </div>
         </div>
 
         {/* Diagnostics & Tool Ident */}
-        <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
+        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
           <div className="flex items-center gap-3 mb-5">
             <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400">
               <ShieldCheck className="w-5 h-5" />
@@ -155,26 +116,17 @@ export const TesterStudio: React.FC<TesterStudioProps> = ({ hardwareState, activ
           
           <div className="mt-5 flex gap-3">
             <button 
-              onClick={runSelfTest}
-              disabled={selfTestRunning}
-              className="flex-1 py-2.5 rounded-lg bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-slate-950 font-bold text-sm transition"
+              onClick={handleDetectHardware}
+              className="flex-1 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm transition border border-slate-700"
             >
-              {selfTestRunning ? `Running Test... ${selfTestProgress}%` : 'Run Self-Test...'}
-            </button>
-            <button className="flex-1 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm transition border border-slate-700">
               Detect Hardware
             </button>
           </div>
-          {selfTestRunning && (
-            <div className="mt-4 w-full h-2 bg-slate-800 rounded-full overflow-hidden">
-              <div className="h-full bg-amber-500 transition-all duration-100" style={{ width: `${selfTestProgress}%` }} />
-            </div>
-          )}
         </div>
       </div>
       
-      <div className="lg:col-span-4 space-y-6">
-        <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl flex flex-col h-full">
+      <div className="lg:col-span-4 space-y-4">
+        <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl flex flex-col h-full">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
               <HardDrive className="w-4 h-4" />

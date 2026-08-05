@@ -1,19 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FlasherState } from '../types';
-import { RefreshCw, ShieldCheck, Cpu, HardDrive, CheckCircle2, AlertOctagon, Terminal, FileCode } from 'lucide-react';
+import { RefreshCw, ShieldCheck, Cpu, HardDrive, CheckCircle2, AlertOctagon, Terminal, FileCode, DownloadCloud } from 'lucide-react';
+import { TOOL_PROFILES } from '../data/toolsData';
 
 interface FlasherStudioProps {
-  onStartCanOta: (firmwareFile: string) => void;
-  onStartSwdFlash: (firmwareFile: string) => void;
+  onStartCanOta: (firmwareFile: string, fileObj?: File | null, downloadUrl?: string) => void;
+  onStartSwdFlash: (firmwareFile: string, fileObj?: File | null, bootloaderFile?: string, bootloaderObj?: File | null) => void;
   flasherState: FlasherState;
   onSetFirmwareVersion: (ver: string) => void;
+  onSendFrame?: (id: number, data: number[]) => Promise<void>;
 }
 
 export const FlasherStudio: React.FC<FlasherStudioProps> = ({
   onStartCanOta,
   onStartSwdFlash,
   flasherState,
-  onSetFirmwareVersion
+  onSetFirmwareVersion,
+  onSendFrame
 }) => {
   const [selectedFirmware, setSelectedFirmware] = useState<string>(flasherState.selectedFile || 'URTC_v1_1_F303CC.bin');
   const [comPort, setComPort] = useState<string>('COM3');
@@ -21,23 +24,61 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
   const [autoDetect, setAutoDetect] = useState<boolean>(true);
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [serialNumber, setSerialNumber] = useState<string>('0');
+  const [selectedFreeTool, setSelectedFreeTool] = useState<string>('0');
   const [runAppTrigger, setRunAppTrigger] = useState<boolean>(true);
   const [eraseFram, setEraseFram] = useState<boolean>(false);
   const [activeFlasherTab, setActiveFlasherTab] = useState<'can-ota' | 'swd' | 'freetool'>('can-ota');
+  const [customFile, setCustomFile] = useState<File | null>(null);
+  
+  // GitHub Firmware State
+  const [githubFirmwares, setGithubFirmwares] = useState<{name: string, size: number, download_url: string}[]>([]);
+  const [isFetchingGithub, setIsFetchingGithub] = useState(false);
+  const [githubError, setGithubError] = useState('');
+
+  const fetchGithubFirmwares = async () => {
+    setIsFetchingGithub(true);
+    setGithubError('');
+    try {
+      const res = await fetch('https://api.github.com/repos/JuanenRac/URTC/contents/firmware');
+      if (!res.ok) throw new Error('Failed to fetch from GitHub');
+      const data = await res.json();
+      const files = data.filter((item: any) => item.type === 'file' && (item.name.endsWith('.bin') || item.name.endsWith('.hex')));
+      setGithubFirmwares(files);
+      if (files.length > 0 && !files.find((f: any) => f.name === selectedFirmware)) {
+         setSelectedFirmware(files[0].name);
+      }
+    } catch (e: any) {
+      setGithubError(e.message);
+    } finally {
+      setIsFetchingGithub(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchGithubFirmwares();
+  }, []);
+
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
   
   // SWD State
   const [swdTool, setSwdTool] = useState<string>('STM32CubeProgrammer');
-  const [swdBootloader, setSwdBootloader] = useState<string>('URTC_BOOTLOADER_v1.1.bin');
+  const [swdBootloader, setSwdBootloader] = useState<string>('URTC_BOOTLOADER.bin');
   const [swdApp, setSwdApp] = useState<string>('URTC_v1_1_F303CC.bin');
   const [swdBackup, setSwdBackup] = useState<boolean>(false);
   const [swdDryRun, setSwdDryRun] = useState<boolean>(false);
+  
+  const [swdBootloaderFile, setSwdBootloaderFile] = useState<File | null>(null);
+  const [swdAppFile, setSwdAppFile] = useState<File | null>(null);
+
+  const swdBootloaderInputRef = React.useRef<HTMLInputElement>(null);
+  const swdAppInputRef = React.useRef<HTMLInputElement>(null);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
       
       {/* Left Column: Flash Memory Map & OTA / SWD Controls */}
       <div className="lg:col-span-7 space-y-4">
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm">
           <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
             <div>
               <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
@@ -124,75 +165,18 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
 
           {/* Connection Settings */}
           <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-4 mb-5">
-            <h3 className="text-sm font-bold text-slate-200 border-b border-slate-800 pb-2">Connect to USB-CAN Adapter</h3>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="block text-xs font-semibold text-slate-400">COM port:</label>
-                <div className="flex items-center gap-2">
-                  <select
-                    value={comPort}
-                    onChange={(e) => setComPort(e.target.value)}
-                    className="flex-1 px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs font-mono text-slate-300 focus:outline-none focus:border-amber-500"
-                  >
-                    <option value="COM1">COM1</option>
-                    <option value="COM3">COM3 (CANable)</option>
-                    <option value="COM4">COM4</option>
-                    <option value="/dev/ttyACM0">/dev/ttyACM0</option>
-                  </select>
-                  <button className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs text-slate-300 transition">
-                    Refresh
-                  </button>
-                </div>
-              </div>
-              
-              <div className="space-y-2">
-                <label className="block text-xs font-semibold text-slate-400">Bitrate:</label>
-                <div className="flex items-center gap-2">
-                  <select
-                    value={bitrate}
-                    onChange={(e) => setBitrate(e.target.value)}
-                    className="flex-1 px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs font-mono text-slate-300 focus:outline-none focus:border-amber-500"
-                  >
-                    <option value="250 kbit/s">250 kbit/s</option>
-                    <option value="500 kbit/s">500 kbit/s</option>
-                    <option value="1 Mbit/s">1 Mbit/s</option>
-                  </select>
-                  <label className="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer">
-                    <input type="checkbox" checked={autoDetect} onChange={(e) => setAutoDetect(e.target.checked)} className="accent-amber-500 rounded bg-slate-900 border-slate-700" />
-                    Auto-detect
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between pt-2">
-              <div className="text-xs text-slate-400 font-mono">
-                <span className="mr-3">Status: {isConnected ? <span className="text-emerald-400">Connected</span> : <span className="text-rose-400">Not connected</span>}</span>
-                <span>Currently installed: <button className="px-2 py-1 ml-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-[10px] text-slate-300 transition">(connect to check) Query</button></span>
-                <span className="ml-3">Bus activity: <button className="px-2 py-1 ml-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-[10px] text-slate-300 transition">(check requires an active connection) Check</button></span>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setIsConnected(!isConnected)}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-semibold transition ${
-                    isConnected ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30 hover:bg-rose-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/30'
-                  }`}
-                >
-                  {isConnected ? 'Disconnect' : 'Connect'}
-                </button>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-3 pt-3 border-t border-slate-800/60 mt-3">
-              <label className="text-xs font-semibold text-slate-400">Expansion board:</label>
-              <select className="px-3 py-1 bg-slate-900 border border-slate-700 rounded text-xs font-mono text-slate-300 focus:outline-none focus:border-amber-500">
-                <option value="none">[0] None installed</option>
-              </select>
-              <button className="px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-[11px] text-slate-300 transition">Query</button>
-              <button className="px-3 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded text-[11px] text-slate-300 transition">Save</button>
+            <h3 className="text-sm font-bold text-slate-200 border-b border-slate-800 pb-2">Hardware Connection</h3>
+            <div className="flex flex-col sm:flex-row items-center gap-4 text-sm text-slate-300">
+              <span className="flex-1">Hardware connection is managed globally via the top Header (Web Serial API). Connect using the <strong className="text-amber-400">USB-CAN Adapter</strong> button above.</span>
+              <button 
+                className="px-6 py-2 bg-slate-800 text-slate-300 font-semibold rounded-lg hover:bg-slate-700 transition-colors flex items-center gap-2 text-sm whitespace-nowrap"
+              >
+                <ShieldCheck className="w-4 h-4" />
+                <span>Firmware Utility Ready</span>
+              </button>
             </div>
           </div>
+
 
           {/* Flash Memory Architecture Visualizer */}
           <div className="mb-6 space-y-2">
@@ -265,18 +249,46 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
                   <label className="block text-xs font-semibold text-slate-300 mb-1.5">
                     Select Firmware Image (.bin / .hex):
                   </label>
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 items-center">
                     <select
                       value={selectedFirmware}
-                      onChange={(e) => setSelectedFirmware(e.target.value)}
+                      onChange={(e) => {
+                        setSelectedFirmware(e.target.value);
+                        setCustomFile(null); // Clear custom file if preset is selected
+                      }}
                       className="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs font-mono text-amber-300 focus:outline-none focus:border-amber-500"
                     >
-                      <option value="URTC_BOOTLOADER.bin">URTC_BOOTLOADER.bin (16.1KB)</option>
-                      <option value="URTC_v1_1_F303CC.bin">✓ URTC_v1_1_F303CC.bin (Version 1.1, 112KB)</option>
-                      <option value="URTC_v1_0_F303CC.bin">✓ URTC_v1_0_F303CC.bin (Version 1.0, 112KB)</option>
-                      <option value="URTC_SLAVE_APP.bin">✓ URTC_SLAVE_APP.bin (Slave STM32F303CB, 64KB)</option>
+                      <optgroup label="Local (firmware/)">
+                        <option value="URTC_v1_1_F303CC.bin">✓ URTC_v1_1_F303CC.bin (Version 1.1, 112KB)</option>
+                        <option value="URTC_v1_0_F303CC.bin">✓ URTC_v1_0_F303CC.bin (Version 1.0, 112KB)</option>
+                        <option value="URTC_SLAVE_APP.bin">✓ URTC_SLAVE_APP.bin (Slave STM32F303CB, 64KB)</option>
+                      </optgroup>
+                      {githubFirmwares.length > 0 && (
+                        <optgroup label="GitHub Repository">
+                          {githubFirmwares.filter(fw => !fw.name.toLowerCase().includes('bootloader')).map(fw => (
+                            <option key={fw.name} value={fw.name}>{fw.name} ({Math.round(fw.size / 1024)}KB)</option>
+                          ))}
+                        </optgroup>
+                      )}
+                      {customFile && <option value={customFile.name}>{customFile.name} (Custom)</option>}
                     </select>
-                    <button className="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs text-slate-300 transition whitespace-nowrap">
+                    <input 
+                      type="file" 
+                      accept=".bin,.hex" 
+                      ref={fileInputRef} 
+                      className="hidden" 
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files.length > 0) {
+                          const file = e.target.files[0];
+                          setCustomFile(file);
+                          setSelectedFirmware(file.name);
+                        }
+                      }} 
+                    />
+                    <button 
+                      onClick={() => fileInputRef.current?.click()}
+                      className="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs text-slate-300 transition whitespace-nowrap"
+                    >
                       Browse bin...
                     </button>
                   </div>
@@ -317,7 +329,7 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
 
                 <div className="pt-2">
                   <button
-                    onClick={() => onStartCanOta(selectedFirmware)}
+                    onClick={() => onStartCanOta(selectedFirmware, customFile)}
                     disabled={flasherState.mode !== 'idle'}
                     className="w-full py-2.5 px-4 rounded-lg bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-slate-950 font-semibold text-xs transition shadow-md shadow-amber-500/10 flex items-center justify-center gap-2"
                   >
@@ -333,16 +345,106 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
                 <div className="space-y-2">
                   <label className="block text-xs font-semibold text-slate-300">Bootloader File (.bin):</label>
                   <div className="flex gap-2">
-                    <input type="text" value={swdBootloader} onChange={(e) => setSwdBootloader(e.target.value)} className="flex-1 px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs font-mono text-amber-300 focus:outline-none focus:border-amber-500" />
-                    <button className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs text-slate-300 transition">Browse...</button>
+                    <select
+                      value={swdBootloader}
+                      onChange={(e) => {
+                        setSwdBootloader(e.target.value);
+                        setSwdBootloaderFile(null);
+                      }}
+                      className="flex-1 px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs font-mono text-amber-300 focus:outline-none focus:border-amber-500"
+                    >
+                      <optgroup label="Local (firmware/)">
+                        <option value="URTC_BOOTLOADER.bin">URTC_BOOTLOADER.bin (16.1KB)</option>
+                      </optgroup>
+                      {githubFirmwares.length > 0 && (
+                        <optgroup label="GitHub Repository">
+                          {githubFirmwares.filter(fw => fw.name.toLowerCase().includes('bootloader')).map(fw => (
+                            <option key={fw.name} value={fw.name}>{fw.name} ({Math.round(fw.size / 1024)}KB)</option>
+                          ))}
+                        </optgroup>
+                      )}
+                      {swdBootloaderFile && <option value={swdBootloaderFile.name}>{swdBootloaderFile.name} (Custom)</option>}
+                    </select>
+                    <input 
+                      type="file" 
+                      accept=".bin,.hex" 
+                      ref={swdBootloaderInputRef} 
+                      className="hidden" 
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files.length > 0) {
+                          setSwdBootloaderFile(e.target.files[0]);
+                          setSwdBootloader(e.target.files[0].name);
+                        }
+                      }} 
+                    />
+                    <button 
+                      onClick={fetchGithubFirmwares}
+                      disabled={isFetchingGithub}
+                      className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-lg transition border border-slate-700 disabled:opacity-50 flex items-center justify-center"
+                      title="Refresh from GitHub"
+                    >
+                      <DownloadCloud className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => swdBootloaderInputRef.current?.click()}
+                      className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs text-slate-300 transition"
+                    >
+                      Browse...
+                    </button>
                   </div>
                 </div>
                 
                 <div className="space-y-2">
                   <label className="block text-xs font-semibold text-slate-300">Application File (.bin):</label>
                   <div className="flex gap-2">
-                    <input type="text" value={swdApp} onChange={(e) => setSwdApp(e.target.value)} className="flex-1 px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs font-mono text-amber-300 focus:outline-none focus:border-amber-500" />
-                    <button className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs text-slate-300 transition">Browse...</button>
+                    <select
+                      value={swdApp}
+                      onChange={(e) => {
+                        setSwdApp(e.target.value);
+                        setSwdAppFile(null);
+                      }}
+                      className="flex-1 px-3 py-1.5 bg-slate-900 border border-slate-700 rounded-lg text-xs font-mono text-amber-300 focus:outline-none focus:border-amber-500"
+                    >
+                      <optgroup label="Local (firmware/)">
+                        <option value="URTC_v1_1_F303CC.bin">✓ URTC_v1_1_F303CC.bin (Version 1.1, 112KB)</option>
+                        <option value="URTC_v1_0_F303CC.bin">✓ URTC_v1_0_F303CC.bin (Version 1.0, 112KB)</option>
+                        <option value="URTC_SLAVE_APP.bin">✓ URTC_SLAVE_APP.bin (Slave STM32F303CB, 64KB)</option>
+                      </optgroup>
+                      {githubFirmwares.length > 0 && (
+                        <optgroup label="GitHub Repository">
+                          {githubFirmwares.filter(fw => !fw.name.toLowerCase().includes('bootloader')).map(fw => (
+                            <option key={fw.name} value={fw.name}>{fw.name} ({Math.round(fw.size / 1024)}KB)</option>
+                          ))}
+                        </optgroup>
+                      )}
+                      {swdAppFile && <option value={swdAppFile.name}>{swdAppFile.name} (Custom)</option>}
+                    </select>
+                    <input 
+                      type="file" 
+                      accept=".bin,.hex" 
+                      ref={swdAppInputRef} 
+                      className="hidden" 
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files.length > 0) {
+                          setSwdAppFile(e.target.files[0]);
+                          setSwdApp(e.target.files[0].name);
+                        }
+                      }} 
+                    />
+                    <button 
+                      onClick={fetchGithubFirmwares}
+                      disabled={isFetchingGithub}
+                      className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold rounded-lg transition border border-slate-700 disabled:opacity-50 flex items-center justify-center"
+                      title="Refresh from GitHub"
+                    >
+                      <DownloadCloud className="w-4 h-4" />
+                    </button>
+                    <button 
+                      onClick={() => swdAppInputRef.current?.click()}
+                      className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs text-slate-300 transition"
+                    >
+                      Browse...
+                    </button>
                   </div>
                 </div>
 
@@ -378,7 +480,7 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
 
                 <div className="pt-2">
                   <button
-                    onClick={() => onStartSwdFlash(selectedFirmware)}
+                    onClick={() => onStartSwdFlash(swdApp, swdAppFile, swdBootloader, swdBootloaderFile)}
                     disabled={flasherState.mode !== 'idle'}
                     className="w-full py-2.5 px-4 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-200 font-semibold text-xs border border-slate-700 transition flex items-center justify-center gap-2"
                   >
@@ -401,15 +503,18 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
                   <div className="space-y-3">
                     <label className="block text-xs font-semibold text-slate-300">Select Tool Profile:</label>
                     <div className="flex gap-2">
-                      <select className="flex-1 px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs font-mono text-slate-300 focus:outline-none focus:border-amber-500">
+                      <select 
+                      value={selectedFreeTool}
+                      onChange={(e) => setSelectedFreeTool(e.target.value)}
+                      className="flex-1 px-3 py-2 bg-slate-950 border border-slate-700 rounded-lg text-xs font-mono text-slate-300 focus:outline-none focus:border-amber-500">
                         <option value="0">[0] None installed</option>
-                        <option value="1">1 - JBC C245 Soldering Iron</option>
-                        <option value="2">2 - Paste Dispenser</option>
-                        <option value="3">3 - Screwdriver / Nut Runner</option>
-                        <option value="4">4 - Vacuum Pick-up Tool</option>
-                        <option value="5">5 - Spindle / Drill</option>
+                        {TOOL_PROFILES.map(tool => (
+                          <option key={tool.id} value={tool.id}>{tool.id} - {tool.name}</option>
+                        ))}
                       </select>
-                      <button className="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs font-semibold text-slate-200 transition">
+                      <button 
+                      onClick={() => onSendFrame?.(0x1A2, [parseInt(selectedFreeTool)])}
+                      className="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs font-semibold text-slate-200 transition">
                         Program
                       </button>
                     </div>
@@ -426,10 +531,10 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
                   <div className="flex items-end gap-3">
                     <div className="flex-1 space-y-1">
                       <label className="block text-xs font-semibold text-slate-300">New Serial Number:</label>
-                      <input type="number" min="0" max="255" defaultValue="0" className="w-full px-3 py-1.5 bg-slate-950 border border-slate-700 rounded-lg text-xs font-mono text-slate-300 focus:outline-none focus:border-amber-500" />
+                      <input type="number" min="0" max="255" value={serialNumber} onChange={(e) => setSerialNumber(e.target.value)} className="w-full px-3 py-1.5 bg-slate-950 border border-slate-700 rounded-lg text-xs font-mono text-slate-300 focus:outline-none focus:border-amber-500" />
                     </div>
-                    <button className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs text-slate-200 transition">Query</button>
-                    <button className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs text-slate-200 transition">Program</button>
+                    <button onClick={() => onSendFrame?.(0x1A5, [])} className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs text-slate-200 transition">Query</button>
+                    <button onClick={() => onSendFrame?.(0x1A4, [parseInt(serialNumber)])} className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs text-slate-200 transition">Program</button>
                   </div>
                 </div>
               </div>

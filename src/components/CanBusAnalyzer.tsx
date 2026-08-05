@@ -25,10 +25,10 @@ export const CanBusAnalyzer: React.FC<CanBusAnalyzerProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       
       {/* CAN Bus Status & Control Header */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
@@ -130,7 +130,7 @@ export const CanBusAnalyzer: React.FC<CanBusAnalyzerProps> = ({
       </div>
 
       {/* Custom CAN Frame Injector */}
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
+      <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm">
         <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider mb-3">
           Inject Raw CAN Frame
         </h3>
@@ -190,8 +190,8 @@ export const CanBusAnalyzer: React.FC<CanBusAnalyzerProps> = ({
           </span>
         </div>
 
-        <div className="max-h-96 overflow-y-auto font-mono text-xs">
-          <table className="w-full text-left">
+        <div className="max-h-96 overflow-y-auto overflow-x-auto font-mono text-xs">
+          <table className="w-full text-left whitespace-nowrap min-w-max">
             <thead className="bg-slate-950 text-slate-400 text-[11px] sticky top-0 border-b border-slate-800">
               <tr>
                 <th className="py-2 px-4">TIMESTAMP</th>

@@ -40,11 +40,11 @@ export const HardwarePanel: React.FC<HardwarePanelProps> = ({
   const isUnsupportedJumperInFW10 = effectiveToolId >= 12 && isFirmware10;
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
       
       {/* 5-Bit DIP Jumper Matrix & ID Selector */}
       <div className="space-y-4">
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm">
           <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
             <div>
               <h3 className="text-base font-bold text-slate-100 flex items-center gap-2">
@@ -154,7 +154,7 @@ export const HardwarePanel: React.FC<HardwarePanelProps> = ({
       <div className="space-y-4">
         
         {/* Status LED (WS2812B) & Camera Ring */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm">
           <h3 className="text-base font-bold text-slate-100 flex items-center gap-2 mb-3">
             <Zap className="w-4 h-4 text-amber-400" />
             Digital Status LED & 8-LED Camera Ring
@@ -264,7 +264,7 @@ export const HardwarePanel: React.FC<HardwarePanelProps> = ({
         </div>
 
         {/* 20-Pin Expansion Connector Selector */}
-        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm">
           <h3 className="text-base font-bold text-slate-100 flex items-center gap-2 mb-2">
             <Cpu className="w-4 h-4 text-amber-400" />
             20-Pin Expansion Connector Variant

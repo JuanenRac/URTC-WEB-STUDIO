@@ -53,7 +53,7 @@ export const ToolCatalog: React.FC<ToolCatalogProps> = ({
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
       
       {/* Left Column: Tool Catalog Grid & Filtering */}
       <div className="lg:col-span-7 space-y-4">
@@ -105,7 +105,7 @@ export const ToolCatalog: React.FC<ToolCatalogProps> = ({
           />
 
           {/* Tool Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[520px] overflow-y-auto pr-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-[calc(100vh-320px)] overflow-y-auto pr-1">
             {filteredTools.map((tool) => {
               const isSelected = tool.id === selectedToolId;
               const toolJumpers = idToJumpers(tool.id);
