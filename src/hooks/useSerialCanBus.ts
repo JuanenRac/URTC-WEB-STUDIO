@@ -1,16 +1,45 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { CanFrame } from '../types';
 
 export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
   const [isConnected, setIsConnected] = useState(false);
   const [portName, setPortName] = useState<string>('');
-  
+
   const portRef = useRef<any>(null);
   const readerRef = useRef<any>(null);
   const writerRef = useRef<any>(null);
   const keepReadingRef = useRef<boolean>(true);
   const rxBufferRef = useRef<string>('');
   const frameQueueRef = useRef<CanFrame[]>([]);
+
+  // Per-ID subscribers (many tool panels can listen to the same telemetry ID
+  // at once) plus catch-all sniffers (raw bus monitor). Non-consuming - unlike
+  // frameQueueRef (used only by waitForFrame's own request/response matching,
+  // which splices frames out), every subscriber sees every frame regardless
+  // of how many other subscribers or waitForFrame calls also see it.
+  const subscribersRef = useRef<Map<number, Set<(f: CanFrame) => void>>>(new Map());
+  const sniffersRef = useRef<Set<(f: CanFrame) => void>>(new Set());
+
+  const subscribe = useCallback((id: number, cb: (f: CanFrame) => void) => {
+    let set = subscribersRef.current.get(id);
+    if (!set) {
+      set = new Set();
+      subscribersRef.current.set(id, set);
+    }
+    set.add(cb);
+    return () => { set!.delete(cb); };
+  }, []);
+
+  const subscribeAll = useCallback((cb: (f: CanFrame) => void) => {
+    sniffersRef.current.add(cb);
+    return () => { sniffersRef.current.delete(cb); };
+  }, []);
+
+  const dispatchFrame = useCallback((frame: CanFrame) => {
+    subscribersRef.current.get(frame.id)?.forEach(cb => cb(frame));
+    sniffersRef.current.forEach(cb => cb(frame));
+    onFrameReceived(frame);
+  }, [onFrameReceived]);
 
   const waitForFrame = async (expectedId: number, timeoutMs: number = 3000): Promise<CanFrame | null> => {
     const start = Date.now();
@@ -94,13 +123,26 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
     }
   };
 
-  const sendFrame = async (id: number, data: number[]) => {
+  const sendFrame = async (id: number, data: number[], description: string = 'Sent from Web Studio') => {
     if (!isConnected) return;
     const dlc = data.length;
     let hexData = data.map(b => b.toString(16).padStart(2, '0').toUpperCase()).join('');
     const cmd = `t${id.toString(16).padStart(3, '0').toUpperCase()}${dlc}${hexData}`;
-    
+
     await _sendRaw(cmd);
+
+    const now = new Date();
+    const timestamp = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}.${now.getMilliseconds().toString().padStart(3, '0')}`;
+    dispatchFrame({
+      id,
+      idHex: `0x${id.toString(16).toUpperCase().padStart(3, '0')}`,
+      dlc,
+      data,
+      dataHex: hexData.match(/.{1,2}/g)?.join(' ') || '',
+      timestamp,
+      direction: 'Tx',
+      description
+    });
   };
 
   const readLoop = async () => {
@@ -166,7 +208,7 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
               frameQueueRef.current.shift();
             }
 
-            onFrameReceived(frame);
+            dispatchFrame(frame);
           } catch (e) {
             console.error('Failed to parse frame:', line);
           }
@@ -182,6 +224,10 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
     connect,
     disconnect,
     sendFrame,
-    waitForFrame
+    waitForFrame,
+    subscribe,
+    subscribeAll
   };
 }
+
+export type SerialCanBus = ReturnType<typeof useSerialCanBus>;

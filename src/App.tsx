@@ -10,14 +10,24 @@ import { ThermalCameraViewer } from './components/ThermalCameraViewer';
 import { SpecsAndBomViewer } from './components/SpecsAndBomViewer';
 import { TesterStudio } from './components/TesterStudio';
 import { TOOL_PROFILES } from './data/toolsData';
-import { HardwareState, CanFrame, FlasherState, ExpansionBoardType } from './types';
+import { HardwareState, CanFrame, ExpansionBoardType } from './types';
 import { useSerialCanBus } from './hooks/useSerialCanBus';
-import { 
-  CAN_ID_ENTER_BOOTLOADER, CAN_ID_STATUS, CAN_ID_START_UPDATE, CAN_ID_HMAC_CHUNK, 
-  CAN_ID_DATA, CAN_ID_PAGE_ACK, CAN_ID_END_UPDATE, 
-  THIS_HARDWARE_ID, FLASH_PAGE_SIZE, FIRMWARE_VERSION_MAJOR, FIRMWARE_VERSION_MINOR, 
-  computeHmacSha256, packUInt32BE, packUInt16BE, getCrc32 
+import { useFlasher } from './hooks/useFlasher';
+import {
+  CAN_ID_QUERY_VERSION, CAN_ID_VERSION_RESPONSE, CAN_ID_BOOTLOADER_VERSION_RESPONSE,
+  THIS_HARDWARE_ID, FIRMWARE_VERSION_MAJOR, FIRMWARE_VERSION_MINOR,
+  parseManifest, computeSha256Hex, FirmwareManifest
 } from './lib/flasher';
+
+export interface BoardVersionInfo {
+  responder: 'application' | 'bootloader';
+  hardwareId: number;
+  appMajor: number;
+  appMinor: number;
+  bootMajor?: number;
+  bootMinor?: number;
+  bootPatch?: number;
+}
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<'control' | 'oled' | 'can' | 'flasher' | 'thermal' | 'specs' | 'tester'>('control');
@@ -109,30 +119,39 @@ export default function App() {
     return initial;
   });
 
-  // Flasher & Global Firmware Version State ('1.1.0' or '1.0.0')
+  // Cosmetic sandbox toggle for the Control/OLED/Specs demo tabs only (which
+  // tool profiles a given firmware build would unlock) - unrelated to the
+  // real, queried board version shown in Flasher/Tester Studio once connected.
   const [firmwareVersion, setFirmwareVersion] = useState<string>('1.1.0');
-
-  const [flasherState, setFlasherState] = useState<FlasherState>({
-    mode: 'idle',
-    progress: 0,
-    statusText: 'Idle',
-    firmwareVersion: '1.1.0',
-    targetHardwareId: 0xF303,
-    selectedFile: 'URTC_v1_1_F303CC.bin',
-    hmacVerified: true,
-    crcVerified: true,
-    log: []
-  });
-
   const handleSetFirmwareVersion = (ver: string) => {
     setFirmwareVersion(ver);
-    const selectedFile = ver.startsWith('1.0') ? 'URTC_v1_0_F303CC.bin' : 'URTC_v1_1_F303CC.bin';
-    setFlasherState(prev => ({
-      ...prev,
-      firmwareVersion: ver,
-      selectedFile
-    }));
-    logCanFrame('0x7F9', `01 ${ver === '1.0.0' ? '00' : '01'} 00 F3 03 00 00 00`, `System Firmware Version switched to v${ver}`, 'Rx');
+    logCanFrame('0x7F9', `01 ${ver === '1.0.0' ? '00' : '01'} 00 F3 03 00 00 00`, `Sandbox firmware version switched to v${ver}`, 'Rx');
+  };
+
+  const flasher = useFlasher(serialCan);
+  const [boardVersion, setBoardVersion] = useState<BoardVersionInfo | null>(null);
+
+  const handleQueryVersion = async () => {
+    if (!serialCan.isConnected) return;
+    await serialCan.sendFrame(CAN_ID_QUERY_VERSION, [0x00], 'Query board version');
+    const resp = await serialCan.waitForFrame(CAN_ID_VERSION_RESPONSE, 1500);
+    if (!resp || resp.data.length < 8) { setBoardVersion(null); return; }
+    const responder: BoardVersionInfo['responder'] = resp.data[0] === 0x00 ? 'application' : 'bootloader';
+    const hardwareId = ((resp.data[1] << 24) | (resp.data[2] << 16) | (resp.data[3] << 8) | resp.data[4]) >>> 0;
+    const appMajor = (resp.data[5] << 8) | resp.data[6];
+    const appMinor = resp.data[7];
+    const info: BoardVersionInfo = { responder, hardwareId, appMajor, appMinor };
+
+    if (responder === 'bootloader') {
+      // Order between 0x7F9/0x7FA isn't guaranteed - grace window for the companion frame.
+      const bootResp = await serialCan.waitForFrame(CAN_ID_BOOTLOADER_VERSION_RESPONSE, 300);
+      if (bootResp && bootResp.data.length >= 3) {
+        info.bootMajor = bootResp.data[0];
+        info.bootMinor = bootResp.data[1];
+        info.bootPatch = bootResp.data[2];
+      }
+    }
+    setBoardVersion(info);
   };
 
   // Helper to log a CAN frame (or send it if hardware is connected)
@@ -141,7 +160,7 @@ export default function App() {
     const dataBytes = dataHex.trim().split(/\s+/).filter(Boolean).map(h => parseInt(h, 16));
 
     if (direction === 'Tx' && serialCan.isConnected) {
-      serialCan.sendFrame(idNum, dataBytes).catch(console.error);
+      serialCan.sendFrame(idNum, dataBytes, desc).catch(console.error);
       return; // sendFrame already adds to the log
     }
 
@@ -314,152 +333,123 @@ export default function App() {
     }, 2500);
   };
 
-  // Start REAL CAN-OTA update
-  const handleStartCanOta = async (fwFile: string, fileObj?: File | null, downloadUrl?: string) => {
-    if (!serialCan.isConnected) {
-      alert("Please connect to the USB-CAN adapter first using the top header.");
-      return;
-    }
-
-    const isV10 = fwFile.includes('v1_0') || fwFile.includes('1.0');
-    const targetVersion = isV10 ? '1.0.0' : '1.1.0';
-    const fileName = fileObj ? fileObj.name : fwFile;
-    
-    let arrayBuffer: ArrayBuffer;
+  // Best-effort <file>.manifest.json sidecar lookup, mirroring the Python
+  // flasher's own URTCFlasher._check_manifest: only reachable for files that
+  // came from a known URL (GitHub listing or the local /firmware/ folder) -
+  // a browser-picked File object has no fetchable sidecar.
+  const tryFetchManifest = async (fileName: string, downloadUrl?: string): Promise<FirmwareManifest | null> => {
+    const manifestUrl = downloadUrl ? `${downloadUrl}.manifest.json` : `/firmware/${fileName}.manifest.json`;
     try {
-      if (fileObj) {
-        arrayBuffer = await fileObj.arrayBuffer();
-      } else {
-        const res = await fetch(downloadUrl || `/firmware/${fileName}`);
-        if (!res.ok) throw new Error("Failed to fetch firmware");
-        arrayBuffer = await res.arrayBuffer();
-      }
-    } catch (e: any) {
-      alert("Could not read firmware file: " + e.message);
-      return;
-    }
-
-    const data = new Uint8Array(arrayBuffer);
-    const size = data.length;
-    const crc32 = getCrc32(data);
-    const hmac = await computeHmacSha256(arrayBuffer);
-
-    setFlasherState(prev => ({
-      ...prev,
-      mode: 'erasing',
-      progress: 0,
-      selectedFile: fileName,
-      statusText: `1/5: Resetting MCU into CAN Bootloader...`,
-      log: ['Sending CAN 0x7F0 magic payload (B0 07 1D 5A)...']
-    }));
-
-    try {
-      logCanFrame('0x7F0', 'B0 07 1D 5A 00 00 00 00', 'CAN OTA Reset Command', 'Tx');
-      await serialCan.sendFrame(CAN_ID_ENTER_BOOTLOADER, [0xB0, 0x07, 0x1D, 0x5A, 0x00, 0x00, 0x00, 0x00]);
-
-      const statusFrame = await serialCan.waitForFrame(CAN_ID_STATUS, 5000);
-      if (!statusFrame || statusFrame.data[0] !== 0x01) { // 0x01 = LISTENING
-        throw new Error("Bootloader not responding (no LISTENING state)");
-      }
-
-      setFlasherState(prev => ({ ...prev, mode: 'receiving', progress: 5, log: [...prev.log, 'Bootloader listening. Starting update...'] }));
-      
-      const sizeBytes = packUInt32BE(size);
-      const hwIdBytes = packUInt32BE(THIS_HARDWARE_ID);
-      await serialCan.sendFrame(CAN_ID_START_UPDATE, [...sizeBytes, ...hwIdBytes]);
-
-      const status2 = await serialCan.waitForFrame(CAN_ID_STATUS, 5000);
-      if (!status2 || status2.data[0] !== 0x03) { // 0x03 = RECEIVING
-        throw new Error("Bootloader rejected update start");
-      }
-
-      setFlasherState(prev => ({ ...prev, progress: 10, log: [...prev.log, 'Sending HMAC signature...'] }));
-      
-      for (let i = 0; i < 4; i++) {
-        await serialCan.sendFrame(CAN_ID_HMAC_CHUNK, Array.from(hmac.slice(i*8, (i+1)*8)));
-        await new Promise(r => setTimeout(r, 10));
-      }
-
-      setFlasherState(prev => ({ ...prev, progress: 15, statusText: '2/5: HardwareID & Signature verified. Transferring pages...', log: [...prev.log, 'Transferring data pages...'] }));
-      
-      let offset = 0;
-      let pageIndex = 0;
-      const totalPages = Math.ceil(size / FLASH_PAGE_SIZE);
-
-      while (offset < size) {
-        const pageEnd = Math.min(offset + FLASH_PAGE_SIZE, size);
-        const pageData = data.slice(offset, pageEnd);
-        
-        for (let i = 0; i < pageData.length; i += 8) {
-          const chunk = Array.from(pageData.slice(i, Math.min(i + 8, pageData.length)));
-          while (chunk.length < 8) chunk.push(0);
-          await serialCan.sendFrame(CAN_ID_DATA, chunk);
-          await new Promise(r => setTimeout(r, 2)); // Pacing
-        }
-
-        const ack = await serialCan.waitForFrame(CAN_ID_PAGE_ACK, 3000);
-        if (!ack) {
-          throw new Error(`Timeout waiting for ACK on page ${pageIndex}`);
-        }
-
-        offset = pageEnd;
-        pageIndex++;
-        
-        const pct = 15 + Math.floor((pageIndex / totalPages) * 70);
-        setFlasherState(prev => ({ ...prev, progress: pct }));
-      }
-
-      setFlasherState(prev => ({ ...prev, mode: 'verifying', progress: 85, statusText: '3/5: Page writes finished. Computing Backup Slot CRC32...', log: [...prev.log, 'All pages written. Sending END command.'] }));
-      
-      const crcBytes = packUInt32BE(crc32);
-      const vMajor = packUInt16BE(FIRMWARE_VERSION_MAJOR);
-      const vMinor = packUInt16BE(FIRMWARE_VERSION_MINOR);
-      await serialCan.sendFrame(CAN_ID_END_UPDATE, [...crcBytes, ...vMajor, ...vMinor]);
-
-      setFlasherState(prev => ({ ...prev, mode: 'flashing', progress: 95, statusText: '4/5: Copying verified Backup Slot -> Main Application Slot...', log: [...prev.log, 'Waiting for bootloader to verify and copy...'] }));
-      
-      const endStatus = await serialCan.waitForFrame(CAN_ID_STATUS, 60000);
-      if (!endStatus || endStatus.data[0] !== 0x04) { // 0x04 = VERIFY_OK
-        throw new Error("Update verification failed on device");
-      }
-
-      setFirmwareVersion(targetVersion);
-      setFlasherState(prev => ({
-        ...prev,
-        mode: 'idle',
-        progress: 100,
-        firmwareVersion: targetVersion,
-        statusText: `5/5: OTA Update Complete! MCU Rebooted into Firmware v${targetVersion}`,
-        log: [...prev.log, `Update SUCCESS! Booting STM32 application v${targetVersion}`]
-      }));
-      handleResetSplash();
-
-    } catch (e: any) {
-      setFlasherState(prev => ({
-        ...prev,
-        mode: 'idle',
-        statusText: 'Update Failed',
-        log: [...prev.log, `ERROR: ${e.message}`]
-      }));
+      const res = await fetch(manifestUrl);
+      if (!res.ok) return null;
+      return parseManifest(await res.json());
+    } catch {
+      return null;
     }
   };
 
-  // Start SWD Mass Erase
+  const loadFirmwareBytes = async (fwFile: string, fileObj?: File | null, downloadUrl?: string): Promise<Uint8Array> => {
+    if (fileObj) return new Uint8Array(await fileObj.arrayBuffer());
+    const res = await fetch(downloadUrl || `/firmware/${fwFile}`);
+    if (!res.ok) throw new Error('Failed to fetch firmware file');
+    return new Uint8Array(await res.arrayBuffer());
+  };
+
+  // Start REAL CAN-OTA update (main board or expansion slave)
+  const handleStartCanOta = async (
+    target: 'main' | 'slave',
+    fwFile: string,
+    fileObj: File | null | undefined,
+    downloadUrl: string | undefined,
+    opts: { triggerBootloader: boolean; eraseFram: boolean; allowDowngrade: boolean }
+  ) => {
+    if (!serialCan.isConnected) {
+      alert('Please connect to the USB-CAN adapter first using the top header.');
+      return;
+    }
+    const fileName = fileObj ? fileObj.name : fwFile;
+    flasher.setFlasherState(prev => ({ ...prev, selectedFile: fileName, log: [] }));
+
+    let data: Uint8Array;
+    try {
+      data = await loadFirmwareBytes(fwFile, fileObj, downloadUrl);
+    } catch (e: any) {
+      flasher.setFlasherState(prev => ({ ...prev, log: [...prev.log, `ERROR: could not read firmware file: ${e.message}`] }));
+      return;
+    }
+
+    const manifest = fileObj ? null : await tryFetchManifest(fileName, downloadUrl);
+    let reportMajor = FIRMWARE_VERSION_MAJOR, reportMinor = FIRMWARE_VERSION_MINOR;
+    if (manifest?.versionMajor !== undefined) {
+      reportMajor = manifest.versionMajor;
+      reportMinor = manifest.versionMinor!;
+      flasher.appendLog(`Manifest found: reporting declared version ${manifest.version} to the bootloader.`);
+    }
+    if (manifest?.sha256) {
+      const actual = await computeSha256Hex(data.buffer as ArrayBuffer);
+      if (actual !== manifest.sha256) {
+        flasher.appendLog(`WARNING: manifest sha256 does not match the selected file (manifest=${manifest.sha256}, actual=${actual}). Continuing - the bootloader's own CRC32+HMAC check is the real gate.`);
+      }
+    }
+
+    try {
+      if (target === 'slave') {
+        await flasher.flashSlave(data, { triggerBootloader: opts.triggerBootloader, reportMajor, reportMinor });
+      } else {
+        await flasher.flashMain(data, { ...opts, reportMajor, reportMinor });
+        handleResetSplash();
+      }
+    } catch (e: any) {
+      flasher.setFlasherState(prev => ({ ...prev, mode: 'idle', statusText: 'Update failed', log: [...prev.log, `ERROR: ${e.message}`] }));
+    }
+  };
+
+  const handleCancelFlash = () => {
+    flasher.cancel();
+  };
+
+  // Backup / readback the main board's currently installed firmware over CAN
+  const handleReadback = async () => {
+    if (!serialCan.isConnected) {
+      alert('Please connect to the USB-CAN adapter first using the top header.');
+      return;
+    }
+    flasher.setFlasherState(prev => ({ ...prev, mode: 'receiving', progress: 0, statusText: 'Reading back main slot over CAN...', log: ['Starting flash readback (0x7FE/0x7FF)...'] }));
+    try {
+      const data = await flasher.readBack((pct) => {
+        flasher.setFlasherState(prev => ({ ...prev, progress: pct }));
+      });
+      const blob = new Blob([data.buffer as ArrayBuffer], { type: 'application/octet-stream' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `URTC_readback_${new Date().toISOString().replace(/[:.]/g, '-')}.bin`;
+      a.click();
+      URL.revokeObjectURL(url);
+      flasher.setFlasherState(prev => ({ ...prev, mode: 'idle', progress: 100, statusText: `Readback complete: ${data.length} bytes saved.`, log: [...prev.log, `Readback SUCCESS: ${data.length} bytes.`] }));
+    } catch (e: any) {
+      flasher.setFlasherState(prev => ({ ...prev, mode: 'idle', statusText: 'Readback failed', log: [...prev.log, `ERROR: ${e.message}`] }));
+    }
+  };
+
+  // SWD/JTAG full-chip programming needs to spawn STM32CubeProgrammer/pyOCD as a
+  // local subprocess against the ST-Link probe - Web Serial has no such capability,
+  // and there is no browser API that can drive an SWD probe directly. This is a
+  // structural limitation of running in a browser, not a missing feature - use the
+  // URTC Flasher desktop tool (same repo family) for SWD/JTAG programming.
   const handleStartSwdFlash = (fwFile: string, fileObj?: File | null, bootloaderFile?: string, bootloaderObj?: File | null) => {
-    const isV10 = fwFile.includes('v1_0') || fwFile.includes('1.0');
-    const targetVersion = isV10 ? '1.0.0' : '1.1.0';
     const appName = fileObj ? fileObj.name : fwFile;
     const bootName = bootloaderObj ? bootloaderObj.name : (bootloaderFile || 'URTC_BOOTLOADER.bin');
 
-    setFlasherState(prev => ({
+    flasher.setFlasherState(prev => ({
       ...prev,
       mode: 'idle',
       progress: 0,
       selectedFile: appName,
-      statusText: `SWD Flashing requires local tools`,
+      statusText: 'SWD/JTAG requires a local tool - not possible from a browser',
       log: [
-        `[Error] In-browser SWD/JTAG flashing is not supported via Web Serial.`,
-        `Please use STM32CubeProgrammer or OpenOCD locally with your ST-Link to flash ${bootName} at 0x08000000 and ${appName} at 0x08008000.`
+        '[Not available] Web Serial cannot drive an SWD/JTAG probe - there is no browser API for it, so this is a structural limitation, not a missing feature.',
+        `Use the URTC Flasher desktop tool instead: it shells out to STM32CubeProgrammer or pyOCD to flash ${bootName} at 0x08000000 and ${appName} at 0x08008000.`
       ]
     }));
   };
@@ -593,8 +583,16 @@ export default function App() {
           <FlasherStudio
             onStartCanOta={handleStartCanOta}
             onStartSwdFlash={handleStartSwdFlash}
-            flasherState={flasherState}
-            onSetFirmwareVersion={handleSetFirmwareVersion}
+            onReadback={handleReadback}
+            onCancel={handleCancelFlash}
+            flasherState={flasher.flasherState}
+            isConnected={serialCan.isConnected}
+            boardVersion={boardVersion}
+            onQueryVersion={handleQueryVersion}
+            errorCounters={flasher.errorCounters}
+            onQueryErrorCounters={flasher.queryErrorCounters}
+            onSendFrame={serialCan.sendFrame}
+            onWaitForFrame={serialCan.waitForFrame}
           />
         )}
 
@@ -610,11 +608,16 @@ export default function App() {
 
         {/* TAB 7: Tester Studio */}
         {activeTab === 'tester' && (
-          <TesterStudio 
-            hardwareState={hardwareState} 
+          <TesterStudio
+            hardwareState={hardwareState}
+            activeToolId={activeToolId}
             activeToolName={activeTool.name}
             canFrames={canFrames}
+            isConnected={serialCan.isConnected}
             onSendFrame={serialCan.sendFrame}
+            onWaitForFrame={serialCan.waitForFrame}
+            subscribe={serialCan.subscribe}
+            subscribeAll={serialCan.subscribeAll}
           />
         )}
       </main>
