@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="images/URTC_APP_ICON_NEW.svg" alt="URTC Web Studio" width="160">
+</p>
+
 # URTC Web Studio
 
 A browser-based companion to the **Universal Robot Tool Controller (URTC)** -
@@ -13,7 +17,7 @@ real CAN frames described in `docs/CANBUS.TXT` of the
 
 ---
 
-## What's real vs. what's a sandbox
+## 🧭 What's real vs. what's a sandbox
 
 This app has two kinds of tabs:
 
@@ -38,7 +42,7 @@ This app has two kinds of tabs:
     Studio's "Thermal Inspection" panel, and only once hardware is
     connected.
 
-## Hardware you need
+## 🔌 Hardware you need
 
 - A USB-CAN adapter running **SLCAN** firmware (e.g. a CANable running
   `candlelight`/`slcan`, or any adapter that speaks the standard `lawicel`
@@ -52,7 +56,7 @@ This app has two kinds of tabs:
   cannot be used from inside an iframe. If you're previewing this app inside
   an embedded frame, open it in its own tab first.
 
-## Flasher Studio - real feature coverage
+## ⚡ Flasher Studio - real feature coverage
 
 Ported from `URTC-FLASHER`'s own `flasher_protocol.py`, against the same CAN
 IDs:
@@ -101,7 +105,7 @@ explains the exact commands the desktop `URTC Flasher` tool would run
 locally, for reference - use that tool directly for full-chip programming,
 option-byte/RDP checks, or a full-flash backup before a mass erase.
 
-## Tester Studio - real feature coverage
+## 🧰 Tester Studio - real feature coverage
 
 Ported from `URTC-TESTER`'s own `tester_tool_panels.py` /
 `tester_common_panels.py`, against the same CAN IDs:
@@ -121,12 +125,15 @@ Ported from `URTC-TESTER`'s own `tester_tool_panels.py` /
   TMC DIAG0 query (`0x180`-`0x183`), **F-RAM** query/erase (`0x190`-`0x192`),
   **Self-Test** (safe, at-rest checks per tool), a **Raw Bus Monitor** with
   `.trc`/`.asc` trace export, and a **Custom Frame** injector with an
-  optional repeat interval.
+  optional repeat interval - validated the same way as the CAN Bus Protocol
+  Analyzer's own frame injector: the ID is masked to the 11-bit CAN standard
+  range, and data tokens are filtered to valid hex bytes before being capped
+  to the 8-byte CAN payload limit.
 - **Detect Hardware** queries the real active tool (`0x110`/`0x111`) and
   board version (`0x7F8`/`0x7F9`), and a declared critical error
   (`0x111` byte 1) surfaces as a live fault banner.
 
-## Security note: the OTA signing key
+## 🔐 Security note: the OTA signing key
 
 Like the desktop `URTC Flasher`, this app ships with the project's default
 HMAC-SHA256 signing key committed in source
@@ -143,7 +150,7 @@ control access to (an internal network, VPN, or access-gated host), or treat
 it the same way you'd treat handing out the desktop Flasher tool itself -
 to authorized technicians, not the public internet.
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 - Node.js (v18+)
@@ -163,18 +170,143 @@ Then open `http://localhost:3000` in Chrome or Edge.
 `npm run build` produces a static production build in `dist/`; `npm run
 lint` runs the TypeScript compiler in check-only mode.
 
-## Technology Stack
+## 🛠️ Technology Stack
+- **Language:** TypeScript
 - **Frontend Framework:** React 18
 - **Build Tool:** Vite
 - **Styling:** Tailwind CSS
 - **Icons:** Lucide React
+- **CRC32:** `crc-32` - firmware image integrity check, mirrors the
+  bootloader's own CRC32 computation
 - **Hardware transport:** Web Serial API + SLCAN framing (no native
   dependencies, no companion backend server)
 
-## License
-URTC Web Studio is licensed under the **GNU General Public License v3.0 (GPL-3.0)**.
-See the [LICENSE](LICENSE) file for more details.
+## 📂 Repository Structure
 
----
-**Author:** JuanenRac (Electro Hobby 3D)
-**Contact:** electrohobby3d@gmail.com
+```
+/
+├── src/
+│   ├── App.tsx                     Root component - tab state, hardware state, CAN
+│   │                                frame logging, and the handlers wired into every
+│   │                                tab below (including CAN OTA start/readback and
+│   │                                the CAN Bus Analyzer's own frame injector)
+│   ├── main.tsx                    Vite/React entry point
+│   ├── index.css                   Tailwind entry point
+│   ├── types.ts                    Shared TypeScript types (CanFrame, HardwareState,
+│   │                                FlasherState, ExpansionBoardType, ...)
+│   ├── vite-env.d.ts                Vite's own ambient type declarations
+│   ├── components/
+│   │   ├── Header.tsx               Top bar: connect/disconnect button, active tool
+│   │   │                            name, FW v1.0/v1.1 sandbox toggle
+│   │   ├── Sidebar.tsx              Left nav - the 7 tabs described in this README
+│   │   ├── ToolCatalog.tsx          Sandbox tab: the 25-tool catalog, tool selection,
+│   │   │                            setpoint control
+│   │   ├── OledDisplay.tsx          Sandbox tab: OLED status-screen preview
+│   │   ├── SpecsAndBomViewer.tsx    Sandbox tab: BOM/pinout browser
+│   │   ├── ThermalCameraViewer.tsx  Sandbox tab: simulated MLX90640 feed - 100%
+│   │   │                            Math.random(), no CAN traffic at all (see
+│   │   │                            "What's real vs. what's a sandbox" above)
+│   │   ├── HardwarePanel.tsx        Sandbox jumper/LED/expansion-board control panel,
+│   │   │                            used inside the Control and OLED tabs
+│   │   ├── CanBusAnalyzer.tsx       Real tab: raw CAN frame log, custom frame
+│   │   │                            injector, preset command triggers
+│   │   ├── FlasherStudio.tsx        Real tab: CAN-OTA UI (main + expansion slave) and
+│   │   │                            the SWD/JTAG capability explainer
+│   │   ├── TesterStudio.tsx         Real tab: per-tool live control/telemetry, built
+│   │   │                            from the tester/ folder below
+│   │   └── tester/
+│   │       ├── ToolPanels.tsx       One panel per tool profile - real command bytes,
+│   │       │                        real telemetry decode, per-tool watchdog keepalive
+│   │       ├── GlobalPanels.tsx     Global Controls, Expansion Board, F-RAM,
+│   │       │                        Self-Test, Raw Bus Monitor, Custom Frame injector
+│   │       └── shared.tsx           Shared UI primitives (Section, Field, button/input
+│   │                                classes, safeInt)
+│   ├── data/
+│   │   └── toolsData.ts             The 25 TOOL_PROFILES - names, defaults, icons for
+│   │                                the sandbox tabs
+│   ├── hooks/
+│   │   ├── useSerialCanBus.ts       Web Serial + SLCAN transport - connect/disconnect,
+│   │   │                            frame TX/RX, per-ID waitForFrame with a bounded
+│   │   │                            rx buffer and a 500-frame queue cap
+│   │   ├── useFlasher.ts            CAN-OTA state machine (main board + expansion
+│   │   │                            slave), mirrors flasher_protocol.py
+│   │   └── useKeepalive.ts          Fixed-interval resend hook backing every tool's
+│   │                                active-checkbox watchdog keepalive
+│   └── lib/
+│       ├── flasher.ts               OTA protocol constants, the committed HMAC-SHA256
+│       │                            signing key, CRC32/HMAC helpers, manifest parsing
+│       └── canIds.ts                CAN ID constants for Tester Studio - mirrors
+│                                     tester_config.py byte-for-byte
+├── public/
+│   └── firmware/                    Bundled .bin/.elf/.hex for the main application,
+│                                     main bootloader, expansion slave application, and
+│                                     expansion slave bootloader
+├── images/
+│   ├── URTC_APP_ICON_NEW.svg        App icon (shown at the top of this README)
+│   ├── urtc_custom_icon.svg         App icon, same artwork
+│   └── urtc_icon.ico                Favicon
+├── index.html                       Vite entry HTML
+├── metadata.json                    App name/description + requested "serial"
+│                                     permission (used by the hosting platform)
+├── vite.config.ts                   Vite + Tailwind plugin config
+├── tsconfig.json                    TypeScript config
+├── .env.example                     VITE_APP_TITLE
+├── package.json
+├── LICENSE
+└── README.md                        This file
+```
+
+## 📜 License and Copyright Notices
+
+URTC Web Studio is (c) 2026 JuanenRac (Electro Hobby 3D). This notice must
+be included in any distributions of this project or derivative works.
+
+This project consists of source code and its own documentation, made
+available under different licenses - each suited to what it actually
+covers:
+
+1. The source code (everything under `src/`, plus the Vite/TypeScript
+   config that builds it) is available under the **GNU General Public
+   License v3.0 (GPL-3.0)**. Full text at
+   https://www.gnu.org/licenses/gpl-3.0.html.
+
+2. The documentation (this README) is available under **Creative Commons
+   Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)**. Full text at
+   https://creativecommons.org/licenses/by-sa/4.0/.
+
+This tool is the browser-based companion to the
+[URTC (Universal Robot Tool Controller)](https://github.com/JuanenRac/URTC)
+project - see that project's own repository for the board firmware,
+hardware designs, and full protocol documentation this tool implements
+against. URTC's own firmware is GPL-3.0 and its hardware designs are
+CERN-OHL-S v2; this tool's own license here doesn't extend to that separate
+project, and vice versa. Two desktop-native alternatives covering the same
+ground also exist: [URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER)
+and [URTC Tester](https://github.com/JuanenRac/URTC-TESTER).
+
+If you build on this project, keep the licensing split in mind: code
+changes should stay GPL-3.0, documentation derivatives should stay CC
+BY-SA - each with attribution back to this project and its author.
+
+## 🔗 Related Projects
+
+This project is part of a larger robotics ecosystem by the same author (JuanenRac / Electro Hobby 3D). Worth knowing about, since a request might actually be about one of these rather than this repository:
+
+**HYDRA-UMC platform** — the multi-robot micro-factory cell
+- **[HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC)** — the motherboard itself: Raspberry Pi CM5 host + dual-core STM32H745 real-time co-processor, orchestrating up to 8 distributed robot arms over CAN-OTA/SPI-OTA. Own hardware + firmware, GPL-3.0/CERN-OHL-S v2/CC BY-SA 4.0.
+- **[HYDRA-UMC STUDIO](https://github.com/JuanenRac/HYDRA-UMC-STUDIO)** — web-based control dashboard for HYDRA-UMC: multi-robot 3D visualization, kinematics/trajectory recording, CAN-OTA flashing and testing for the whole platform. React + Vite + Three.js.
+- **[HYDRA-UMC-ANDROID-CONTROL](https://github.com/JuanenRac/HYDRA-UMC-ANDROID-CONTROL)** — planned Android control app for HYDRA-UMC. Not yet started; scope to be defined.
+- **[HYDRA-UMC-IOS-CONTROL](https://github.com/JuanenRac/HYDRA-UMC-IOS-CONTROL)** — planned iOS control app for HYDRA-UMC. Not yet started; scope to be defined.
+- **[HYDRA-UMC-SUITE](https://github.com/JuanenRac/HYDRA-UMC-SUITE)** — planned; scope to be defined.
+
+**URTC platform** — the tool head controller every HYDRA-UMC robot arm carries
+- **[URTC](https://github.com/JuanenRac/URTC)** — Universal Robot Tool Controller: STM32F303-based CAN bus tool head controller, 25 fully-implemented tool profiles, CAN-OTA firmware update.
+- **[URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER)** — desktop CAN-OTA + full-chip SWD/JTAG flashing tool for URTC boards (Windows/Linux).
+- **[URTC Tester](https://github.com/JuanenRac/URTC-TESTER)** — desktop live CAN-bus diagnostic tool for URTC boards, one panel per tool profile (Windows/Linux).
+- **URTC Web Studio** — browser-based alternative to the 2 desktop tools above (Web Serial API + SLCAN), no local install needed. *(this repository)*
+
+## 👤 Author
+
+**JuanenRac** (Electro Hobby 3D)
+📧 electrohobby3d@gmail.com
+📺 [youtube.com/@electrohobby3d](https://youtube.com/@electrohobby3d)
