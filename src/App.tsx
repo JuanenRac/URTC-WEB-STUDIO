@@ -194,28 +194,36 @@ export default function App() {
     }));
   };
 
-  // Periodic simulation loop (CAN watchdog LED reset)
+  // Periodic simulation loop (CAN watchdog LED reset). Mount-once: reads the
+  // latest state via the functional setState updater instead of closing over
+  // `hardwareState` directly, so this doesn't need hardwareState (or any other
+  // state) in its dependency array. Previously it depended on
+  // [activeToolId, setpoints, hardwareState] - since hardwareState.
+  // lastCanTimestamp is bumped on every incoming CAN frame, that tore down and
+  // recreated the interval on every single frame, undermining the very
+  // inactivity watchdog it implements (activeToolId/setpoints weren't even
+  // read by the effect body).
   useEffect(() => {
     const interval = setInterval(() => {
-      // Check LED override timeout (10 seconds)
-      if (hardwareState.ledMode === 'override' && Date.now() > hardwareState.ledOverrideExpires) {
-        setHardwareState(prev => ({
-          ...prev,
-          ledMode: 'auto'
-        }));
-      }
+      setHardwareState(prev => {
+        let next = prev;
 
-      // Check CAN active timeout (1.5 seconds)
-      if (Date.now() - hardwareState.lastCanTimestamp > 1500) {
-        setHardwareState(prev => ({
-          ...prev,
-          canActive: false
-        }));
-      }
+        // Check LED override timeout (10 seconds)
+        if (prev.ledMode === 'override' && Date.now() > prev.ledOverrideExpires) {
+          next = { ...next, ledMode: 'auto' };
+        }
+
+        // Check CAN active timeout (1.5 seconds)
+        if (prev.canActive && Date.now() - prev.lastCanTimestamp > 1500) {
+          next = { ...next, canActive: false };
+        }
+
+        return next; // same reference when nothing changed - no extra re-render
+      });
     }, 200);
 
     return () => clearInterval(interval);
-  }, [activeToolId, setpoints, hardwareState]);
+  }, []);
 
   // Handle jumper toggle
   const handleJumperToggle = (idx: number) => {
@@ -224,7 +232,7 @@ export default function App() {
       nextJumpers[idx] = !nextJumpers[idx];
       return { ...prev, jumpers: nextJumpers };
     });
-    logCanFrame('0x111', `0${activeToolId.toString(16)} 00 00 00 00 00 00 00`, `Active Tool ID Changed to #${activeToolId}`, 'Rx');
+    logCanFrame('0x111', `${activeToolId.toString(16).padStart(2, '0')} 00 00 00 00 00 00 00`, `Active Tool ID Changed to #${activeToolId}`, 'Rx');
   };
 
   // Handle direct tool selection from catalog
@@ -238,13 +246,13 @@ export default function App() {
       Boolean(id & 0x10)
     ];
     setHardwareState(prev => ({ ...prev, jumpers }));
-    logCanFrame('0x110', `0${id.toString(16)} 00 00 00 00 00 00 00`, `Catalog Selected Tool #${id} (${TOOL_PROFILES[id]?.name})`, 'Tx');
+    logCanFrame('0x110', `${id.toString(16).padStart(2, '0')} 00 00 00 00 00 00 00`, `Catalog Selected Tool #${id} (${TOOL_PROFILES[id]?.name})`, 'Tx');
   };
 
   // Setpoint change
   const handleSetpointChange = (val: number) => {
     setSetpoints(prev => ({ ...prev, [activeToolId]: val }));
-    logCanFrame('0x190', `0${activeToolId.toString(16)} ${(Math.round(val) & 0xFF).toString(16).padStart(2, '0')} 00 00 00 00 00 00`, `Setpoint Updated for Tool #${activeToolId} -> ${val.toFixed(1)}`);
+    logCanFrame('0x190', `${activeToolId.toString(16).padStart(2, '0')} ${(Math.round(val) & 0xFF).toString(16).padStart(2, '0')} 00 00 00 00 00 00`, `Setpoint Updated for Tool #${activeToolId} -> ${val.toFixed(1)}`);
   };
 
   // Save to F-RAM
@@ -258,21 +266,30 @@ export default function App() {
     logCanFrame('0x191', `0x191 ACK`, `FM24CL64B F-RAM Setpoints Saved Snapshot`, 'Rx');
   };
 
-  // Custom CAN send
+  // Custom CAN send - raw frame injector (CanBusAnalyzer). Validated the same
+  // way as its protected twin, tester/GlobalPanels.tsx's CustomFramePanel:
+  // mask the ID to the 11-bit CAN standard range, and drop any non-hex/out
+  // -of-range data tokens before capping to the 8-byte CAN payload limit.
   const handleSendCustomFrame = (idHex: string, dataHex: string, desc: string) => {
-    logCanFrame(idHex, dataHex, desc, 'Tx');
+    const idNum = (parseInt(idHex.replace('0x', ''), 16) || 0) & 0x7FF;
+    const bytes = dataHex.trim().split(/\s+/).filter(Boolean)
+      .map(h => parseInt(h, 16))
+      .filter(b => Number.isFinite(b) && b >= 0 && b <= 0xFF)
+      .slice(0, 8);
+
+    const safeIdHex = `0x${idNum.toString(16).toUpperCase().padStart(3, '0')}`;
+    const safeDataHex = bytes.map(b => b.toString(16).toUpperCase().padStart(2, '0')).join(' ');
+
+    logCanFrame(safeIdHex, safeDataHex, desc, 'Tx');
 
     // Handle special command triggers
-    if (idHex.toLowerCase() === '0x100') {
-      const bytes = dataHex.trim().split(/\s+/).map(h => parseInt(h, 16));
-      if (bytes.length >= 3) {
-        setHardwareState(prev => ({
-          ...prev,
-          ledMode: 'override',
-          ledOverrideColor: { r: bytes[0], g: bytes[1], b: bytes[2] },
-          ledOverrideExpires: Date.now() + 10000
-        }));
-      }
+    if (safeIdHex.toLowerCase() === '0x100' && bytes.length >= 3) {
+      setHardwareState(prev => ({
+        ...prev,
+        ledMode: 'override',
+        ledOverrideColor: { r: bytes[0], g: bytes[1], b: bytes[2] },
+        ledOverrideExpires: Date.now() + 10000
+      }));
     }
   };
 
@@ -282,7 +299,7 @@ export default function App() {
       case '0x110':
         logCanFrame('0x110', '00 00 00 00 00 00 00 00', 'Host Query Active Tool Profile', 'Tx');
         setTimeout(() => {
-          logCanFrame('0x111', `0${activeToolId.toString(16)} 00 00 00 00 00 00 00`, `URTC Response: Active Tool #${activeToolId} (${activeTool.name})`, 'Rx');
+          logCanFrame('0x111', `${activeToolId.toString(16).padStart(2, '0')} 00 00 00 00 00 00 00`, `URTC Response: Active Tool #${activeToolId} (${activeTool.name})`, 'Rx');
         }, 150);
         break;
       case '0x100':

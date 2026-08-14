@@ -154,7 +154,7 @@ export const FramPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
     await query();
   };
 
-  useEffect(() => { if (ctx.isConnected) query(); }, []);
+  useEffect(() => { if (ctx.isConnected) query(); }, [ctx.isConnected]);
 
   return (
     <Section title="F-RAM Saved State (0x190/0x191, erase 0x192)">

@@ -12,6 +12,14 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
   const rxBufferRef = useRef<string>('');
   const frameQueueRef = useRef<CanFrame[]>([]);
 
+  // A well-formed SLCAN line is at most ~21 chars ('t' + 3 hex ID + 1 DLC
+  // digit + up to 16 hex data chars). If the adapter sends data without a
+  // carriage return (desync, garbage, or a non-SLCAN device on the port),
+  // rxBufferRef would otherwise grow unbounded for the life of the
+  // connection - cap it and drop the buffer if it's exceeded, matching the
+  // bound already enforced on frameQueueRef below.
+  const MAX_RX_BUFFER_CHARS = 4096;
+
   // Per-ID subscribers (many tool panels can listen to the same telemetry ID
   // at once) plus catch-all sniffers (raw bus monitor). Non-consuming - unlike
   // frameQueueRef (used only by waitForFrame's own request/response matching,
@@ -41,17 +49,63 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
     onFrameReceived(frame);
   }, [onFrameReceived]);
 
-  const waitForFrame = async (expectedId: number, timeoutMs: number = 3000): Promise<CanFrame | null> => {
-    const start = Date.now();
-    while (Date.now() - start < timeoutMs) {
-      const idx = frameQueueRef.current.findIndex(f => f.id === expectedId);
-      if (idx !== -1) {
-        const frame = frameQueueRef.current.splice(idx, 1)[0];
-        return frame;
-      }
-      await new Promise(r => setTimeout(r, 10)); // Poll
+  // Per-caller correlation for waitForFrame. Previously waitForFrame polled
+  // frameQueueRef every 10ms and spliced the first match it found - if two
+  // callers awaited the same CAN ID concurrently, whichever poll tick ran
+  // first won that splice non-deterministically, so the loser either got
+  // nothing (timeout) or an unrelated later frame. Now each call registers
+  // its own waiter in a per-ID FIFO queue, so incoming frames are handed to
+  // the oldest still-waiting caller for that ID first.
+  const waitersRef = useRef<Map<number, Array<(frame: CanFrame) => void>>>(new Map());
+
+  const waitForFrame = (expectedId: number, timeoutMs: number = 3000): Promise<CanFrame | null> => {
+    // Serve immediately from anything already queued (arrived before this
+    // particular call was made).
+    const idx = frameQueueRef.current.findIndex(f => f.id === expectedId);
+    if (idx !== -1) {
+      return Promise.resolve(frameQueueRef.current.splice(idx, 1)[0]);
     }
-    return null;
+
+    return new Promise<CanFrame | null>((resolve) => {
+      let settled = false;
+      const waiter = (frame: CanFrame) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve(frame);
+      };
+
+      let list = waitersRef.current.get(expectedId);
+      if (!list) { list = []; waitersRef.current.set(expectedId, list); }
+      list.push(waiter);
+
+      const timer = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        const l = waitersRef.current.get(expectedId);
+        if (l) {
+          const i = l.indexOf(waiter);
+          if (i !== -1) l.splice(i, 1);
+        }
+        resolve(null);
+      }, timeoutMs);
+    });
+  };
+
+  // Hands a freshly-received frame to the oldest pending waitForFrame caller
+  // for its ID (FIFO), if any; otherwise queues it in frameQueueRef for a
+  // future waitForFrame call to pick up (same 500-frame cap as before).
+  const deliverOrQueue = (frame: CanFrame) => {
+    const list = waitersRef.current.get(frame.id);
+    if (list && list.length > 0) {
+      const waiter = list.shift()!;
+      waiter(frame);
+      return;
+    }
+    frameQueueRef.current.push(frame);
+    if (frameQueueRef.current.length > 500) {
+      frameQueueRef.current.shift();
+    }
   };
 
   const connect = async () => {
@@ -158,6 +212,10 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
           if (value) {
             const chunk = decoder.decode(value, { stream: true });
             rxBufferRef.current += chunk;
+            if (rxBufferRef.current.length > MAX_RX_BUFFER_CHARS) {
+              console.warn('SLCAN rx buffer exceeded max size without a frame terminator - resetting (adapter desync or non-SLCAN data on the port).');
+              rxBufferRef.current = '';
+            }
             processBuffer();
           }
         }
@@ -202,12 +260,7 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
               description: 'Incoming from CAN hardware'
             };
             
-            frameQueueRef.current.push(frame);
-            // keep the queue from growing indefinitely
-            if (frameQueueRef.current.length > 500) {
-              frameQueueRef.current.shift();
-            }
-
+            deliverOrQueue(frame);
             dispatchFrame(frame);
           } catch (e) {
             console.error('Failed to parse frame:', line);

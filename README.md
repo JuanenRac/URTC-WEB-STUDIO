@@ -20,13 +20,23 @@ This app has two kinds of tabs:
 - **Real, hardware-driven tabs** - Flasher Studio, Tester Studio, and the CAN
   Bus Protocol Analyzer. These only do anything once you've connected a real
   USB-CAN adapter (top-right header button); every command they send and
-  every reading they show comes from the actual CAN bus.
-- **Offline sandbox tabs** - Control (tool catalog), OLED, and Specs/BOM.
-  These let you explore the 25-tool catalog, preview the OLED status screens,
-  and browse the BOM/pinouts without any hardware connected. The "FW v1.0 /
+  every reading they show comes from the actual CAN bus. This includes the
+  real **thermal camera reading** - Tester Studio's "Thermal Inspection"
+  panel (`0x250`/`0x251`/`0x254`/`0x255`) queries the tool head's actual
+  MLX90640 IR array over CAN.
+- **Offline sandbox tabs** - Control (tool catalog), OLED, Specs/BOM, and
+  Thermal IR Inspection. These let you explore the 25-tool catalog, preview
+  the OLED status screens, browse the BOM/pinouts, and view a simulated
+  thermal camera feed, all without any hardware connected. The "FW v1.0 /
   v1.1" toggle in the header only affects these sandbox tabs (which tool
   profiles a given firmware build would unlock) - it has no bearing on what a
   real, connected board reports.
+  - **Do not confuse the two thermal views**: the standalone "Thermal IR
+    Inspection" tab (`ThermalCameraViewer.tsx`) is 100% client-side
+    `Math.random()` noise with no CAN traffic at all - it's a UI mockup, not
+    a sensor reading. The real MLX9064x data only ever appears inside Tester
+    Studio's "Thermal Inspection" panel, and only once hardware is
+    connected.
 
 ## Hardware you need
 

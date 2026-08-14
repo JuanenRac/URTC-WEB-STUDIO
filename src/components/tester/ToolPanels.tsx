@@ -59,7 +59,7 @@ export const SolderingIronPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
       setPosition(raw | 0);
     }
   };
-  useEffect(() => { if (ctx.isConnected) queryPosition(); }, []);
+  useEffect(() => { if (ctx.isConnected) queryPosition(); }, [ctx.isConnected]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

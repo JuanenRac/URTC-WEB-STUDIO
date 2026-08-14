@@ -3,6 +3,5 @@
   "description": "Interactive Web Studio & Control Suite for URTC STM32 robotic arm tool head controller, firmware flasher, OLED display emulator, CAN bus protocol analyzer, and 25-tool matrix simulator.",
   "requestFramePermissions": [
     "serial"
-  ],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  ]
 }
