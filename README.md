@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="images/URTC_APP_ICON_NEW.svg" alt="URTC Web Studio" width="160">
+  <img src="images/URTC_LOGO_WEB_STUDIO.svg" alt="URTC Web Studio Logo" width="100%">
 </p>
 
 # URTC Web Studio
