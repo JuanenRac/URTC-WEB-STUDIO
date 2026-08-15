@@ -1,7 +1,9 @@
 import { useState, useRef, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CanFrame } from '../types';
 
 export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
+  const { t } = useTranslation();
   const [isConnected, setIsConnected] = useState(false);
   const [portName, setPortName] = useState<string>('');
 
@@ -132,7 +134,7 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
 
   const connect = async () => {
     if (!('serial' in navigator)) {
-      alert('Web Serial API is not supported in this browser. Please use Chrome or Edge.');
+      alert(t('hooks.web_serial_unsupported', 'Web Serial API is not supported in this browser. Please use Chrome or Edge.'));
       return;
     }
 
@@ -160,12 +162,12 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
     } catch (e: any) {
       console.error('Failed to connect', e);
       if (e.message?.includes('requestPort') || e.name === 'SecurityError') {
-        alert('Cannot access USB/Serial from this iframe. Please click the "Open in new tab" button at the top right of the preview pane to use the Web Serial API.');
+        alert(t('hooks.iframe_blocked', 'Cannot access USB/Serial from this iframe. Please click the "Open in new tab" button at the top right of the preview pane to use the Web Serial API.'));
       } else if (e.name === 'NotFoundError' || e.message?.includes('No port selected by the user') || e.message?.includes('Request failed')) {
         // User cancelled the prompt, do not show an alert
         console.log('User cancelled serial port selection.');
       } else {
-        alert('Connection failed: ' + (e.message || 'Unknown error'));
+        alert(t('hooks.connection_failed', 'Connection failed: {{message}}', { message: e.message || 'Unknown error' }));
       }
     }
   };

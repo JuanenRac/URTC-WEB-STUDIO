@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { ToolCatalog } from './components/ToolCatalog';
@@ -30,6 +31,7 @@ export interface BoardVersionInfo {
 }
 
 export default function App() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'control' | 'oled' | 'can' | 'flasher' | 'thermal' | 'specs' | 'tester'>('control');
   
   // CAN Bus Frames Log
@@ -368,7 +370,7 @@ export default function App() {
   const loadFirmwareBytes = async (fwFile: string, fileObj?: File | null, downloadUrl?: string): Promise<Uint8Array> => {
     if (fileObj) return new Uint8Array(await fileObj.arrayBuffer());
     const res = await fetch(downloadUrl || `/firmware/${fwFile}`);
-    if (!res.ok) throw new Error('Failed to fetch firmware file');
+    if (!res.ok) throw new Error(t('flasher.error_fetch_firmware', 'Failed to fetch firmware file'));
     return new Uint8Array(await res.arrayBuffer());
   };
 
@@ -381,7 +383,7 @@ export default function App() {
     opts: { triggerBootloader: boolean; eraseFram: boolean; allowDowngrade: boolean }
   ) => {
     if (!serialCan.isConnected) {
-      alert('Please connect to the USB-CAN adapter first using the top header.');
+      alert(t('flasher.alert_connect_first', 'Please connect to the USB-CAN adapter first using the top header.'));
       return;
     }
     const fileName = fileObj ? fileObj.name : fwFile;
@@ -391,7 +393,7 @@ export default function App() {
     try {
       data = await loadFirmwareBytes(fwFile, fileObj, downloadUrl);
     } catch (e: any) {
-      flasher.setFlasherState(prev => ({ ...prev, log: [...prev.log, `ERROR: could not read firmware file: ${e.message}`] }));
+      flasher.setFlasherState(prev => ({ ...prev, log: [...prev.log, t('flasher.log_could_not_read', 'ERROR: could not read firmware file: {{message}}', { message: e.message })] }));
       return;
     }
 
@@ -400,12 +402,12 @@ export default function App() {
     if (manifest?.versionMajor !== undefined) {
       reportMajor = manifest.versionMajor;
       reportMinor = manifest.versionMinor!;
-      flasher.appendLog(`Manifest found: reporting declared version ${manifest.version} to the bootloader.`);
+      flasher.appendLog(t('flasher.log_manifest_found', 'Manifest found: reporting declared version {{version}} to the bootloader.', { version: manifest.version }));
     }
     if (manifest?.sha256) {
       const actual = await computeSha256Hex(data.buffer as ArrayBuffer);
       if (actual !== manifest.sha256) {
-        flasher.appendLog(`WARNING: manifest sha256 does not match the selected file (manifest=${manifest.sha256}, actual=${actual}). Continuing - the bootloader's own CRC32+HMAC check is the real gate.`);
+        flasher.appendLog(t('flasher.log_manifest_mismatch', "WARNING: manifest sha256 does not match the selected file (manifest={{manifest}}, actual={{actual}}). Continuing - the bootloader's own CRC32+HMAC check is the real gate.", { manifest: manifest.sha256, actual }));
       }
     }
 
@@ -417,7 +419,7 @@ export default function App() {
         handleResetSplash();
       }
     } catch (e: any) {
-      flasher.setFlasherState(prev => ({ ...prev, mode: 'idle', statusText: 'Update failed', log: [...prev.log, `ERROR: ${e.message}`] }));
+      flasher.setFlasherState(prev => ({ ...prev, mode: 'idle', statusText: t('flasher.status_update_failed', 'Update failed'), log: [...prev.log, t('flasher.log_error_prefix', 'ERROR: {{message}}', { message: e.message })] }));
     }
   };
 
@@ -428,10 +430,10 @@ export default function App() {
   // Backup / readback the main board's currently installed firmware over CAN
   const handleReadback = async () => {
     if (!serialCan.isConnected) {
-      alert('Please connect to the USB-CAN adapter first using the top header.');
+      alert(t('flasher.alert_connect_first', 'Please connect to the USB-CAN adapter first using the top header.'));
       return;
     }
-    flasher.setFlasherState(prev => ({ ...prev, mode: 'receiving', progress: 0, statusText: 'Reading back main slot over CAN...', log: ['Starting flash readback (0x7FE/0x7FF)...'] }));
+    flasher.setFlasherState(prev => ({ ...prev, mode: 'receiving', progress: 0, statusText: t('flasher.status_reading_back', 'Reading back main slot over CAN...'), log: [t('flasher.log_starting_readback', 'Starting flash readback (0x7FE/0x7FF)...')] }));
     try {
       const data = await flasher.readBack((pct) => {
         flasher.setFlasherState(prev => ({ ...prev, progress: pct }));
@@ -443,9 +445,9 @@ export default function App() {
       a.download = `URTC_readback_${new Date().toISOString().replace(/[:.]/g, '-')}.bin`;
       a.click();
       URL.revokeObjectURL(url);
-      flasher.setFlasherState(prev => ({ ...prev, mode: 'idle', progress: 100, statusText: `Readback complete: ${data.length} bytes saved.`, log: [...prev.log, `Readback SUCCESS: ${data.length} bytes.`] }));
+      flasher.setFlasherState(prev => ({ ...prev, mode: 'idle', progress: 100, statusText: t('flasher.status_readback_complete', 'Readback complete: {{bytes}} bytes saved.', { bytes: data.length }), log: [...prev.log, t('flasher.log_readback_success', 'Readback SUCCESS: {{bytes}} bytes.', { bytes: data.length })] }));
     } catch (e: any) {
-      flasher.setFlasherState(prev => ({ ...prev, mode: 'idle', statusText: 'Readback failed', log: [...prev.log, `ERROR: ${e.message}`] }));
+      flasher.setFlasherState(prev => ({ ...prev, mode: 'idle', statusText: t('flasher.status_readback_failed', 'Readback failed'), log: [...prev.log, t('flasher.log_error_prefix', 'ERROR: {{message}}', { message: e.message })] }));
     }
   };
 
@@ -463,10 +465,10 @@ export default function App() {
       mode: 'idle',
       progress: 0,
       selectedFile: appName,
-      statusText: 'SWD/JTAG requires a local tool - not possible from a browser',
+      statusText: t('flasher.status_swd_not_possible', 'SWD/JTAG requires a local tool - not possible from a browser'),
       log: [
-        '[Not available] Web Serial cannot drive an SWD/JTAG probe - there is no browser API for it, so this is a structural limitation, not a missing feature.',
-        `Use the URTC Flasher desktop tool instead: it shells out to STM32CubeProgrammer or pyOCD to flash ${bootName} at 0x08000000 and ${appName} at 0x08008000.`
+        t('flasher.log_swd_not_available', '[Not available] Web Serial cannot drive an SWD/JTAG probe - there is no browser API for it, so this is a structural limitation, not a missing feature.'),
+        t('flasher.log_swd_use_desktop', 'Use the URTC Flasher desktop tool instead: it shells out to STM32CubeProgrammer or pyOCD to flash {{boot}} at 0x08000000 and {{app}} at 0x08008000.', { boot: bootName, app: appName })
       ]
     }));
   };

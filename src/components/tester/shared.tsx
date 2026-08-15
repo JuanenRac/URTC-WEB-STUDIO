@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export const Section: React.FC<{ title: string; subtitle?: string; children: React.ReactNode; className?: string }> = ({ title, subtitle, children, className }) => (
   <div className={`bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm ${className || ''}`}>
@@ -26,12 +27,15 @@ export const KeepaliveCheckbox: React.FC<{
   onChange: (v: boolean) => void;
   watchdogMs: number;
   disabled?: boolean;
-}> = ({ checked, onChange, watchdogMs, disabled }) => (
-  <label className={`flex items-center gap-2 text-xs cursor-pointer ${disabled ? 'opacity-40 pointer-events-none' : 'text-slate-300'}`}>
-    <input type="checkbox" checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} className="accent-purple-500 rounded" />
-    <span className="font-semibold">Active <span className="text-slate-500 font-normal">({watchdogMs}ms watchdog)</span></span>
-  </label>
-);
+}> = ({ checked, onChange, watchdogMs, disabled }) => {
+  const { t } = useTranslation();
+  return (
+    <label className={`flex items-center gap-2 text-xs cursor-pointer ${disabled ? 'opacity-40 pointer-events-none' : 'text-slate-300'}`}>
+      <input type="checkbox" checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} className="accent-purple-500 rounded" />
+      <span className="font-semibold">{t('testerglobal.keepalive_active', 'Active')} <span className="text-slate-500 font-normal">{t('testerglobal.keepalive_watchdog', '({{ms}}ms watchdog)', { ms: watchdogMs })}</span></span>
+    </label>
+  );
+};
 
 // Fixed-scale (0..yMax) 60-point rolling scrolling line, no chart library.
 export const LiveGraph: React.FC<{ value: number | null; yMax: number; color?: string; height?: number }> = ({ value, yMax, color = '#a855f7', height = 60 }) => {

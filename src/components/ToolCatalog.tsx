@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { TOOL_PROFILES } from '../data/toolsData';
 import { ToolProfile, HardwareState } from '../types';
 import { Zap, ShieldCheck, AlertCircle, Cpu, Radio, Save, Info, Sliders, Lock, ArrowUpRight, AlertOctagon } from 'lucide-react';
@@ -26,6 +27,7 @@ export const ToolCatalog: React.FC<ToolCatalogProps> = ({
   firmwareVersion,
   onSwitchToFirmware11
 }) => {
+  const { t } = useTranslation();
   const [filterCategory, setFilterCategory] = useState<'All' | 'Shipped (v1.0)' | 'Expansion (v1.1)'>('All');
   const [searchTerm, setSearchTerm] = useState<string>('');
 
@@ -62,12 +64,12 @@ export const ToolCatalog: React.FC<ToolCatalogProps> = ({
             <div>
               <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
                 <Cpu className="w-4 h-4 text-amber-400" />
-                Tool Catalog Matrix (Firmware v{firmwareVersion})
+                {t('toolcatalog.title', 'Tool Catalog Matrix (Firmware v{{version}})', { version: firmwareVersion })}
               </h2>
               <p className="text-xs text-slate-400">
                 {isFirmware10
-                  ? 'FW v1.0.0 Active • 12 Shipped Profiles Active (IDs 0–11) • 13 Expansion Profiles Locked 🔒'
-                  : 'FW v1.1.0 Active • All 25 Profiles Unlocked & Functional (IDs 0–24)'}
+                  ? t('toolcatalog.subtitle_fw10', 'FW v1.0.0 Active • 12 Shipped Profiles Active (IDs 0–11) • 13 Expansion Profiles Locked 🔒')
+                  : t('toolcatalog.subtitle_fw11', 'FW v1.1.0 Active • All 25 Profiles Unlocked & Functional (IDs 0–24)')}
               </p>
             </div>
 
@@ -77,19 +79,19 @@ export const ToolCatalog: React.FC<ToolCatalogProps> = ({
                 onClick={() => setFilterCategory('All')}
                 className={`px-2.5 py-1 rounded ${filterCategory === 'All' ? 'bg-slate-800 text-amber-400 font-semibold' : 'text-slate-400 hover:text-slate-200'}`}
               >
-                All (25)
+                {t('toolcatalog.filter_all', 'All (25)')}
               </button>
               <button
                 onClick={() => setFilterCategory('Shipped (v1.0)')}
                 className={`px-2.5 py-1 rounded ${filterCategory === 'Shipped (v1.0)' ? 'bg-slate-800 text-amber-400 font-semibold' : 'text-slate-400 hover:text-slate-200'}`}
               >
-                v1.0 (12)
+                {t('toolcatalog.filter_v10', 'v1.0 (12)')}
               </button>
               <button
                 onClick={() => setFilterCategory('Expansion (v1.1)')}
                 className={`px-2.5 py-1 rounded flex items-center gap-1 ${filterCategory === 'Expansion (v1.1)' ? 'bg-slate-800 text-amber-400 font-semibold' : 'text-slate-400 hover:text-slate-200'}`}
               >
-                <span>v1.1 (13)</span>
+                <span>{t('toolcatalog.filter_v11', 'v1.1 (13)')}</span>
                 {isFirmware10 && <Lock className="w-3 h-3 text-amber-400" />}
               </button>
             </div>
@@ -98,7 +100,7 @@ export const ToolCatalog: React.FC<ToolCatalogProps> = ({
           {/* Search Bar */}
           <input
             type="text"
-            placeholder="Search tools by name, sensor, or functionality..."
+            placeholder={t('toolcatalog.search_placeholder', 'Search tools by name, sensor, or functionality...')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-amber-500/50 mb-3"
@@ -142,7 +144,7 @@ export const ToolCatalog: React.FC<ToolCatalogProps> = ({
                     {!isSupported ? (
                       <span className="text-[9px] font-mono px-1.5 py-0.5 rounded border bg-amber-500/10 text-amber-400 border-amber-500/30 flex items-center gap-1 font-bold">
                         <Lock className="w-2.5 h-2.5" />
-                        FW 1.1 REQ
+                        {t('toolcatalog.fw11_required', 'FW 1.1 REQ')}
                       </span>
                     ) : (
                       <span className={`text-[9px] font-mono px-1.5 py-0.5 rounded border ${
@@ -161,18 +163,18 @@ export const ToolCatalog: React.FC<ToolCatalogProps> = ({
 
                   <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-slate-800/60 text-[10px] font-mono text-slate-400">
                     <div>
-                      <span>JUMPERS: </span>
+                      <span>{t('toolcatalog.jumpers_label', 'JUMPERS:')} </span>
                       <span className="text-amber-400 font-bold">
                         {toolJumpers.map(j => j ? '1' : '0').join('')}
                       </span>
                     </div>
 
                     {!isSupported ? (
-                      <span className="text-amber-400/90 text-[9px]">Unsupported in v1.0</span>
+                      <span className="text-amber-400/90 text-[9px]">{t('toolcatalog.unsupported_v10', 'Unsupported in v1.0')}</span>
                     ) : tool.watchdogMs ? (
                       <span className="text-amber-400/90 flex items-center gap-1">
                         <ShieldCheck className="w-3 h-3 text-amber-400" />
-                        {tool.watchdogMs}ms Watchdog
+                        {tool.watchdogMs}{t('toolcatalog.watchdog_suffix', 'ms Watchdog')}
                       </span>
                     ) : null}
                   </div>
@@ -203,10 +205,10 @@ export const ToolCatalog: React.FC<ToolCatalogProps> = ({
               onClick={onSaveToFram}
               disabled={!isToolSupportedByActiveFirmware}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 disabled:opacity-30 disabled:hover:bg-amber-500 text-slate-950 font-semibold text-xs transition shadow-md shadow-amber-500/10"
-              title={isToolSupportedByActiveFirmware ? "Save current tool setpoints into F-RAM" : "Tool unsupported in FW 1.0"}
+              title={isToolSupportedByActiveFirmware ? t('toolcatalog.save_fram_title_enabled', 'Save current tool setpoints into F-RAM') : t('toolcatalog.save_fram_title_disabled', 'Tool unsupported in FW 1.0')}
             >
               <Save className="w-3.5 h-3.5" />
-              <span>Save F-RAM</span>
+              <span>{t('toolcatalog.save_fram', 'Save F-RAM')}</span>
             </button>
           </div>
 
@@ -215,11 +217,10 @@ export const ToolCatalog: React.FC<ToolCatalogProps> = ({
             <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/40 text-slate-200 mb-4 space-y-2">
               <div className="flex items-center gap-2 text-amber-400 font-bold text-xs">
                 <AlertOctagon className="w-4 h-4 text-amber-400" />
-                UNSUPPORTED TOOL ID IN FIRMWARE v{firmwareVersion}
+                {t('toolcatalog.unsupported_title', 'UNSUPPORTED TOOL ID IN FIRMWARE v{{version}}', { version: firmwareVersion })}
               </div>
               <p className="text-xs text-slate-300 leading-relaxed">
-                Tool <strong>#{activeTool.id} ({activeTool.name})</strong> belongs to the Expansion Profile catalog (v1.1).
-                The currently active firmware (<strong>v1.0.0</strong>) only supports tools <strong>0 through 11</strong>.
+                {t('toolcatalog.unsupported_body', 'Tool #{{id}} ({{name}}) belongs to the Expansion Profile catalog (v1.1). The currently active firmware (v1.0.0) only supports tools 0 through 11.', { id: activeTool.id, name: activeTool.name })}
               </p>
               {onSwitchToFirmware11 && (
                 <button
@@ -227,7 +228,7 @@ export const ToolCatalog: React.FC<ToolCatalogProps> = ({
                   className="mt-1 w-full py-2 px-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg transition flex items-center justify-center gap-1.5"
                 >
                   <ArrowUpRight className="w-4 h-4" />
-                  Upgrade / Switch to Firmware v1.1.0 to Enable
+                  {t('toolcatalog.upgrade_button', 'Upgrade / Switch to Firmware v1.1.0 to Enable')}
                 </button>
               )}
             </div>
@@ -239,7 +240,7 @@ export const ToolCatalog: React.FC<ToolCatalogProps> = ({
               <div className="flex items-center justify-between text-xs font-mono mb-1.5">
                 <span className="text-slate-400 flex items-center gap-1">
                   <Sliders className="w-3.5 h-3.5 text-amber-400" />
-                  TARGET SETPOINT ({activeTool.heroMetricLabel})
+                  {t('toolcatalog.target_setpoint', 'TARGET SETPOINT ({{label}})', { label: activeTool.heroMetricLabel })}
                 </span>
                 <span className="text-amber-400 font-bold text-sm">
                   {setpoint.toFixed(1)} {activeTool.heroMetricUnit}
@@ -266,21 +267,21 @@ export const ToolCatalog: React.FC<ToolCatalogProps> = ({
             {/* Simulated Live Telemetry Reading Card */}
             <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between">
               <div>
-                <div className="text-[10px] font-mono text-slate-400">SIMULATED SENSOR READBACK</div>
+                <div className="text-[10px] font-mono text-slate-400">{t('toolcatalog.sim_readback', 'SIMULATED SENSOR READBACK')}</div>
                 <div className="text-xl font-bold font-mono text-cyan-300 mt-0.5">
                   {liveReading.toFixed(1)} <span className="text-xs">{activeTool.heroMetricUnit}</span>
                 </div>
               </div>
 
               <div className="text-right font-mono text-xs">
-                <div className="text-slate-400 text-[10px]">WATCHDOG</div>
+                <div className="text-slate-400 text-[10px]">{t('toolcatalog.watchdog_label', 'WATCHDOG')}</div>
                 {activeTool.watchdogMs ? (
                   <div className="text-emerald-400 font-semibold flex items-center gap-1">
                     <Radio className="w-3 h-3 animate-pulse" />
-                    {activeTool.watchdogMs}ms ACTIVE
+                    {activeTool.watchdogMs}ms {t('toolcatalog.watchdog_active', 'ACTIVE')}
                   </div>
                 ) : (
-                  <div className="text-slate-500">NO TIMEOUT</div>
+                  <div className="text-slate-500">{t('toolcatalog.watchdog_none', 'NO TIMEOUT')}</div>
                 )}
               </div>
             </div>
@@ -289,7 +290,7 @@ export const ToolCatalog: React.FC<ToolCatalogProps> = ({
             <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800/80 space-y-2">
               <div className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
                 <Info className="w-3.5 h-3.5 text-amber-400" />
-                Hardware Pin Mapping & Signals
+                {t('toolcatalog.pin_mapping_title', 'Hardware Pin Mapping & Signals')}
               </div>
               <ul className="space-y-1 text-xs font-mono text-slate-400">
                 {activeTool.pinsUsed.map((pin, i) => (
@@ -303,7 +304,7 @@ export const ToolCatalog: React.FC<ToolCatalogProps> = ({
 
             {/* Tool Profile Features */}
             <div>
-              <div className="text-xs font-semibold text-slate-300 mb-2">Firmware Capabilities</div>
+              <div className="text-xs font-semibold text-slate-300 mb-2">{t('toolcatalog.capabilities_title', 'Firmware Capabilities')}</div>
               <div className="flex flex-wrap gap-1.5">
                 {activeTool.features.map((feat, i) => (
                   <span

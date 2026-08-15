@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CanFrame } from '../types';
 import { Radio, Play, Trash2, Send, ShieldCheck, Cpu } from 'lucide-react';
 
@@ -15,6 +16,7 @@ export const CanBusAnalyzer: React.FC<CanBusAnalyzerProps> = ({
   onClearLog,
   onTriggerPreset
 }) => {
+  const { t } = useTranslation();
   const [customId, setCustomId] = useState<string>('0x100');
   const [customData, setCustomData] = useState<string>('FF 80 00 00 00 00 00 00');
   const [customDesc, setCustomDesc] = useState<string>('Host Custom Frame');
@@ -33,10 +35,10 @@ export const CanBusAnalyzer: React.FC<CanBusAnalyzerProps> = ({
           <div>
             <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
               <Radio className="w-4 h-4 text-amber-400" />
-              CAN Bus Protocol Analyzer (1 Mbps / SocketCAN / SLCAN)
+              {t('canbus.title', 'CAN Bus Protocol Analyzer (1 Mbps / SocketCAN / SLCAN)')}
             </h2>
             <p className="text-xs text-slate-400">
-              Low-Latency Real-Time Telemetry & Watchdog Pinger (docs/CANBUS.TXT)
+              {t('canbus.subtitle', 'Low-Latency Real-Time Telemetry & Watchdog Pinger (docs/CANBUS.TXT)')}
             </p>
           </div>
 
@@ -46,18 +48,18 @@ export const CanBusAnalyzer: React.FC<CanBusAnalyzerProps> = ({
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-xs border border-slate-700 transition"
             >
               <Trash2 className="w-3.5 h-3.5 text-red-400" />
-              <span>Clear Log</span>
+              <span>{t('canbus.clear_log', 'Clear Log')}</span>
             </button>
           </div>
         </div>
 
         {/* Preset Command Triggers */}
         <div className="mt-4 pt-3 border-t border-slate-800/80">
-          <div className="text-xs font-semibold text-slate-300 mb-3">Predefined URTC Protocol Messages (docs/CANBUS.TXT):</div>
-          
+          <div className="text-xs font-semibold text-slate-300 mb-3">{t('canbus.presets_title', 'Predefined URTC Protocol Messages (docs/CANBUS.TXT):')}</div>
+
           <div className="space-y-4">
             <div>
-              <div className="text-[10px] font-mono text-slate-500 mb-1.5 uppercase tracking-wider">System & Configuration</div>
+              <div className="text-[10px] font-mono text-slate-500 mb-1.5 uppercase tracking-wider">{t('canbus.category_system', 'System & Configuration')}</div>
               <div className="flex flex-wrap gap-2">
                 {[
                   { label: '0x100 Set RGB / OLED Mode', id: '0x100' },
@@ -79,7 +81,7 @@ export const CanBusAnalyzer: React.FC<CanBusAnalyzerProps> = ({
             </div>
 
             <div>
-              <div className="text-[10px] font-mono text-slate-500 mb-1.5 uppercase tracking-wider">Tool-Specific Control & Telemetry</div>
+              <div className="text-[10px] font-mono text-slate-500 mb-1.5 uppercase tracking-wider">{t('canbus.category_tool', 'Tool-Specific Control & Telemetry')}</div>
               <div className="flex flex-wrap gap-2">
                 {[
                   { label: '0x095 Touch Probe Impact', id: '0x095' },
@@ -106,7 +108,7 @@ export const CanBusAnalyzer: React.FC<CanBusAnalyzerProps> = ({
             </div>
 
             <div>
-              <div className="text-[10px] font-mono text-slate-500 mb-1.5 uppercase tracking-wider">Bootloader (CAN-OTA)</div>
+              <div className="text-[10px] font-mono text-slate-500 mb-1.5 uppercase tracking-wider">{t('canbus.category_bootloader', 'Bootloader (CAN-OTA)')}</div>
               <div className="flex flex-wrap gap-2">
                 {[
                   { label: '0x7F0 Enter Bootloader', id: '0x7F0' },
@@ -132,12 +134,12 @@ export const CanBusAnalyzer: React.FC<CanBusAnalyzerProps> = ({
       {/* Custom CAN Frame Injector */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm">
         <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider mb-3">
-          Inject Raw CAN Frame
+          {t('canbus.inject_title', 'Inject Raw CAN Frame')}
         </h3>
-        
+
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
           <div className="md:col-span-3">
-            <label className="block text-[11px] font-mono text-slate-400 mb-1">CAN ID (Hex)</label>
+            <label className="block text-[11px] font-mono text-slate-400 mb-1">{t('canbus.id_label', 'CAN ID (Hex)')}</label>
             <input
               type="text"
               value={customId}
@@ -148,7 +150,7 @@ export const CanBusAnalyzer: React.FC<CanBusAnalyzerProps> = ({
           </div>
 
           <div className="md:col-span-5">
-            <label className="block text-[11px] font-mono text-slate-400 mb-1">Data Bytes (Hex, max 8 bytes)</label>
+            <label className="block text-[11px] font-mono text-slate-400 mb-1">{t('canbus.data_label', 'Data Bytes (Hex, max 8 bytes)')}</label>
             <input
               type="text"
               value={customData}
@@ -159,12 +161,12 @@ export const CanBusAnalyzer: React.FC<CanBusAnalyzerProps> = ({
           </div>
 
           <div className="md:col-span-3">
-            <label className="block text-[11px] font-mono text-slate-400 mb-1">Description</label>
+            <label className="block text-[11px] font-mono text-slate-400 mb-1">{t('canbus.desc_label', 'Description')}</label>
             <input
               type="text"
               value={customDesc}
               onChange={(e) => setCustomDesc(e.target.value)}
-              placeholder="Custom command"
+              placeholder={t('canbus.desc_placeholder', 'Custom command')}
               className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-xs text-slate-300 focus:outline-none focus:border-amber-500"
             />
           </div>
@@ -175,7 +177,7 @@ export const CanBusAnalyzer: React.FC<CanBusAnalyzerProps> = ({
               className="w-full py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs rounded-lg transition flex items-center justify-center gap-1 shadow-md shadow-amber-500/10"
             >
               <Send className="w-3.5 h-3.5" />
-              <span>Tx</span>
+              <span>{t('canbus.tx', 'Tx')}</span>
             </button>
           </div>
         </form>
@@ -184,9 +186,9 @@ export const CanBusAnalyzer: React.FC<CanBusAnalyzerProps> = ({
       {/* CAN Log Table */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-sm">
         <div className="px-5 py-3 border-b border-slate-800 flex items-center justify-between text-xs font-mono text-slate-400">
-          <span>REAL-TIME CAN FRAME STREAM ({canFrames.length} FRAMES)</span>
+          <span>{t('canbus.stream_title', 'REAL-TIME CAN FRAME STREAM ({{count}} FRAMES)', { count: canFrames.length })}</span>
           <span className="text-emerald-400 flex items-center gap-1">
-            <ShieldCheck className="w-3.5 h-3.5" /> 1 Mbps ACTIVE
+            <ShieldCheck className="w-3.5 h-3.5" /> {t('canbus.mbps_active', '1 Mbps ACTIVE')}
           </span>
         </div>
 
@@ -194,19 +196,19 @@ export const CanBusAnalyzer: React.FC<CanBusAnalyzerProps> = ({
           <table className="w-full text-left whitespace-nowrap min-w-max">
             <thead className="bg-slate-950 text-slate-400 text-[11px] sticky top-0 border-b border-slate-800">
               <tr>
-                <th className="py-2 px-4">TIMESTAMP</th>
-                <th className="py-2 px-4">DIR</th>
-                <th className="py-2 px-4">ID (HEX)</th>
-                <th className="py-2 px-4">DLC</th>
-                <th className="py-2 px-4">DATA BYTES</th>
-                <th className="py-2 px-4">DESCRIPTION</th>
+                <th className="py-2 px-4">{t('canbus.th_timestamp', 'TIMESTAMP')}</th>
+                <th className="py-2 px-4">{t('canbus.th_dir', 'DIR')}</th>
+                <th className="py-2 px-4">{t('canbus.th_id', 'ID (HEX)')}</th>
+                <th className="py-2 px-4">{t('canbus.th_dlc', 'DLC')}</th>
+                <th className="py-2 px-4">{t('canbus.th_data', 'DATA BYTES')}</th>
+                <th className="py-2 px-4">{t('canbus.th_description', 'DESCRIPTION')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/50">
               {canFrames.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="py-8 text-center text-slate-500 italic">
-                    No CAN frames logged yet. Send a command above or toggle tools.
+                    {t('canbus.no_frames', 'No CAN frames logged yet. Send a command above or toggle tools.')}
                   </td>
                 </tr>
               ) : (

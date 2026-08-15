@@ -1,4 +1,5 @@
 import { useRef, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { FlasherState } from '../types';
 import { SerialCanBus } from './useSerialCanBus';
 import {
@@ -39,6 +40,7 @@ const initialState: FlasherState = {
 };
 
 export function useFlasher(serialCan: SerialCanBus) {
+  const { t } = useTranslation();
   const [flasherState, setFlasherState] = useState<FlasherState>(initialState);
   const [errorCounters, setErrorCounters] = useState<{ tec: number; rec: number } | null>(null);
   const stopRequestedRef = useRef(false);
@@ -71,16 +73,16 @@ export function useFlasher(serialCan: SerialCanBus) {
   // ---- Main board CAN-OTA (0x7F0-0x7F7, 0x7FD) ----
   const flashMain = useCallback(async (data: Uint8Array, opts: FlashOptions) => {
     stopRequestedRef.current = false;
-    if (data.length === 0) throw new FlashError('Firmware file is empty');
-    if (data.length > APP_MAX_SIZE) throw new FlashError(`Firmware exceeds the ${APP_MAX_SIZE} byte application slot`);
+    if (data.length === 0) throw new FlashError(t('flasher.err_empty_file', 'Firmware file is empty'));
+    if (data.length > APP_MAX_SIZE) throw new FlashError(t('flasher.err_exceeds_app_slot', 'Firmware exceeds the {{max}} byte application slot', { max: APP_MAX_SIZE }));
 
     const crc32 = getCrc32(data);
     const signature = await computeHmacSha256(data.buffer as ArrayBuffer);
 
     setFlasherState(prev => ({
       ...prev, mode: 'erasing', progress: 0,
-      statusText: '1/5: Resetting MCU into CAN bootloader...',
-      log: ['Computing CRC32 and HMAC-SHA256 over the selected image...']
+      statusText: t('flasher.status_resetting_mcu', '1/5: Resetting MCU into CAN bootloader...'),
+      log: [t('flasher.log_computing_crc', 'Computing CRC32 and HMAC-SHA256 over the selected image...')]
     }));
 
     if (opts.triggerBootloader) {
@@ -90,26 +92,26 @@ export function useFlasher(serialCan: SerialCanBus) {
       if (opts.eraseFram) {
         await serialCan.sendFrame(CAN_ID_ERASE_FRAM, ERASE_FRAM_MAGIC, 'Erase F-RAM before flashing');
         const fram = await serialCan.waitForFrame(CAN_ID_FRAM_STATE_RESP, 2000);
-        appendLog(fram ? 'F-RAM erase confirmed.' : 'F-RAM erase not confirmed within 2s (non-fatal, continuing).');
+        appendLog(fram ? t('flasher.log_fram_erase_confirmed', 'F-RAM erase confirmed.') : t('flasher.log_fram_erase_not_confirmed', 'F-RAM erase not confirmed within 2s (non-fatal, continuing).'));
       }
     }
     checkCancelled();
 
     const statusFrame = await serialCan.waitForFrame(CAN_ID_STATUS, 5000);
     if (!statusFrame || statusFrame.data[0] !== 0x01) {
-      throw new FlashError('Bootloader not responding (no LISTENING status)');
+      throw new FlashError(t('flasher.err_bootloader_not_responding', 'Bootloader not responding (no LISTENING status)'));
     }
 
-    setFlasherState(prev => ({ ...prev, mode: 'receiving', progress: 5, log: [...prev.log, 'Bootloader listening. Sending START_UPDATE...'] }));
+    setFlasherState(prev => ({ ...prev, mode: 'receiving', progress: 5, log: [...prev.log, t('flasher.log_bootloader_listening', 'Bootloader listening. Sending START_UPDATE...')] }));
     checkCancelled();
 
     await serialCan.sendFrame(CAN_ID_START_UPDATE, [...packUInt32BE(data.length), ...packUInt32BE(THIS_HARDWARE_ID)], 'START_UPDATE (size + HardwareID)');
     const status2 = await serialCan.waitForFrame(CAN_ID_STATUS, 5000);
     if (!status2 || status2.data[0] !== 0x03) {
-      throw new FlashError('Bootloader rejected update start (expected RECEIVING status)');
+      throw new FlashError(t('flasher.err_bootloader_rejected', 'Bootloader rejected update start (expected RECEIVING status)'));
     }
 
-    appendLog('Sending HMAC-SHA256 signature (4 chunks)...');
+    appendLog(t('flasher.log_hmac_sending', 'Sending HMAC-SHA256 signature (4 chunks)...'));
     for (let i = 0; i < 4; i++) {
       checkCancelled();
       await serialCan.sendFrame(CAN_ID_HMAC_CHUNK, Array.from(signature.slice(i * 8, (i + 1) * 8)), `HMAC chunk ${i + 1}/4`);
@@ -120,7 +122,7 @@ export function useFlasher(serialCan: SerialCanBus) {
       await serialCan.sendFrame(CAN_ID_AUTHORIZE_DOWNGRADE, AUTHORIZE_DOWNGRADE_MAGIC, 'Authorize downgrade (bypass anti-rollback for this attempt)');
     }
 
-    setFlasherState(prev => ({ ...prev, progress: 15, statusText: '2/5: Signature accepted. Transferring pages...' }));
+    setFlasherState(prev => ({ ...prev, progress: 15, statusText: t('flasher.status_signature_accepted', '2/5: Signature accepted. Transferring pages...') }));
 
     let offset = 0;
     let pageIndex = 0;
@@ -147,11 +149,11 @@ export function useFlasher(serialCan: SerialCanBus) {
         ack = await serialCan.waitForFrame(CAN_ID_PAGE_ACK, 3000);
       }
       if (!ack || ack.data.length < 4) {
-        throw new FlashError(`Timeout waiting for page-ACK on page ${pageIndex}`);
+        throw new FlashError(t('flasher.err_page_ack_timeout', 'Timeout waiting for page-ACK on page {{page}}', { page: pageIndex }));
       }
       const ackedPage = unpackUInt32BE(ack.data);
       if (ackedPage !== pageIndex) {
-        throw new FlashError(`Page-ACK mismatch: expected page ${pageIndex}, board acked page ${ackedPage}`);
+        throw new FlashError(t('flasher.err_page_ack_mismatch', 'Page-ACK mismatch: expected page {{expected}}, board acked page {{actual}}', { expected: pageIndex, actual: ackedPage }));
       }
 
       offset = pageEnd;
@@ -161,8 +163,8 @@ export function useFlasher(serialCan: SerialCanBus) {
 
     setFlasherState(prev => ({
       ...prev, mode: 'verifying', progress: 85,
-      statusText: '3/5: Pages written. Verifying backup slot...',
-      log: [...prev.log, 'All pages written. Sending END_UPDATE.']
+      statusText: t('flasher.status_pages_written', '3/5: Pages written. Verifying backup slot...'),
+      log: [...prev.log, t('flasher.log_all_pages_written', 'All pages written. Sending END_UPDATE.')]
     }));
 
     await serialCan.sendFrame(
@@ -171,7 +173,7 @@ export function useFlasher(serialCan: SerialCanBus) {
       'END_UPDATE (CRC32 + declared version)'
     );
 
-    setFlasherState(prev => ({ ...prev, mode: 'flashing', progress: 95, statusText: '4/5: Copying verified backup into main slot...' }));
+    setFlasherState(prev => ({ ...prev, mode: 'flashing', progress: 95, statusText: t('flasher.status_copying_backup', '4/5: Copying verified backup into main slot...') }));
 
     const deadline = Date.now() + 60000;
     let finalStatus: number | null = null;
@@ -183,42 +185,42 @@ export function useFlasher(serialCan: SerialCanBus) {
       if (frame.data[0] === 0x04) { finalStatus = 0x04; break; }
       if (frame.data[0] === 0x05) { finalStatus = 0x05; failReason = frame.data.length >= 2 ? frame.data[1] : undefined; break; }
       if (frame.data[0] === 0xFF) { finalStatus = 0xFF; break; }
-      appendLog(`Board status: 0x${frame.data[0].toString(16).padStart(2, '0')}`);
+      appendLog(t('flasher.log_board_status', 'Board status: 0x{{status}}', { status: frame.data[0].toString(16).padStart(2, '0') }));
     }
 
     if (finalStatus === 0x04) {
       setFlasherState(prev => ({
         ...prev, mode: 'idle', progress: 100,
-        statusText: `5/5: OTA update complete! Booting v${opts.reportMajor}.${opts.reportMinor}`,
-        log: [...prev.log, 'Update SUCCESS.']
+        statusText: t('flasher.status_ota_complete', '5/5: OTA update complete! Booting v{{major}}.{{minor}}', { major: opts.reportMajor, minor: opts.reportMinor }),
+        log: [...prev.log, t('flasher.log_update_success', 'Update SUCCESS.')]
       }));
       return;
     }
     if (finalStatus === 0x05) {
       const reasonText = failReason !== undefined ? (VERIFY_FAIL_REASONS[failReason] || `unknown (0x${failReason.toString(16)})`) : 'unknown';
-      throw new FlashError(`Update verification FAILED: ${reasonText}`);
+      throw new FlashError(t('flasher.err_verification_failed', 'Update verification FAILED: {{reason}}', { reason: reasonText }));
     }
     if (finalStatus === 0xFF) {
-      throw new FlashError('Bootloader reported a generic error');
+      throw new FlashError(t('flasher.err_generic_bootloader', 'Bootloader reported a generic error'));
     }
 
     // No terminal status within the window - the reset transient can eat the
     // final confirmation frame even on a fully successful flash. Re-query.
-    appendLog('No terminal status received - re-querying version to check for a silent success...');
+    appendLog(t('flasher.log_requery', 'No terminal status received - re-querying version to check for a silent success...'));
     await serialCan.sendFrame(CAN_ID_QUERY_VERSION, [0x00], 'Re-query version after timeout');
     const versionResp = await serialCan.waitForFrame(CAN_ID_VERSION_RESPONSE, 2000);
     if (versionResp && versionResp.data[0] === 0x00) {
-      setFlasherState(prev => ({ ...prev, mode: 'idle', progress: 100, statusText: 'Update likely succeeded (board answers as application).', log: [...prev.log, 'Recovered from a lost confirmation frame.'] }));
+      setFlasherState(prev => ({ ...prev, mode: 'idle', progress: 100, statusText: t('flasher.status_likely_succeeded', 'Update likely succeeded (board answers as application).'), log: [...prev.log, t('flasher.log_recovered', 'Recovered from a lost confirmation frame.')] }));
       return;
     }
-    throw new FlashError('Update did not complete within 60s and the board is not answering as application');
+    throw new FlashError(t('flasher.err_incomplete_no_answer', 'Update did not complete within 60s and the board is not answering as application'));
   }, [serialCan, appendLog]);
 
   // ---- Expansion slave OTA, relayed through the main board's I2C bridge (0x210-0x219) ----
   const flashSlave = useCallback(async (data: Uint8Array, opts: { triggerBootloader: boolean; reportMajor: number; reportMinor: number }) => {
     stopRequestedRef.current = false;
-    if (data.length === 0) throw new FlashError('Firmware file is empty');
-    if (data.length > SLAVE_APP_MAX_SIZE) throw new FlashError(`Firmware exceeds the ${SLAVE_APP_MAX_SIZE} byte slave application slot`);
+    if (data.length === 0) throw new FlashError(t('flasher.err_empty_file', 'Firmware file is empty'));
+    if (data.length > SLAVE_APP_MAX_SIZE) throw new FlashError(t('flasher.err_exceeds_slave_slot', 'Firmware exceeds the {{max}} byte slave application slot', { max: SLAVE_APP_MAX_SIZE }));
 
     const crc32 = getCrc32(data);
     // Slave board's own key, deliberately different from the master
@@ -228,7 +230,7 @@ export function useFlasher(serialCan: SerialCanBus) {
     // update sent to it.
     const signature = await computeHmacSha256(data.buffer as ArrayBuffer, SLAVE_HMAC_KEY);
 
-    setFlasherState(prev => ({ ...prev, mode: 'erasing', progress: 0, statusText: '1/5: Entering slave bootloader (relayed via I2C)...', log: ['Computing CRC32 and HMAC-SHA256 over the selected image...'] }));
+    setFlasherState(prev => ({ ...prev, mode: 'erasing', progress: 0, statusText: t('flasher.status_entering_slave_bootloader', '1/5: Entering slave bootloader (relayed via I2C)...'), log: [t('flasher.log_computing_crc', 'Computing CRC32 and HMAC-SHA256 over the selected image...')] }));
 
     if (opts.triggerBootloader) {
       await serialCan.sendFrame(CAN_ID_SLAVE_ENTER_BOOTLOADER, ENTER_BOOTLOADER_MAGIC, 'Slave: enter bootloader (relayed)');
@@ -244,19 +246,19 @@ export function useFlasher(serialCan: SerialCanBus) {
       await serialCan.sendFrame(CAN_ID_SLAVE_STATUS, [], 'Slave: query status');
       const resp = await serialCan.waitForFrame(CAN_ID_SLAVE_STATUS, 300);
       if (resp && resp.data[0] === 0x03) { receiving = true; break; }
-      if (resp && resp.data[0] === 0xFF) throw new FlashError('Slave bootloader rejected update start');
+      if (resp && resp.data[0] === 0xFF) throw new FlashError(t('flasher.err_slave_rejected', 'Slave bootloader rejected update start'));
       await new Promise(r => setTimeout(r, 200));
     }
-    if (!receiving) throw new FlashError('Timeout waiting for slave bootloader to report RECEIVING');
+    if (!receiving) throw new FlashError(t('flasher.err_slave_timeout_receiving', 'Timeout waiting for slave bootloader to report RECEIVING'));
 
-    appendLog('Sending HMAC-SHA256 signature (4 chunks)...');
+    appendLog(t('flasher.log_hmac_sending', 'Sending HMAC-SHA256 signature (4 chunks)...'));
     for (let i = 0; i < 4; i++) {
       checkCancelled();
       await serialCan.sendFrame(CAN_ID_SLAVE_HMAC_CHUNK, Array.from(signature.slice(i * 8, (i + 1) * 8)), `Slave HMAC chunk ${i + 1}/4`);
       await new Promise(r => setTimeout(r, 10));
     }
 
-    setFlasherState(prev => ({ ...prev, progress: 15, statusText: '2/5: Signature accepted. Transferring data (no page-ACK on this path)...' }));
+    setFlasherState(prev => ({ ...prev, progress: 15, statusText: t('flasher.status_slave_transferring', '2/5: Signature accepted. Transferring data (no page-ACK on this path)...') }));
 
     let offset = 0;
     let sinceLastPoll = 0;
@@ -274,11 +276,11 @@ export function useFlasher(serialCan: SerialCanBus) {
       }
     }
 
-    setFlasherState(prev => ({ ...prev, mode: 'verifying', progress: 85, statusText: '3/5: Transfer complete. Verifying...', log: [...prev.log, 'All data sent. Sending END_UPDATE.'] }));
+    setFlasherState(prev => ({ ...prev, mode: 'verifying', progress: 85, statusText: t('flasher.status_slave_verifying', '3/5: Transfer complete. Verifying...'), log: [...prev.log, t('flasher.log_slave_all_data_sent', 'All data sent. Sending END_UPDATE.')] }));
 
     await serialCan.sendFrame(CAN_ID_SLAVE_END_UPDATE, [...packUInt32BE(crc32), ...packUInt16BE(opts.reportMajor), ...packUInt16BE(opts.reportMinor)], 'Slave END_UPDATE (CRC32 + declared version)');
 
-    setFlasherState(prev => ({ ...prev, mode: 'flashing', progress: 95, statusText: '4/5: Copying verified backup into main slot...' }));
+    setFlasherState(prev => ({ ...prev, mode: 'flashing', progress: 95, statusText: t('flasher.status_copying_backup', '4/5: Copying verified backup into main slot...') }));
 
     const endDeadline = Date.now() + 60000;
     let finalStatus: number | null = null;
@@ -300,17 +302,17 @@ export function useFlasher(serialCan: SerialCanBus) {
     }
 
     if (finalStatus === 0x04) {
-      setFlasherState(prev => ({ ...prev, mode: 'idle', progress: 100, statusText: `5/5: Slave OTA update complete! v${opts.reportMajor}.${opts.reportMinor}`, log: [...prev.log, 'Slave update SUCCESS.'] }));
+      setFlasherState(prev => ({ ...prev, mode: 'idle', progress: 100, statusText: t('flasher.status_slave_complete', '5/5: Slave OTA update complete! v{{major}}.{{minor}}', { major: opts.reportMajor, minor: opts.reportMinor }), log: [...prev.log, t('flasher.log_slave_success', 'Slave update SUCCESS.')] }));
       return;
     }
     if (finalStatus === 0x05) {
       await serialCan.sendFrame(CAN_ID_SLAVE_VERIFY_FAIL_REASON, [], 'Slave: query verify-fail reason');
       const reasonFrame = await serialCan.waitForFrame(CAN_ID_SLAVE_VERIFY_FAIL_REASON, 1000);
       const reason = reasonFrame ? (VERIFY_FAIL_REASONS[reasonFrame.data[0]] || `unknown (0x${reasonFrame.data[0].toString(16)})`) : 'unknown';
-      throw new FlashError(`Slave update verification FAILED: ${reason}`);
+      throw new FlashError(t('flasher.err_slave_verification_failed', 'Slave update verification FAILED: {{reason}}', { reason }));
     }
-    if (finalStatus === 0xFF) throw new FlashError('Slave bootloader reported a generic error');
-    throw new FlashError('Slave update did not complete within 60s');
+    if (finalStatus === 0xFF) throw new FlashError(t('flasher.err_slave_generic', 'Slave bootloader reported a generic error'));
+    throw new FlashError(t('flasher.err_slave_incomplete', 'Slave update did not complete within 60s'));
   }, [serialCan, appendLog]);
 
   // ---- Backup / readback the main slot's current contents over CAN (0x7FE/0x7FF) ----
@@ -318,9 +320,9 @@ export function useFlasher(serialCan: SerialCanBus) {
     stopRequestedRef.current = false;
     await serialCan.sendFrame(CAN_ID_READBACK, [], 'Start flash readback');
     const sizeFrame = await serialCan.waitForFrame(CAN_ID_READBACK, 5000);
-    if (!sizeFrame || sizeFrame.dlc !== 4) throw new FlashError('No readback size reply - bootloader may not implement 0x7FE, or nothing valid is installed');
+    if (!sizeFrame || sizeFrame.dlc !== 4) throw new FlashError(t('flasher.err_readback_no_size', 'No readback size reply - bootloader may not implement 0x7FE, or nothing valid is installed'));
     const totalSize = unpackUInt32BE(sizeFrame.data);
-    if (totalSize === 0) throw new FlashError('Bootloader reports no valid firmware currently installed');
+    if (totalSize === 0) throw new FlashError(t('flasher.err_readback_no_firmware', 'Bootloader reports no valid firmware currently installed'));
 
     const buffer = new Uint8Array(totalSize);
     let received = 0;
@@ -329,9 +331,9 @@ export function useFlasher(serialCan: SerialCanBus) {
 
     while (received < totalSize) {
       checkCancelled();
-      if (Date.now() > overallDeadline) throw new FlashError('Readback timed out (180s overall limit)');
+      if (Date.now() > overallDeadline) throw new FlashError(t('flasher.err_readback_timeout_overall', 'Readback timed out (180s overall limit)'));
       const chunk = await serialCan.waitForFrame(CAN_ID_READBACK, 5000);
-      if (!chunk || chunk.dlc !== 8) throw new FlashError(`Timeout waiting for readback data at offset ${received}`);
+      if (!chunk || chunk.dlc !== 8) throw new FlashError(t('flasher.err_readback_timeout_offset', 'Timeout waiting for readback data at offset {{offset}}', { offset: received }));
       const n = Math.min(8, totalSize - received);
       buffer.set(chunk.data.slice(0, n), received);
       received += n;

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { HardwareState, ExpansionBoardType } from '../types';
 import { Cpu, Sliders, Sun, ShieldAlert, Zap, Radio, Database, Check } from 'lucide-react';
 
@@ -27,6 +28,7 @@ export const HardwarePanel: React.FC<HardwarePanelProps> = ({
   activeToolName,
   firmwareVersion = '1.1.0'
 }) => {
+  const { t } = useTranslation();
   const [customR, setCustomR] = useState<number>(255);
   const [customG, setCustomG] = useState<number>(128);
   const [customB, setCustomB] = useState<number>(0);
@@ -49,15 +51,15 @@ export const HardwarePanel: React.FC<HardwarePanelProps> = ({
             <div>
               <h3 className="text-base font-bold text-slate-100 flex items-center gap-2">
                 <Sliders className="w-4 h-4 text-amber-400" />
-                5-Bit Tool Identification Jumpers (ID0-ID4)
+                {t('hardware.jumpers_title', '5-Bit Tool Identification Jumpers (ID0-ID4)')}
               </h3>
               <p className="text-xs text-slate-400">
-                Hardware Solder-Jumper Matrix • Up to 32 Tool Addresses
+                {t('hardware.jumpers_subtitle', 'Hardware Solder-Jumper Matrix • Up to 32 Tool Addresses')}
               </p>
             </div>
 
             <div className="text-right font-mono">
-              <span className="text-[10px] text-slate-400 block">BINARY VALUE</span>
+              <span className="text-[10px] text-slate-400 block">{t('hardware.binary_value', 'BINARY VALUE')}</span>
               <span className="text-amber-400 font-bold text-sm">
                 0b{hardwareState.jumpers.map(j => j ? '1' : '0').join('')} ({jumperDecimal})
               </span>
@@ -80,7 +82,7 @@ export const HardwarePanel: React.FC<HardwarePanelProps> = ({
                   <span className={`w-8 h-6 rounded text-[10px] font-mono font-bold flex items-center justify-center transition-all ${
                     state ? 'bg-slate-950 text-amber-400' : 'bg-slate-800 text-slate-500'
                   }`}>
-                    {state ? 'ON' : 'OFF'}
+                    {state ? t('hardware.on', 'ON') : t('hardware.off', 'OFF')}
                   </span>
                   <span className="text-[9px] font-mono text-slate-400">2^{idx}</span>
                 </button>
@@ -92,11 +94,10 @@ export const HardwarePanel: React.FC<HardwarePanelProps> = ({
           {isUnsupportedJumperInFW10 && (
             <div className="p-3.5 rounded-lg bg-red-500/10 border border-red-500/30 text-xs text-red-200 space-y-1 my-2">
               <div className="font-bold text-red-400">
-                ⚠️ UNSUPPORTED JUMPER ID #{effectiveToolId} IN FIRMWARE v1.0.0
+                {t('hardware.unsupported_banner_title', '⚠️ UNSUPPORTED JUMPER ID #{{id}} IN FIRMWARE v1.0.0', { id: effectiveToolId })}
               </div>
               <p className="text-[11px] text-slate-300">
-                Jumpers select Tool ID #{effectiveToolId} ({activeToolName}). Firmware 1.0 only supports IDs 0 to 11.
-                Flash Firmware v1.1.0 in Flasher Studio to use this tool profile.
+                {t('hardware.unsupported_banner_body', 'Jumpers select Tool ID #{{id}} ({{name}}). Firmware 1.0 only supports IDs 0 to 11. Flash Firmware v1.1.0 in Flasher Studio to use this tool profile.', { id: effectiveToolId, name: activeToolName })}
               </p>
             </div>
           )}
@@ -105,14 +106,14 @@ export const HardwarePanel: React.FC<HardwarePanelProps> = ({
             <div className="p-3.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200 space-y-2">
               <div className="flex items-center gap-2 font-semibold text-amber-300">
                 <Database className="w-4 h-4 text-amber-400" />
-                Special Free Configuration Mode (Jumper 11111) Active
+                {t('hardware.free_config_title', 'Special Free Configuration Mode (Jumper 11111) Active')}
               </div>
               <p className="text-[11px] text-slate-300">
-                The jumper matrix is set to 31 (11111). The hardware reads the tool profile dynamically from F-RAM register <code className="text-amber-400">0x1A2</code> instead of physical jumpers.
+                {t('hardware.free_config_body', 'The jumper matrix is set to 31 (11111). The hardware reads the tool profile dynamically from F-RAM register 0x1A2 instead of physical jumpers.')}
               </p>
-              
+
               <div className="flex items-center gap-2 pt-1">
-                <span className="text-[11px] font-mono text-slate-400">Override F-RAM Tool ID:</span>
+                <span className="text-[11px] font-mono text-slate-400">{t('hardware.override_fram_label', 'Override F-RAM Tool ID:')}</span>
                 <select
                   value={hardwareState.freeConfigFramId}
                   onChange={(e) => onSetFreeConfigId(parseInt(e.target.value))}
@@ -120,7 +121,7 @@ export const HardwarePanel: React.FC<HardwarePanelProps> = ({
                 >
                   {Array.from({ length: 25 }, (_, i) => (
                     <option key={i} value={i}>
-                      Tool #{i}
+                      {t('hardware.tool_option', 'Tool #{{id}}', { id: i })}
                     </option>
                   ))}
                 </select>
@@ -128,8 +129,8 @@ export const HardwarePanel: React.FC<HardwarePanelProps> = ({
             </div>
           ) : (
             <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800/80 text-xs text-slate-300 flex items-center justify-between">
-              <span>Mapped Profile: <strong className="text-amber-300">{activeToolName}</strong></span>
-              <span className="text-[10px] font-mono text-slate-500">Hardware Profile Direct Match</span>
+              <span>{t('hardware.mapped_profile', 'Mapped Profile:')} <strong className="text-amber-300">{activeToolName}</strong></span>
+              <span className="text-[10px] font-mono text-slate-500">{t('hardware.hardware_match', 'Hardware Profile Direct Match')}</span>
             </div>
           )}
 
@@ -144,7 +145,7 @@ export const HardwarePanel: React.FC<HardwarePanelProps> = ({
               }`}
             >
               <ShieldAlert className="w-4 h-4" />
-              <span>{hardwareState.systemError ? 'CLEAR HARDWARE FAULT' : 'TRIGGER SIMULATED FAULT (RED LED PRIORITY)'}</span>
+              <span>{hardwareState.systemError ? t('hardware.clear_fault', 'CLEAR HARDWARE FAULT') : t('hardware.trigger_fault', 'TRIGGER SIMULATED FAULT (RED LED PRIORITY)')}</span>
             </button>
           </div>
         </div>
@@ -157,30 +158,30 @@ export const HardwarePanel: React.FC<HardwarePanelProps> = ({
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm">
           <h3 className="text-base font-bold text-slate-100 flex items-center gap-2 mb-3">
             <Zap className="w-4 h-4 text-amber-400" />
-            Digital Status LED & 8-LED Camera Ring
+            {t('hardware.status_ring_title', 'Digital Status LED & 8-LED Camera Ring')}
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            
+
             {/* Status LED Controls */}
             <div className="p-3.5 bg-slate-950 border border-slate-800 rounded-xl space-y-3">
-              <div className="text-xs font-semibold text-slate-300">Status LED (CONN_LED1)</div>
-              
+              <div className="text-xs font-semibold text-slate-300">{t('hardware.status_led_label', 'Status LED (CONN_LED1)')}</div>
+
               <div className="text-[11px] text-slate-400 space-y-1">
                 <div className="flex items-center gap-1.5 text-red-400">
-                  <span className="w-2 h-2 rounded-full bg-red-500" /> 1. Fault Active (Red)
+                  <span className="w-2 h-2 rounded-full bg-red-500" /> {t('hardware.fault_priority', '1. Fault Active (Red)')}
                 </div>
                 <div className="flex items-center gap-1.5 text-blue-400">
-                  <span className="w-2 h-2 rounded-full bg-blue-500" /> 2. CAN Active &lt;1.5s (Blue)
+                  <span className="w-2 h-2 rounded-full bg-blue-500" /> {t('hardware.can_priority', '2. CAN Active <1.5s (Blue)')}
                 </div>
                 <div className="flex items-center gap-1.5 text-emerald-400">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500" /> 3. Idle Timeout &gt;1.5s (Green)
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" /> {t('hardware.idle_priority', '3. Idle Timeout >1.5s (Green)')}
                 </div>
               </div>
 
               {/* RGB Override Simulator */}
               <div className="pt-2 border-t border-slate-800 space-y-2">
-                <div className="text-[11px] font-mono text-slate-400">CAN 0x100 RGB Override (10s)</div>
+                <div className="text-[11px] font-mono text-slate-400">{t('hardware.rgb_override_label', 'CAN 0x100 RGB Override (10s)')}</div>
                 <div className="flex items-center gap-2">
                   <input
                     type="color"
@@ -197,7 +198,7 @@ export const HardwarePanel: React.FC<HardwarePanelProps> = ({
                     onClick={() => onLedOverride(customR, customG, customB)}
                     className="flex-1 py-1.5 bg-amber-500 text-slate-950 font-semibold text-xs rounded hover:bg-amber-400 transition"
                   >
-                    Send 0x100 Override
+                    {t('hardware.send_override', 'Send 0x100 Override')}
                   </button>
                 </div>
 
@@ -206,7 +207,7 @@ export const HardwarePanel: React.FC<HardwarePanelProps> = ({
                     onClick={onResetLedAuto}
                     className="w-full py-1 text-[10px] font-mono bg-slate-800 text-slate-300 rounded hover:bg-slate-700"
                   >
-                    Reset to Auto Mode
+                    {t('hardware.reset_auto', 'Reset to Auto Mode')}
                   </button>
                 )}
               </div>
@@ -216,7 +217,7 @@ export const HardwarePanel: React.FC<HardwarePanelProps> = ({
             <div className="p-3.5 bg-slate-950 border border-slate-800 rounded-xl space-y-3">
               <div className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
                 <Sun className="w-4 h-4 text-amber-400" />
-                8-Pixel Ring (AOI Lighting)
+                {t('hardware.ring_title', '8-Pixel Ring (AOI Lighting)')}
               </div>
 
               {/* 8 Pixel Ring Visualizer */}
@@ -240,13 +241,13 @@ export const HardwarePanel: React.FC<HardwarePanelProps> = ({
                       />
                     );
                   })}
-                  <span className="text-[9px] font-mono text-slate-500">RING</span>
+                  <span className="text-[9px] font-mono text-slate-500">{t('hardware.ring_center_label', 'RING')}</span>
                 </div>
               </div>
 
               <div>
                 <div className="flex justify-between text-[11px] font-mono text-slate-400 mb-1">
-                  <span>BRIGHTNESS</span>
+                  <span>{t('hardware.brightness_label', 'BRIGHTNESS')}</span>
                   <span className="text-amber-400 font-bold">{hardwareState.ringLedBrightness}%</span>
                 </div>
                 <input
@@ -267,19 +268,19 @@ export const HardwarePanel: React.FC<HardwarePanelProps> = ({
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm">
           <h3 className="text-base font-bold text-slate-100 flex items-center gap-2 mb-2">
             <Cpu className="w-4 h-4 text-amber-400" />
-            20-Pin Expansion Connector Variant
+            {t('hardware.expansion_title', '20-Pin Expansion Connector Variant')}
           </h3>
           <p className="text-xs text-slate-400 mb-3">
-            Select expansion board topology (Basic vs Advanced with STM32F303CB Slave + Sensors)
+            {t('hardware.expansion_subtitle', 'Select expansion board topology (Basic vs Advanced with STM32F303CB Slave + Sensors)')}
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {[
-              { id: 'none', label: 'None (Main Board Standalone)', motor: 'Internal TMC2209 (2.0A)' },
-              { id: 'basic_tmc2209', label: 'Basic Expansion (TMC2209)', motor: 'Aux Stepper (2.0A)' },
-              { id: 'basic_tmc5160a', label: 'Basic Expansion (TMC5160A)', motor: 'High-Current Stepper (10.0A)' },
-              { id: 'advanced_tmc2209', label: 'Advanced Slave (TMC2209 + Sensors)', motor: 'Aux Stepper + ADS1115/MLX90640' },
-              { id: 'advanced_tmc5160a', label: 'Advanced Slave (TMC5160A 10A + Sensors)', motor: '10A Stepper + ADS1115/MLX90640' }
+              { id: 'none', label: t('hardware.exp_none_label', 'None (Main Board Standalone)'), motor: t('hardware.exp_none_motor', 'Internal TMC2209 (2.0A)') },
+              { id: 'basic_tmc2209', label: t('hardware.exp_basic2209_label', 'Basic Expansion (TMC2209)'), motor: t('hardware.exp_basic2209_motor', 'Aux Stepper (2.0A)') },
+              { id: 'basic_tmc5160a', label: t('hardware.exp_basic5160_label', 'Basic Expansion (TMC5160A)'), motor: t('hardware.exp_basic5160_motor', 'High-Current Stepper (10.0A)') },
+              { id: 'advanced_tmc2209', label: t('hardware.exp_adv2209_label', 'Advanced Slave (TMC2209 + Sensors)'), motor: t('hardware.exp_adv2209_motor', 'Aux Stepper + ADS1115/MLX90640') },
+              { id: 'advanced_tmc5160a', label: t('hardware.exp_adv5160_label', 'Advanced Slave (TMC5160A 10A + Sensors)'), motor: t('hardware.exp_adv5160_motor', '10A Stepper + ADS1115/MLX90640') }
             ].map(opt => (
               <button
                 key={opt.id}

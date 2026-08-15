@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ShieldCheck, Download, Usb, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { HardwareState, CanFrame } from '../types';
 import { CAN_ID_QUERY_ACTIVE_TOOL, CAN_ID_ACTIVE_TOOL_RESP, TOOL_NAMES, MOTION_TOOL_IDS, NO_HANDLER_TOOL_IDS, CAN_ID_CRIMPING_CMD, CAN_ID_MOTION_CMD } from '../lib/canIds';
@@ -29,6 +30,7 @@ export const TesterStudio: React.FC<TesterStudioProps> = ({
   hardwareState, activeToolId, activeToolName, canFrames, isConnected,
   onSendFrame, onWaitForFrame, subscribe, subscribeAll
 }) => {
+  const { t } = useTranslation();
   const [subTab, setSubTab] = useState<SubTab>('tool');
   const [detected, setDetected] = useState<{ hardwareId: number; toolId: number } | null>(null);
 
@@ -81,18 +83,18 @@ export const TesterStudio: React.FC<TesterStudioProps> = ({
       case 22: return <ThermalInspectionPanel ctx={ctx} />;
       case 23: return <PasteJettingPanel ctx={ctx} />;
       case 24: return <WeldPanel ctx={ctx} cmdId={CAN_ID_WELD_ULTRASONIC_CMD} label="Ultrasonic Welder" gated={false} />;
-      default: return <div className="text-xs text-slate-500 p-4">No panel implemented for tool #{activeToolId}.</div>;
+      default: return <div className="text-xs text-slate-500 p-4">{t('tester.no_panel', 'No panel implemented for tool #{{id}}.', { id: activeToolId })}</div>;
     }
   };
 
   const tabs: { id: SubTab; label: string }[] = [
-    { id: 'tool', label: `Active Tool (${activeToolName})` },
-    { id: 'global', label: 'Global Controls' },
-    { id: 'expansion', label: 'Expansion Board' },
-    { id: 'fram', label: 'F-RAM' },
-    { id: 'selftest', label: 'Self-Test' },
-    { id: 'bus', label: 'Bus Monitor' },
-    { id: 'custom', label: 'Custom Frame' },
+    { id: 'tool', label: t('tester.tab_tool', 'Active Tool ({{name}})', { name: activeToolName }) },
+    { id: 'global', label: t('tester.tab_global', 'Global Controls') },
+    { id: 'expansion', label: t('tester.tab_expansion', 'Expansion Board') },
+    { id: 'fram', label: t('tester.tab_fram', 'F-RAM') },
+    { id: 'selftest', label: t('tester.tab_selftest', 'Self-Test') },
+    { id: 'bus', label: t('tester.tab_bus', 'Bus Monitor') },
+    { id: 'custom', label: t('tester.tab_custom', 'Custom Frame') },
   ];
 
   return (
@@ -105,31 +107,31 @@ export const TesterStudio: React.FC<TesterStudioProps> = ({
               <Usb className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-100">URTC Tester Studio</h2>
-              <p className="text-xs text-slate-400">Serial SLCAN Interface &bull; {isConnected ? 'connected' : 'not connected (use the header button)'}</p>
+              <h2 className="text-base font-bold text-slate-100">{t('tester.title', 'URTC Tester Studio')}</h2>
+              <p className="text-xs text-slate-400">{t('tester.subtitle_prefix', 'Serial SLCAN Interface •')} {isConnected ? t('tester.status_connected', 'connected') : t('tester.status_disconnected', 'not connected (use the header button)')}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
             {hardwareState.systemError && (
               <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-950/80 text-red-400 border border-red-800/80 font-semibold text-xs animate-pulse">
-                <AlertTriangle className="w-4 h-4" /> CRITICAL ERROR DECLARED
+                <AlertTriangle className="w-4 h-4" /> {t('tester.critical_error', 'CRITICAL ERROR DECLARED')}
               </div>
             )}
             <button onClick={handleDetectHardware} disabled={!isConnected} className="px-5 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200 font-bold text-xs rounded-lg transition border border-slate-700 flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4" /> Detect Hardware
+              <ShieldCheck className="w-4 h-4" /> {t('tester.detect_button', 'Detect Hardware')}
             </button>
             <button onClick={exportDebugBundle} className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-lg transition border border-slate-700 flex items-center gap-2">
-              <Download className="w-4 h-4" /> Export Debug Bundle
+              <Download className="w-4 h-4" /> {t('tester.export_button', 'Export Debug Bundle')}
             </button>
           </div>
         </div>
 
         {detected && (
           <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] font-mono">
-            <div className="p-2 rounded bg-slate-950 border border-slate-800"><div className="text-slate-500">HardwareID</div><div className={detected.hardwareId === THIS_HARDWARE_ID ? 'text-emerald-400' : 'text-red-400'}>0x{detected.hardwareId.toString(16).toUpperCase().padStart(8, '0')}</div></div>
-            <div className="p-2 rounded bg-slate-950 border border-slate-800"><div className="text-slate-500">Active Tool</div><div className="text-slate-200">#{detected.toolId} ({TOOL_NAMES[detected.toolId] ?? '?'})</div></div>
-            <div className="p-2 rounded bg-slate-950 border border-slate-800"><div className="text-slate-500">Board State</div><div className={hardwareState.systemError ? 'text-red-400' : 'text-emerald-400'}>{hardwareState.systemError ? 'FAULT' : 'OK'}</div></div>
-            <div className="p-2 rounded bg-slate-950 border border-slate-800"><div className="text-slate-500">ID Jumpers</div><div className="text-slate-200 flex gap-1">{hardwareState.jumpers.slice().reverse().map((v, i) => <span key={i} className={v ? 'text-emerald-400' : 'text-slate-600'}>{v ? '1' : '0'}</span>)}</div></div>
+            <div className="p-2 rounded bg-slate-950 border border-slate-800"><div className="text-slate-500">{t('tester.hw_id_label', 'HardwareID')}</div><div className={detected.hardwareId === THIS_HARDWARE_ID ? 'text-emerald-400' : 'text-red-400'}>0x{detected.hardwareId.toString(16).toUpperCase().padStart(8, '0')}</div></div>
+            <div className="p-2 rounded bg-slate-950 border border-slate-800"><div className="text-slate-500">{t('tester.active_tool_label', 'Active Tool')}</div><div className="text-slate-200">#{detected.toolId} ({TOOL_NAMES[detected.toolId] ?? '?'})</div></div>
+            <div className="p-2 rounded bg-slate-950 border border-slate-800"><div className="text-slate-500">{t('tester.board_state_label', 'Board State')}</div><div className={hardwareState.systemError ? 'text-red-400' : 'text-emerald-400'}>{hardwareState.systemError ? t('tester.state_fault', 'FAULT') : t('tester.state_ok', 'OK')}</div></div>
+            <div className="p-2 rounded bg-slate-950 border border-slate-800"><div className="text-slate-500">{t('tester.id_jumpers_label', 'ID Jumpers')}</div><div className="text-slate-200 flex gap-1">{hardwareState.jumpers.slice().reverse().map((v, i) => <span key={i} className={v ? 'text-emerald-400' : 'text-slate-600'}>{v ? '1' : '0'}</span>)}</div></div>
           </div>
         )}
       </div>

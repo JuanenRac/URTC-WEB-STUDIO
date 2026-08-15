@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Cpu, Tv, Radio, RefreshCw, Thermometer, FileText, ShieldCheck } from 'lucide-react';
 
 interface SidebarProps {
@@ -7,6 +8,7 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
+  const { t } = useTranslation();
   return (
     <aside className="w-16 md:w-48 lg:w-56 flex-shrink-0 border-r border-slate-800 bg-slate-900/50 hidden sm:block">
       <nav className="flex flex-col gap-1 p-2 sticky top-[60px]">
@@ -19,7 +21,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
           }`}
         >
           <Cpu className="w-5 h-5" />
-          <span className="hidden md:inline">Tool Matrix & Control</span>
+          <span className="hidden md:inline">{t('sidebar.nav_control', 'Tool Matrix & Control')}</span>
         </button>
 
         <button
@@ -31,7 +33,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
           }`}
         >
           <Tv className="w-5 h-5" />
-          <span className="hidden md:inline">OLED & Hardware Monitor</span>
+          <span className="hidden md:inline">{t('sidebar.nav_oled', 'OLED & Hardware Monitor')}</span>
         </button>
 
         <button
@@ -43,7 +45,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
           }`}
         >
           <Radio className="w-5 h-5" />
-          <span className="hidden md:inline">CAN Bus Protocol Analyzer</span>
+          <span className="hidden md:inline">{t('sidebar.nav_can', 'CAN Bus Protocol Analyzer')}</span>
         </button>
 
         <button
@@ -55,7 +57,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
           }`}
         >
           <RefreshCw className="w-5 h-5" />
-          <span className="hidden md:inline">Firmware OTA / Flasher</span>
+          <span className="hidden md:inline">{t('sidebar.nav_flasher', 'Firmware OTA / Flasher')}</span>
         </button>
 
         <button
@@ -67,7 +69,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
           }`}
         >
           <Thermometer className="w-5 h-5" />
-          <span className="hidden md:inline">Thermal IR Inspection</span>
+          <span className="hidden md:inline">{t('sidebar.nav_thermal', 'Thermal IR Inspection')}</span>
         </button>
 
         <button
@@ -79,7 +81,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
           }`}
         >
           <FileText className="w-5 h-5" />
-          <span className="hidden md:inline">BOM & Hardware Pinouts</span>
+          <span className="hidden md:inline">{t('sidebar.nav_specs', 'BOM & Hardware Pinouts')}</span>
         </button>
 
         <button
@@ -91,7 +93,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
           }`}
         >
           <ShieldCheck className="w-5 h-5" />
-          <span className="hidden md:inline">Tester Diagnostics</span>
+          <span className="hidden md:inline">{t('sidebar.nav_tester', 'Tester Diagnostics')}</span>
         </button>
       </nav>
     </aside>

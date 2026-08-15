@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { CanFrame } from '../../types';
 import { useKeepalive } from '../../hooks/useKeepalive';
 import { Section, Field, inputCls, btnCls, btnPrimaryCls, safeInt } from './shared';
@@ -17,6 +18,7 @@ import { THIS_HARDWARE_ID, CAN_ID_QUERY_VERSION, CAN_ID_VERSION_RESPONSE } from 
 
 // ---- Global Controls (0x100) ----
 export const GlobalControlsPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
+  const { t } = useTranslation();
   const [statusColor, setStatusColor] = useState({ r: 0, g: 200, b: 255 });
   const [oledMode, setOledMode] = useState<'standard' | 'night' | 'standby'>('standard');
   const [ringColor, setRingColor] = useState({ r: 255, g: 255, b: 255 });
@@ -31,10 +33,10 @@ export const GlobalControlsPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   };
 
   return (
-    <Section title="Global Controls (0x100)" subtitle="Firmware-side override auto-reverts after 10s of silence - low stakes if it lapses, so this is a plain one-shot Send.">
+    <Section title={t('testerglobal.global_title', 'Global Controls (0x100)')} subtitle={t('testerglobal.global_subtitle', 'Firmware-side override auto-reverts after 10s of silence - low stakes if it lapses, so this is a plain one-shot Send.')}>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <div className="text-xs font-semibold text-slate-300 mb-2">Status LED (WS2812B)</div>
+          <div className="text-xs font-semibold text-slate-300 mb-2">{t('testerglobal.status_led_label', 'Status LED (WS2812B)')}</div>
           <div className="flex gap-2">
             {(['r', 'g', 'b'] as const).map(ch => (
               <Field key={ch} label={ch.toUpperCase()}>
@@ -42,16 +44,16 @@ export const GlobalControlsPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
               </Field>
             ))}
           </div>
-          <Field label="OLED mode">
+          <Field label={t('testerglobal.oled_mode_label', 'OLED mode')}>
             <select value={oledMode} onChange={(e) => setOledMode(e.target.value as any)} className={inputCls}>
-              <option value="standard">Standard</option>
-              <option value="night">Night</option>
-              <option value="standby">Standby</option>
+              <option value="standard">{t('testerglobal.oled_standard', 'Standard')}</option>
+              <option value="night">{t('testerglobal.oled_night', 'Night')}</option>
+              <option value="standby">{t('testerglobal.oled_standby', 'Standby')}</option>
             </select>
           </Field>
         </div>
         <div>
-          <div className="text-xs font-semibold text-slate-300 mb-2">Camera Ring LED</div>
+          <div className="text-xs font-semibold text-slate-300 mb-2">{t('testerglobal.ring_led_label', 'Camera Ring LED')}</div>
           <div className="flex gap-2">
             {(['r', 'g', 'b'] as const).map(ch => (
               <Field key={ch} label={ch.toUpperCase()}>
@@ -60,12 +62,12 @@ export const GlobalControlsPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
             ))}
           </div>
           <label className="flex items-center gap-2 text-xs text-slate-300 mt-2 cursor-pointer">
-            <input type="checkbox" checked={ringOn} onChange={(e) => setRingOn(e.target.checked)} className="accent-purple-500" /> Ring on
+            <input type="checkbox" checked={ringOn} onChange={(e) => setRingOn(e.target.checked)} className="accent-purple-500" /> {t('testerglobal.ring_on', 'Ring on')}
           </label>
         </div>
       </div>
       <div className="mt-3">
-        <button className={btnPrimaryCls} onClick={send} disabled={!ctx.isConnected}>Send</button>
+        <button className={btnPrimaryCls} onClick={send} disabled={!ctx.isConnected}>{t('testerglobal.send', 'Send')}</button>
       </div>
     </Section>
   );
@@ -73,6 +75,7 @@ export const GlobalControlsPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
 
 // ---- Expansion Board (SPI + DIAG0) ----
 export const ExpansionBoardPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
+  const { t } = useTranslation();
   const [txHex, setTxHex] = useState('01 02 03');
   const [spiResult, setSpiResult] = useState<string | null>(null);
   const [diag0, setDiag0] = useState<boolean | null>(null);
@@ -108,26 +111,26 @@ export const ExpansionBoardPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <Section title="SPI Passthrough (0x180/0x181) + TMC DIAG0 (0x182/0x183)">
+      <Section title={t('testerglobal.spi_title', 'SPI Passthrough (0x180/0x181) + TMC DIAG0 (0x182/0x183)')}>
         <div className="flex items-end gap-2 mb-2">
-          <Field label="TX bytes (hex, up to 7)"><input value={txHex} onChange={(e) => setTxHex(e.target.value)} className={inputCls} /></Field>
-          <button className={btnCls} onClick={sendSpi}>Send</button>
+          <Field label={t('testerglobal.tx_bytes_label', 'TX bytes (hex, up to 7)')}><input value={txHex} onChange={(e) => setTxHex(e.target.value)} className={inputCls} /></Field>
+          <button className={btnCls} onClick={sendSpi}>{t('testerglobal.send', 'Send')}</button>
         </div>
-        <div className="text-xs text-slate-400 mb-3">Reply: <span className="font-mono text-slate-200">{spiResult ?? '--'}</span></div>
+        <div className="text-xs text-slate-400 mb-3">{t('testerglobal.reply_label', 'Reply:')} <span className="font-mono text-slate-200">{spiResult ?? '--'}</span></div>
         <div className="flex items-center gap-3">
-          <button className={btnCls} onClick={queryDiag0}>Query DIAG0</button>
+          <button className={btnCls} onClick={queryDiag0}>{t('testerglobal.query_diag0', 'Query DIAG0')}</button>
           <span className={`text-xs font-mono ${diag0 === null ? 'text-slate-500' : diag0 ? 'text-red-400' : 'text-emerald-400'}`}>
-            {diag0 === null ? '--' : diag0 ? 'HIGH - stall/error asserted' : 'LOW'}
+            {diag0 === null ? '--' : diag0 ? t('testerglobal.diag0_high', 'HIGH - stall/error asserted') : t('testerglobal.diag0_low', 'LOW')}
           </span>
         </div>
       </Section>
-      <Section title="Board Identity (read-only)" subtitle="Written from URTC Flasher - read here for diagnostics.">
+      <Section title={t('testerglobal.identity_title', 'Board Identity (read-only)')} subtitle={t('testerglobal.identity_subtitle', 'Written from URTC Flasher - read here for diagnostics.')}>
         <div className="flex items-center gap-3 mb-2">
-          <button className={btnCls} onClick={queryExpansionType}>Query Expansion Type</button>
+          <button className={btnCls} onClick={queryExpansionType}>{t('testerglobal.query_expansion_type', 'Query Expansion Type')}</button>
           <span className="text-xs font-mono text-slate-200">{expansionType !== null ? EXPANSION_BOARD_TYPES[expansionType] ?? expansionType : '--'}</span>
         </div>
         <div className="flex items-center gap-3">
-          <button className={btnCls} onClick={queryMlxVariant}>Query MLX Variant</button>
+          <button className={btnCls} onClick={queryMlxVariant}>{t('testerglobal.query_mlx_variant', 'Query MLX Variant')}</button>
           <span className="text-xs font-mono text-slate-200">{mlxVariant !== null ? MLX_SENSOR_VARIANTS[mlxVariant] ?? mlxVariant : '--'}</span>
         </div>
       </Section>
@@ -137,6 +140,7 @@ export const ExpansionBoardPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
 
 // ---- F-RAM ----
 export const FramPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
+  const { t } = useTranslation();
   const [state, setState] = useState<{ valid: number; toolId: number; hadError: number; temp: number; speed: number; dirOrInterlock: number; fan: number } | null>(null);
 
   const query = async () => {
@@ -149,7 +153,7 @@ export const FramPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   };
 
   const erase = async () => {
-    if (!window.confirm('Erase F-RAM saved state? This wipes the board\'s persisted tool setpoints.')) return;
+    if (!window.confirm(t('testerglobal.erase_confirm', "Erase F-RAM saved state? This wipes the board's persisted tool setpoints."))) return;
     await ctx.sendFrame(CAN_ID_ERASE_FRAM, ERASE_FRAM_MAGIC, 'Erase F-RAM');
     await query();
   };
@@ -157,17 +161,17 @@ export const FramPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   useEffect(() => { if (ctx.isConnected) query(); }, [ctx.isConnected]);
 
   return (
-    <Section title="F-RAM Saved State (0x190/0x191, erase 0x192)">
+    <Section title={t('testerglobal.fram_title', 'F-RAM Saved State (0x190/0x191, erase 0x192)')}>
       <div className="flex items-center gap-3 mb-3">
-        <button className={btnCls} onClick={query}>Query</button>
-        <button className={btnCls} onClick={erase}>Erase F-RAM</button>
+        <button className={btnCls} onClick={query}>{t('testerglobal.query', 'Query')}</button>
+        <button className={btnCls} onClick={erase}>{t('testerglobal.erase_fram', 'Erase F-RAM')}</button>
       </div>
       {state && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] font-mono">
-          <div className="p-2 rounded bg-slate-950 border border-slate-800"><div className="text-slate-500">Valid</div><div className="text-slate-200">{state.valid}</div></div>
-          <div className="p-2 rounded bg-slate-950 border border-slate-800"><div className="text-slate-500">Tool ID</div><div className="text-slate-200">{state.toolId} ({TOOL_NAMES[state.toolId] ?? '?'})</div></div>
-          <div className="p-2 rounded bg-slate-950 border border-slate-800"><div className="text-slate-500">Had error</div><div className={state.hadError ? 'text-red-400' : 'text-slate-200'}>{state.hadError ? 'yes' : 'no'}</div></div>
-          <div className="p-2 rounded bg-slate-950 border border-slate-800"><div className="text-slate-500">Temp</div><div className="text-slate-200">{state.temp}</div></div>
+          <div className="p-2 rounded bg-slate-950 border border-slate-800"><div className="text-slate-500">{t('testerglobal.fram_valid', 'Valid')}</div><div className="text-slate-200">{state.valid}</div></div>
+          <div className="p-2 rounded bg-slate-950 border border-slate-800"><div className="text-slate-500">{t('testerglobal.fram_tool_id', 'Tool ID')}</div><div className="text-slate-200">{state.toolId} ({TOOL_NAMES[state.toolId] ?? '?'})</div></div>
+          <div className="p-2 rounded bg-slate-950 border border-slate-800"><div className="text-slate-500">{t('testerglobal.fram_had_error', 'Had error')}</div><div className={state.hadError ? 'text-red-400' : 'text-slate-200'}>{state.hadError ? t('testerglobal.fram_had_error_yes', 'yes') : t('testerglobal.fram_had_error_no', 'no')}</div></div>
+          <div className="p-2 rounded bg-slate-950 border border-slate-800"><div className="text-slate-500">{t('testerglobal.fram_temp', 'Temp')}</div><div className="text-slate-200">{state.temp}</div></div>
         </div>
       )}
     </Section>
@@ -185,6 +189,7 @@ const SELF_TEST_STEPS: Record<number, { run: (ctx: ToolCtx, log: (s: string) => 
 };
 
 export const SelfTestPanel: React.FC<{ ctx: ToolCtx; activeToolId: number }> = ({ ctx, activeToolId }) => {
+  const { t } = useTranslation();
   const [log, setLog] = useState<string[]>([]);
   const [running, setRunning] = useState(false);
   const append = (s: string) => setLog(prev => [...prev, s]);
@@ -216,10 +221,10 @@ export const SelfTestPanel: React.FC<{ ctx: ToolCtx; activeToolId: number }> = (
   };
 
   return (
-    <Section title="Self-Test" subtitle="Safe, at-rest values only (0-power/0-temp) - never actuates anything beyond a stopped state.">
-      <button className={btnPrimaryCls} onClick={run} disabled={running || !ctx.isConnected}>{running ? 'Running...' : 'Run Self-Test'}</button>
+    <Section title={t('testerglobal.selftest_title', 'Self-Test')} subtitle={t('testerglobal.selftest_subtitle', 'Safe, at-rest values only (0-power/0-temp) - never actuates anything beyond a stopped state.')}>
+      <button className={btnPrimaryCls} onClick={run} disabled={running || !ctx.isConnected}>{running ? t('testerglobal.running', 'Running...') : t('testerglobal.run_selftest', 'Run Self-Test')}</button>
       <div className="mt-3 bg-slate-950 border border-slate-800 rounded p-3 font-mono text-[11px] text-slate-300 space-y-1 max-h-48 overflow-y-auto">
-        {log.length === 0 ? <div className="text-slate-600 italic">No results yet.</div> : log.map((l, i) => <div key={i} className={l.startsWith('FAIL') ? 'text-red-400' : l.startsWith('PASS') ? 'text-emerald-400' : 'text-slate-400'}>{l}</div>)}
+        {log.length === 0 ? <div className="text-slate-600 italic">{t('testerglobal.no_results', 'No results yet.')}</div> : log.map((l, i) => <div key={i} className={l.startsWith('FAIL') ? 'text-red-400' : l.startsWith('PASS') ? 'text-emerald-400' : 'text-slate-400'}>{l}</div>)}
       </div>
     </Section>
   );
@@ -227,6 +232,7 @@ export const SelfTestPanel: React.FC<{ ctx: ToolCtx; activeToolId: number }> = (
 
 // ---- Raw Bus Monitor ----
 export const BusMonitorPanel: React.FC<{ ctx: ToolCtx; subscribeAll: (cb: (f: CanFrame) => void) => () => void }> = ({ ctx, subscribeAll }) => {
+  const { t } = useTranslation();
   const [frames, setFrames] = useState<CanFrame[]>([]);
   const [paused, setPaused] = useState(false);
   const pausedRef = useRef(paused);
@@ -265,18 +271,18 @@ export const BusMonitorPanel: React.FC<{ ctx: ToolCtx; subscribeAll: (cb: (f: Ca
   };
 
   return (
-    <Section title="Raw Bus Monitor" subtitle="Every frame seen on the bus, Tx and Rx.">
+    <Section title={t('testerglobal.bus_title', 'Raw Bus Monitor')} subtitle={t('testerglobal.bus_subtitle', 'Every frame seen on the bus, Tx and Rx.')}>
       <div className="flex items-center gap-3 mb-3 text-xs">
-        <label className="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" checked={paused} onChange={(e) => setPaused(e.target.checked)} className="accent-purple-500" /> Pause</label>
-        <button className={btnCls} onClick={() => setFrames([])}>Clear</button>
-        <button className={btnCls} onClick={() => exportTrace('trc')}>Export .trc</button>
-        <button className={btnCls} onClick={() => exportTrace('asc')}>Export .asc</button>
-        <span className="text-slate-500">~{rate} fps &bull; ~{busLoadPct.toFixed(1)}% bus load (approx.)</span>
+        <label className="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" checked={paused} onChange={(e) => setPaused(e.target.checked)} className="accent-purple-500" /> {t('testerglobal.pause', 'Pause')}</label>
+        <button className={btnCls} onClick={() => setFrames([])}>{t('testerglobal.clear', 'Clear')}</button>
+        <button className={btnCls} onClick={() => exportTrace('trc')}>{t('testerglobal.export_trc', 'Export .trc')}</button>
+        <button className={btnCls} onClick={() => exportTrace('asc')}>{t('testerglobal.export_asc', 'Export .asc')}</button>
+        <span className="text-slate-500">{t('testerglobal.bus_rate', '~{{rate}} fps • ~{{load}}% bus load (approx.)', { rate, load: busLoadPct.toFixed(1) })}</span>
       </div>
       <div className="max-h-80 overflow-y-auto font-mono text-[10px] border border-slate-800 rounded">
         <table className="w-full">
           <thead className="sticky top-0 bg-slate-900 text-slate-500">
-            <tr><th className="text-left px-2 py-1">Time</th><th className="text-left px-2 py-1">Dir</th><th className="text-left px-2 py-1">ID</th><th className="text-left px-2 py-1">DLC</th><th className="text-left px-2 py-1">Data</th></tr>
+            <tr><th className="text-left px-2 py-1">{t('testerglobal.th_time', 'Time')}</th><th className="text-left px-2 py-1">{t('testerglobal.th_dir', 'Dir')}</th><th className="text-left px-2 py-1">{t('testerglobal.th_id', 'ID')}</th><th className="text-left px-2 py-1">{t('testerglobal.th_dlc', 'DLC')}</th><th className="text-left px-2 py-1">{t('testerglobal.th_data', 'Data')}</th></tr>
           </thead>
           <tbody>
             {frames.map((f, i) => (
@@ -297,6 +303,7 @@ export const BusMonitorPanel: React.FC<{ ctx: ToolCtx; subscribeAll: (cb: (f: Ca
 
 // ---- Custom frame injector ----
 export const CustomFramePanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
+  const { t } = useTranslation();
   const [idHex, setIdHex] = useState('100');
   const [dataHex, setDataHex] = useState('00 00 00 00 00 00 00 00');
   const [repeat, setRepeat] = useState(false);
@@ -311,16 +318,16 @@ export const CustomFramePanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   useKeepalive(repeat, Math.max(10, intervalMs), send);
 
   return (
-    <Section title="Custom Frame">
+    <Section title={t('testerglobal.custom_frame_title', 'Custom Frame')}>
       <div className="flex items-end gap-2 flex-wrap">
-        <Field label="ID (hex, 0-7FF)"><input value={idHex} onChange={(e) => setIdHex(e.target.value)} className={`${inputCls} w-24`} /></Field>
-        <Field label="Data (hex bytes)"><input value={dataHex} onChange={(e) => setDataHex(e.target.value)} className={`${inputCls} w-64`} /></Field>
-        <button className={btnPrimaryCls} onClick={send} disabled={!ctx.isConnected}>Send Once</button>
+        <Field label={t('testerglobal.id_hex_label', 'ID (hex, 0-7FF)')}><input value={idHex} onChange={(e) => setIdHex(e.target.value)} className={`${inputCls} w-24`} /></Field>
+        <Field label={t('testerglobal.data_hex_label', 'Data (hex bytes)')}><input value={dataHex} onChange={(e) => setDataHex(e.target.value)} className={`${inputCls} w-64`} /></Field>
+        <button className={btnPrimaryCls} onClick={send} disabled={!ctx.isConnected}>{t('testerglobal.send_once', 'Send Once')}</button>
         <label className="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer">
-          <input type="checkbox" checked={repeat} onChange={(e) => setRepeat(e.target.checked)} className="accent-purple-500" /> Repeat every
+          <input type="checkbox" checked={repeat} onChange={(e) => setRepeat(e.target.checked)} className="accent-purple-500" /> {t('testerglobal.repeat_every', 'Repeat every')}
         </label>
         <input type="number" min={10} max={10000} value={intervalMs} onChange={(e) => setIntervalMs(safeInt(e.target.value, 100, 10, 10000))} className={`${inputCls} w-20`} />
-        <span className="text-xs text-slate-500">ms</span>
+        <span className="text-xs text-slate-500">{t('testerglobal.ms', 'ms')}</span>
       </div>
     </Section>
   );

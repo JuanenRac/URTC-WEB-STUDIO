@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Thermometer, Zap, AlertTriangle, RefreshCw, Eye } from 'lucide-react';
 
 export const ThermalCameraViewer: React.FC = () => {
+  const { t } = useTranslation();
   const [palette, setPalette] = useState<'ironbow' | 'rainbow' | 'mono'>('ironbow');
   const [hasShort, setHasShort] = useState<boolean>(true);
   const [hoverTemp, setHoverTemp] = useState<{ x: number; y: number; temp: number } | null>(null);
@@ -94,10 +96,10 @@ export const ThermalCameraViewer: React.FC = () => {
           <div>
             <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
               <Thermometer className="w-4 h-4 text-amber-400" />
-              MLX90640 32x24 Thermal Infrared Camera Array
+              {t('thermal.title', 'MLX90640 32x24 Thermal Infrared Camera Array')}
             </h2>
             <p className="text-xs text-slate-400">
-              Advanced Expansion Board (STM32F303CB Slave) • Short Circuit Thermal Inspection
+              {t('thermal.subtitle', 'Advanced Expansion Board (STM32F303CB Slave) • Short Circuit Thermal Inspection')}
             </p>
           </div>
 
@@ -108,19 +110,19 @@ export const ThermalCameraViewer: React.FC = () => {
                 onClick={() => setPalette('ironbow')}
                 className={`px-2.5 py-1 rounded ${palette === 'ironbow' ? 'bg-slate-800 text-amber-400 font-semibold' : 'text-slate-400'}`}
               >
-                Ironbow
+                {t('thermal.palette_ironbow', 'Ironbow')}
               </button>
               <button
                 onClick={() => setPalette('rainbow')}
                 className={`px-2.5 py-1 rounded ${palette === 'rainbow' ? 'bg-slate-800 text-amber-400 font-semibold' : 'text-slate-400'}`}
               >
-                Rainbow
+                {t('thermal.palette_rainbow', 'Rainbow')}
               </button>
               <button
                 onClick={() => setPalette('mono')}
                 className={`px-2.5 py-1 rounded ${palette === 'mono' ? 'bg-slate-800 text-amber-400 font-semibold' : 'text-slate-400'}`}
               >
-                Monochrome
+                {t('thermal.palette_mono', 'Monochrome')}
               </button>
             </div>
 
@@ -132,7 +134,7 @@ export const ThermalCameraViewer: React.FC = () => {
                   : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
               }`}
             >
-              {hasShort ? '🔥 Short Circuit Simulated (85°C)' : '✅ Normal PCB Thermal Flow'}
+              {hasShort ? t('thermal.short_simulated', '🔥 Short Circuit Simulated (85°C)') : t('thermal.normal_flow', '✅ Normal PCB Thermal Flow')}
             </button>
           </div>
         </div>
@@ -140,9 +142,9 @@ export const ThermalCameraViewer: React.FC = () => {
         {/* Thermal Canvas Display */}
         <div className="relative mx-auto max-w-2xl bg-slate-950 p-4 border border-slate-800 rounded-2xl shadow-xl">
           <div className="flex justify-between items-center text-xs font-mono text-slate-400 mb-2">
-            <span>MLX90640 IR FRAME (32 × 24 = 768 PIXELS)</span>
+            <span>{t('thermal.frame_label', 'MLX90640 IR FRAME (32 × 24 = 768 PIXELS)')}</span>
             <span className="text-amber-400 font-bold">
-              MAX TEMP: {maxTemp.toFixed(1)}°C {hasShort && '⚠️ SHORT DETECTED'}
+              {t('thermal.max_temp', 'MAX TEMP: {{temp}}°C', { temp: maxTemp.toFixed(1) })} {hasShort && t('thermal.short_detected', '⚠️ SHORT DETECTED')}
             </span>
           </div>
 
@@ -176,7 +178,7 @@ export const ThermalCameraViewer: React.FC = () => {
 
           {/* Thermal Legend Bar */}
           <div className="mt-3 flex items-center gap-3 font-mono text-xs">
-            <span className="text-slate-400">20°C</span>
+            <span className="text-slate-400">{t('thermal.legend_min', '20°C')}</span>
             <div
               className="flex-1 h-3 rounded border border-slate-800"
               style={{
@@ -188,15 +190,15 @@ export const ThermalCameraViewer: React.FC = () => {
                     : 'linear-gradient(to right, rgb(0,0,0), rgb(128,0,255), rgb(255,128,0), rgb(255,255,255))'
               }}
             />
-            <span className="text-amber-400 font-bold">90°C</span>
+            <span className="text-amber-400 font-bold">{t('thermal.legend_max', '90°C')}</span>
           </div>
 
           {/* Hover Crosshair Info */}
           <div className="mt-2 text-[11px] font-mono text-slate-400 flex justify-between">
             <span>
-              {hoverTemp ? `PROBE POS: [X:${hoverTemp.x}, Y:${hoverTemp.y}] = ${hoverTemp.temp.toFixed(1)}°C` : 'Hover over grid to probe temperature'}
+              {hoverTemp ? t('thermal.hover_probe', 'PROBE POS: [X:{{x}}, Y:{{y}}] = {{temp}}°C', { x: hoverTemp.x, y: hoverTemp.y, temp: hoverTemp.temp.toFixed(1) }) : t('thermal.hover_prompt', 'Hover over grid to probe temperature')}
             </span>
-            <span>Reflow/Short Inspection Mode</span>
+            <span>{t('thermal.mode_label', 'Reflow/Short Inspection Mode')}</span>
           </div>
         </div>
       </div>
