@@ -108,6 +108,28 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
     }
   };
 
+  // Fires when the OS reports the physical port gone (cable unplugged,
+  // adapter powered off) - distinct from disconnect() below, which is the
+  // user-initiated "click Disconnect" path and can still talk to a live
+  // port (send the SLCAN 'C' close command, call port.close()). Here the
+  // port is already gone, so this only resets local state to match reality
+  // instead of leaving the UI claiming "connected" to a port that no
+  // longer exists.
+  const handlePortGone = useCallback(() => {
+    keepReadingRef.current = false;
+    portRef.current = null;
+    writerRef.current = null;
+    readerRef.current = null;
+    setIsConnected(false);
+    setPortName('');
+  }, []);
+
+  const onNativeDisconnect = useCallback((event: any) => {
+    if (event.target === portRef.current) {
+      handlePortGone();
+    }
+  }, [handlePortGone]);
+
   const connect = async () => {
     if (!('serial' in navigator)) {
       alert('Web Serial API is not supported in this browser. Please use Chrome or Edge.');
@@ -120,10 +142,12 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
       await port.open({ baudRate: 115200 });
       portRef.current = port;
       setPortName('USB-CAN Adapter');
+      // @ts-ignore
+      navigator.serial.addEventListener('disconnect', onNativeDisconnect);
 
       writerRef.current = port.writable.getWriter();
       keepReadingRef.current = true;
-      
+
       // SLCAN Init Sequence
       await _sendRaw('C');
       await new Promise(r => setTimeout(r, 50));
@@ -148,10 +172,12 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
 
   const disconnect = async () => {
     keepReadingRef.current = false;
+    // @ts-ignore
+    navigator.serial.removeEventListener('disconnect', onNativeDisconnect);
     if (readerRef.current) {
       await readerRef.current.cancel();
     }
-    
+
     if (writerRef.current) {
       try {
         await _sendRaw('C');
@@ -160,7 +186,9 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
     }
 
     if (portRef.current) {
-      await portRef.current.close();
+      try {
+        await portRef.current.close();
+      } catch (e) {}
     }
 
     portRef.current = null;
@@ -221,6 +249,16 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
         }
       } catch (error) {
         console.error('Read error:', error);
+        // A throw here (rather than read() resolving {done: true}) means the
+        // port itself broke - the adapter was unplugged mid-read - not a
+        // user-requested disconnect() (which sets keepReadingRef false
+        // before ever touching the reader). Reset local state so the UI
+        // stops claiming "connected" to a port that's already gone; the
+        // navigator.serial 'disconnect' listener above covers the same
+        // case, but reacting here too doesn't depend on that event firing.
+        if (keepReadingRef.current) {
+          handlePortGone();
+        }
       } finally {
         readerRef.current.releaseLock();
       }

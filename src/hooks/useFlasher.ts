@@ -11,7 +11,7 @@ import {
   CAN_ID_SLAVE_VERIFY_FAIL_REASON,
   ENTER_BOOTLOADER_MAGIC, AUTHORIZE_DOWNGRADE_MAGIC,
   THIS_HARDWARE_ID, SLAVE_HARDWARE_ID, FLASH_PAGE_SIZE, SLAVE_DATA_PACING_MS,
-  APP_MAX_SIZE, SLAVE_APP_MAX_SIZE,
+  APP_MAX_SIZE, SLAVE_APP_MAX_SIZE, SLAVE_HMAC_KEY,
   computeHmacSha256, packUInt32BE, packUInt16BE, unpackUInt32BE, getCrc32
 } from '../lib/flasher';
 import { CAN_ID_ERASE_FRAM, CAN_ID_FRAM_STATE_RESP, ERASE_FRAM_MAGIC, VERIFY_FAIL_REASONS } from '../lib/canIds';
@@ -221,7 +221,12 @@ export function useFlasher(serialCan: SerialCanBus) {
     if (data.length > SLAVE_APP_MAX_SIZE) throw new FlashError(`Firmware exceeds the ${SLAVE_APP_MAX_SIZE} byte slave application slot`);
 
     const crc32 = getCrc32(data);
-    const signature = await computeHmacSha256(data.buffer as ArrayBuffer);
+    // Slave board's own key, deliberately different from the master
+    // board's default key computeHmacSha256 uses elsewhere in this file -
+    // see slaveboot_common.h's own comment on why: signing a slave image
+    // with the master's key would make its bootloader reject every real
+    // update sent to it.
+    const signature = await computeHmacSha256(data.buffer as ArrayBuffer, SLAVE_HMAC_KEY);
 
     setFlasherState(prev => ({ ...prev, mode: 'erasing', progress: 0, statusText: '1/5: Entering slave bootloader (relayed via I2C)...', log: ['Computing CRC32 and HMAC-SHA256 over the selected image...'] }));
 

@@ -1,11 +1,25 @@
 import CRC32 from 'crc-32';
 import { CanFrame } from '../types';
 
+// Real CSPRNG-generated keys (2026-08-15), matching bootloader_crypto.c
+// (master) and slaveboot_crypto.c (slave) in the URTC firmware repo -
+// deliberately different from each other (see slaveboot_common.h's own
+// comment on why: a master-signed image must never verify against the
+// slave's key, or vice versa). Committed to a public repo, so treat
+// these as non-confidential functional defaults, not a real security
+// boundary - see bootloader_crypto.c's own comment for the full
+// reasoning on rotating them for real production use.
 export const HMAC_KEY = new Uint8Array([
-  0x55, 0x52, 0x54, 0x43, 0x2D, 0x48, 0x59, 0x44,
-  0x52, 0x41, 0x2D, 0x55, 0x4D, 0x43, 0x2D, 0x32,
-  0x30, 0x32, 0x36, 0x2D, 0x43, 0x48, 0x41, 0x4E,
-  0x47, 0x45, 0x2D, 0x4D, 0x45, 0x2D, 0x21, 0x21
+  0x25, 0x26, 0xCC, 0x3E, 0x90, 0x11, 0xEC, 0x7C,
+  0x49, 0xEC, 0xD2, 0xD2, 0xB7, 0xF3, 0x89, 0xE3,
+  0x59, 0xAA, 0x24, 0x60, 0x14, 0xFF, 0x51, 0x54,
+  0xA0, 0xAF, 0x8A, 0x3C, 0x3B, 0xF9, 0x55, 0x81
+]);
+export const SLAVE_HMAC_KEY = new Uint8Array([
+  0xF6, 0xFC, 0x5E, 0xC3, 0xC7, 0xC0, 0xB8, 0x32,
+  0x5F, 0x08, 0x83, 0x85, 0xCD, 0x10, 0x9E, 0x63,
+  0x7D, 0x45, 0x58, 0xD4, 0x53, 0x5F, 0x61, 0x9C,
+  0xD0, 0x6F, 0x3D, 0xF2, 0xAF, 0xDC, 0x38, 0x1D
 ]);
 export const THIS_HARDWARE_ID = 0x0303CC01;
 export const FLASH_PAGE_SIZE = 2048;
@@ -53,10 +67,10 @@ export const SLAVE_DATA_PACING_MS = 4; // I2C bit-banging is slower per-byte tha
 
 export const APP_MAX_SIZE = 112 * 1024;
 
-export async function computeHmacSha256(data: ArrayBuffer): Promise<Uint8Array> {
+export async function computeHmacSha256(data: ArrayBuffer, signingKey: Uint8Array<ArrayBuffer> = HMAC_KEY): Promise<Uint8Array> {
   const key = await crypto.subtle.importKey(
     'raw',
-    HMAC_KEY,
+    signingKey,
     { name: 'HMAC', hash: 'SHA-256' },
     false,
     ['sign']
