@@ -199,12 +199,11 @@ export default function App() {
   // Periodic simulation loop (CAN watchdog LED reset). Mount-once: reads the
   // latest state via the functional setState updater instead of closing over
   // `hardwareState` directly, so this doesn't need hardwareState (or any other
-  // state) in its dependency array. Previously it depended on
-  // [activeToolId, setpoints, hardwareState] - since hardwareState.
-  // lastCanTimestamp is bumped on every incoming CAN frame, that tore down and
-  // recreated the interval on every single frame, undermining the very
-  // inactivity watchdog it implements (activeToolId/setpoints weren't even
-  // read by the effect body).
+  // state) in its dependency array. hardwareState.lastCanTimestamp is bumped
+  // on every incoming CAN frame, so depending on hardwareState here would
+  // tear down and recreate the interval on every single frame, undermining
+  // the very inactivity watchdog it implements (activeToolId/setpoints
+  // aren't even read by the effect body).
   useEffect(() => {
     const interval = setInterval(() => {
       setHardwareState(prev => {

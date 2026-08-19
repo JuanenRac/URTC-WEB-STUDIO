@@ -1,7 +1,7 @@
 import CRC32 from 'crc-32';
 import { CanFrame } from '../types';
 
-// Real CSPRNG-generated keys (2026-08-15), matching bootloader_crypto.c
+// Real CSPRNG-generated keys, matching bootloader_crypto.c
 // (master) and slaveboot_crypto.c (slave) in the URTC firmware repo -
 // deliberately different from each other (see slaveboot_common.h's own
 // comment on why: a master-signed image must never verify against the

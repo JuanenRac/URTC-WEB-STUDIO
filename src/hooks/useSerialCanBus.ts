@@ -51,13 +51,11 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
     onFrameReceived(frame);
   }, [onFrameReceived]);
 
-  // Per-caller correlation for waitForFrame. Previously waitForFrame polled
-  // frameQueueRef every 10ms and spliced the first match it found - if two
-  // callers awaited the same CAN ID concurrently, whichever poll tick ran
-  // first won that splice non-deterministically, so the loser either got
-  // nothing (timeout) or an unrelated later frame. Now each call registers
-  // its own waiter in a per-ID FIFO queue, so incoming frames are handed to
-  // the oldest still-waiting caller for that ID first.
+  // Per-caller correlation for waitForFrame: each call registers its own
+  // waiter in a per-ID FIFO queue, so when two callers await the same CAN ID
+  // concurrently, incoming frames are handed to the oldest still-waiting
+  // caller for that ID first, deterministically - never to whichever caller
+  // happens to poll or resolve first.
   const waitersRef = useRef<Map<number, Array<(frame: CanFrame) => void>>>(new Map());
 
   const waitForFrame = (expectedId: number, timeoutMs: number = 3000): Promise<CanFrame | null> => {

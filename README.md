@@ -162,13 +162,32 @@ to authorized technicians, not the public internet.
 git clone https://github.com/JuanenRac/URTC-Web-Studio.git
 cd URTC-Web-Studio
 npm install
-npm run dev
 ```
+
+### Development Mode
+
+Runs the app with Vite's dev server and live-reloading:
+- **Windows:** double-click `dev.bat` or run `npm run dev`
+- **Linux/Mac:** run `./dev.sh` or `npm run dev`
 
 Then open `http://localhost:3000` in Chrome or Edge.
 
-`npm run build` produces a static production build in `dist/`; `npm run
-lint` runs the TypeScript compiler in check-only mode.
+### Production Build
+
+Compiles into a static, optimized bundle in `dist/`:
+- **Windows:** double-click `build.bat` or run `npm run build`
+- **Linux/Mac:** run `./build.sh` or `npm run build`
+
+This is a plain static site - there's no bundled server component (unlike
+`HYDRA-UMC STUDIO`'s own `server.ts`). Preview the built `dist/` folder
+locally with:
+
+```bash
+npm run preview
+```
+
+or serve `dist/` with any static file host of your choice. `npm run lint`
+runs the TypeScript compiler in check-only mode.
 
 ## 🛠️ Technology Stack
 - **Language:** TypeScript
@@ -191,6 +210,8 @@ lint` runs the TypeScript compiler in check-only mode.
 │   │                                tab below (including CAN OTA start/readback and
 │   │                                the CAN Bus Analyzer's own frame injector)
 │   ├── main.tsx                    Vite/React entry point
+│   ├── i18n.ts                     i18next setup - en/es/de/fr/it, persisted to
+│   │                                localStorage
 │   ├── index.css                   Tailwind entry point
 │   ├── types.ts                    Shared TypeScript types (CanFrame, HardwareState,
 │   │                                FlasherState, ExpansionBoardType, ...)
@@ -232,17 +253,20 @@ lint` runs the TypeScript compiler in check-only mode.
 │   │   │                            slave), mirrors flasher_protocol.py
 │   │   └── useKeepalive.ts          Fixed-interval resend hook backing every tool's
 │   │                                active-checkbox watchdog keepalive
-│   └── lib/
-│       ├── flasher.ts               OTA protocol constants, the committed HMAC-SHA256
-│       │                            signing key, CRC32/HMAC helpers, manifest parsing
-│       └── canIds.ts                CAN ID constants for Tester Studio - mirrors
-│                                     tester_config.py byte-for-byte
+│   ├── lib/
+│   │   ├── flasher.ts               OTA protocol constants, the committed HMAC-SHA256
+│   │   │                            signing key, CRC32/HMAC helpers, manifest parsing
+│   │   └── canIds.ts                CAN ID constants for Tester Studio - mirrors
+│   │                                 tester_config.py byte-for-byte
+│   └── locales/                     UI strings - en.json, es.json, de.json, fr.json,
+│                                     it.json
 ├── public/
 │   └── firmware/                    Bundled .bin/.elf/.hex for the main application,
 │                                     main bootloader, expansion slave application, and
 │                                     expansion slave bootloader
 ├── images/
-│   ├── URTC_APP_ICON_NEW.svg        App icon (shown at the top of this README)
+│   ├── URTC_LOGO_WEB_STUDIO.svg     Full logo banner (shown at the top of this README)
+│   ├── URTC_APP_ICON_NEW.svg        App icon
 │   ├── urtc_custom_icon.svg         App icon, same artwork
 │   └── urtc_icon.ico                Favicon
 ├── index.html                       Vite entry HTML
@@ -251,6 +275,8 @@ lint` runs the TypeScript compiler in check-only mode.
 ├── vite.config.ts                   Vite + Tailwind plugin config
 ├── tsconfig.json                    TypeScript config
 ├── .env.example                     VITE_APP_TITLE
+├── dev.bat / dev.sh                 Install deps + start the Vite dev server
+├── build.bat / build.sh             Install deps + produce the static dist/ build
 ├── package.json
 ├── LICENSE
 └── README.md                        This file
@@ -296,16 +322,16 @@ This project is part of a larger robotics ecosystem by the same author (JuanenRa
 - **[HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC)** — the motherboard itself: Raspberry Pi CM5 host + dual-core STM32H745 real-time co-processor, orchestrating up to 8 distributed robot arms over CAN-OTA/SPI-OTA. Own hardware + firmware, GPL-3.0/CERN-OHL-S v2/CC BY-SA 4.0.
 - **[HYDRA-UMC STUDIO](https://github.com/JuanenRac/HYDRA-UMC-STUDIO)** — web-based control dashboard for HYDRA-UMC: multi-robot 3D visualization, kinematics/trajectory recording, CAN-OTA flashing and testing for the whole platform. React + Vite + Three.js.
 - **[HYDRA-UMC-ANDROID-CONTROL](https://github.com/JuanenRac/HYDRA-UMC-ANDROID-CONTROL)** — Android control app for HYDRA-UMC over Wi-Fi/Bluetooth. Real, working app - full remote-control feature set, JWT auth, encrypted credential storage.
-- **[HYDRA-UMC-IOS-CONTROL](https://github.com/JuanenRac/HYDRA-UMC-IOS-CONTROL)** — iOS/iPadOS control app for HYDRA-UMC over Wi-Fi, built in Flutter (cross-platform, verifiable on Windows without a Mac). Real, working app.
+- **[HYDRA-UMC-IOS-CONTROL](https://github.com/JuanenRac/HYDRA-UMC-IOS-CONTROL)** — iOS/iPadOS control app for HYDRA-UMC over Wi-Fi, built in Flutter (cross-platform, verifiable on Windows without a Mac; final `.ipa` packaging still needs Xcode). Real, working app - same feature set as the Android app.
 - **[HYDRA-UMC-SUITE](https://github.com/JuanenRac/HYDRA-UMC-SUITE)** — desktop (Python/PySide6) swarm command center: multi-controller network discovery, live bidirectional sync, real 3D robot viewport, Photoshop-style dockable workspace. Real and working, not a placeholder.
-- **[HYDRA-UMC-EDITOR-URDF](https://github.com/JuanenRac/HYDRA-UMC-EDITOR-URDF)** — planned: graphical URDF (3D object + kinematics) creator/editor for HYDRA-UMC STUDIO's model catalog. Not started yet.
-- **[HYDRA-UMC-DSI](https://github.com/JuanenRac/HYDRA-UMC-DSI)** — planned: native touch UI for HYDRA-UMC's own 7" DSI touchscreen (1280×800) on the Compute Module 5. Not started yet.
+- **[HYDRA-UMC-EDITOR-URDF](https://github.com/JuanenRac/HYDRA-UMC-EDITOR-URDF)** — desktop (Python/PySide6) graphical URDF creator/editor for this project's own model catalog: pulls source files from GitHub or a local folder, validates DOF feasibility, edits color/scale/kinematics with a live 3D preview, and pushes the finished result to a running STUDIO server. Real and working, not a placeholder.
+- **[HYDRA-UMC-DSI](https://github.com/JuanenRac/HYDRA-UMC-DSI)** — planned: a native touch UI for HYDRA-UMC's own 7" DSI touchscreen (1280×800) on the Compute Module 5, controlling this same server directly from the board. Not started yet.
 
 **URTC platform** — the tool head controller every HYDRA-UMC robot arm carries
 - **[URTC](https://github.com/JuanenRac/URTC)** — Universal Robot Tool Controller: STM32F303-based CAN bus tool head controller, 25 fully-implemented tool profiles, CAN-OTA firmware update.
 - **[URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER)** — desktop CAN-OTA + full-chip SWD/JTAG flashing tool for URTC boards (Windows/Linux).
 - **[URTC Tester](https://github.com/JuanenRac/URTC-TESTER)** — desktop live CAN-bus diagnostic tool for URTC boards, one panel per tool profile (Windows/Linux).
-- **URTC Web Studio** — browser-based alternative to the 2 desktop tools above (Web Serial API + SLCAN), no local install needed. *(this repository)*
+- **URTC Web Studio** *(this repository)* — browser-based alternative to the 2 desktop tools above (Web Serial API + SLCAN), no local install needed.
 
 ## 👤 Author
 
