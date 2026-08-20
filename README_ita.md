@@ -380,7 +380,7 @@ potrebbe in realtà riguardare uno di questi invece di questo repository:
   finale a un server STUDIO in esecuzione. Reale e funzionante, non un
   placeholder.
 - **[HYDRA-UMC-DSI](https://github.com/JuanenRac/HYDRA-UMC-DSI)** — pianificato:
-  un'interfaccia touch nativa per il proprio touchscreen DSI da 7" (1280×800) di
+  un'interfaccia touch nativa per il proprio touchscreen DSI da 5"/7" (1280×720, stessa risoluzione in entrambe le dimensioni) di
   HYDRA-UMC sul Compute Module 5, controllando questo stesso server direttamente
   dalla scheda. Non ancora iniziato.
 

@@ -386,7 +386,7 @@ concerner l'un de ceux-ci plutôt que ce dépôt :
   final vers un serveur STUDIO en cours d'exécution. Réel et fonctionnel, pas un
   placeholder.
 - **[HYDRA-UMC-DSI](https://github.com/JuanenRac/HYDRA-UMC-DSI)** — prévu : une
-  interface tactile native pour le propre écran tactile DSI 7" (1280×800) de
+  interface tactile native pour le propre écran tactile DSI 5"/7" (1280×720, même résolution dans les deux tailles) de
   HYDRA-UMC sur le Compute Module 5, contrôlant ce même serveur directement depuis
   la carte. Pas encore commencé.
 

@@ -380,7 +380,7 @@ realidad tratarse de uno de estos en vez de este repositorio:
   color/escala/cinemática con una previsualización 3D en vivo, y envía el resultado
   final a un servidor STUDIO en ejecución. Real y funcional, no un placeholder.
 - **[HYDRA-UMC-DSI](https://github.com/JuanenRac/HYDRA-UMC-DSI)** — planeado: una
-  interfaz táctil nativa para la propia pantalla táctil DSI de 7" (1280×800) de
+  interfaz táctil nativa para la propia pantalla táctil DSI de 5"/7" (1280×720, misma resolución en ambos tamaños) de
   HYDRA-UMC en el Compute Module 5, controlando este mismo servidor directamente
   desde la placa. Todavía no iniciado.
 
