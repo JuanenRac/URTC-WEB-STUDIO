@@ -279,7 +279,8 @@ runs the TypeScript compiler in check-only mode.
 ├── build.bat / build.sh             Install deps + produce the static dist/ build
 ├── package.json
 ├── LICENSE
-└── README.md                        This file
+├── README.md                        This file
+└── README_spa.md / README_ita.md / README_fra.md / README_deu.md  <- translations
 ```
 
 ## 📜 License and Copyright Notices
@@ -296,8 +297,10 @@ covers:
    License v3.0 (GPL-3.0)**. Full text at
    https://www.gnu.org/licenses/gpl-3.0.html.
 
-2. The documentation (this README) is available under **Creative Commons
-   Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)**. Full text at
+2. The documentation (this README and its own translations -
+   `README_spa.md`, `README_ita.md`, `README_fra.md`, `README_deu.md`) is
+   available under **Creative Commons Attribution-ShareAlike 4.0
+   International (CC BY-SA 4.0)**. Full text at
    https://creativecommons.org/licenses/by-sa/4.0/.
 
 This tool is the browser-based companion to the
