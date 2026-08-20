@@ -159,6 +159,28 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
       readLoop();
     } catch (e: any) {
       console.error('Failed to connect', e);
+
+      // If port.open() already succeeded before something later in the init
+      // sequence threw (getWriter(), or a write() failing because the
+      // adapter dropped mid-handshake), the port is left physically open
+      // and claimed by this tab while isConnected is still false - the UI
+      // only offers a "Connect" button in that state, never "Disconnect",
+      // so without this cleanup the port stays hung open with no way to
+      // release it short of reloading the page. Tear it back down exactly
+      // like a normal disconnect() would.
+      if (writerRef.current) {
+        try { writerRef.current.releaseLock(); } catch {}
+        writerRef.current = null;
+      }
+      if (portRef.current) {
+        // @ts-ignore
+        navigator.serial.removeEventListener('disconnect', onNativeDisconnect);
+        try { await portRef.current.close(); } catch {}
+        portRef.current = null;
+      }
+      keepReadingRef.current = false;
+      setPortName('');
+
       if (e.message?.includes('requestPort') || e.name === 'SecurityError') {
         alert(t('hooks.iframe_blocked', 'Cannot access USB/Serial from this iframe. Please click the "Open in new tab" button at the top right of the preview pane to use the Web Serial API.'));
       } else if (e.name === 'NotFoundError' || e.message?.includes('No port selected by the user') || e.message?.includes('Request failed')) {
@@ -199,10 +221,17 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
   };
 
   const _sendRaw = async (cmd: string) => {
-    if (writerRef.current) {
-      const data = new TextEncoder().encode(cmd + '\r');
-      await writerRef.current.write(data);
+    // Throw rather than silently no-op when the writer is already gone
+    // (port physically unplugged, writer lock released by handlePortGone()).
+    // sendFrame() below only logs a 'Tx' frame into the UI after this call
+    // returns successfully - a silent no-op here would make the CAN log
+    // claim a command reached the board (laser power, drill speed, etc.)
+    // when the byte was never actually written to the wire.
+    if (!writerRef.current) {
+      throw new Error('Serial port writer is not available (port disconnected).');
     }
+    const data = new TextEncoder().encode(cmd + '\r');
+    await writerRef.current.write(data);
   };
 
   const sendFrame = async (id: number, data: number[], description: string = 'Sent from Web Studio') => {
@@ -229,14 +258,23 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
 
   const readLoop = async () => {
     while (portRef.current && portRef.current.readable && keepReadingRef.current) {
-      readerRef.current = portRef.current.readable.getReader();
+      // Keep a local reference alongside readerRef.current: handlePortGone()
+      // (called below, or concurrently from the native 'disconnect' listener
+      // if the port physically drops mid-read) nulls readerRef.current, and
+      // the old code called releaseLock() on readerRef.current directly in
+      // `finally` - which threw "Cannot read properties of null" on every
+      // single physical unplug during a read, since handlePortGone() had
+      // already nulled it by the time `finally` ran. Reading through the
+      // local `reader` const instead of the ref sidesteps that race.
+      const reader = portRef.current.readable.getReader();
+      readerRef.current = reader;
       const decoder = new TextDecoder();
-      
+
       try {
         while (true) {
-          const { value, done } = await readerRef.current.read();
+          const { value, done } = await reader.read();
           if (done) break;
-          
+
           if (value) {
             const chunk = decoder.decode(value, { stream: true });
             rxBufferRef.current += chunk;
@@ -260,7 +298,7 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
           handlePortGone();
         }
       } finally {
-        readerRef.current.releaseLock();
+        try { reader.releaseLock(); } catch {}
       }
     }
   };
