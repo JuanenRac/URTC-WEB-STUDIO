@@ -403,10 +403,10 @@ Repository beziehen könnte:
   Farbe/Skalierung/Kinematik mit einer Live-3D-Vorschau, und übermittelt
   das fertige Ergebnis an einen laufenden STUDIO-Server. Echt und
   funktionierend, kein Platzhalter.
-- **[HYDRA-UMC-DSI](https://github.com/JuanenRac/HYDRA-UMC-DSI)** — geplant:
-  eine native Touch-UI für den eigenen 7"-DSI-Touchscreen (1280×800) von
-  HYDRA-UMC auf dem Compute Module 5, die diesen selben Server direkt von
-  der Platine aus steuert. Noch nicht begonnen.
+- **[HYDRA-UMC-DSI](https://github.com/JuanenRac/HYDRA-UMC-DSI)** — native
+  Flutter-Touch-UI für HYDRA-UMCs eigenen 5"/7"-DSI-Touchscreen (1280×720, gleiche Auflösung bei beiden Größen - korrigierter Wert, nicht 1280×800) am
+  Compute Module 5, die denselben Server direkt von der Platine aus steuert.
+  Echtes, funktionierendes Grundgerüst mit allen 6 Katalogbildschirmen (Dashboard, manuelle Steuerung, Kamera, vereinfachte 3D-Ansicht, Systemmetriken, Login), angebunden an den Live-Server; der echte Linux-Build wurde bisher noch nicht auf echter Hardware ausgeführt (bislang nur Windows-Arbeitsumgebung - siehe das eigene README dieses Projekts).
 
 **URTC-Plattform** — der Werkzeug-Controller, den jeder HYDRA-UMC-Roboterarm
 trägt

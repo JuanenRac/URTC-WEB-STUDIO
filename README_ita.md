@@ -379,10 +379,10 @@ potrebbe in realtà riguardare uno di questi invece di questo repository:
   colore/scala/cinematica con un'anteprima 3D dal vivo, e invia il risultato
   finale a un server STUDIO in esecuzione. Reale e funzionante, non un
   placeholder.
-- **[HYDRA-UMC-DSI](https://github.com/JuanenRac/HYDRA-UMC-DSI)** — pianificato:
-  un'interfaccia touch nativa per il proprio touchscreen DSI da 5"/7" (1280×720, stessa risoluzione in entrambe le dimensioni) di
-  HYDRA-UMC sul Compute Module 5, controllando questo stesso server direttamente
-  dalla scheda. Non ancora iniziato.
+- **[HYDRA-UMC-DSI](https://github.com/JuanenRac/HYDRA-UMC-DSI)** — UI touch
+  nativa in Flutter per il touchscreen DSI da 5"/7" proprio di HYDRA-UMC (1280×720, stessa risoluzione in entrambe le dimensioni) sul
+  Compute Module 5, che controlla questo stesso server direttamente dalla scheda.
+  Scaffold reale e funzionante con tutte le 6 schermate del catalogo (dashboard, controllo manuale, camera, vista 3D semplificata, metriche di sistema, login) collegate al server live; la build reale del target Linux non è ancora stata eseguita su hardware reale (ambiente di lavoro finora solo Windows - vedere il README di quel progetto).
 
 **Piattaforma URTC** — il controller utensile che ogni braccio robotico HYDRA-UMC
 porta con sé
