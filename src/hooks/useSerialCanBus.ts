@@ -41,6 +41,11 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
   const rxBufferRef = useRef<string>('');
   const frameQueueRef = useRef<CanFrame[]>([]);
 
+  // Stable per-frame identity for React list keys (CAN log tables prepend
+  // new frames rather than appending, so an array index isn't a valid key -
+  // see the CanFrame.seq doc comment in types.ts).
+  const frameSeqRef = useRef<number>(0);
+
   // A well-formed SLCAN line is at most ~21 chars ('t' + 3 hex ID + 1 DLC
   // digit + up to 16 hex data chars). If the adapter sends data without a
   // carriage return (desync, garbage, or a non-SLCAN device on the port),
@@ -319,7 +324,7 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
     // claim a command reached the board (laser power, drill speed, etc.)
     // when the byte was never actually written to the wire.
     if (!writerRef.current) {
-      throw new Error('Serial port writer is not available (port disconnected).');
+      throw new Error(t('hooks.writer_unavailable', 'Serial port writer is not available (port disconnected).'));
     }
     const data = new TextEncoder().encode(cmd + '\r');
     await writerRef.current.write(data);
@@ -354,7 +359,8 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
       dataHex: hexData.match(/.{1,2}/g)?.join(' ') || '',
       timestamp,
       direction: 'Tx',
-      description
+      description,
+      seq: ++frameSeqRef.current
     });
   };
 
@@ -435,7 +441,8 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
               dataHex: dataHexFormatted,
               timestamp,
               direction: 'Rx',
-              description: 'Incoming from CAN hardware'
+              description: 'Incoming from CAN hardware',
+              seq: ++frameSeqRef.current
             };
             
             deliverOrQueue(frame);

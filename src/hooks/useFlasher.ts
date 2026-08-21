@@ -53,6 +53,18 @@ export function useFlasher(serialCan: SerialCanBus) {
     if (stopRequestedRef.current) throw new FlashError('Cancelled by user');
   };
 
+  // crypto.subtle (Web Crypto) only exists in a secure context (HTTPS or
+  // localhost) - accessing this page over plain HTTP via a LAN IP address
+  // leaves `crypto.subtle` undefined, which previously surfaced as a raw,
+  // cryptic "Cannot read properties of undefined (reading 'importKey')"
+  // buried in the flasher log. Checked upfront, before any real CAN traffic
+  // for this attempt, with a clear, translated, actionable message instead.
+  const checkSecureContext = () => {
+    if (typeof crypto === 'undefined' || !crypto.subtle) {
+      throw new FlashError(t('flasher.err_insecure_context', 'Web Crypto (crypto.subtle) is unavailable, so HMAC signing cannot run - this page must be served over HTTPS or from localhost. Current origin: {{origin}}', { origin: typeof location !== 'undefined' ? location.origin : 'unknown' }));
+    }
+  };
+
   const cancel = useCallback(() => {
     stopRequestedRef.current = true;
   }, []);
@@ -73,6 +85,7 @@ export function useFlasher(serialCan: SerialCanBus) {
   // ---- Main board CAN-OTA (0x7F0-0x7F7, 0x7FD) ----
   const flashMain = useCallback(async (data: Uint8Array, opts: FlashOptions) => {
     stopRequestedRef.current = false;
+    checkSecureContext();
     if (data.length === 0) throw new FlashError(t('flasher.err_empty_file', 'Firmware file is empty'));
     if (data.length > APP_MAX_SIZE) throw new FlashError(t('flasher.err_exceeds_app_slot', 'Firmware exceeds the {{max}} byte application slot', { max: APP_MAX_SIZE }));
 
@@ -135,7 +148,13 @@ export function useFlasher(serialCan: SerialCanBus) {
 
       for (let i = 0; i < pageData.length; i += 8) {
         checkCancelled();
-        const chunk = Array.from(pageData.slice(i, Math.min(i + 8, pageData.length)));
+        // Built with a plain indexed loop rather than
+        // Array.from(pageData.slice(...)) - a 112KB image walks this loop up
+        // to ~14000 times, and slice()+Array.from() each allocate a whole
+        // extra array per chunk for no benefit over reading bytes directly.
+        const end = Math.min(i + 8, pageData.length);
+        const chunk: number[] = [];
+        for (let j = i; j < end; j++) chunk.push(pageData[j]);
         while (chunk.length < 8) chunk.push(0);
         await serialCan.sendFrame(CAN_ID_DATA, chunk, `Data page ${pageIndex}, offset ${offset + i}`);
         await new Promise(r => setTimeout(r, 2));
@@ -219,6 +238,7 @@ export function useFlasher(serialCan: SerialCanBus) {
   // ---- Expansion slave OTA, relayed through the main board's I2C bridge (0x210-0x219) ----
   const flashSlave = useCallback(async (data: Uint8Array, opts: { triggerBootloader: boolean; reportMajor: number; reportMinor: number }) => {
     stopRequestedRef.current = false;
+    checkSecureContext();
     if (data.length === 0) throw new FlashError(t('flasher.err_empty_file', 'Firmware file is empty'));
     if (data.length > SLAVE_APP_MAX_SIZE) throw new FlashError(t('flasher.err_exceeds_slave_slot', 'Firmware exceeds the {{max}} byte slave application slot', { max: SLAVE_APP_MAX_SIZE }));
 
@@ -264,7 +284,12 @@ export function useFlasher(serialCan: SerialCanBus) {
     let sinceLastPoll = 0;
     while (offset < data.length) {
       checkCancelled();
-      const chunk = Array.from(data.slice(offset, Math.min(offset + 8, data.length)));
+      // Same plain-loop construction as flashMain's page loop above, for the
+      // same reason (avoids an extra slice()+Array.from() allocation per
+      // 8-byte chunk over a potentially 54KB image).
+      const end = Math.min(offset + 8, data.length);
+      const chunk: number[] = [];
+      for (let j = offset; j < end; j++) chunk.push(data[j]);
       while (chunk.length < 8) chunk.push(0);
       await serialCan.sendFrame(CAN_ID_SLAVE_DATA, chunk, `Slave data, offset ${offset}`);
       await new Promise(r => setTimeout(r, SLAVE_DATA_PACING_MS));

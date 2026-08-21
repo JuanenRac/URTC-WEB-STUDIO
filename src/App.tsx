@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle, X } from 'lucide-react';
 import { Header } from './components/Header';
@@ -38,8 +38,18 @@ export default function App() {
   // CAN Bus Frames Log
   const [canFrames, setCanFrames] = useState<CanFrame[]>([]);
 
+  // Own seq counter for this list specifically: canFrames mixes real frames
+  // (already carrying a seq minted by useSerialCanBus's own counter) with
+  // simulated ones built locally in logCanFrame() below, which never pass
+  // through useSerialCanBus at all. Re-stamping every entry here with a
+  // single shared counter guarantees uniqueness within THIS list - relying
+  // on the incoming value could collide, since a simulated frame's locally
+  // -assigned seq and a real frame's useSerialCanBus-assigned seq are drawn
+  // from independent counters that both start at 1.
+  const canFramesSeqRef = useRef(0);
+
   const handleFrameReceived = React.useCallback((frame: CanFrame) => {
-    setCanFrames(prev => [frame, ...prev.slice(0, 99)]);
+    setCanFrames(prev => [{ ...frame, seq: ++canFramesSeqRef.current }, ...prev.slice(0, 99)]);
     setHardwareState(prev => {
       const newState = {
         ...prev,
@@ -184,7 +194,8 @@ export default function App() {
       dataHex,
       timestamp,
       direction,
-      description: desc
+      description: desc,
+      seq: ++canFramesSeqRef.current
     };
 
     setCanFrames(prev => [frame, ...prev.slice(0, 99)]);
@@ -251,10 +262,17 @@ export default function App() {
     logCanFrame('0x110', `${id.toString(16).padStart(2, '0')} 00 00 00 00 00 00 00`, `Catalog Selected Tool #${id} (${TOOL_PROFILES[id]?.name})`, 'Tx');
   };
 
-  // Setpoint change
+  // Setpoint change. Encoded as a 16-bit big-endian value (same layout the
+  // real per-tool commands use, e.g. tester/ToolPanels.tsx's soldering iron
+  // setpoint: [(temp >> 8) & 0xFF, temp & 0xFF]) - several tool profiles have
+  // a maxVal above 255 (T12 soldering iron up to 450 degC, Hot Air Rework up
+  // to 480 degC, Press-Fit Inserter up to 1000 N, Ultrasonic Welder up to
+  // 2000 ms), so a single masked byte (`val & 0xFF`) would silently wrap
+  // those setpoints around instead of sending the real value.
   const handleSetpointChange = (val: number) => {
     setSetpoints(prev => ({ ...prev, [activeToolId]: val }));
-    logCanFrame('0x190', `${activeToolId.toString(16).padStart(2, '0')} ${(Math.round(val) & 0xFF).toString(16).padStart(2, '0')} 00 00 00 00 00 00`, `Setpoint Updated for Tool #${activeToolId} -> ${val.toFixed(1)}`);
+    const v16 = Math.round(val) & 0xFFFF;
+    logCanFrame('0x190', `${activeToolId.toString(16).padStart(2, '0')} ${((v16 >> 8) & 0xFF).toString(16).padStart(2, '0')} ${(v16 & 0xFF).toString(16).padStart(2, '0')} 00 00 00 00 00`, `Setpoint Updated for Tool #${activeToolId} -> ${val.toFixed(1)}`);
   };
 
   // Save to F-RAM

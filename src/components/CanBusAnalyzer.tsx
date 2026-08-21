@@ -212,8 +212,8 @@ export const CanBusAnalyzer: React.FC<CanBusAnalyzerProps> = ({
                   </td>
                 </tr>
               ) : (
-                canFrames.map((frame, index) => (
-                  <tr key={index} className="hover:bg-slate-850 transition-colors">
+                canFrames.map((frame) => (
+                  <tr key={frame.seq} className="hover:bg-slate-850 transition-colors">
                     <td className="py-2 px-4 text-slate-500">{frame.timestamp}</td>
                     <td className="py-2 px-4">
                       <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${

@@ -23,6 +23,12 @@ export interface CanFrame {
   timestamp: string;
   direction: 'Tx' | 'Rx';
   description: string;
+  // Monotonically increasing, assigned at creation - a stable React list key.
+  // Frame lists (CAN log, raw bus monitor) prepend new entries rather than
+  // appending, so an array-index key would silently reassign every row's
+  // identity to a different frame on each new arrival; `seq` never changes
+  // for a given frame regardless of where it later ends up in the array.
+  seq: number;
 }
 
 export type ExpansionBoardType = 

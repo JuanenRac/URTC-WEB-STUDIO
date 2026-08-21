@@ -285,8 +285,8 @@ export const BusMonitorPanel: React.FC<{ ctx: ToolCtx; subscribeAll: (cb: (f: Ca
             <tr><th className="text-left px-2 py-1">{t('testerglobal.th_time', 'Time')}</th><th className="text-left px-2 py-1">{t('testerglobal.th_dir', 'Dir')}</th><th className="text-left px-2 py-1">{t('testerglobal.th_id', 'ID')}</th><th className="text-left px-2 py-1">{t('testerglobal.th_dlc', 'DLC')}</th><th className="text-left px-2 py-1">{t('testerglobal.th_data', 'Data')}</th></tr>
           </thead>
           <tbody>
-            {frames.map((f, i) => (
-              <tr key={i} className="odd:bg-slate-950 even:bg-slate-900/50">
+            {frames.map((f) => (
+              <tr key={f.seq} className="odd:bg-slate-950 even:bg-slate-900/50">
                 <td className="px-2 py-0.5 text-slate-500">{f.timestamp}</td>
                 <td className={`px-2 py-0.5 ${f.direction === 'Tx' ? 'text-amber-400' : 'text-cyan-400'}`}>{f.direction}</td>
                 <td className="px-2 py-0.5 text-slate-200">{f.idHex}</td>
