@@ -1,6 +1,34 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Thermometer, Zap, AlertTriangle, RefreshCw, Eye } from 'lucide-react';
+
+// Extracted and memoized so hovering the grid (which updates hoverTemp in the
+// parent on every mouse move between cells) doesn't force all 32x24 = 768
+// cells to re-render and recompute their color on every single hover change -
+// only the parent's own hover-readout line needs to update. Each cell only
+// re-renders when its own temp/color/isHotSpot actually changes (i.e. when
+// the grid itself regenerates via the hasShort toggle), since onHover/onLeave
+// are stable callbacks (useCallback in the parent) and every other prop is a
+// primitive value React.memo can shallow-compare.
+const ThermalCell = React.memo(function ThermalCell({
+  r, c, temp, color, isHotSpot, onHover, onLeave
+}: {
+  r: number; c: number; temp: number; color: string; isHotSpot: boolean;
+  onHover: (x: number, y: number, temp: number) => void; onLeave: () => void;
+}) {
+  return (
+    <div
+      onMouseEnter={() => onHover(c, r, temp)}
+      onMouseLeave={onLeave}
+      className="aspect-square relative transition-opacity hover:opacity-80"
+      style={{ backgroundColor: color }}
+    >
+      {isHotSpot && (
+        <span className="absolute inset-0 border-2 border-red-500 animate-ping rounded-full" />
+      )}
+    </div>
+  );
+});
 
 export const ThermalCameraViewer: React.FC = () => {
   const { t } = useTranslation();
@@ -76,6 +104,9 @@ export const ThermalCameraViewer: React.FC = () => {
       }
     }
   };
+
+  const handleCellHover = useCallback((x: number, y: number, temp: number) => setHoverTemp({ x, y, temp }), []);
+  const handleCellLeave = useCallback(() => setHoverTemp(null), []);
 
   // Find max temp location
   let maxTemp = 0;
@@ -160,17 +191,16 @@ export const ThermalCameraViewer: React.FC = () => {
                 const isHotSpot = r === maxCoords.r && c === maxCoords.c && hasShort;
 
                 return (
-                  <div
+                  <ThermalCell
                     key={`${r}-${c}`}
-                    onMouseEnter={() => setHoverTemp({ x: c, y: r, temp: t })}
-                    onMouseLeave={() => setHoverTemp(null)}
-                    className="aspect-square relative transition-opacity hover:opacity-80"
-                    style={{ backgroundColor: getCellColor(t) }}
-                  >
-                    {isHotSpot && (
-                      <span className="absolute inset-0 border-2 border-red-500 animate-ping rounded-full" />
-                    )}
-                  </div>
+                    r={r}
+                    c={c}
+                    temp={t}
+                    color={getCellColor(t)}
+                    isHotSpot={isHotSpot}
+                    onHover={handleCellHover}
+                    onLeave={handleCellLeave}
+                  />
                 );
               })
             )}

@@ -240,6 +240,7 @@
     "log_swd_not_available": "[Not available] Web Serial cannot drive an SWD/JTAG probe - there is no browser API for it, so this is a structural limitation, not a missing feature.",
     "log_swd_use_desktop": "Use the URTC Flasher desktop tool instead: it shells out to STM32CubeProgrammer or pyOCD to flash {{boot}} at 0x08000000 and {{app}} at 0x08008000.",
     "log_could_not_read": "ERROR: could not read firmware file: {{message}}",
+    "err_insecure_context": "Web Crypto (crypto.subtle) is unavailable, so HMAC signing cannot run - this page must be served over HTTPS or from localhost. Current origin: {{origin}}",
     "err_empty_file": "Firmware file is empty",
     "err_exceeds_app_slot": "Firmware exceeds the {{max}} byte application slot",
     "status_resetting_mcu": "1/5: Resetting MCU into CAN bootloader...",
@@ -526,6 +527,7 @@
     "iframe_blocked": "Cannot access USB/Serial from this iframe. Please click the \"Open in new tab\" button at the top right of the preview pane to use the Web Serial API.",
     "connection_failed": "Connection failed: {{message}}",
     "no_bus_response": "No response from a URTC board at any known CAN bitrate (tried 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Check wiring and power.",
-    "send_failed": "CAN send failed ({{description}}): {{message}}"
+    "send_failed": "CAN send failed ({{description}}): {{message}}",
+    "writer_unavailable": "Serial port writer is not available (port disconnected)."
   }
 }

@@ -240,6 +240,7 @@
     "log_swd_not_available": "[Non disponibile] Web Serial non può pilotare una sonda SWD/JTAG - non esiste alcuna API browser per questo, quindi è una limitazione strutturale, non una funzionalità mancante.",
     "log_swd_use_desktop": "Usa invece lo strumento desktop URTC Flasher: esegue STM32CubeProgrammer o pyOCD per flashare {{boot}} a 0x08000000 e {{app}} a 0x08008000.",
     "log_could_not_read": "ERRORE: impossibile leggere il file firmware: {{message}}",
+    "err_insecure_context": "Web Crypto (crypto.subtle) non è disponibile, quindi la firma HMAC non può essere eseguita - questa pagina deve essere servita tramite HTTPS o da localhost. Origine attuale: {{origin}}",
     "err_empty_file": "Il file firmware è vuoto",
     "err_exceeds_app_slot": "Il firmware supera lo slot applicazione di {{max}} byte",
     "status_resetting_mcu": "1/5: Ripristino dell'MCU nel bootloader CAN...",
@@ -526,6 +527,7 @@
     "iframe_blocked": "Impossibile accedere a USB/Seriale da questo iframe. Clicca sul pulsante \"Apri in una nuova scheda\" in alto a destra nel pannello di anteprima per usare l'API Web Serial.",
     "connection_failed": "Connessione non riuscita: {{message}}",
     "no_bus_response": "Nessuna risposta da una scheda URTC a nessun bitrate CAN noto (provati 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Controlla il cablaggio e l'alimentazione.",
-    "send_failed": "Invio del frame CAN non riuscito ({{description}}): {{message}}"
+    "send_failed": "Invio del frame CAN non riuscito ({{description}}): {{message}}",
+    "writer_unavailable": "Il writer della porta seriale non è disponibile (porta disconnessa)."
   }
 }
