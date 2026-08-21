@@ -230,6 +230,8 @@
     "log_starting_readback": "Flash-Rücklesen wird gestartet (0x7FE/0x7FF)...",
     "status_readback_complete": "Rücklesen abgeschlossen: {{bytes}} Bytes gespeichert.",
     "log_readback_success": "Rücklesen ERFOLGREICH: {{bytes}} Bytes.",
+    "status_readback_cancelled": "Rücklesen abgeschlossen ({{bytes}} Bytes), aber der Speichern-Dialog wurde abgebrochen.",
+    "log_readback_save_cancelled": "Speichern-Dialog abgebrochen - Daten wurden nicht auf die Festplatte geschrieben.",
     "status_readback_failed": "Rücklesen fehlgeschlagen",
     "status_swd_not_possible": "SWD/JTAG erfordert ein lokales Werkzeug - von einem Browser aus nicht möglich",
     "log_swd_not_available": "[Nicht verfügbar] Web Serial kann keine SWD/JTAG-Sonde ansteuern - es gibt dafür keine Browser-API, dies ist also eine strukturelle Einschränkung, kein fehlendes Feature.",
@@ -519,6 +521,7 @@
   "hooks": {
     "web_serial_unsupported": "Die Web-Serial-API wird von diesem Browser nicht unterstützt. Bitte Chrome oder Edge verwenden.",
     "iframe_blocked": "Kein Zugriff auf USB/Seriell aus diesem iframe möglich. Bitte auf die Schaltfläche \"In neuem Tab öffnen\" oben rechts im Vorschaufenster klicken, um die Web-Serial-API zu nutzen.",
-    "connection_failed": "Verbindung fehlgeschlagen: {{message}}"
+    "connection_failed": "Verbindung fehlgeschlagen: {{message}}",
+    "no_bus_response": "Keine Antwort von einer URTC-Platine bei keiner bekannten CAN-Bitrate (versucht: 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Verkabelung und Stromversorgung prüfen."
   }
 }

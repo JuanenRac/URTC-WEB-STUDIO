@@ -230,6 +230,8 @@
     "log_starting_readback": "Avvio lettura flash (0x7FE/0x7FF)...",
     "status_readback_complete": "Lettura completata: {{bytes}} byte salvati.",
     "log_readback_success": "Lettura RIUSCITA: {{bytes}} byte.",
+    "status_readback_cancelled": "Lettura completata ({{bytes}} byte) ma la finestra di salvataggio è stata annullata.",
+    "log_readback_save_cancelled": "Finestra di salvataggio annullata - i dati non sono stati scritti su disco.",
     "status_readback_failed": "Lettura non riuscita",
     "status_swd_not_possible": "SWD/JTAG richiede uno strumento locale - non possibile da un browser",
     "log_swd_not_available": "[Non disponibile] Web Serial non può pilotare una sonda SWD/JTAG - non esiste alcuna API browser per questo, quindi è una limitazione strutturale, non una funzionalità mancante.",
@@ -519,6 +521,7 @@
   "hooks": {
     "web_serial_unsupported": "L'API Web Serial non è supportata in questo browser. Usa Chrome o Edge.",
     "iframe_blocked": "Impossibile accedere a USB/Seriale da questo iframe. Clicca sul pulsante \"Apri in una nuova scheda\" in alto a destra nel pannello di anteprima per usare l'API Web Serial.",
-    "connection_failed": "Connessione non riuscita: {{message}}"
+    "connection_failed": "Connessione non riuscita: {{message}}",
+    "no_bus_response": "Nessuna risposta da una scheda URTC a nessun bitrate CAN noto (provati 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Controlla il cablaggio e l'alimentazione."
   }
 }

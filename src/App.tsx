@@ -437,13 +437,42 @@ export default function App() {
       const data = await flasher.readBack((pct) => {
         flasher.setFlasherState(prev => ({ ...prev, progress: pct }));
       });
-      const blob = new Blob([data.buffer as ArrayBuffer], { type: 'application/octet-stream' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `URTC_readback_${new Date().toISOString().replace(/[:.]/g, '-')}.bin`;
-      a.click();
-      URL.revokeObjectURL(url);
+      const suggestedName = `URTC_readback_${new Date().toISOString().replace(/[:.]/g, '-')}.bin`;
+
+      // File System Access API (same Chromium-only browser family already
+      // required for Web Serial, so no extra compatibility cost) lets the
+      // user pick where to save, closer to the desktop Flasher's native
+      // "Save As..." dialog. Falls back to the existing <a download> Blob
+      // approach (straight to the Downloads folder) when unavailable - e.g.
+      // an insecure context, or a browser build without the picker.
+      if ('showSaveFilePicker' in window) {
+        try {
+          // @ts-ignore - showSaveFilePicker isn't in the default TS DOM lib
+          const handle = await window.showSaveFilePicker({
+            suggestedName,
+            types: [{ description: 'Firmware binary', accept: { 'application/octet-stream': ['.bin'] } }]
+          });
+          const writable = await handle.createWritable();
+          await writable.write(data);
+          await writable.close();
+        } catch (pickerErr: any) {
+          if (pickerErr?.name === 'AbortError') {
+            // User cancelled the save dialog - the readback itself already
+            // succeeded, so report that instead of treating this as a failure.
+            flasher.setFlasherState(prev => ({ ...prev, mode: 'idle', progress: 100, statusText: t('flasher.status_readback_cancelled', 'Readback complete ({{bytes}} bytes) but the save dialog was cancelled.', { bytes: data.length }), log: [...prev.log, t('flasher.log_readback_save_cancelled', 'Save dialog cancelled - data was not written to disk.')] }));
+            return;
+          }
+          throw pickerErr;
+        }
+      } else {
+        const blob = new Blob([data.buffer as ArrayBuffer], { type: 'application/octet-stream' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = suggestedName;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
       flasher.setFlasherState(prev => ({ ...prev, mode: 'idle', progress: 100, statusText: t('flasher.status_readback_complete', 'Readback complete: {{bytes}} bytes saved.', { bytes: data.length }), log: [...prev.log, t('flasher.log_readback_success', 'Readback SUCCESS: {{bytes}} bytes.', { bytes: data.length })] }));
     } catch (e: any) {
       flasher.setFlasherState(prev => ({ ...prev, mode: 'idle', statusText: t('flasher.status_readback_failed', 'Readback failed'), log: [...prev.log, t('flasher.log_error_prefix', 'ERROR: {{message}}', { message: e.message })] }));

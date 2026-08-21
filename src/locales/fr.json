@@ -230,6 +230,8 @@
     "log_starting_readback": "Démarrage de la lecture flash (0x7FE/0x7FF)...",
     "status_readback_complete": "Lecture terminée : {{bytes}} octets enregistrés.",
     "log_readback_success": "Lecture RÉUSSIE : {{bytes}} octets.",
+    "status_readback_cancelled": "Lecture terminée ({{bytes}} octets) mais la boîte de dialogue d'enregistrement a été annulée.",
+    "log_readback_save_cancelled": "Boîte de dialogue d'enregistrement annulée - les données n'ont pas été écrites sur le disque.",
     "status_readback_failed": "Échec de la lecture",
     "status_swd_not_possible": "SWD/JTAG nécessite un outil local - impossible depuis un navigateur",
     "log_swd_not_available": "[Non disponible] Web Serial ne peut pas piloter une sonde SWD/JTAG - il n'existe aucune API navigateur pour cela, il s'agit donc d'une limitation structurelle, pas d'une fonctionnalité manquante.",
@@ -519,6 +521,7 @@
   "hooks": {
     "web_serial_unsupported": "L'API Web Serial n'est pas prise en charge par ce navigateur. Veuillez utiliser Chrome ou Edge.",
     "iframe_blocked": "Impossible d'accéder à l'USB/Série depuis cet iframe. Cliquez sur le bouton \"Ouvrir dans un nouvel onglet\" en haut à droite du panneau d'aperçu pour utiliser l'API Web Serial.",
-    "connection_failed": "Échec de la connexion : {{message}}"
+    "connection_failed": "Échec de la connexion : {{message}}",
+    "no_bus_response": "Aucune réponse d'une carte URTC à aucun débit CAN connu (essayés : 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Vérifiez le câblage et l'alimentation."
   }
 }
