@@ -1,6 +1,23 @@
 import { useState, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CanFrame } from '../types';
+import { CAN_ID_QUERY_VERSION, CAN_ID_VERSION_RESPONSE, CAN_ID_BOOTLOADER_VERSION_RESPONSE } from '../lib/flasher';
+
+// Standard SLCAN/Lawicel "Sx" bitrate codes, in the same most-likely-first try
+// order as URTC-FLASHER/URTC-TESTER's own auto_detect_bitrate: URTC's bus is
+// fixed at 500k, so that's tried first, then its two most common neighbors,
+// then the rest of the table.
+const BITRATE_TRY_ORDER: Array<{ label: string; code: string }> = [
+  { label: '500 kbit/s', code: '6' },
+  { label: '250 kbit/s', code: '5' },
+  { label: '125 kbit/s', code: '4' },
+  { label: '1 Mbit/s', code: '8' },
+  { label: '100 kbit/s', code: '3' },
+  { label: '50 kbit/s', code: '2' },
+  { label: '20 kbit/s', code: '1' },
+  { label: '10 kbit/s', code: '0' },
+  { label: '800 kbit/s', code: '7' },
+];
 
 export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
   const { t } = useTranslation();
@@ -130,6 +147,61 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
     }
   }, [handlePortGone]);
 
+  // Resolves true as soon as a CAN_ID_VERSION_RESPONSE or
+  // CAN_ID_BOOTLOADER_VERSION_RESPONSE frame is dispatched (whichever the
+  // board answers CAN_ID_QUERY_VERSION with - application or bootloader),
+  // false if neither arrives within timeoutMs. Used by the bitrate
+  // auto-detect loop below. Filtered to these two specific IDs rather than
+  // "any parsed frame at all", so that noise which happens to parse into a
+  // well-formed-looking SLCAN line at the wrong bitrate can't be mistaken
+  // for a real board response.
+  const probeForResponse = (timeoutMs: number): Promise<boolean> => {
+    return new Promise((resolve) => {
+      let settled = false;
+      const unsubscribe = subscribeAll((frame) => {
+        if (settled) return;
+        if (frame.id !== CAN_ID_VERSION_RESPONSE && frame.id !== CAN_ID_BOOTLOADER_VERSION_RESPONSE) return;
+        settled = true;
+        unsubscribe();
+        clearTimeout(timer);
+        resolve(true);
+      });
+      const timer = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        unsubscribe();
+        resolve(false);
+      }, timeoutMs);
+    });
+  };
+
+  // Tries each candidate bitrate in BITRATE_TRY_ORDER: (re)opens the SLCAN
+  // channel at that bitrate, sends a CAN_ID_QUERY_VERSION probe (empty
+  // payload - the same frame the app uses elsewhere to ask "what's on the
+  // bus"), and waits briefly for any response. Mirrors
+  // URTC-FLASHER/URTC-TESTER's own auto_detect_bitrate. Returns the matching
+  // bitrate label with the channel left open on it, or null if nothing
+  // answered at any bitrate (channel is left closed in that case).
+  const detectAndOpenBitrate = async (): Promise<string | null> => {
+    const queryVersionCmd = `t${CAN_ID_QUERY_VERSION.toString(16).padStart(3, '0').toUpperCase()}0`;
+    for (const { label, code } of BITRATE_TRY_ORDER) {
+      await _sendRaw('C'); // close first - SLCAN rejects a bitrate change while already open
+      await new Promise(r => setTimeout(r, 50));
+      rxBufferRef.current = ''; // drop any partial garbage line from the previous bitrate attempt
+      await _sendRaw('S' + code);
+      await new Promise(r => setTimeout(r, 50));
+      await _sendRaw('O');
+      await new Promise(r => setTimeout(r, 50));
+
+      const responded = probeForResponse(800); // register the listener before sending, so a fast reply can't be missed
+      await _sendRaw(queryVersionCmd);
+      if (await responded) {
+        return label;
+      }
+    }
+    return null;
+  };
+
   const connect = async () => {
     if (!('serial' in navigator)) {
       alert(t('hooks.web_serial_unsupported', 'Web Serial API is not supported in this browser. Please use Chrome or Edge.'));
@@ -147,27 +219,34 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
 
       writerRef.current = port.writable.getWriter();
       keepReadingRef.current = true;
+      readLoop(); // start pumping bytes now so the bitrate probes below can actually see responses
 
-      // SLCAN Init Sequence
-      await _sendRaw('C');
-      await new Promise(r => setTimeout(r, 50));
-      await _sendRaw('S6'); // 500 kbit/s
-      await new Promise(r => setTimeout(r, 50));
-      await _sendRaw('O'); // Open
+      const detectedLabel = await detectAndOpenBitrate();
+      if (!detectedLabel) {
+        throw new Error(t('hooks.no_bus_response', 'No response from a URTC board at any known CAN bitrate (tried 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Check wiring and power.'));
+      }
 
       setIsConnected(true);
-      readLoop();
+      setPortName(`USB-CAN Adapter (${detectedLabel})`);
     } catch (e: any) {
       console.error('Failed to connect', e);
 
       // If port.open() already succeeded before something later in the init
-      // sequence threw (getWriter(), or a write() failing because the
-      // adapter dropped mid-handshake), the port is left physically open
-      // and claimed by this tab while isConnected is still false - the UI
-      // only offers a "Connect" button in that state, never "Disconnect",
-      // so without this cleanup the port stays hung open with no way to
-      // release it short of reloading the page. Tear it back down exactly
-      // like a normal disconnect() would.
+      // sequence threw (getWriter(), the SLCAN handshake, or every bitrate
+      // probe in detectAndOpenBitrate() coming back empty), the port is left
+      // physically open and claimed by this tab while isConnected is still
+      // false - the UI only offers a "Connect" button in that state, never
+      // "Disconnect", so without this cleanup the port stays hung open with
+      // no way to release it short of reloading the page. Tear it back down
+      // exactly like a normal disconnect() would - including canceling the
+      // read loop's reader first (readLoop() is started early, before
+      // bitrate detection, so the probes can see responses), since
+      // port.close() below can fail on a still-locked readable stream
+      // otherwise.
+      keepReadingRef.current = false;
+      if (readerRef.current) {
+        try { await readerRef.current.cancel(); } catch {}
+      }
       if (writerRef.current) {
         try { writerRef.current.releaseLock(); } catch {}
         writerRef.current = null;
@@ -178,7 +257,7 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
         try { await portRef.current.close(); } catch {}
         portRef.current = null;
       }
-      keepReadingRef.current = false;
+      readerRef.current = null;
       setPortName('');
 
       if (e.message?.includes('requestPort') || e.name === 'SecurityError') {
