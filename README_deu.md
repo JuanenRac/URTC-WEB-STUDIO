@@ -208,6 +208,18 @@ oder bedienen Sie `dist/` mit einem beliebigen statischen Datei-Host Ihrer
 Wahl. `npm run lint` führt den TypeScript-Compiler im reinen
 Prüfmodus aus.
 
+### Versionierung
+
+`package.json`s `version` wird bei jedem echten `npm run build` automatisch
+erhöht (eingebunden als `prebuild`-Skript, das `scripts/bump-version.mjs`
+ausführt) - `npm run dev`/`lint`/`preview` fassen sie nie an. Das ist keine
+Semantic Versioning: Es ist ein Kilometerzähler auf Basis 10. Die Patch-
+Ziffer erhöht sich um 1; würde sie 9 überschreiten, wird sie auf 0
+zurückgesetzt und stattdessen die Minor-Ziffer erhöht (`1.1.9` -> `1.2.0`,
+nie `1.1.10`); derselbe Übertrag pflanzt sich von Minor zu Major fort. Siehe
+`CHANGELOG.md` für die Versionshistorie und eine Zusammenfassung der
+bisherigen Arbeit an diesem Projekt.
+
 ## 🛠️ Technologie-Stack
 - **Sprache:** TypeScript
 - **Frontend-Framework:** React 18
@@ -301,6 +313,10 @@ Prüfmodus aus.
 │   │                                 spiegelt tester_config.py byte-fuer-byte
 │   └── locales/                     UI-Zeichenketten - en.json, es.json,
 │                                     de.json, fr.json, it.json
+├── scripts/
+│   └── bump-version.mjs             Abhaengigkeitsfreies Versions-Skript, automatisch
+│                                     vor jedem echten Build ausgefuehrt (siehe
+│                                     "Versionierung" oben)
 ├── public/
 │   └── firmware/                    Gebuendelte .bin/.elf/.hex fuer die
 │                                     Hauptanwendung, den Haupt-Bootloader,
@@ -324,6 +340,7 @@ Prüfmodus aus.
 ├── build.bat / build.sh             Installiert Abhaengigkeiten + erzeugt
 │                                     den statischen dist/-Build
 ├── package.json
+├── CHANGELOG.md                     Versionshistorie und Zusammenfassung bisheriger Arbeit
 ├── LICENSE
 ├── README.md                        Diese Datei
 └── README_spa.md / README_ita.md / README_fra.md / README_deu.md  <- Übersetzungen

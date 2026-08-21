@@ -1,4 +1,7 @@
 {
+  "app": {
+    "dismiss": "Dismiss"
+  },
   "config": {
     "language_en": "English",
     "language_es": "Español",
@@ -522,6 +525,7 @@
     "web_serial_unsupported": "Web Serial API is not supported in this browser. Please use Chrome or Edge.",
     "iframe_blocked": "Cannot access USB/Serial from this iframe. Please click the \"Open in new tab\" button at the top right of the preview pane to use the Web Serial API.",
     "connection_failed": "Connection failed: {{message}}",
-    "no_bus_response": "No response from a URTC board at any known CAN bitrate (tried 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Check wiring and power."
+    "no_bus_response": "No response from a URTC board at any known CAN bitrate (tried 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Check wiring and power.",
+    "send_failed": "CAN send failed ({{description}}): {{message}}"
   }
 }

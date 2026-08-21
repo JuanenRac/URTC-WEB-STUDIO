@@ -1,4 +1,7 @@
 {
+  "app": {
+    "dismiss": "Descartar"
+  },
   "config": {
     "language_en": "English",
     "language_es": "Español",
@@ -522,6 +525,7 @@
     "web_serial_unsupported": "La API Web Serial no es compatible con este navegador. Usa Chrome o Edge.",
     "iframe_blocked": "No se puede acceder a USB/Serial desde este iframe. Haz clic en el botón \"Abrir en pestaña nueva\" en la esquina superior derecha del panel de vista previa para usar la API Web Serial.",
     "connection_failed": "Conexión fallida: {{message}}",
-    "no_bus_response": "Sin respuesta de ninguna placa URTC a ningún bitrate CAN conocido (probados 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Revisa el cableado y la alimentación."
+    "no_bus_response": "Sin respuesta de ninguna placa URTC a ningún bitrate CAN conocido (probados 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Revisa el cableado y la alimentación.",
+    "send_failed": "Fallo al enviar trama CAN ({{description}}): {{message}}"
   }
 }

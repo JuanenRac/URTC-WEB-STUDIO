@@ -1,4 +1,7 @@
 {
+  "app": {
+    "dismiss": "Ignorer"
+  },
   "config": {
     "language_en": "English",
     "language_es": "Español",
@@ -522,6 +525,7 @@
     "web_serial_unsupported": "L'API Web Serial n'est pas prise en charge par ce navigateur. Veuillez utiliser Chrome ou Edge.",
     "iframe_blocked": "Impossible d'accéder à l'USB/Série depuis cet iframe. Cliquez sur le bouton \"Ouvrir dans un nouvel onglet\" en haut à droite du panneau d'aperçu pour utiliser l'API Web Serial.",
     "connection_failed": "Échec de la connexion : {{message}}",
-    "no_bus_response": "Aucune réponse d'une carte URTC à aucun débit CAN connu (essayés : 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Vérifiez le câblage et l'alimentation."
+    "no_bus_response": "Aucune réponse d'une carte URTC à aucun débit CAN connu (essayés : 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Vérifiez le câblage et l'alimentation.",
+    "send_failed": "Échec de l'envoi de la trame CAN ({{description}}) : {{message}}"
   }
 }

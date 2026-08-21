@@ -6,6 +6,15 @@
 # =============================================================================
 
 echo "========================================"
+echo " URTC Web Studio"
+echo " Build and Compile Script - installs dependencies and compiles the app"
+echo " Author: JuanenRac (Electro Hobby 3D)"
+echo " E-mail: electrohobby3d@gmail.com"
+echo " License: GPL-3.0 - see LICENSE"
+echo "========================================"
+echo ""
+
+echo "========================================"
 echo " Installing dependencies... "
 echo "========================================"
 npm install
@@ -17,3 +26,5 @@ npm run build
 echo ""
 echo "Build complete! The static output is in dist/ - preview it locally with:"
 echo "npm run preview"
+echo ""
+read -p "Press Enter to close this window..."

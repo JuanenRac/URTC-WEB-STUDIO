@@ -195,6 +195,17 @@ npm run preview
 o sirve `dist/` con cualquier host de archivos estáticos de tu elección. `npm run
 lint` ejecuta el compilador de TypeScript en modo de solo comprobación.
 
+### Versionado
+
+El `version` de `package.json` sube automáticamente en cada `npm run build`
+real (enganchado como el script `prebuild`, que ejecuta
+`scripts/bump-version.mjs`) - `npm run dev`/`lint`/`preview` nunca lo tocan.
+Esto no es Semantic Versioning: es un cuentakilómetros en base 10. El dígito
+de patch sube en 1; cuando pasaría de 9, se resetea a 0 y el dígito de minor
+sube en su lugar (`1.1.9` -> `1.2.0`, nunca `1.1.10`); el mismo acarreo se
+propaga de minor a major. Ver `CHANGELOG.md` para el historial de versiones
+y un resumen del trabajo anterior en este proyecto.
+
 ## 🛠️ Stack tecnológico
 - **Lenguaje:** TypeScript
 - **Framework de frontend:** React 18
@@ -285,6 +296,10 @@ lint` ejecuta el compilador de TypeScript en modo de solo comprobación.
 │   │                                 refleja tester_config.py byte a byte
 │   └── locales/                     Cadenas de UI - en.json, es.json, de.json,
 │                                     fr.json, it.json
+├── scripts/
+│   └── bump-version.mjs             Script de subida de version sin dependencias,
+│                                     ejecutado automaticamente antes de cada build
+│                                     real (ver "Versionado" arriba)
 ├── public/
 │   └── firmware/                    .bin/.elf/.hex incluidos para la aplicacion
 │                                     principal, el bootloader principal, la
@@ -308,6 +323,7 @@ lint` ejecuta el compilador de TypeScript en modo de solo comprobación.
 ├── build.bat / build.sh             Instala dependencias + produce el build
 │                                     estatico de dist/
 ├── package.json
+├── CHANGELOG.md                     Historial de versiones y resumen del trabajo pasado
 ├── LICENSE
 ├── README.md                        Este archivo
 └── README_spa.md / README_ita.md / README_fra.md / README_deu.md  <- traducciones

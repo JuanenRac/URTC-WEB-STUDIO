@@ -199,6 +199,18 @@ npm run preview
 ou servez `dist/` avec l'hébergeur de fichiers statiques de votre choix. `npm run
 lint` exécute le compilateur TypeScript en mode vérification uniquement.
 
+### Versionnage
+
+Le `version` de `package.json` s'incrémente automatiquement à chaque `npm
+run build` réel (branché comme script `prebuild`, qui exécute
+`scripts/bump-version.mjs`) - `npm run dev`/`lint`/`preview` n'y touchent
+jamais. Ce n'est pas du Semantic Versioning : c'est un compteur kilométrique
+en base 10. Le chiffre du patch augmente de 1 ; lorsqu'il dépasserait 9, il
+revient à 0 et le chiffre du minor augmente à sa place (`1.1.9` -> `1.2.0`,
+jamais `1.1.10`) ; la même retenue se propage du minor au major. Voir
+`CHANGELOG.md` pour l'historique des versions et un résumé du travail
+antérieur sur ce projet.
+
 ## 🛠️ Stack technique
 - **Langage :** TypeScript
 - **Framework frontend :** React 18
@@ -290,6 +302,10 @@ lint` exécute le compilateur TypeScript en mode vérification uniquement.
 │   │                                 reflete tester_config.py octet par octet
 │   └── locales/                     Chaines UI - en.json, es.json, de.json,
 │                                     fr.json, it.json
+├── scripts/
+│   └── bump-version.mjs             Script d'incrementation de version sans dependance,
+│                                     execute automatiquement avant chaque build reel
+│                                     (voir "Versionnage" ci-dessus)
 ├── public/
 │   └── firmware/                    .bin/.elf/.hex embarques pour
 │                                     l'application principale, le bootloader
@@ -314,6 +330,7 @@ lint` exécute le compilateur TypeScript en mode vérification uniquement.
 ├── build.bat / build.sh             Installe les dependances + produit le
 │                                     build statique de dist/
 ├── package.json
+├── CHANGELOG.md                     Historique des versions et resume du travail passe
 ├── LICENSE
 ├── README.md                        Ce fichier
 └── README_spa.md / README_ita.md / README_fra.md / README_deu.md  <- traductions

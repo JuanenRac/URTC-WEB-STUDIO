@@ -23,6 +23,16 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
   const { t } = useTranslation();
   const [isConnected, setIsConnected] = useState(false);
   const [portName, setPortName] = useState<string>('');
+  // Surfaces sendFrame() write failures to the UI. Most callers (one-shot
+  // "Send"/"Fire" buttons across tester/ToolPanels.tsx and tester/GlobalPanels.tsx,
+  // plus every useKeepalive tick) call sendFrame() fire-and-forget, without
+  // awaiting or catching it - before this, a write failure (e.g. the port
+  // going away mid-session) only threw an unhandled rejection visible in the
+  // browser console, silently dropping a command the user thought had been
+  // sent. Cleared automatically the next time a send succeeds, or manually
+  // via clearSendError (wired to the banner's dismiss button in App.tsx).
+  const [sendError, setSendError] = useState<string | null>(null);
+  const clearSendError = useCallback(() => setSendError(null), []);
 
   const portRef = useRef<any>(null);
   const readerRef = useRef<any>(null);
@@ -208,6 +218,8 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
       return;
     }
 
+    setSendError(null); // drop any stale banner from a previous session before trying a fresh one
+
     try {
       // @ts-ignore
       const port = await navigator.serial.requestPort();
@@ -319,7 +331,18 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
     let hexData = data.map(b => b.toString(16).padStart(2, '0').toUpperCase()).join('');
     const cmd = `t${id.toString(16).padStart(3, '0').toUpperCase()}${dlc}${hexData}`;
 
-    await _sendRaw(cmd);
+    try {
+      await _sendRaw(cmd);
+    } catch (e: any) {
+      // Most callers never await/catch this promise (see the sendError
+      // comment above) - set the banner message here, at the one place every
+      // sendFrame() call funnels through, then rethrow so callers that DO
+      // await/catch (useKeepalive, handleQueryVersion, etc.) keep seeing the
+      // rejection exactly as before.
+      setSendError(t('hooks.send_failed', 'CAN send failed ({{description}}): {{message}}', { description, message: e?.message || String(e) }));
+      throw e;
+    }
+    setSendError(null); // self-heals as soon as a send succeeds again (e.g. after a reconnect)
 
     const now = new Date();
     const timestamp = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}.${now.getMilliseconds().toString().padStart(3, '0')}`;
@@ -434,7 +457,9 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
     sendFrame,
     waitForFrame,
     subscribe,
-    subscribeAll
+    subscribeAll,
+    sendError,
+    clearSendError
   };
 }
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
+import { AlertTriangle, X } from 'lucide-react';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
 import { ToolCatalog } from './components/ToolCatalog';
@@ -515,6 +516,29 @@ export default function App() {
         onDisconnect={serialCan.disconnect}
         portName={serialCan.portName}
       />
+
+      {/* CAN send failure banner - covers every sendFrame() call across the
+          app (tester tool panels, keepalive loops, flasher, etc.), most of
+          which are fire-and-forget and would otherwise fail silently with
+          nothing but a console trace. Placed above the tab content so it's
+          visible no matter which tab was active when the send failed. */}
+      {serialCan.sendError && (
+        <div className="max-w-[1400px] w-full mx-auto px-2 md:px-4 pt-3">
+          <div className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg bg-red-950/80 text-red-400 border border-red-800/80 text-xs font-medium">
+            <div className="flex items-center gap-2 min-w-0">
+              <AlertTriangle className="w-4 h-4 shrink-0" />
+              <span className="truncate">{serialCan.sendError}</span>
+            </div>
+            <button
+              onClick={serialCan.clearSendError}
+              className="text-red-300 hover:text-red-100 shrink-0"
+              title={t('app.dismiss', 'Dismiss')}
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Main Layout Area */}
       <div className="flex flex-1 max-w-[1400px] w-full mx-auto">

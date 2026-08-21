@@ -1,4 +1,7 @@
 {
+  "app": {
+    "dismiss": "Verwerfen"
+  },
   "config": {
     "language_en": "English",
     "language_es": "Español",
@@ -522,6 +525,7 @@
     "web_serial_unsupported": "Die Web-Serial-API wird von diesem Browser nicht unterstützt. Bitte Chrome oder Edge verwenden.",
     "iframe_blocked": "Kein Zugriff auf USB/Seriell aus diesem iframe möglich. Bitte auf die Schaltfläche \"In neuem Tab öffnen\" oben rechts im Vorschaufenster klicken, um die Web-Serial-API zu nutzen.",
     "connection_failed": "Verbindung fehlgeschlagen: {{message}}",
-    "no_bus_response": "Keine Antwort von einer URTC-Platine bei keiner bekannten CAN-Bitrate (versucht: 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Verkabelung und Stromversorgung prüfen."
+    "no_bus_response": "Keine Antwort von einer URTC-Platine bei keiner bekannten CAN-Bitrate (versucht: 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Verkabelung und Stromversorgung prüfen.",
+    "send_failed": "Senden des CAN-Frames fehlgeschlagen ({{description}}): {{message}}"
   }
 }

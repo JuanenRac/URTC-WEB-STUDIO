@@ -189,6 +189,17 @@ npm run preview
 or serve `dist/` with any static file host of your choice. `npm run lint`
 runs the TypeScript compiler in check-only mode.
 
+### Versioning
+
+`package.json`'s `version` bumps automatically on every real `npm run build`
+(wired in as the `prebuild` script, running `scripts/bump-version.mjs`) -
+`npm run dev`/`lint`/`preview` never touch it. This is not Semantic
+Versioning: it's a base-10 odometer. The patch digit increments by one; once
+it would roll past 9 it resets to 0 and the minor digit increments instead
+(`1.1.9` -> `1.2.0`, never `1.1.10`); the same carry cascades from minor into
+major. See `CHANGELOG.md` for the version history and a summary of past work
+on this project.
+
 ## 🛠️ Technology Stack
 - **Language:** TypeScript
 - **Frontend Framework:** React 18
@@ -260,6 +271,10 @@ runs the TypeScript compiler in check-only mode.
 │   │                                 tester_config.py byte-for-byte
 │   └── locales/                     UI strings - en.json, es.json, de.json, fr.json,
 │                                     it.json
+├── scripts/
+│   └── bump-version.mjs             Dependency-free version-bump script, run
+│                                     automatically before every real build (see
+│                                     "Versioning" above)
 ├── public/
 │   └── firmware/                    Bundled .bin/.elf/.hex for the main application,
 │                                     main bootloader, expansion slave application, and
@@ -278,6 +293,7 @@ runs the TypeScript compiler in check-only mode.
 ├── dev.bat / dev.sh                 Install deps + start the Vite dev server
 ├── build.bat / build.sh             Install deps + produce the static dist/ build
 ├── package.json
+├── CHANGELOG.md                     Version history and a summary of past work
 ├── LICENSE
 ├── README.md                        This file
 └── README_spa.md / README_ita.md / README_fra.md / README_deu.md  <- translations
