@@ -9,6 +9,17 @@ base-10 "odometer" scheme (see the note at the bottom of this file) - every
 real production build (`npm run build`) bumps the version automatically, so
 the number reflects build count, not the size or compatibility of a change.
 
+## [1.1.8] - Jumper Sync on connect + Oled Reset timer overlap fix
+
+- **Jumper Sync** - a new `useEffect` queries the real active tool over CAN
+  (`0x110`) as soon as the app connects to a board, instead of assuming
+  Tool ID 0 by default until the user manually changes it.
+- **Oled Reset overlap** - the splash animation's `setTimeout` id is now
+  saved and cleared with `clearTimeout` before starting a new one, so
+  triggering "Replay Splash" again while the previous animation is still
+  running no longer lets a stale timer cut the new one off partway
+  through.
+
 ## [1.1.x] - Automatic version bump on every build
 
 - Added `scripts/bump-version.mjs`: a dependency-free Node script that reads
