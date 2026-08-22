@@ -4,6 +4,14 @@
 
 # URTC Web Studio
 
+<p align="left">
+  <img src="https://img.shields.io/badge/License-GPL%203.0-blue.svg" alt="GPL 3.0">
+  <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
+  <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
+  <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
+</p>
+
+
 A browser-based companion to the **Universal Robot Tool Controller (URTC)** -
 a React/Vite single-page app that talks to real URTC hardware over a USB-CAN
 adapter via the [Web Serial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API),
