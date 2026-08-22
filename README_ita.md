@@ -377,6 +377,12 @@ potrebbe in realtà riguardare uno di questi invece di questo repository:
   di controllo basata su web per HYDRA-UMC: visualizzazione 3D multi-robot,
   registrazione cinematica/traiettorie, flashing e testing CAN-OTA per l'intera
   piattaforma. React + Vite + Three.js.
+- **[HYDRA-UMC-SERVER](https://github.com/JuanenRac/HYDRA-UMC-SERVER)** — il
+  backend headless (Node/Express/WebSocket) che prima era integrato nel
+  processo stesso di HYDRA-UMC STUDIO. Gestisce l'API REST/WS di controllo
+  robot, la persistenza di settings.json, l'autenticazione JWT e il discovery
+  mDNS; HYDRA-UMC STUDIO è ora un client frontend statico puro che comunica
+  con esso via rete.
 - **[HYDRA-UMC-ANDROID-CONTROL](https://github.com/JuanenRac/HYDRA-UMC-ANDROID-CONTROL)** — app di controllo Android per HYDRA-UMC via Wi-Fi/Bluetooth. App reale e
   funzionante - set completo di funzionalità di controllo remoto, autenticazione
   JWT, storage credenziali cifrato.
