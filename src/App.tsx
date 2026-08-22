@@ -20,6 +20,7 @@ import {
   THIS_HARDWARE_ID, FIRMWARE_VERSION_MAJOR, FIRMWARE_VERSION_MINOR,
   parseManifest, computeSha256Hex, FirmwareManifest
 } from './lib/flasher';
+import { CAN_ID_QUERY_ACTIVE_TOOL } from './lib/canIds';
 
 export interface BoardVersionInfo {
   responder: 'application' | 'bootloader';
@@ -238,6 +239,22 @@ export default function App() {
     return () => clearInterval(interval);
   }, []);
 
+  // On a fresh connect, hardwareState.jumpers still holds whatever it was
+  // initialized/left at (ID 0 on first load, or the previous session's last
+  // -known value on a reconnect) - it only gets corrected once the board
+  // spontaneously broadcasts a CAN_ID_ACTIVE_TOOL_RESP (0x111), e.g. after a
+  // physical jumper change. If nothing changes the jumpers after connecting,
+  // the UI would silently keep showing a stale/wrong tool ID indefinitely.
+  // Actively querying CAN_ID_QUERY_ACTIVE_TOOL (0x110) right after connecting
+  // prompts the board to answer immediately with its real current state -
+  // the response is parsed by the existing 0x111 handling in
+  // handleFrameReceived above, so no extra parsing logic is needed here.
+  useEffect(() => {
+    if (serialCan.isConnected) {
+      serialCan.sendFrame(CAN_ID_QUERY_ACTIVE_TOOL, [0x00], 'Query active tool jumpers on connect').catch(console.error);
+    }
+  }, [serialCan.isConnected]);
+
   // Handle jumper toggle
   const handleJumperToggle = (idx: number) => {
     setHardwareState(prev => {
@@ -362,10 +379,20 @@ export default function App() {
     }
   };
 
-  // Replay boot splash
+  // Replay boot splash. Clears any timer from a previous, still-pending call
+  // before scheduling a new one - without this, clicking "Replay Splash"
+  // again while the 2.5s animation is already running left BOTH timeouts
+  // alive: the first one (from the earlier click) would still fire at its
+  // own original 2.5s mark and turn the splash off early, cutting the second
+  // replay short instead of giving it its own full 2.5s. Also fires on a
+  // successful main-board CAN-OTA update (see handleStartCanOta above), so
+  // this guards that path too, not just the manual button.
+  const splashTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const handleResetSplash = () => {
+    if (splashTimeoutRef.current) clearTimeout(splashTimeoutRef.current);
     setHardwareState(prev => ({ ...prev, oledShowSplash: true }));
-    setTimeout(() => {
+    splashTimeoutRef.current = setTimeout(() => {
+      splashTimeoutRef.current = null;
       setHardwareState(prev => ({ ...prev, oledShowSplash: false }));
     }, 2500);
   };
