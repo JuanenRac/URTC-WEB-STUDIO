@@ -530,6 +530,7 @@
     "connection_failed": "Connessione non riuscita: {{message}}",
     "no_bus_response": "Nessuna risposta da una scheda URTC a nessun bitrate CAN noto (provati 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Controlla il cablaggio e l'alimentazione.",
     "send_failed": "Invio del frame CAN non riuscito ({{description}}): {{message}}",
-    "writer_unavailable": "Il writer della porta seriale non è disponibile (porta disconnessa)."
+    "writer_unavailable": "Il writer della porta seriale non è disponibile (porta disconnessa).",
+    "invalid_frame": "Frame CAN non valido rifiutato: {{reason}}"
   }
 }

@@ -9,6 +9,15 @@ base-10 "odometer" scheme (see the note at the bottom of this file) - every
 real production build (`npm run build`) bumps the version automatically, so
 the number reflects build count, not the size or compatibility of a change.
 
+## [Unreleased]
+
+- Hardened the Web Serial SLCAN path in both directions: malformed received
+  identifiers, non-hex payloads, truncated payloads and impossible DLC values
+  (`9`-`F`) are discarded before they can create `NaN` bytes or reach CAN
+  control panels. Outbound commands now reject invalid identifiers, payload
+  sizes and byte values before writing or logging them. Optional adapter
+  timestamps remain accepted after a valid received payload.
+
 ## [0.1.9] - Chinese and Japanese added to the language switcher
 
 - New `src/locales/zh.json` (Simplified Chinese) and `src/locales/ja.json`

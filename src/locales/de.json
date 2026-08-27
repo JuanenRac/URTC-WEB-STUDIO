@@ -530,6 +530,7 @@
     "connection_failed": "Verbindung fehlgeschlagen: {{message}}",
     "no_bus_response": "Keine Antwort von einer URTC-Platine bei keiner bekannten CAN-Bitrate (versucht: 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Verkabelung und Stromversorgung prüfen.",
     "send_failed": "Senden des CAN-Frames fehlgeschlagen ({{description}}): {{message}}",
-    "writer_unavailable": "Der Serial-Port-Writer ist nicht verfügbar (Port getrennt)."
+    "writer_unavailable": "Der Serial-Port-Writer ist nicht verfügbar (Port getrennt).",
+    "invalid_frame": "Ungültiger CAN-Frame wird abgelehnt: {{reason}}"
   }
 }

@@ -530,6 +530,7 @@
     "connection_failed": "Connection failed: {{message}}",
     "no_bus_response": "No response from a URTC board at any known CAN bitrate (tried 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Check wiring and power.",
     "send_failed": "CAN send failed ({{description}}): {{message}}",
-    "writer_unavailable": "Serial port writer is not available (port disconnected)."
+    "writer_unavailable": "Serial port writer is not available (port disconnected).",
+    "invalid_frame": "Refusing malformed CAN frame: {{reason}}"
   }
 }

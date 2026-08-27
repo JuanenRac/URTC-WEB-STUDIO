@@ -530,6 +530,7 @@
     "connection_failed": "连接失败：{{message}}",
     "no_bus_response": "在任何已知的 CAN 比特率下均未收到 URTC 板卡的响应（已尝试 500k、250k、125k、1M、100k、50k、20k、10k、800k）。请检查接线和电源。",
     "send_failed": "CAN 发送失败（{{description}}）：{{message}}",
-    "writer_unavailable": "串口写入器不可用（端口已断开连接）。"
+    "writer_unavailable": "串口写入器不可用（端口已断开连接）。",
+    "invalid_frame": "已拒绝格式错误的 CAN 帧：{{reason}}"
   }
 }

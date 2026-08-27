@@ -530,6 +530,7 @@
     "connection_failed": "接続に失敗しました：{{message}}",
     "no_bus_response": "既知のどの CAN ビットレート（500k、250k、125k、1M、100k、50k、20k、10k、800k を試行）でも URTC ボードからの応答がありません。配線と電源を確認してください。",
     "send_failed": "CAN 送信に失敗しました（{{description}}）：{{message}}",
-    "writer_unavailable": "シリアルポートライターが利用できません（ポートが切断されています）。"
+    "writer_unavailable": "シリアルポートライターが利用できません（ポートが切断されています）。",
+    "invalid_frame": "不正な CAN フレームを拒否しました: {{reason}}"
   }
 }

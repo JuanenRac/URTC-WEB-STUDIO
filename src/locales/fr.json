@@ -530,6 +530,7 @@
     "connection_failed": "Échec de la connexion : {{message}}",
     "no_bus_response": "Aucune réponse d'une carte URTC à aucun débit CAN connu (essayés : 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Vérifiez le câblage et l'alimentation.",
     "send_failed": "Échec de l'envoi de la trame CAN ({{description}}) : {{message}}",
-    "writer_unavailable": "L'écrivain du port série n'est pas disponible (port déconnecté)."
+    "writer_unavailable": "L'écrivain du port série n'est pas disponible (port déconnecté).",
+    "invalid_frame": "Trame CAN non valide rejetée : {{reason}}"
   }
 }

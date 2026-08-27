@@ -39,3 +39,7 @@ coverage/
 
 # TypeScript
 *.tsbuildinfo
+
+# Python bytecode (generated locally; never source)
+__pycache__/
+*.py[cod]

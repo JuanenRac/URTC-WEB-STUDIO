@@ -332,8 +332,26 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
 
   const sendFrame = async (id: number, data: number[], description: string = 'Sent from Web Studio') => {
     if (!isConnected) return;
+
+    // Do not serialize invalid UI input into an SLCAN command. Several panels
+    // accept editable hexadecimal values; without this guard a NaN byte, an
+    // ID outside the standard CAN range, or more than eight bytes was sent as
+    // malformed text while the UI still logged it as a successful command.
+    let invalidReason: string | null = null;
+    if (!Number.isInteger(id) || id < 0 || id > 0x7FF) {
+      invalidReason = 'identifier must be an integer from 0x000 to 0x7FF';
+    } else if (data.length > 8) {
+      invalidReason = 'payload cannot exceed 8 bytes';
+    } else if (data.some(byte => !Number.isInteger(byte) || byte < 0 || byte > 0xFF)) {
+      invalidReason = 'every payload value must be an integer from 0x00 to 0xFF';
+    }
+    if (invalidReason) {
+      setSendError(t('hooks.invalid_frame', 'Refusing malformed CAN frame: {{reason}}', { reason: invalidReason }));
+      return;
+    }
+
     const dlc = data.length;
-    let hexData = data.map(b => b.toString(16).padStart(2, '0').toUpperCase()).join('');
+    const hexData = data.map(b => b.toString(16).padStart(2, '0').toUpperCase()).join('');
     const cmd = `t${id.toString(16).padStart(3, '0').toUpperCase()}${dlc}${hexData}`;
 
     try {
@@ -418,14 +436,31 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
         const line = lines[i];
         if (line.startsWith('t') && line.length >= 5) {
           try {
-            const idHex = line.substring(1, 4);
-            const id = parseInt(idHex, 16);
-            const dlc = parseInt(line.substring(4, 5), 16);
-            const dataHexStr = line.substring(5, 5 + dlc * 2);
+            // A malformed or truncated SLCAN line used to be accepted here:
+            // DLC 9..F produced a non-CAN frame and short/non-hex payloads
+            // inserted NaN bytes into the telemetry stream. Validate the
+            // standard 11-bit `t` frame prefix before delivering anything to
+            // control panels. Any optional adapter timestamp remains ignored
+            // after the validated payload, as it was before.
+            const match = /^t([0-9a-f]{3})([0-8])([0-9a-f]*)$/i.exec(line);
+            if (!match) {
+              console.warn('Ignoring malformed SLCAN frame:', line);
+              continue;
+            }
+
+            const idHex = match[1];
+            const dlc = Number(match[2]);
+            const dataHexStr = match[3].substring(0, dlc * 2);
+            if (dataHexStr.length !== dlc * 2) {
+              console.warn('Ignoring truncated SLCAN frame:', line);
+              continue;
+            }
+
+            const id = Number.parseInt(idHex, 16);
             
             const data: number[] = [];
             for (let j = 0; j < dlc * 2; j += 2) {
-              data.push(parseInt(dataHexStr.substring(j, j + 2), 16));
+              data.push(Number.parseInt(dataHexStr.substring(j, j + 2), 16));
             }
             
             const now = new Date();
