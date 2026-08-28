@@ -1,16 +1,18 @@
 #!/usr/bin/env node
-// Auto-bumps package.json's "version" on every real production build.
+// =============================================================================
+// URTC-WEB-STUDIO - Legacy native-only version helper: bump-version.mjs
+// Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
+// GPL-3.0 - see LICENSE
+// =============================================================================
+// Root build scripts own the single project increment through
+// bump_manifest_version.py. `npm run build` is deliberately compilation-only
+// so it cannot create manifest/package version drift.
 //
 // Rule: a base-10 odometer carry, applied to MAJOR.MINOR.PATCH.
 //   - patch += 1
 //   - if patch rolls past 9 (i.e. would become 10): patch = 0, minor += 1
 //   - if that minor carry also rolls past 9: minor = 0, major += 1
 // Example: 1.1.9 -> 1.2.0 (never 1.1.10). 1.9.9 -> 2.0.0.
-//
-// Wired in as the "prebuild" script in package.json, so npm (and any package
-// manager that honors the pre/post lifecycle convention) runs this
-// automatically before every `npm run build` - no manual step needed, and it
-// only fires on a real build, not on `npm run dev`/`lint`/`preview`.
 //
 // No new dependencies: plain Node (fs/path/url from the standard library).
 import { readFileSync, writeFileSync } from 'node:fs';
