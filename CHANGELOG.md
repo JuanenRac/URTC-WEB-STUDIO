@@ -6,8 +6,11 @@ implementation-level detail) is kept privately outside this repository.
 
 Versioning here does **not** follow Semantic Versioning. It follows a
 base-10 "odometer" scheme (see the note at the bottom of this file) - every
-real production build (`npm run build`) bumps the version automatically, so
-the number reflects build count, not the size or compatibility of a change.
+real production build (`build.bat`/`build.sh`, which runs
+`bump_manifest_version.py` before calling `npm run build` - `npm run
+build`/`vite build` on its own is deliberately compilation-only) bumps the
+version automatically, so the number reflects build count, not the size or
+compatibility of a change.
 
 ## [Unreleased]
 
