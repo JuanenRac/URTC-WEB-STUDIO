@@ -343,6 +343,10 @@ versioni e un riepilogo del lavoro passato su questo progetto.
 ├── CHANGELOG.md                     Cronologia delle versioni e riepilogo del lavoro passato
 ├── LICENSE
 ├── README.md                        Questo file
+├── docs/
+│   ├── ARCHITECTURE.md
+│   ├── BUILD_AND_RUN.md
+│   └── INTEGRATION_CONTRACT.md
 └── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md  <- traduzioni
 ```
 

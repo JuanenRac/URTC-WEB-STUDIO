@@ -361,6 +361,10 @@ bisherigen Arbeit an diesem Projekt.
 ├── CHANGELOG.md                     Versionshistorie und Zusammenfassung bisheriger Arbeit
 ├── LICENSE
 ├── README.md                        Diese Datei
+├── docs/
+│   ├── ARCHITECTURE.md
+│   ├── BUILD_AND_RUN.md
+│   └── INTEGRATION_CONTRACT.md
 └── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md  <- Übersetzungen
 ```
 

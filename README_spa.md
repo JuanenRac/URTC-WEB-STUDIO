@@ -344,6 +344,10 @@ y un resumen del trabajo anterior en este proyecto.
 ├── CHANGELOG.md                     Historial de versiones y resumen del trabajo pasado
 ├── LICENSE
 ├── README.md                        Este archivo
+├── docs/
+│   ├── ARCHITECTURE.md
+│   ├── BUILD_AND_RUN.md
+│   └── INTEGRATION_CONTRACT.md
 └── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md  <- traducciones
 ```
 

@@ -315,6 +315,10 @@ on this project.
 ├── CHANGELOG.md                     Version history and a summary of past work
 ├── LICENSE
 ├── README.md                        This file
+├── docs/
+│   ├── ARCHITECTURE.md
+│   ├── BUILD_AND_RUN.md
+│   └── INTEGRATION_CONTRACT.md
 └── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md  <- translations
 ```
 

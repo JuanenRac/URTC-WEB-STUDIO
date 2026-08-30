@@ -356,6 +356,10 @@ npm run preview
 ├── CHANGELOG.md                     バージョン履歴と過去の作業の要約
 ├── LICENSE
 ├── README.md                        本ファイル
+├── docs/
+│   ├── ARCHITECTURE.md
+│   ├── BUILD_AND_RUN.md
+│   └── INTEGRATION_CONTRACT.md
 └── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md  <- 翻訳
 ```
 

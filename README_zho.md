@@ -298,6 +298,10 @@ npm run preview
 ├── CHANGELOG.md                     版本历史与过往工作摘要
 ├── LICENSE
 ├── README.md                        本文件
+├── docs/
+│   ├── ARCHITECTURE.md
+│   ├── BUILD_AND_RUN.md
+│   └── INTEGRATION_CONTRACT.md
 └── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md  <- 翻译
 ```
 
