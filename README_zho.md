@@ -159,8 +159,8 @@ SWD/JTAG 选项卡说明了桌面版 `URTC Flasher` 工具在本地会运行的�
 ### 安装
 
 ```bash
-git clone https://github.com/JuanenRac/URTC-Web-Studio.git
-cd URTC-Web-Studio
+git clone https://github.com/JuanenRac/URTC-WEB-STUDIO.git
+cd URTC-WEB-STUDIO
 npm install
 ```
 

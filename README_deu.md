@@ -31,7 +31,7 @@ Desktop-Begleit-Tools verwendet wird, [URTC Flasher](https://github.com/JuanenRa
 Funktionsparität mit diesen beiden Tools innerhalb eines einzigen Browser-Tabs,
 keine vereinfachte Demo davon - die Tabs Flasher Studio und Tester Studio senden
 und empfangen die echten CAN-Frames, die in `docs/CANBUS.TXT` des
-[URTC-Firmware-Repositorys](https://github.com/JuanenRac/URTC) beschrieben sind.
+[URTC](https://github.com/JuanenRac/URTC)-Repository beschrieben sind.
 
 ---
 
@@ -194,8 +194,8 @@ autorisierte Techniker, nicht an das öffentliche Internet.
 ### Installation
 
 ```bash
-git clone https://github.com/JuanenRac/URTC-Web-Studio.git
-cd URTC-Web-Studio
+git clone https://github.com/JuanenRac/URTC-WEB-STUDIO.git
+cd URTC-WEB-STUDIO
 npm install
 ```
 

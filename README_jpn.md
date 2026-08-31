@@ -191,8 +191,8 @@ SWD/JTAG デバッグプローブを駆動できる Web API は存在しませ�
 ### インストール
 
 ```bash
-git clone https://github.com/JuanenRac/URTC-Web-Studio.git
-cd URTC-Web-Studio
+git clone https://github.com/JuanenRac/URTC-WEB-STUDIO.git
+cd URTC-WEB-STUDIO
 npm install
 ```
 
