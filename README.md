@@ -363,6 +363,8 @@ This project is part of a larger robotics ecosystem by the same author (JuanenRa
 
 ### Directly Related
 
+- **[URTC](https://github.com/JuanenRac/URTC)** — the exact firmware this tool talks to over Web Serial, same SLCAN framing and CAN protocol as the 2 desktop companions below.
+- **[URTC-FLASHER](https://github.com/JuanenRac/URTC-FLASHER)** / **[URTC-TESTER](https://github.com/JuanenRac/URTC-TESTER)** — the 2 desktop companion tools this browser-based app is the no-install alternative to, same protocol.
 - **[HYDRA-UMC-TOOL-CLI](https://github.com/JuanenRac/HYDRA-UMC-TOOL-CLI)** — a terminal/command-line alternative to this browser-based tool.
 
 ### Rest of the Ecosystem
