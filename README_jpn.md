@@ -363,7 +363,7 @@ npm run preview
 └── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md  <- 翻訳
 ```
 
-## 📜 ライセンスと著作権表示
+## 📜 ライセンス
 
 URTC Web Studio の著作権は (c) 2026 JuanenRac（Electro Hobby 3D）に帰属します。本プロジェクトまたはその派生物を配布する際は、この表示を必ず含めてください。
 

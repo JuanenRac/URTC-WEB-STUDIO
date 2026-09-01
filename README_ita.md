@@ -350,7 +350,7 @@ versioni e un riepilogo del lavoro passato su questo progetto.
 └── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md  <- traduzioni
 ```
 
-## 📜 Licenza e note sul copyright
+## 📜 LICENZA
 
 URTC Web Studio è (c) 2026 JuanenRac (Electro Hobby 3D). Questo avviso deve essere
 incluso in qualsiasi distribuzione di questo progetto o lavoro derivato.
@@ -424,7 +424,7 @@ invece di questo repository.
 **🛠️ Strumenti Complementari**
 [URTC-SMART-RACK](https://github.com/JuanenRac/URTC-SMART-RACK) · [URTC-VISION-TOOL](https://github.com/JuanenRac/URTC-VISION-TOOL) · [HYDRA-UMC-WATCH](https://github.com/JuanenRac/HYDRA-UMC-WATCH) · [HYDRA-UMC-DASHBOARD-AI](https://github.com/JuanenRac/HYDRA-UMC-DASHBOARD-AI)
 
-## 👤 Autore
+## 👤 AUTORE
 
 **JuanenRac** (Electro Hobby 3D)
 📧 electrohobby3d@gmail.com

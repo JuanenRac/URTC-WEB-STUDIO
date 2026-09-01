@@ -305,7 +305,7 @@ npm run preview
 └── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md  <- 翻译
 ```
 
-## 📜 许可证与版权声明
+## 📜 许可证
 
 URTC Web Studio 版权所有 (c) 2026 JuanenRac（Electro Hobby 3D）。分发本项目
 或其衍生作品时必须包含此声明。
