@@ -417,6 +417,8 @@ statt auf dieses Repository beziehen könnte.
 
 ### Direkt verwandt
 
+- **[URTC](https://github.com/JuanenRac/URTC)** — genau die Firmware, mit der dieses Tool über Web Serial spricht, mit demselben SLCAN-Framing und CAN-Protokoll wie die 2 Desktop-Begleiter unten.
+- **[URTC-FLASHER](https://github.com/JuanenRac/URTC-FLASHER)** / **[URTC-TESTER](https://github.com/JuanenRac/URTC-TESTER)** — die 2 Desktop-Begleitwerkzeuge, zu denen diese browserbasierte App die installationsfreie Alternative ist, dasselbe Protokoll.
 - **[HYDRA-UMC-TOOL-CLI](https://github.com/JuanenRac/HYDRA-UMC-TOOL-CLI)** —
   eine Terminal-/Kommandozeilen-Alternative zu diesem browserbasierten Tool.
 

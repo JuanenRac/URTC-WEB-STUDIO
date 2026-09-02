@@ -401,6 +401,8 @@ demande pourrait en fait concerner l'un de ceux-ci plutôt que ce dépôt.
 
 ### Directement liés
 
+- **[URTC](https://github.com/JuanenRac/URTC)** — le firmware exact avec lequel cet outil communique via Web Serial, avec le même format SLCAN et protocole CAN que les 2 outils de bureau compagnons ci-dessous.
+- **[URTC-FLASHER](https://github.com/JuanenRac/URTC-FLASHER)** / **[URTC-TESTER](https://github.com/JuanenRac/URTC-TESTER)** — les 2 outils de bureau compagnons auxquels cette application basée sur navigateur est l'alternative sans installation, même protocole.
 - **[HYDRA-UMC-TOOL-CLI](https://github.com/JuanenRac/HYDRA-UMC-TOOL-CLI)** —
   alternative en ligne de commande/terminal à cet outil basé sur navigateur.
 

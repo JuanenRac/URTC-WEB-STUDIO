@@ -383,6 +383,8 @@ URTC Web Studio の著作権は (c) 2026 JuanenRac（Electro Hobby 3D）に帰�
 
 ### 直接関連
 
+- **[URTC](https://github.com/JuanenRac/URTC)** —— このツールがWeb Serial経由で通信する、まさにそのファームウェアで、下記の2つのデスクトップ版コンパニオンツールと同じSLCANフレーミングとCANプロトコルを使用します。
+- **[URTC-FLASHER](https://github.com/JuanenRac/URTC-FLASHER)** / **[URTC-TESTER](https://github.com/JuanenRac/URTC-TESTER)** —— このブラウザベースのアプリが、同じプロトコルでインストール不要な代替手段となっている、2つのデスクトップ版コンパニオンツール。
 - **[HYDRA-UMC-TOOL-CLI](https://github.com/JuanenRac/HYDRA-UMC-TOOL-CLI)** — 本ブラウザベースツールのターミナル/コマンドライン版代替。
 
 ### エコシステムのその他のプロジェクト

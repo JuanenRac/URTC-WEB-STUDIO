@@ -340,6 +340,8 @@ GPL-3.0,文档衍生品应保持 CC BY-SA——每一项都需附带指向本项
 
 ### 直接相关
 
+- **[URTC](https://github.com/JuanenRac/URTC)** —— 本工具通过 Web Serial 与之通信的正是这个固件,与下方 2 款桌面配套工具使用相同的 SLCAN 帧格式和 CAN 协议。
+- **[URTC-FLASHER](https://github.com/JuanenRac/URTC-FLASHER)** / **[URTC-TESTER](https://github.com/JuanenRac/URTC-TESTER)** —— 这款基于浏览器的应用是这 2 款桌面配套工具的免安装替代方案,协议相同。
 - **[HYDRA-UMC-TOOL-CLI](https://github.com/JuanenRac/HYDRA-UMC-TOOL-CLI)** — 本浏览器端工具的终端/命令行替代方案。
 
 ### 生态系统的其余部分
