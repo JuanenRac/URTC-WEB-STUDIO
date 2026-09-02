@@ -336,7 +336,7 @@ npm run preview
 │                                     ション、拡張スレーブブートローダー
 │                                     用のバンドルされた .bin/.elf/.hex
 ├── images/
-│   ├── URTC_LOGO_WEB_STUDIO.svg     完全なロゴバナー（本 README の先頭
+│   ├── URTC_WEB_STUDIO_BANNER.svg   完全なロゴバナー（本 README の先頭
 │   │                                に表示）
 │   ├── URTC_APP_ICON_NEW.svg        アプリアイコン
 │   ├── urtc_custom_icon.svg         アプリアイコン、同じアートワーク
@@ -352,6 +352,9 @@ npm run preview
 │                                     サーバーの起動
 ├── build.bat / build.sh             依存関係のインストール + 静的な
 │                                     dist/ ビルドの生成
+├── tools/
+│   └── ci_validate.py               CI が使用する manifest/CHANGELOG/docs の検証
+├── bump_manifest_version.py         hydra-umc.project.json のバージョンをネイティブ側と同期（--sync）
 ├── package.json
 ├── CHANGELOG.md                     バージョン履歴と過去の作業の要約
 ├── LICENSE

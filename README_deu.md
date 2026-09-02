@@ -330,7 +330,7 @@ bisherigen Arbeit an diesem Projekt.
 │   │   └── canIds.ts                CAN-ID-Konstanten fuer Tester Studio -
 │   │                                 spiegelt tester_config.py byte-fuer-byte
 │   └── locales/                     UI-Zeichenketten - en.json, es.json,
-│                                     de.json, fr.json, it.json
+│                                     de.json, fr.json, it.json, ja.json, zh.json
 ├── scripts/
 │   └── bump-version.mjs             Abhaengigkeitsfreies Versions-Skript, automatisch
 │                                     vor jedem echten Build ausgefuehrt (siehe
@@ -341,7 +341,7 @@ bisherigen Arbeit an diesem Projekt.
 │                                     die Erweiterungs-Slave-Anwendung, und
 │                                     den Erweiterungs-Slave-Bootloader
 ├── images/
-│   ├── URTC_LOGO_WEB_STUDIO.svg     Vollstaendiges Logo-Banner (oben in
+│   ├── URTC_WEB_STUDIO_BANNER.svg   Vollstaendiges Logo-Banner (oben in
 │                                     diesem README gezeigt)
 │   ├── URTC_APP_ICON_NEW.svg        App-Icon
 │   ├── urtc_custom_icon.svg         App-Icon, gleiche Grafik
@@ -357,6 +357,9 @@ bisherigen Arbeit an diesem Projekt.
 │                                     den Vite-Dev-Server
 ├── build.bat / build.sh             Installiert Abhaengigkeiten + erzeugt
 │                                     den statischen dist/-Build
+├── tools/
+│   └── ci_validate.py               Manifest-/CHANGELOG-/Doku-Validierung, von der CI genutzt
+├── bump_manifest_version.py         Synchronisiert die Version von hydra-umc.project.json mit der nativen (--sync)
 ├── package.json
 ├── CHANGELOG.md                     Versionshistorie und Zusammenfassung bisheriger Arbeit
 ├── LICENSE

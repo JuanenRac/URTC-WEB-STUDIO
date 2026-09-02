@@ -312,7 +312,7 @@ versioni e un riepilogo del lavoro passato su questo progetto.
 │   │   └── canIds.ts                Costanti CAN ID per Tester Studio -
 │   │                                 rispecchia tester_config.py byte per byte
 │   └── locales/                     Stringhe UI - en.json, es.json, de.json,
-│                                     fr.json, it.json
+│                                     fr.json, it.json, ja.json, zh.json
 ├── scripts/
 │   └── bump-version.mjs             Script di incremento versione senza dipendenze,
 │                                     eseguito automaticamente prima di ogni build
@@ -323,7 +323,7 @@ versioni e un riepilogo del lavoro passato su questo progetto.
 │                                     l'applicazione slave di espansione, e il
 │                                     bootloader slave di espansione
 ├── images/
-│   ├── URTC_LOGO_WEB_STUDIO.svg     Banner logo completo (mostrato in cima a
+│   ├── URTC_WEB_STUDIO_BANNER.svg   Banner logo completo (mostrato in cima a
 │                                     questo README)
 │   ├── URTC_APP_ICON_NEW.svg        Icona app
 │   ├── urtc_custom_icon.svg         Icona app, stesso artwork
@@ -339,6 +339,9 @@ versioni e un riepilogo del lavoro passato su questo progetto.
 │                                     Vite
 ├── build.bat / build.sh             Installa dipendenze + produce la build
 │                                     statica di dist/
+├── tools/
+│   └── ci_validate.py               Validazione manifest/CHANGELOG/docs usata dalla CI
+├── bump_manifest_version.py         Sincronizza la versione di hydra-umc.project.json con quella nativa (--sync)
 ├── package.json
 ├── CHANGELOG.md                     Cronologia delle versioni e riepilogo del lavoro passato
 ├── LICENSE

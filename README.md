@@ -289,7 +289,7 @@ on this project.
 │   │   └── canIds.ts                CAN ID constants for Tester Studio - mirrors
 │   │                                 tester_config.py byte-for-byte
 │   └── locales/                     UI strings - en.json, es.json, de.json, fr.json,
-│                                     it.json
+│                                     it.json, ja.json, zh.json
 ├── scripts/
 │   └── bump-version.mjs             Dependency-free version-bump script, run
 │                                     automatically before every real build (see
@@ -299,7 +299,7 @@ on this project.
 │                                     main bootloader, expansion slave application, and
 │                                     expansion slave bootloader
 ├── images/
-│   ├── URTC_LOGO_WEB_STUDIO.svg     Full logo banner (shown at the top of this README)
+│   ├── URTC_WEB_STUDIO_BANNER.svg   Full logo banner (shown at the top of this README)
 │   ├── URTC_APP_ICON_NEW.svg        App icon
 │   ├── urtc_custom_icon.svg         App icon, same artwork
 │   └── urtc_icon.ico                Favicon
@@ -311,6 +311,9 @@ on this project.
 ├── .env.example                     VITE_APP_TITLE
 ├── dev.bat / dev.sh                 Install deps + start the Vite dev server
 ├── build.bat / build.sh             Install deps + produce the static dist/ build
+├── tools/
+│   └── ci_validate.py               Manifest/CHANGELOG/docs validation used by CI
+├── bump_manifest_version.py         Syncs hydra-umc.project.json's version to the native one (--sync)
 ├── package.json
 ├── CHANGELOG.md                     Version history and a summary of past work
 ├── LICENSE

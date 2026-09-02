@@ -281,7 +281,7 @@ npm run preview
 │                                     应用程序,以及扩展从属引导程序的
 │                                     打包 .bin/.elf/.hex 文件
 ├── images/
-│   ├── URTC_LOGO_WEB_STUDIO.svg     完整的 Logo 横幅（显示在本 README
+│   ├── URTC_WEB_STUDIO_BANNER.svg   完整的 Logo 横幅（显示在本 README
 │   │                                顶部）
 │   ├── URTC_APP_ICON_NEW.svg        应用图标
 │   ├── urtc_custom_icon.svg         应用图标,相同的图稿
@@ -294,6 +294,9 @@ npm run preview
 ├── .env.example                     VITE_APP_TITLE
 ├── dev.bat / dev.sh                 安装依赖 + 启动 Vite 开发服务器
 ├── build.bat / build.sh             安装依赖 + 生成静态 dist/ 构建
+├── tools/
+│   └── ci_validate.py               CI 使用的 manifest/CHANGELOG/docs 校验
+├── bump_manifest_version.py         将 hydra-umc.project.json 的版本与原生版本同步（--sync）
 ├── package.json
 ├── CHANGELOG.md                     版本历史与过往工作摘要
 ├── LICENSE
