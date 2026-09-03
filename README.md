@@ -75,6 +75,23 @@ This app has two kinds of tabs:
   cannot be used from inside an iframe. If you're previewing this app inside
   an embedded frame, open it in its own tab first.
 
+## 🛡️ CAN Frame Validation
+
+Both directions of the SLCAN link are validated before anything reaches the
+UI or the wire (`src/hooks/useSerialCanBus.ts`):
+
+- **Outbound** - `sendFrame()` refuses to serialize a command whose
+  identifier falls outside the 11-bit standard CAN range (`0x000`-`0x7FF`),
+  whose payload exceeds 8 bytes, or whose payload contains a byte outside
+  `0x00`-`0xFF`. The UI shows "Refusing malformed CAN frame: ..." instead of
+  writing invalid text to the serial port.
+- **Inbound** - `processBuffer()` requires a real
+  `t<3-hex ID><1-hex DLC 0-8><hex payload>` match before turning a received
+  SLCAN line into a `CanFrame`; a DLC outside `0`-`8` or a payload shorter
+  than its own declared length is logged to the console and dropped rather
+  than handed to a tool panel as a `NaN` byte. An optional trailing adapter
+  timestamp is still accepted after a valid payload.
+
 ## ⚡ Flasher Studio - real feature coverage
 
 Ported from `URTC-FLASHER`'s own `flasher_protocol.py`, against the same CAN
@@ -210,14 +227,37 @@ runs the TypeScript compiler in check-only mode.
 
 ### Versioning
 
-`package.json`'s `version` bumps automatically on every real `npm run build`
-(wired in as the `prebuild` script, running `scripts/bump-version.mjs`) -
-`npm run dev`/`lint`/`preview` never touch it. This is not Semantic
-Versioning: it's a base-10 odometer. The patch digit increments by one; once
-it would roll past 9 it resets to 0 and the minor digit increments instead
-(`0.1.9` -> `0.2.0`, never `0.1.10`); the same carry cascades from minor into
-major. See `CHANGELOG.md` for the version history and a summary of past work
-on this project.
+`package.json`'s `version` (and the matching `version` in
+`hydra-umc.project.json`) bumps automatically on every real `build.bat`/
+`build.sh` run - `bump_manifest_version.py` runs as step 1, before `npm
+install && npm run build`, reads the current version straight out of
+`package.json`, increments it, writes it back, syncs the manifest, and adds
+a bare CHANGELOG entry if that version doesn't already have one. `npm run
+build` (`vite build`) on its own is deliberately compilation-only and never
+touches the version - `scripts/bump-version.mjs` did this job in an earlier
+`prebuild`-hook design, but that script is legacy today, kept only for
+reference (see its own header comment); `npm run dev`/`lint`/`preview` never
+touch the version either way. This is not Semantic Versioning: it's a
+base-10 odometer. The patch digit increments by one; once it would roll past
+9 it resets to 0 and the minor digit increments instead (`0.1.9` -> `0.2.0`,
+never `0.1.10`); the same carry cascades from minor into major. See
+`CHANGELOG.md` for the version history and a summary of past work on this
+project.
+
+## 📖 Further Documentation
+
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — how the UI, persisted
+  settings, and external transport authority stay separate, and why the
+  sandbox tabs must expose offline/unavailable states rather than present
+  simulated data as live.
+- [`docs/BUILD_AND_RUN.md`](docs/BUILD_AND_RUN.md) — the non-mutating
+  `build-test.bat`/`.sh` validation path (TypeScript + tests, no version or
+  CHANGELOG changes), `dev.bat`/`.sh` for local development, and why OTA
+  signing material never belongs in browser configuration.
+- [`docs/INTEGRATION_CONTRACT.md`](docs/INTEGRATION_CONTRACT.md) — what this
+  client must do with an unknown schema, missing target identity, or a
+  malformed API result, and why real flash authority stays server-side or
+  in the dedicated desktop tools.
 
 ## 🛠️ Technology Stack
 - **Language:** TypeScript
@@ -240,8 +280,8 @@ on this project.
 │   │                                tab below (including CAN OTA start/readback and
 │   │                                the CAN Bus Analyzer's own frame injector)
 │   ├── main.tsx                    Vite/React entry point
-│   ├── i18n.ts                     i18next setup - en/es/de/fr/it, persisted to
-│   │                                localStorage
+│   ├── i18n.ts                     i18next setup - en/es/de/fr/it/zh/ja, persisted
+│   │                                to localStorage
 │   ├── index.css                   Tailwind entry point
 │   ├── types.ts                    Shared TypeScript types (CanFrame, HardwareState,
 │   │                                FlasherState, ExpansionBoardType, ...)
@@ -291,9 +331,9 @@ on this project.
 │   └── locales/                     UI strings - en.json, es.json, de.json, fr.json,
 │                                     it.json, ja.json, zh.json
 ├── scripts/
-│   └── bump-version.mjs             Dependency-free version-bump script, run
-│                                     automatically before every real build (see
-│                                     "Versioning" above)
+│   └── bump-version.mjs             Dependency-free version-bump script; legacy
+│                                     today, kept for reference only - superseded
+│                                     by bump_manifest_version.py (see "Versioning")
 ├── public/
 │   └── firmware/                    Bundled .bin/.elf/.hex for the main application,
 │                                     main bootloader, expansion slave application, and
@@ -313,7 +353,7 @@ on this project.
 ├── build.bat / build.sh             Install deps + produce the static dist/ build
 ├── tools/
 │   └── ci_validate.py               Manifest/CHANGELOG/docs validation used by CI
-├── bump_manifest_version.py         Syncs hydra-umc.project.json's version to the native one (--sync)
+├── bump_manifest_version.py         Real build-time version bump (package.json + manifest, see "Versioning"); `--sync` mode also exists for accepting one prior native-only bump
 ├── package.json
 ├── CHANGELOG.md                     Version history and a summary of past work
 ├── LICENSE

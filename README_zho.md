@@ -71,6 +71,22 @@ CAN 协议。目标是在单个浏览器标签页内实现与这两款工具功�
   内使用。如果你正在一个嵌入式框架内预览本应用,请先在其自身的标签页中
   打开它。
 
+## 🛡️ CAN 帧验证
+
+SLCAN 链路的两个方向都会在任何数据到达 UI 或总线之前被验证
+（`src/hooks/useSerialCanBus.ts`）：
+
+- **发送方向** - 如果命令的标识符超出 11 位标准 CAN 范围
+  （`0x000`-`0x7FF`）、负载超过 8 字节，或负载中有字节超出
+  `0x00`-`0xFF`，`sendFrame()` 就拒绝将其序列化。UI 会显示
+  “Refusing malformed CAN frame: ...”，而不会将无效文本写入串口。
+- **接收方向** - `processBuffer()` 要求收到的 SLCAN 行必须真实匹配
+  `t<3 位十六进制 ID><1 位十六进制 DLC 0-8><十六进制负载>`
+  才会转换为 `CanFrame`；DLC 超出 `0`-`8` 范围，或负载长度短于
+  其声明长度时，会记录到控制台并被丢弃，而不会以 `NaN`
+  字节的形式交给工具面板。有效负载之后可选的适配器时间戳
+  仍然会被接受。
+
 ## ⚡ Flasher Studio ——真实功能覆盖
 
 从 `URTC-FLASHER` 自身的 `flasher_protocol.py` 移植而来,针对相同的
@@ -190,12 +206,30 @@ npm run preview
 
 ### 版本管理
 
-`package.json` 的 `version` 会在每次真正的 `npm run build`（作为 `prebuild`
-脚本接入,运行 `scripts/bump-version.mjs`）时自动递增——`npm run dev`/
-`lint`/`preview` 绝不会触碰它。这不是语义化版本控制：它是一个十进制
-里程表。补丁位加一;一旦它会超过 9,就重置为 0,并改为将次版本位加一
-（`0.1.9` -> `0.2.0`,绝不会是 `0.1.10`）;同样的进位会从次版本级联到
+`package.json` 的 `version`（以及 `hydra-umc.project.json` 中对应的
+`version`）会在每次真正的 `build.bat`/`build.sh` 运行时自动递增——
+`bump_manifest_version.py` 作为第 1 步，在 `npm install && npm run build`
+之前运行，直接从 `package.json` 读取当前版本，递增后写回，同步清单
+文件，并在该版本尚无 CHANGELOG 条目时补充一条简要条目。`npm run build`
+（`vite build`）本身刻意只做编译，绝不触碰版本号——`scripts/bump-version.mjs`
+在早期采用 `prebuild` 钩子的设计中承担过这项工作，但如今已是遗留脚本，
+仅作参考保留（见其自身文件头注释）；`npm run dev`/`lint`/`preview` 同样
+绝不会触碰版本号。这不是语义化版本控制：它是一个十进制里程表。补丁位
+加一；一旦它会超过 9，就重置为 0，并改为将次版本位加一
+（`0.1.9` -> `0.2.0`，绝不会是 `0.1.10`）；同样的进位会从次版本级联到
 主版本。版本历史以及本项目过往工作的摘要见 `CHANGELOG.md`。
+## 📖 更多文档
+
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) —— UI、持久化设置与外部传输权威
+  如何保持分离，以及为什么沙盒标签页必须展示离线/不可用状态，
+  而不能将模拟数据当作真实数据展示。
+- [`docs/BUILD_AND_RUN.md`](docs/BUILD_AND_RUN.md) —— 非破坏性验证路径
+  `build-test.bat`/`.sh`（TypeScript + 测试，不会修改版本或 CHANGELOG）、
+  用于本地开发的 `dev.bat`/`.sh`，以及为什么 OTA 签名材料
+  绝不属于浏览器配置。
+- [`docs/INTEGRATION_CONTRACT.md`](docs/INTEGRATION_CONTRACT.md) —— 本客户端遇到
+  未知模式、缺失目标身份或格式错误的 API 结果时应如何处理，
+  以及为什么真实的烧录权限保留在服务器端或专用桌面工具中。
 
 ## 🛠️ 技术栈
 - **语言：** TypeScript
@@ -274,8 +308,9 @@ npm run preview
 │                                     de.json、fr.json、it.json、
 │                                     zh.json、ja.json
 ├── scripts/
-│   └── bump-version.mjs             无依赖的版本递增脚本,在每次真正的
-│                                     构建前自动运行（见上方“版本管理”）
+│   └── bump-version.mjs             无依赖的版本递增脚本;如今已是
+│                                     遗留脚本,仅作参考 - 已由 bump_manifest_version.py
+│                                     取代（见上方“版本管理”）
 ├── public/
 │   └── firmware/                    主应用程序、主引导程序、扩展从属
 │                                     应用程序,以及扩展从属引导程序的
@@ -296,7 +331,7 @@ npm run preview
 ├── build.bat / build.sh             安装依赖 + 生成静态 dist/ 构建
 ├── tools/
 │   └── ci_validate.py               CI 使用的 manifest/CHANGELOG/docs 校验
-├── bump_manifest_version.py         将 hydra-umc.project.json 的版本与原生版本同步（--sync）
+├── bump_manifest_version.py         每次构建时的真实版本递增（package.json + 清单，见“版本管理”）；也存在 `--sync` 模式用于接受一次先前的原生递增
 ├── package.json
 ├── CHANGELOG.md                     版本历史与过往工作摘要
 ├── LICENSE

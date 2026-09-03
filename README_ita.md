@@ -75,6 +75,24 @@ Questa app ha due tipi di schede:
   usato da dentro un iframe. Se stai visualizzando in anteprima questa app dentro un
   frame incorporato, aprila prima nella sua scheda dedicata.
 
+## 🛡️ Validazione dei frame CAN
+
+Entrambe le direzioni del collegamento SLCAN vengono validate prima che
+qualcosa raggiunga la UI o il cavo (`src/hooks/useSerialCanBus.ts`):
+
+- **In uscita** - `sendFrame()` rifiuta di serializzare un comando il cui
+  identificatore esce dall'intervallo CAN standard a 11 bit
+  (`0x000`-`0x7FF`), il cui payload supera 8 byte, o il cui payload contiene
+  un byte fuori da `0x00`-`0xFF`. La UI mostra "Refusing malformed CAN
+  frame: ..." invece di scrivere testo non valido sulla porta seriale.
+- **In entrata** - `processBuffer()` richiede una corrispondenza reale
+  `t<3 esadecimali ID><1 esadecimale DLC 0-8><payload esadecimale>` prima
+  di trasformare una riga SLCAN ricevuta in un `CanFrame`; un DLC fuori da
+  `0`-`8` o un payload più corto della propria lunghezza dichiarata viene
+  registrato in console e scartato invece di essere passato a un pannello
+  strumento come byte `NaN`. Un timestamp opzionale dell'adattatore in coda
+  resta accettato dopo un payload valido.
+
 ## ⚡ Flasher Studio - copertura reale delle funzionalità
 
 Portato dal proprio `flasher_protocol.py` di `URTC-FLASHER`, contro gli stessi CAN
@@ -215,14 +233,40 @@ lint` esegue il compilatore TypeScript in modalità solo-controllo.
 
 ### Versionamento
 
-Il `version` di `package.json` viene incrementato automaticamente a ogni
-`npm run build` reale (collegato come script `prebuild`, che esegue
-`scripts/bump-version.mjs`) - `npm run dev`/`lint`/`preview` non lo toccano
-mai. Non è Semantic Versioning: è un contachilometri in base 10. La cifra
-patch aumenta di 1; quando supererebbe 9, si azzera e la cifra minor
-aumenta al suo posto (`0.1.9` -> `0.2.0`, mai `0.1.10`); lo stesso riporto
-si propaga da minor a major. Vedi `CHANGELOG.md` per la cronologia delle
-versioni e un riepilogo del lavoro passato su questo progetto.
+Il `version` di `package.json` (e il `version` corrispondente in
+`hydra-umc.project.json`) viene incrementato automaticamente a ogni
+`build.bat`/`build.sh` reale - `bump_manifest_version.py` gira come passo 1,
+prima di `npm install && npm run build`, legge la versione attuale
+direttamente da `package.json`, la incrementa, la riscrive, sincronizza il
+manifest, e aggiunge una voce minima al CHANGELOG se quella versione non ne
+ha ancora una. `npm run build` (`vite build`) da solo è deliberatamente
+solo-compilazione e non tocca mai la versione - `scripts/bump-version.mjs`
+faceva questo lavoro in un design precedente con un hook `prebuild`, ma
+oggi quello script è legacy, mantenuto solo come riferimento (vedi il suo
+stesso commento di intestazione); `npm run dev`/`lint`/`preview` non la
+toccano mai nemmeno loro. Non è Semantic Versioning: è un contachilometri in
+base 10. La cifra patch aumenta di 1; quando supererebbe 9, si azzera e la
+cifra minor aumenta al suo posto (`0.1.9` -> `0.2.0`, mai `0.1.10`); lo
+stesso riporto si propaga da minor a major. Vedi `CHANGELOG.md` per la
+cronologia delle versioni e un riepilogo del lavoro passato su questo
+progetto.
+
+## 📖 Ulteriore documentazione
+
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — come la UI, le
+  impostazioni persistite e l'autorità del trasporto esterno restano
+  separate, e perché le schede sandbox devono esporre stati offline/non
+  disponibile invece di presentare dati simulati come reali.
+- [`docs/BUILD_AND_RUN.md`](docs/BUILD_AND_RUN.md) — il percorso di
+  validazione non mutante `build-test.bat`/`.sh` (TypeScript + test, senza
+  modifiche a versione o CHANGELOG), `dev.bat`/`.sh` per lo sviluppo
+  locale, e perché il materiale di firma OTA non appartiene mai alla
+  configurazione del browser.
+- [`docs/INTEGRATION_CONTRACT.md`](docs/INTEGRATION_CONTRACT.md) — cosa
+  deve fare questo client di fronte a uno schema sconosciuto, un'identità
+  del target mancante o un risultato API malformato, e perché la reale
+  autorità di flashing resta lato server o negli strumenti desktop
+  dedicati.
 
 ## 🛠️ Stack tecnologico
 - **Linguaggio:** TypeScript
@@ -247,7 +291,7 @@ versioni e un riepilogo del lavoro passato su questo progetto.
 │   │                                proprio iniettore di trame del CAN Bus
 │   │                                Analyzer)
 │   ├── main.tsx                    Entry point Vite/React
-│   ├── i18n.ts                     Configurazione i18next - en/es/de/fr/it,
+│   ├── i18n.ts                     Configurazione i18next - en/es/de/fr/it/zh/ja,
 │   │                                persistita in localStorage
 │   ├── index.css                   Entry point Tailwind
 │   ├── types.ts                    Tipi TypeScript condivisi (CanFrame,
@@ -314,9 +358,9 @@ versioni e un riepilogo del lavoro passato su questo progetto.
 │   └── locales/                     Stringhe UI - en.json, es.json, de.json,
 │                                     fr.json, it.json, ja.json, zh.json
 ├── scripts/
-│   └── bump-version.mjs             Script di incremento versione senza dipendenze,
-│                                     eseguito automaticamente prima di ogni build
-│                                     reale (vedi "Versionamento" sopra)
+│   └── bump-version.mjs             Script di incremento versione senza dipendenze;
+│                                     oggi legacy, mantenuto solo come riferimento
+│                                     - sostituito da bump_manifest_version.py (vedi "Versionamento")
 ├── public/
 │   └── firmware/                    .bin/.elf/.hex inclusi per l'applicazione
 │                                     principale, il bootloader principale,
@@ -341,7 +385,7 @@ versioni e un riepilogo del lavoro passato su questo progetto.
 │                                     statica di dist/
 ├── tools/
 │   └── ci_validate.py               Validazione manifest/CHANGELOG/docs usata dalla CI
-├── bump_manifest_version.py         Sincronizza la versione di hydra-umc.project.json con quella nativa (--sync)
+├── bump_manifest_version.py         Incremento di versione reale a ogni build (package.json + manifest, vedi "Versionamento"); esiste anche la modalità `--sync` per accettare un incremento nativo precedente
 ├── package.json
 ├── CHANGELOG.md                     Cronologia delle versioni e riepilogo del lavoro passato
 ├── LICENSE

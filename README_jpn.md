@@ -81,6 +81,24 @@ React/Vite シングルページアプリで、2 つのデスクトップコン�
   込みフレーム内でプレビューしている場合は、まず自身のタブで開いて
   ください。
 
+## 🛡️ CAN フレーム検証
+
+SLCAN リンクは両方向とも、UI や回線に届く前に検証されます
+（`src/hooks/useSerialCanBus.ts`）：
+
+- **送信** - `sendFrame()` は、ID が 11 ビットの標準 CAN 範囲
+  （`0x000`-`0x7FF`）を外れている場合、ペイロードが 8 バイトを超える
+  場合、またはペイロードのいずれかのバイトが `0x00`-`0xFF` を外れている
+  場合にコマンドのシリアライズを拒否します。UI は無効なテキストを
+  シリアルポートに書き込む代わりに「Refusing malformed CAN frame: ...」と
+  表示します。
+- **受信** - `processBuffer()` は、受信した SLCAN 行を `CanFrame` に
+  変換する前に、実際の `t<3桁 16進数 ID><1桁 16進数 DLC 0-8><16進数ペイロード>`
+  との一致を要求します；DLC が `0`-`8` の範囲外だったり、ペイロードが
+  自身の宣言長より短い場合は、ツールパネルに `NaN` バイトとして
+  渡す代わりに、コンソールに警告を記録して破棄します。末尾のオプションの
+  アダプタタイムスタンプは、有効なペイロードの後に引き続き受け入れられます。
+
 ## ⚡ Flasher Studio ——実際の機能カバレッジ
 
 `URTC-FLASHER` 自身の `flasher_protocol.py` から移植され、同じ CAN ID
@@ -223,15 +241,38 @@ npm run preview
 
 ### バージョン管理
 
-`package.json` の `version` は、実際の `npm run build` のたびに（`prebuild`
-スクリプトとして接続され、`scripts/bump-version.mjs` を実行）自動的に
-加算されます——`npm run dev`/`lint`/`preview` はこれに一切触れません。
-これはセマンティックバージョニングではありません：10 進法のオドメーター
-方式です。パッチ桁が 1 ずつ増加します；9 を超えるとリセットされて 0 に
-なり、代わりにマイナー桁が増加します（`0.1.9` -> `0.2.0`、決して
-`0.1.10` にはなりません）；同じ繰り上がりがマイナーからメジャーへ
-カスケードします。バージョン履歴と本プロジェクトの過去の作業の要約は
-`CHANGELOG.md` を参照してください。
+`package.json` の `version`（および `hydra-umc.project.json` 内の対応する
+`version`）は、実際の `build.bat`/`build.sh` の実行ごとに自動的に加算され
+ます——手順 1 として `npm install && npm run build` の前に
+`bump_manifest_version.py` が実行され、`package.json` から現在のバージョン
+を直接読み取り、加算して書き戻し、マニフェストを同期し、
+そのバージョンのエントリがまだ無ければ簡潔な CHANGELOG エントリを
+追加します。`npm run
+build`（`vite build`）単体は意図的にコンパイルのみで、バージョンには一切
+触れません——`scripts/bump-version.mjs` は以前の `prebuild` フック方式で
+この役割を担っていましたが、現在はレガシーであり参考用にのみ残されて
+います（そのファイル自身の冒頭コメントを参照）。`npm run dev`/`lint`/
+`preview` もバージョンには一切触れません。これはセマンティック
+バージョニングではありません：10 進法のオドメーター方式です。パッチ桁が
+1 ずつ増加します；9 を超えるとリセットされて 0 になり、代わりにマイナー桁
+が増加します（`0.1.9` -> `0.2.0`、決して `0.1.10` にはなりません）；同じ
+繰り上がりがマイナーからメジャーへカスケードします。バージョン履歴と本
+プロジェクトの過去の作業の要約は `CHANGELOG.md` を参照してください。
+
+## 📖 さらなるドキュメント
+
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) —— UI、永続化された設定、外部トランスポートの権限が
+  どのように分離されているか、そしてサンドボックスタブがシミュレートされた
+  データをライブとして提示するのではなく、オフライン/利用不可状態を露さなければ
+  ならない理由。
+- [`docs/BUILD_AND_RUN.md`](docs/BUILD_AND_RUN.md) —— 非破壊的な検証パスである
+  `build-test.bat`/`.sh`（TypeScript + テスト、バージョンや CHANGELOG の変更なし）、
+  ローカル開発用の `dev.bat`/`.sh`、そして OTA 署名素材がブラウザ設定に
+  決して含まれてはならない理由。
+- [`docs/INTEGRATION_CONTRACT.md`](docs/INTEGRATION_CONTRACT.md) —— 本クライアントが未知の
+  スキーマ、不明なターゲット識別子、不正な API 結果に対してどう対処すべきか、
+  そして実際のフラッシュ権限がサーバー側または専用のデスクトップツールに
+  留まる理由。
 
 ## 🛠️ 技術スタック
 - **言語：** TypeScript
@@ -328,8 +369,8 @@ npm run preview
 │                                     zh.json、ja.json
 ├── scripts/
 │   └── bump-version.mjs             依存関係のないバージョン加算スクリ
-│                                     プト、実際のビルドのたびに自動的に
-│                                     実行（上記の「バージョン管理」参照）
+│                                     プト。現在はレガシーで参考用のみ
+│                                     - bump_manifest_version.py に置き換えられた（「バージョン管理」参照）
 ├── public/
 │   └── firmware/                    メインアプリケーション、メインブート
 │                                     ローダー、拡張スレーブアプリケー
@@ -354,7 +395,7 @@ npm run preview
 │                                     dist/ ビルドの生成
 ├── tools/
 │   └── ci_validate.py               CI が使用する manifest/CHANGELOG/docs の検証
-├── bump_manifest_version.py         hydra-umc.project.json のバージョンをネイティブ側と同期（--sync）
+├── bump_manifest_version.py         実際のビルドごとの実のバージョン加算（package.json + マニフェスト、「バージョン管理」参照）。以前のネイティブ側の単独加算を取り込む `--sync` モードもある
 ├── package.json
 ├── CHANGELOG.md                     バージョン履歴と過去の作業の要約
 ├── LICENSE
