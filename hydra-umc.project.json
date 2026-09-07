@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "ecosystem": "HYDRA-UMC",
+  "name": "URTC-WEB-STUDIO",
+  "version": "0.1.9",
+  "role": "ui",
+  "stack": "node",
+  "technologies": [
+    "Web Serial API",
+    "TypeScript"
+  ],
+  "deployment_target": "user-pc",
+  "maturity": "established",
+  "family": "URTC Tool Platform",
+  "parent": "URTC",
+  "build": "npm install && npm run build.",
+  "notes": "Real browser-based alternative to URTC-TESTER via the Web Serial API, extensive real version history (jumper sync, OLED reset fixes, ...).",
+  "native_version": {
+    "file": "package.json",
+    "pattern": "\"version\":\\s*\"(\\d+)\\.(\\d+)\\.(\\d+)\""
+  }
+}

@@ -1,0 +1,101 @@
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { Cpu, Tv, Radio, RefreshCw, Thermometer, FileText, ShieldCheck } from 'lucide-react';
+
+interface SidebarProps {
+  activeTab: 'control' | 'oled' | 'can' | 'flasher' | 'thermal' | 'specs' | 'tester';
+  setActiveTab: (tab: 'control' | 'oled' | 'can' | 'flasher' | 'thermal' | 'specs' | 'tester') => void;
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
+  const { t } = useTranslation();
+  return (
+    <aside className="w-16 md:w-48 lg:w-56 flex-shrink-0 border-r border-slate-800 bg-slate-900/50 hidden sm:block">
+      <nav className="flex flex-col gap-1 p-2 sticky top-[60px]">
+        <button
+          onClick={() => setActiveTab('control')}
+          className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+            activeTab === 'control'
+              ? 'bg-amber-500 text-slate-950 font-semibold shadow-md shadow-amber-500/10'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+          }`}
+        >
+          <Cpu className="w-5 h-5" />
+          <span className="hidden md:inline">{t('sidebar.nav_control', 'Tool Matrix & Control')}</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('oled')}
+          className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+            activeTab === 'oled'
+              ? 'bg-amber-500 text-slate-950 font-semibold shadow-md shadow-amber-500/10'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+          }`}
+        >
+          <Tv className="w-5 h-5" />
+          <span className="hidden md:inline">{t('sidebar.nav_oled', 'OLED & Hardware Monitor')}</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('can')}
+          className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+            activeTab === 'can'
+              ? 'bg-amber-500 text-slate-950 font-semibold shadow-md shadow-amber-500/10'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+          }`}
+        >
+          <Radio className="w-5 h-5" />
+          <span className="hidden md:inline">{t('sidebar.nav_can', 'CAN Bus Protocol Analyzer')}</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('flasher')}
+          className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+            activeTab === 'flasher'
+              ? 'bg-amber-500 text-slate-950 font-semibold shadow-md shadow-amber-500/10'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+          }`}
+        >
+          <RefreshCw className="w-5 h-5" />
+          <span className="hidden md:inline">{t('sidebar.nav_flasher', 'Firmware OTA / Flasher')}</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('thermal')}
+          className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+            activeTab === 'thermal'
+              ? 'bg-amber-500 text-slate-950 font-semibold shadow-md shadow-amber-500/10'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+          }`}
+        >
+          <Thermometer className="w-5 h-5" />
+          <span className="hidden md:inline">{t('sidebar.nav_thermal', 'Thermal IR Inspection')}</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('specs')}
+          className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+            activeTab === 'specs'
+              ? 'bg-amber-500 text-slate-950 font-semibold shadow-md shadow-amber-500/10'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+          }`}
+        >
+          <FileText className="w-5 h-5" />
+          <span className="hidden md:inline">{t('sidebar.nav_specs', 'BOM & Hardware Pinouts')}</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('tester')}
+          className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+            activeTab === 'tester'
+              ? 'bg-amber-500 text-slate-950 font-semibold shadow-md shadow-amber-500/10'
+              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+          }`}
+        >
+          <ShieldCheck className="w-5 h-5" />
+          <span className="hidden md:inline">{t('sidebar.nav_tester', 'Tester Diagnostics')}</span>
+        </button>
+      </nav>
+    </aside>
+  );
+};
