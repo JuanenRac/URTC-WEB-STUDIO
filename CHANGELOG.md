@@ -1,7 +1,7 @@
 # Changelog
 
 All notable work on URTC Web Studio, summarized from the project's internal
-audit history. This file is public; the full session-by-session log (with
+development history. This file is public; the full session-by-session log (with
 implementation-level detail) is kept privately outside this repository.
 
 Versioning here does **not** follow Semantic Versioning. It follows a
