@@ -33,6 +33,8 @@ CAN 协议。目标是在单个浏览器标签页内实现与这两款工具功�
 [URTC 固件仓库](https://github.com/JuanenRac/URTC) `docs/CANBUS.TXT` 中所描述
 的真实 CAN 帧。
 
+**诚实核查 - 今天真正能运行的部分：** 这个仓库里没有任何自动化测试套件——`package.json` 没有 `test` 脚本，CI（`npm ci` 之后依次执行 `npm run typecheck --if-present`/`npm test --if-present`/`npm run lint --if-present`）最终真正运行的只有 `npm run lint`（`tsc --noEmit`），而它今天是通过的。哪些是真正由硬件驱动的、哪些只是沙盒，下文的"什么是真实的，什么是沙盒"已经做了精确的划分——Flasher Studio、Tester Studio 和 CAN 总线协议分析器都是真实代码，但在这个环境中从未针对真实的 URTC 硬件运行过（这里没有 USB-CAN 适配器可供测试），而 Control/OLED/Specs-BOM/Thermal IR Inspection 都是被公开标注为沙盒的标签页，完全没有真实的 CAN 流量。CAN 帧校验（`useSerialCanBus.ts`）、CAN-OTA 状态机（`useFlasher.ts`），以及 CAN ID 常量（`canIds.ts`/`flasher.ts`）都是真实的逻辑，逐字节镜像了桌面工具的协议，但在这里只经过了类型检查和人工代码审查的验证，没有经过任何测试框架或真实硬件会话的验证。具体已经交付了什么，请参见 `CHANGELOG.md`。
+
 ---
 
 ## 🧭 什么是真实的，什么是沙盒

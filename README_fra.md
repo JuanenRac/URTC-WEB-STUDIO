@@ -33,6 +33,8 @@ démo simplifiée de ceux-ci - les onglets Flasher Studio et Tester Studio envoi
 reçoivent les vraies trames CAN décrites dans `docs/CANBUS.TXT` du
 [dépôt firmware d'URTC](https://github.com/JuanenRac/URTC).
 
+**Vérification d'honnêteté - ce qui fonctionne réellement aujourd'hui :** il n'y a aucune suite de tests automatisés dans ce dépôt - `package.json` n'a pas de script `test`, et la CI (`npm ci` puis `npm run typecheck --if-present` / `npm test --if-present` / `npm run lint --if-present`) ne finit par exécuter réellement que `npm run lint` (`tsc --noEmit`), qui passe aujourd'hui. Ce qui est réel et piloté par le matériel par rapport à ce qui n'est qu'un bac à sable est déjà détaillé précisément dans « Ce qui est réel vs. ce qui est un bac à sable » juste en dessous - Flasher Studio, Tester Studio et l'Analyseur de Protocole CAN Bus sont du vrai code qui n'a jamais tourné contre du vrai matériel URTC dans cet environnement (pas d'adaptateur USB-CAN ici pour le tester), tandis que Control/OLED/Specs-BOM/Thermal IR Inspection sont des onglets bac à sable ouvertement déclarés comme tels, sans aucun trafic CAN réel. La validation des trames CAN (`useSerialCanBus.ts`), la machine à états CAN-OTA (`useFlasher.ts`), et les constantes d'ID CAN (`canIds.ts`/`flasher.ts`) sont de la vraie logique reflétant le protocole des outils de bureau octet par octet, mais vérifiées ici uniquement par vérification de types et relecture manuelle du code, pas par un quelconque harnais de tests ni une vraie session avec du matériel. Voir `CHANGELOG.md` pour savoir exactement ce qui a été livré jusqu'à présent.
+
 ---
 
 ## 🧭 Ce qui est réel vs. ce qui est un bac à sable

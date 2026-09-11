@@ -35,6 +35,8 @@ React/Vite シングルページアプリで、2 つのデスクトップコン�
 [URTC ファームウェアリポジトリ](https://github.com/JuanenRac/URTC) の
 `docs/CANBUS.TXT` に記載された実際の CAN フレームを送受信します。
 
+**正直な現状確認 - 実際に今動くもの:** このリポジトリには自動テストスイートが一切存在しない——`package.json` には `test` スクリプトがなく、CI（`npm ci` の後に `npm run typecheck --if-present` / `npm test --if-present` / `npm run lint --if-present` を実行）が実際に実行するのは結局 `npm run lint`（`tsc --noEmit`）だけであり、それは今日通過している。何が本物でハードウェア駆動なのか、何が単なるサンドボックスなのかは、すぐ下の「何が本物で、何がサンドボックスか」ですでに正確に整理されている——Flasher Studio、Tester Studio、CAN バスプロトコルアナライザーは本物のコードだが、この環境では実際の URTC ハードウェアに対して一度も実行されたことがない（ここにはテストに使える USB-CAN アダプターがない）。一方 Control/OLED/Specs-BOM/Thermal IR Inspection は、CAN トラフィックが一切ない、サンドボックスであることが明示されたタブだ。CAN フレーム検証（`useSerialCanBus.ts`）、CAN-OTA ステートマシン（`useFlasher.ts`）、CAN ID 定数（`canIds.ts`/`flasher.ts`）は、デスクトップツールのプロトコルをバイト単位で反映した本物のロジックだが、ここでは型チェックと手動のコードレビューによってのみ検証されており、いかなるテストハーネスや実機ハードウェアでのセッションによる検証も受けていない。これまでに実際に出荷されたものの詳細は `CHANGELOG.md` を参照。
+
 ---
 
 ## 🧭 何が本物で、何がサンドボックスか
