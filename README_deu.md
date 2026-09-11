@@ -33,6 +33,8 @@ keine vereinfachte Demo davon - die Tabs Flasher Studio und Tester Studio senden
 und empfangen die echten CAN-Frames, die in `docs/CANBUS.TXT` des
 [URTC](https://github.com/JuanenRac/URTC)-Repository beschrieben sind.
 
+**Ehrlichkeitscheck - was heute wirklich funktioniert:** es gibt keine automatisierte Testsuite in diesem Repository - `package.json` hat kein `test`-Skript, und die CI (`npm ci`, dann `npm run typecheck --if-present` / `npm test --if-present` / `npm run lint --if-present`) führt am Ende nur wirklich `npm run lint` (`tsc --noEmit`) aus, was heute besteht. Was echt und hardwaregesteuert ist versus was nur eine Sandbox ist, wird bereits genau weiter unten in "Was echt ist vs. was eine Sandbox ist" aufgeschlüsselt - Flasher Studio, Tester Studio und der CAN-Bus-Protokollanalysator sind echter Code, der in dieser Umgebung nie gegen echte URTC-Hardware gelaufen ist (hier gibt es keinen USB-CAN-Adapter zum Testen), während Control/OLED/Specs-BOM/Thermal IR Inspection offen als Sandbox-Tabs gekennzeichnet sind, ohne jeglichen echten CAN-Verkehr. Die CAN-Frame-Validierung (`useSerialCanBus.ts`), die CAN-OTA-Zustandsmaschine (`useFlasher.ts`) und die CAN-ID-Konstanten (`canIds.ts`/`flasher.ts`) sind echte Logik, die das Protokoll der Desktop-Tools byteweise widerspiegelt, hier aber nur durch Typprüfung und manuelle Code-Durchsicht verifiziert wurde, nicht durch irgendeinen Test-Harness oder eine echte Hardware-Sitzung. Siehe `CHANGELOG.md` für das, was bisher genau ausgeliefert wurde.
+
 ---
 
 ## 🧭 Was echt ist vs. was eine Sandbox ist

@@ -34,6 +34,8 @@ demo of them - the Flasher Studio and Tester Studio tabs send and receive the
 real CAN frames described in `docs/CANBUS.TXT` of the
 [URTC firmware repo](https://github.com/JuanenRac/URTC).
 
+**Honesty check - what actually runs today:** there is no automated test suite in this repository - `package.json` has no `test` script, and CI (`npm ci` then `npm run typecheck --if-present` / `npm test --if-present` / `npm run lint --if-present`) only ever actually runs `npm run lint` (`tsc --noEmit`), which passes today. What's real hardware-driven versus sandbox-only is already broken down precisely in "What's real vs. what's a sandbox" right below - Flasher Studio, Tester Studio and the CAN Bus Protocol Analyzer are real code that has never been run against actual URTC hardware in this environment (no USB-CAN adapter here to test with), while Control/OLED/Specs-BOM/Thermal IR Inspection are openly labeled sandbox tabs with zero CAN traffic. The CAN frame validation (`useSerialCanBus.ts`), the CAN-OTA state machine (`useFlasher.ts`), and the CAN ID constants (`canIds.ts`/`flasher.ts`) are real logic mirroring the desktop tools' own protocol byte-for-byte, but verified here only by type-checking and manual code review, not by any test harness or a real hardware session. See `CHANGELOG.md` for exactly what has shipped so far.
+
 ---
 
 ## 🧭 What's real vs. what's a sandbox
