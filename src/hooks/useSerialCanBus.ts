@@ -2,6 +2,7 @@ import { useState, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CanFrame } from '../types';
 import { CAN_ID_QUERY_VERSION, CAN_ID_VERSION_RESPONSE, CAN_ID_BOOTLOADER_VERSION_RESPONSE } from '../lib/flasher';
+import { parseSlcanLine } from '../lib/slcan';
 
 // Standard SLCAN/Lawicel "Sx" bitrate codes, in the same most-likely-first try
 // order as URTC-FLASHER/URTC-TESTER's own auto_detect_bitrate: URTC's bus is
@@ -438,48 +439,27 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
           try {
             // A malformed or truncated SLCAN line used to be accepted here:
             // DLC 9..F produced a non-CAN frame and short/non-hex payloads
-            // inserted NaN bytes into the telemetry stream. Validate the
-            // standard 11-bit `t` frame prefix before delivering anything to
-            // control panels. Any optional adapter timestamp remains ignored
-            // after the validated payload, as it was before.
-            const match = /^t([0-9a-f]{3})([0-8])([0-9a-f]*)$/i.exec(line);
-            if (!match) {
-              console.warn('Ignoring malformed SLCAN frame:', line);
+            // inserted NaN bytes into the telemetry stream. parseSlcanLine
+            // (src/lib/slcan.ts) validates the standard 11-bit `t` frame
+            // prefix before anything is delivered to control panels - see
+            // its own tests for the exact matrix of what it accepts/rejects.
+            const parsed = parseSlcanLine(line);
+            if (!parsed) {
+              console.warn('Ignoring malformed/truncated SLCAN frame:', line);
               continue;
             }
 
-            const idHex = match[1];
-            const dlc = Number(match[2]);
-            const dataHexStr = match[3].substring(0, dlc * 2);
-            if (dataHexStr.length !== dlc * 2) {
-              console.warn('Ignoring truncated SLCAN frame:', line);
-              continue;
-            }
-
-            const id = Number.parseInt(idHex, 16);
-            
-            const data: number[] = [];
-            for (let j = 0; j < dlc * 2; j += 2) {
-              data.push(Number.parseInt(dataHexStr.substring(j, j + 2), 16));
-            }
-            
             const now = new Date();
             const timestamp = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}.${now.getMilliseconds().toString().padStart(3, '0')}`;
-            
-            const dataHexFormatted = data.map(b => b.toString(16).padStart(2, '0').toUpperCase()).join(' ');
 
             const frame: CanFrame = {
-              id,
-              idHex: `0x${idHex.toUpperCase()}`,
-              dlc,
-              data,
-              dataHex: dataHexFormatted,
+              ...parsed,
               timestamp,
               direction: 'Rx',
               description: 'Incoming from CAN hardware',
               seq: ++frameSeqRef.current
             };
-            
+
             deliverOrQueue(frame);
             dispatchFrame(frame);
           } catch (e) {

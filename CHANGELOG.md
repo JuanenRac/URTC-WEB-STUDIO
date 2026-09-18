@@ -12,8 +12,16 @@ build`/`vite build` on its own is deliberately compilation-only) bumps the
 version automatically, so the number reflects build count, not the size or
 compatibility of a change.
 
-## [Unreleased]
+## [0.2.0] - First automated test suite (Vitest) for SLCAN parsing
 
+- Added the project's first automated test suite (Vitest): `src/lib/slcan.ts`'s
+  `parseSlcanLine()` was extracted, unchanged, from `useSerialCanBus.ts`'s own
+  frame-parsing logic so it can be driven directly by 16 real test cases.
+  Writing them surfaced and fixed a real bug: the parsing regex was
+  case-insensitive on the leading frame-type letter, so a real 29-bit
+  extended-frame line (`T...`) was silently misread as a standard 11-bit
+  `t` frame with a garbage ID and payload instead of being rejected. `npm
+  test` is now wired into this project's own CI step (`npm test --if-present`).
 - Hardened the Web Serial SLCAN path in both directions: malformed received
   identifiers, non-hex payloads, truncated payloads and impossible DLC values
   (`9`-`F`) are discarded before they can create `NaN` bytes or reach CAN
