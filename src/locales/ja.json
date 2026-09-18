@@ -1,6 +1,7 @@
 {
   "app": {
-    "dismiss": "閉じる"
+    "dismiss": "閉じる",
+    "browser_unsupported_banner": "このブラウザは Web Serial API に対応していないため、実機への接続はできません。Chrome または Edge に切り替えてください。"
   },
   "config": {
     "language_en": "English",

@@ -12,6 +12,16 @@ build`/`vite build` on its own is deliberately compilation-only) bumps the
 version automatically, so the number reflects build count, not the size or
 compatibility of a change.
 
+## [0.2.1] - Unsupported-browser banner shown before connecting
+
+- Firefox/Safari visitors used to get no in-app indication that Web Serial
+  isn't available until they clicked Connect and hit a plain `alert()` from
+  `useSerialCanBus.ts`. A visible banner (feature-detected via `'serial' in
+  navigator`, the same real check `connect()` already used) now appears at
+  the top of the app before any connection attempt, guiding the user to
+  Chrome or Edge. New `app.browser_unsupported_banner` key across all 7
+  languages.
+
 ## [0.2.0] - First automated test suite (Vitest) for SLCAN parsing
 
 - Added the project's first automated test suite (Vitest): `src/lib/slcan.ts`'s

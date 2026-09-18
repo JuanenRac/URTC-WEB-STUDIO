@@ -1,6 +1,7 @@
 {
   "app": {
-    "dismiss": "Descartar"
+    "dismiss": "Descartar",
+    "browser_unsupported_banner": "Este navegador no admite la API Web Serial - no es posible conectar con hardware real aqui. Cambia a Chrome o Edge."
   },
   "config": {
     "language_en": "English",
