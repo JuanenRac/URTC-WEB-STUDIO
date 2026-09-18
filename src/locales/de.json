@@ -1,6 +1,7 @@
 {
   "app": {
-    "dismiss": "Verwerfen"
+    "dismiss": "Verwerfen",
+    "browser_unsupported_banner": "Dieser Browser unterstuetzt die Web Serial API nicht - eine Verbindung zu echter Hardware ist hier nicht moeglich. Bitte wechseln Sie zu Chrome oder Edge."
   },
   "config": {
     "language_en": "English",

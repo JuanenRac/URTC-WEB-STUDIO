@@ -1,6 +1,7 @@
 {
   "app": {
-    "dismiss": "关闭"
+    "dismiss": "关闭",
+    "browser_unsupported_banner": "此浏览器不支持 Web Serial API，无法连接真实硬件。请切换到 Chrome 或 Edge。"
   },
   "config": {
     "language_en": "English",

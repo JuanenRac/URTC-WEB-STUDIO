@@ -85,7 +85,16 @@ export default function App() {
   }, []);
 
   const serialCan = useSerialCanBus(handleFrameReceived);
-  
+
+  // Real feature detection, not a browser-name sniff - matches the same
+  // 'serial' in navigator check useSerialCanBus.ts's own connect() already
+  // gates on before calling navigator.serial.requestPort(). That existing
+  // check only ever surfaces as an alert() after the user clicks Connect;
+  // this mirrors it as a banner shown up front, before any connection
+  // attempt, on every unsupported browser (Firefox/Safari today, whatever
+  // else lacks Web Serial tomorrow) rather than naming browsers directly.
+  const isWebSerialUnsupported = typeof navigator === 'undefined' || !('serial' in navigator);
+
   // Hardware state
   const [hardwareState, setHardwareState] = useState<HardwareState>({
     jumpers: [false, false, false, false, false], // ID 0 by default (T12 Soldering Station)
@@ -561,6 +570,20 @@ export default function App() {
         onDisconnect={serialCan.disconnect}
         portName={serialCan.portName}
       />
+
+      {/* Unsupported-browser banner - shown up front, before any connect
+          attempt, so a Firefox/Safari visitor isn't left guessing why the
+          Connect button in the Header does nothing useful. Not dismissible
+          (unlike the send-failure banner below): the underlying condition
+          can't change without a full page reload in a different browser. */}
+      {isWebSerialUnsupported && (
+        <div className="max-w-[1400px] w-full mx-auto px-2 md:px-4 pt-3">
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-950/80 text-amber-300 border border-amber-800/80 text-xs font-medium">
+            <AlertTriangle className="w-4 h-4 shrink-0" />
+            <span>{t('app.browser_unsupported_banner', "This browser does not support the Web Serial API - connecting to real hardware is not possible here. Please switch to Chrome or Edge.")}</span>
+          </div>
+        </div>
+      )}
 
       {/* CAN send failure banner - covers every sendFrame() call across the
           app (tester tool panels, keepalive loops, flasher, etc.), most of
