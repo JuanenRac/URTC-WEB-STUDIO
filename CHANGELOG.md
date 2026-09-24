@@ -12,6 +12,10 @@ build`/`vite build` on its own is deliberately compilation-only) bumps the
 version automatically, so the number reflects build count, not the size or
 compatibility of a change.
 
+## [0.2.2] - Device state model
+
+- Added a per-device state model (offline, connecting, online, error) in which a configuration change stays pending until the device confirms it, and is rolled back with its reason if refused or the link drops.
+
 ## [0.2.1] - Unsupported-browser banner shown before connecting
 
 - Firefox/Safari visitors used to get no in-app indication that Web Serial
