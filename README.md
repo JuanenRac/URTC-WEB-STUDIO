@@ -230,7 +230,7 @@ runs the TypeScript compiler in check-only mode.
 ### Versioning
 
 `package.json`'s `version` (and the matching `version` in
-`hydra-umc.project.json`) bumps automatically on every real `build.bat`/
+`urtc.project.json`) bumps automatically on every real `build.bat`/
 `build.sh` run - `bump_manifest_version.py` runs as step 1, before `npm
 install && npm run build`, reads the current version straight out of
 `package.json`, increments it, writes it back, syncs the manifest, and adds

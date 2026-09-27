@@ -208,7 +208,7 @@ npm run preview
 
 ### 版本管理
 
-`package.json` 的 `version`（以及 `hydra-umc.project.json` 中对应的
+`package.json` 的 `version`（以及 `urtc.project.json` 中对应的
 `version`）会在每次真正的 `build.bat`/`build.sh` 运行时自动递增——
 `bump_manifest_version.py` 作为第 1 步，在 `npm install && npm run build`
 之前运行，直接从 `package.json` 读取当前版本，递增后写回，同步清单

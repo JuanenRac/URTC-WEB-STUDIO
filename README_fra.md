@@ -240,7 +240,7 @@ lint` exécute le compilateur TypeScript en mode vérification uniquement.
 ### Versionnage
 
 Le `version` de `package.json` (et le `version` correspondant dans
-`hydra-umc.project.json`) s'incrémente automatiquement à chaque `build.bat`/
+`urtc.project.json`) s'incrémente automatiquement à chaque `build.bat`/
 `build.sh` réel - `bump_manifest_version.py` s'exécute comme étape 1, avant
 `npm install && npm run build`, lit la version actuelle directement depuis
 `package.json`, l'incrémente, la réécrit, synchronise le manifest, et ajoute
