@@ -243,7 +243,7 @@ npm run preview
 
 ### バージョン管理
 
-`package.json` の `version`（および `hydra-umc.project.json` 内の対応する
+`package.json` の `version`（および `urtc.project.json` 内の対応する
 `version`）は、実際の `build.bat`/`build.sh` の実行ごとに自動的に加算され
 ます——手順 1 として `npm install && npm run build` の前に
 `bump_manifest_version.py` が実行され、`package.json` から現在のバージョン

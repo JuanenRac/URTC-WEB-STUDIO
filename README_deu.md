@@ -251,7 +251,7 @@ Prüfmodus aus.
 ### Versionierung
 
 `package.json`s `version` (und der passende `version`-Wert in
-`hydra-umc.project.json`) wird bei jedem echten `build.bat`/`build.sh`-Lauf
+`urtc.project.json`) wird bei jedem echten `build.bat`/`build.sh`-Lauf
 automatisch erhöht - `bump_manifest_version.py` läuft als Schritt 1, vor
 `npm install && npm run build`, liest die aktuelle Version direkt aus
 `package.json`, erhöht sie, schreibt sie zurück, synchronisiert das
