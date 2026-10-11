@@ -125,12 +125,14 @@ CAN ID :
 - **Requête de version de carte en direct** (`0x7F8`/`0x7F9`/`0x7FA`) - affiche le
   vrai répondant (application ou bootloader), le HardwareID, et la version, pas un
   commutateur simulé.
-- **Support sidecar `<file>.manifest.json`** - lors du flashage d'un fichier venant
-  de la liste firmware GitHub (ou du dossier local `public/firmware/`), la version
-  déclarée d'un manifest correspondant a priorité pour signaler ce qui est en
-  cours d'installation, et son `sha256` (si présent) est vérifié comme un
-  avertissement de bon sens précoce et non bloquant - même comportement que le
-  `_check_manifest` de l'outil de bureau.
+- **Signature et empreinte publiées** - chaque image issue du build URTC est
+  livrée avec `<file>.manifest.json` (version, `sha256` et la signature
+  `hmac_sha256` attendue par le bootloader) et `<file>.sha256`. L'application
+  envoie cette signature publiée, un `sha256` du manifeste qui ne correspond
+  pas au fichier **bloque** le flashage, et c'est la version du manifeste qui
+  est annoncée au bootloader. Un fichier choisi sur le disque n'a pas de
+  manifeste : il ne peut être flashé qu'avec une clé de signature saisie pour
+  ce seul flashage (cartes de banc).
 - **Configuration de carte** : type de carte d'extension / variante de capteur
   MLX9064x / configuration d'outil libre (broches ID `11111`) / infos périphérique
   et numéro de série - `0x1A0`-`0x1A7`.
@@ -178,24 +180,28 @@ Porté depuis les propres `tester_tool_panels.py` /
   version de carte (`0x7F8`/`0x7F9`), et une erreur critique déclarée (`0x111`
   octet 1) apparaît comme une bannière de défaut en direct.
 
-## 🔐 Note de sécurité : la clé de signature OTA
+## 🔐 Note de sécurité : aucune clé de signature dans cette application
 
-Comme l'`URTC Flasher` de bureau, cette app est livrée avec la clé de signature
-HMAC-SHA256 par défaut du projet commise dans le code source
-(`src/lib/flasher.ts`) - la propre clé anti-falsification du bootloader qui
-détermine si une mise à jour CAN-OTA est acceptée. C'est une correspondance
-intentionnelle avec la propre convention de l'outil de bureau (le `HMAC_KEY` de
-`flasher_config.py`, lui-même remplaçable via une configuration locale non
-commise), pas un oubli. Cela vient avec un avertissement spécifique à l'exécution
-en tant qu'**app web** : contrairement à un exécutable de bureau téléchargé,
-quiconque charge cette page peut lire la clé directement depuis le bundle JS
-distribué - il n'existe aucun moyen pour une app statique côté client de garder un
-secret de signature privé vis-à-vis de ses propres visiteurs. Si vous faites
-tourner la vraie clé de signature pour un déploiement de production, ne déployez
-cette app que quelque part dont vous contrôlez l'accès (un réseau interne, un VPN,
-ou un hôte à accès restreint), ou traitez-la de la même manière que vous
-traiteriez la distribution de l'outil Flasher de bureau lui-même - à des
-techniciens autorisés, pas à l'internet public.
+Depuis la 0.2.3, cette application ne contient **aucune** clé de signature
+HMAC-SHA256. Le build URTC signe lui-même chaque image d'application (avec
+une clé privée pour les versions de release) et publie la signature à côté ;
+Flasher Studio ne fait que transporter cette signature - le même modèle que
+le `URTC Flasher` de bureau. Le bundle JS ne contient rien de secret, la page
+peut donc être hébergée publiquement.
+
+La seule exception est une image compilée soi-même sans manifeste, pour une
+carte de banc : l'application demande alors la clé de signature, la garde en
+mémoire pour ce seul flashage et ne l'enregistre jamais. Les images signées
+avec la clé PUBLIQUE de développement (`signing_key_kind: "dev"` dans le
+manifeste) ne s'installent que sur les cartes dont le bootloader a été
+compilé de la même façon - le journal l'indique. Voir
+`docs/FIRMWARE_SIGNING.TXT` dans URTC.
+
+`public/firmware/` contient exactement les fichiers publiés par URTC (mêmes
+noms, mêmes octets, avec leurs fichiers associés). On le met à jour avec
+`npm run sync-firmware`, qui vérifie chaque empreinte et régénère
+`src/lib/bundledFirmware.ts` ; un test vérifie le paquet par rapport à ses
+manifestes.
 
 ## 🚀 Pour commencer
 
@@ -357,17 +363,22 @@ travail antérieur sur ce projet.
 │   │                                soutient le keepalive watchdog de la case
 │   │                                active de chaque outil
 │   ├── lib/
-│   │   ├── flasher.ts               Constantes du protocole OTA, la cle de
-│   │   │                            signature HMAC-SHA256 commise, helpers
-│   │   │                            CRC32/HMAC, parsing de manifest
+│   │   ├── flasher.ts               Constantes du protocole OTA, aides CRC32/HMAC,
+│   │   │                            lecture des manifestes (aucune clé de signature)
+│   │   ├── firmwareSignature.ts     Choisit la signature envoyée : la publiée, ou une
+│   │   │                            clé saisie pour un flashage ; contrôle sha256
+│   │   ├── quickState.ts            Décodage de 0x111 (défaut thermique, reset)
+│   │   ├── bundledFirmware.ts       Généré par scripts/sync-firmware.mjs
 │   │   └── canIds.ts                Constantes de CAN ID pour Tester Studio -
 │   │                                 reflete tester_config.py octet par octet
 │   └── locales/                     Chaines UI - en.json, es.json, de.json,
 │                                     fr.json, it.json, ja.json, zh.json
 ├── scripts/
-│   └── bump-version.mjs             Script d'incrementation de version sans dependance;
-│                                     aujourd'hui legacy, conserve pour reference seulement
-│                                     - remplace par bump_manifest_version.py (voir "Versionnage")
+│   ├── bump-version.mjs             Script d'incrementation de version sans dependance;
+│   │                                 aujourd'hui legacy, conserve pour reference seulement
+│   │                                 - remplace par bump_manifest_version.py (voir "Versionnage")
+│   └── sync-firmware.mjs            Copie le build URTC dans public/firmware/
+│                                     (empreintes vérifiées) - npm run sync-firmware
 ├── public/
 │   └── firmware/                    .bin/.elf/.hex embarques pour
 │                                     l'application principale, le bootloader

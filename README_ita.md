@@ -124,12 +124,13 @@ ID:
 - **Interrogazione versione scheda dal vivo** (`0x7F8`/`0x7F9`/`0x7FA`) - mostra il
   vero rispondente (app o bootloader), HardwareID, e versione, non un interruttore
   simulato.
-- **Supporto sidecar `<file>.manifest.json`** - flashando un file arrivato
-  dall'elenco firmware GitHub (o dalla cartella locale `public/firmware/`), la
-  versione dichiarata di un manifest corrispondente ha priorità nel riportare cosa
-  si sta installando, e il suo `sha256` (se presente) viene controllato come
-  avviso di sanità precoce e non bloccante - stesso comportamento del
-  `_check_manifest` dello strumento desktop.
+- **Firma e impronta pubblicate** - ogni immagine della build URTC arriva
+  con `<file>.manifest.json` (versione, `sha256` e la firma `hmac_sha256`
+  attesa dal bootloader) e `<file>.sha256`. L'app invia la firma pubblicata,
+  uno `sha256` del manifest che non corrisponde al file **blocca** il flash,
+  e la versione del manifest è quella comunicata al bootloader. Un file
+  scelto dal disco non ha manifest: si può flashare solo con una chiave di
+  firma inserita per quel singolo flash (schede da banco).
 - **Configurazione scheda**: tipo di scheda di espansione / variante sensore
   MLX9064x / configurazione utensile libero (pin ID `11111`) / info periferiche e
   numero di serie - `0x1A0`-`0x1A7`.
@@ -176,23 +177,27 @@ Portato dai propri `tester_tool_panels.py` /
   versione scheda (`0x7F8`/`0x7F9`), e un errore critico dichiarato (`0x111` byte
   1) appare come banner di guasto dal vivo.
 
-## 🔐 Nota di sicurezza: la chiave di firma OTA
+## 🔐 Nota di sicurezza: nessuna chiave di firma in questa app
 
-Come lo `URTC Flasher` da desktop, questa app viene distribuita con la chiave di
-firma HMAC-SHA256 predefinita del progetto committata nel codice sorgente
-(`src/lib/flasher.ts`) - la chiave anti-manomissione propria del bootloader che
-determina se un aggiornamento CAN-OTA viene accettato. Questa è una corrispondenza
-intenzionale con la convenzione propria dello strumento desktop (l'`HMAC_KEY` di
-`flasher_config.py`, a sua volta sovrascrivibile tramite una configurazione locale
-non committata), non una svista. Viene con un avvertimento specifico dell'esecuzione
-come **app web**: a differenza di un eseguibile desktop scaricato, chiunque carichi
-questa pagina può leggere la chiave direttamente dal bundle JS distribuito - non
-c'è modo per un'app statica lato client di mantenere un segreto di firma privato
-dai propri visitatori. Se ruoti la chiave di firma reale per un deployment di
-produzione, distribuisci questa app solo in un posto di cui controlli l'accesso
-(una rete interna, VPN, o host con accesso limitato), oppure trattala come
-tratteresti la consegna dello stesso strumento Flasher da desktop - a tecnici
-autorizzati, non a internet pubblica.
+Dalla 0.2.3 questa app **non** contiene alcuna chiave di firma HMAC-SHA256.
+La build URTC firma da sé ogni immagine applicativa (con una chiave privata
+nelle build di release) e pubblica la firma accanto; Flasher Studio si
+limita a trasportare quella firma - lo stesso modello del `URTC Flasher` da
+desktop. Il bundle JS non contiene nulla di segreto, quindi la pagina può
+essere pubblicata apertamente.
+
+L'unica eccezione è un'immagine compilata in proprio senza manifest, per una
+scheda da banco: l'app chiede allora la chiave di firma, la tiene in memoria
+solo per quel flash e non la salva mai. Le immagini firmate con la chiave
+PUBBLICA di sviluppo (`signing_key_kind: "dev"` nel manifest) si installano
+solo su schede il cui bootloader è stato compilato allo stesso modo - il log
+lo segnala. Vedi `docs/FIRMWARE_SIGNING.TXT` in URTC.
+
+`public/firmware/` contiene esattamente i file pubblicati da URTC (stessi
+nomi, stessi byte, con i loro file associati). Si aggiorna con
+`npm run sync-firmware`, che verifica ogni impronta e rigenera
+`src/lib/bundledFirmware.ts`; un test verifica il pacchetto rispetto ai suoi
+manifest.
 
 ## 🚀 Per iniziare
 
@@ -352,17 +357,22 @@ progetto.
 │   │                                sostiene il keepalive watchdog della
 │   │                                casella attiva di ogni utensile
 │   ├── lib/
-│   │   ├── flasher.ts               Costanti del protocollo OTA, la chiave di
-│   │   │                            firma HMAC-SHA256 committata, helper
-│   │   │                            CRC32/HMAC, parsing manifest
+│   │   ├── flasher.ts               Costanti del protocollo OTA, helper CRC32/HMAC,
+│   │   │                            lettura dei manifest (nessuna chiave di firma)
+│   │   ├── firmwareSignature.ts     Sceglie la firma da inviare: quella pubblicata o
+│   │   │                            una chiave inserita per un flash; verifica sha256
+│   │   ├── quickState.ts            Decodifica di 0x111 (guasto termico, reset)
+│   │   ├── bundledFirmware.ts       Generato da scripts/sync-firmware.mjs
 │   │   └── canIds.ts                Costanti CAN ID per Tester Studio -
 │   │                                 rispecchia tester_config.py byte per byte
 │   └── locales/                     Stringhe UI - en.json, es.json, de.json,
 │                                     fr.json, it.json, ja.json, zh.json
 ├── scripts/
-│   └── bump-version.mjs             Script di incremento versione senza dipendenze;
-│                                     oggi legacy, mantenuto solo come riferimento
-│                                     - sostituito da bump_manifest_version.py (vedi "Versionamento")
+│   ├── bump-version.mjs             Script di incremento versione senza dipendenze;
+│   │                                 oggi legacy, mantenuto solo come riferimento
+│   │                                 - sostituito da bump_manifest_version.py (vedi "Versionamento")
+│   └── sync-firmware.mjs            Copia la build URTC in public/firmware/
+│                                     (impronte verificate) - npm run sync-firmware
 ├── public/
 │   └── firmware/                    .bin/.elf/.hex inclusi per l'applicazione
 │                                     principale, il bootloader principale,

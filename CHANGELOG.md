@@ -12,6 +12,16 @@ build`/`vite build` on its own is deliberately compilation-only) bumps the
 version automatically, so the number reflects build count, not the size or
 compatibility of a change.
 
+## [0.2.4] - Bundled firmware 0.3.3, READMEs updated
+
+- `public/firmware` re-synced with URTC's current build (main 0.3.3 / boot
+  0.3.8, slave 0.1.9 / boot 0.2.2) via `npm run sync-firmware`.
+- READMEs in all 7 languages: the "OTA signing key" section now describes
+  the published-signature model (no key in the app), the manifest bullet says
+  a sha256 mismatch blocks the flash, and the repository tree lists the new
+  files (`firmwareSignature.ts`, `quickState.ts`, `bundledFirmware.ts`,
+  `scripts/sync-firmware.mjs`).
+
 ## [0.2.3] - No signing key in the app, published signatures, real firmware
 
 - **The HMAC signing keys are gone from `src/lib/flasher.ts`.** The URTC

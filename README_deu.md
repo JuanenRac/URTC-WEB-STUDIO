@@ -131,13 +131,14 @@ dieselben CAN-IDs:
 - **Live-Abfrage der Platinenversion** (`0x7F8`/`0x7F9`/`0x7FA`) - zeigt den
   echten Antwortenden (Anwendung oder Bootloader), die HardwareID, und die
   Version, kein simulierter Umschalter.
-- **`<file>.manifest.json`-Sidecar-Unterstützung** - beim Flashen einer
-  Datei, die aus der GitHub-Firmware-Liste (oder dem lokalen Ordner
-  `public/firmware/`) stammt, hat die deklarierte Version eines passenden
-  Manifests Priorität bei der Meldung dessen, was installiert wird, und ihr
-  `sha256` (falls vorhanden) wird als frühe, nicht blockierende
-  Plausibilitätswarnung geprüft - dasselbe Verhalten wie das
-  `_check_manifest` des Desktop-Tools.
+- **Veröffentlichte Signatur und Prüfsumme** - jedes Image aus dem
+  URTC-Build kommt mit `<file>.manifest.json` (Version, `sha256` und die
+  `hmac_sha256`-Signatur, die der Bootloader erwartet) und `<file>.sha256`.
+  Die App sendet diese veröffentlichte Signatur, ein `sha256` im Manifest,
+  das nicht zur Datei passt, **blockiert** das Flashen, und die Version aus
+  dem Manifest wird dem Bootloader gemeldet. Eine von der Festplatte gewählte
+  Datei hat kein Manifest: sie lässt sich nur mit einem für dieses eine
+  Flashen eingegebenen Signierschlüssel flashen (Testplatinen).
 - **Platinenkonfiguration**: Erweiterungsplatinentyp / MLX9064x-Sensorvariante
   / freie Werkzeugkonfiguration (ID-Pins `11111`) / Peripherie-Infos &
   Seriennummer - `0x1A0`-`0x1A7`.
@@ -186,26 +187,28 @@ Portiert aus den eigenen `tester_tool_panels.py` /
   die Platinenversion (`0x7F8`/`0x7F9`) ab, und ein deklarierter kritischer
   Fehler (`0x111` Byte 1) erscheint als Live-Fehlerbanner.
 
-## 🔐 Sicherheitshinweis: der OTA-Signierschlüssel
+## 🔐 Sicherheitshinweis: kein Signierschlüssel in dieser App
 
-Wie der Desktop-`URTC Flasher` wird diese App mit dem im Quellcode
-committeten Standard-HMAC-SHA256-Signierschlüssel des Projekts ausgeliefert
-(`src/lib/flasher.ts`) - dem eigenen Anti-Manipulations-Schlüssel des
-Bootloaders, der bestimmt, ob ein CAN-OTA-Update akzeptiert wird. Das ist
-eine beabsichtigte Übereinstimmung mit der eigenen Konvention des
-Desktop-Tools (dem `HMAC_KEY` von `flasher_config.py`, selbst über eine
-lokale, nicht committete Konfiguration überschreibbar), kein Versehen. Es
-kommt mit einem Vorbehalt, der spezifisch für die Ausführung als **Web-App**
-ist: anders als bei einer heruntergeladenen Desktop-ausführbaren Datei kann
-jeder, der diese Seite lädt, den Schlüssel direkt aus dem ausgelieferten
-JS-Bundle lesen - es gibt für eine statische clientseitige App keine
-Möglichkeit, ein Signiergeheimnis vor ihren eigenen Besuchern privat zu
-halten. Wenn Sie den echten Signierschlüssel für ein
-Produktions-Deployment rotieren, stellen Sie diese App nur irgendwo bereit,
-wo Sie den Zugriff kontrollieren (ein internes Netzwerk, VPN, oder ein Host
-mit zugangsbeschränktem Zugriff), oder behandeln Sie es genauso, wie Sie
-die Weitergabe des Desktop-Flasher-Tools selbst behandeln würden - an
-autorisierte Techniker, nicht an das öffentliche Internet.
+Seit 0.2.3 enthält diese App **keinen** HMAC-SHA256-Signierschlüssel. Der
+URTC-Build signiert jedes Anwendungs-Image selbst (bei Release-Builds mit
+einem privaten Schlüssel) und veröffentlicht die Signatur daneben; Flasher
+Studio transportiert nur diese Signatur - dasselbe Modell wie der
+Desktop-`URTC Flasher`. Im JS-Bundle steckt nichts Geheimes, die Seite kann
+also öffentlich gehostet werden.
+
+Einzige Ausnahme ist ein selbst gebautes Image ohne Manifest für eine
+Testplatine: dann fragt die App nach dem Signierschlüssel, hält ihn nur für
+dieses eine Flashen im Speicher und speichert ihn nie. Images, die mit dem
+ÖFFENTLICHEN Entwicklungsschlüssel signiert sind (`signing_key_kind: "dev"`
+im Manifest), lassen sich nur auf Platinen installieren, deren Bootloader
+genauso gebaut wurde - das Log weist darauf hin. Siehe
+`docs/FIRMWARE_SIGNING.TXT` in URTC.
+
+`public/firmware/` enthält genau die Dateien, die URTC veröffentlicht hat
+(gleiche Namen, gleiche Bytes, mit ihren Begleitdateien). Aktualisiert wird
+mit `npm run sync-firmware`, das jede Prüfsumme kontrolliert und
+`src/lib/bundledFirmware.ts` neu erzeugt; ein Test prüft das Paket gegen
+seine Manifeste.
 
 ## 🚀 Erste Schritte
 
@@ -369,18 +372,22 @@ Projekt.
 │   │                                der Aktiv-Checkbox jedes Werkzeugs
 │   │                                stuetzt
 │   ├── lib/
-│   │   ├── flasher.ts               OTA-Protokollkonstanten, der
-│   │   │                            committete HMAC-SHA256-Signierschluessel,
-│   │   │                            CRC32/HMAC-Hilfsfunktionen,
-│   │   │                            Manifest-Parsing
+│   │   ├── flasher.ts               OTA-Protokollkonstanten, CRC32/HMAC-Helfer,
+│   │   │                            Manifest-Auswertung (kein Signierschlüssel)
+│   │   ├── firmwareSignature.ts     Wählt die zu sendende Signatur: die veröffent-
+│   │   │                            lichte oder einen einmalig eingegebenen Schlüssel
+│   │   ├── quickState.ts            0x111-Auswertung (Thermikfehler, Reset-Ursache)
+│   │   ├── bundledFirmware.ts       Erzeugt von scripts/sync-firmware.mjs
 │   │   └── canIds.ts                CAN-ID-Konstanten fuer Tester Studio -
 │   │                                 spiegelt tester_config.py byte-fuer-byte
 │   └── locales/                     UI-Zeichenketten - en.json, es.json,
 │                                     de.json, fr.json, it.json, ja.json, zh.json
 ├── scripts/
-│   └── bump-version.mjs             Abhaengigkeitsfreies Versions-Skript; heute legacy,
-│                                     nur als Referenz erhalten - abgeloest durch
-│                                     bump_manifest_version.py (siehe "Versionierung")
+│   ├── bump-version.mjs             Abhaengigkeitsfreies Versions-Skript; heute legacy,
+│   │                                 nur als Referenz erhalten - abgeloest durch
+│   │                                 bump_manifest_version.py (siehe "Versionierung")
+│   └── sync-firmware.mjs            Kopiert den URTC-Build nach public/firmware/
+│                                     (Prüfsummen geprüft) - npm run sync-firmware
 ├── public/
 │   └── firmware/                    Gebuendelte .bin/.elf/.hex fuer die
 │                                     Hauptanwendung, den Haupt-Bootloader,

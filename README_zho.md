@@ -111,11 +111,11 @@ CAN ID：
   `.bin` 下载文件。
 - **实时板卡版本查询**（`0x7F8`/`0x7F9`/`0x7FA`）——显示真实的应答方
   （应用或引导程序）、HardwareID 和版本,而非一个模拟的开关。
-- **`<file>.manifest.json` 附属文件支持**——当刷写一个来自 GitHub 固件
-  列表（或本地 `public/firmware/` 文件夹）的文件时,一个匹配清单所声明
-  的版本在报告正在安装的内容时会优先采用,其 `sha256`（如果存在）会作为
-  一项早期的、非阻塞的健全性警告被检查——与桌面工具的 `_check_manifest`
-  行为一致。
+- **已发布的签名和摘要**——URTC 构建生成的每个镜像都附带
+  `<file>.manifest.json`（版本、`sha256` 以及引导程序期望的 `hmac_sha256`
+  签名）和 `<file>.sha256`。应用发送该已发布的签名；如果清单中的 `sha256`
+  与文件不符，将**阻止**刷写；向引导程序报告的是清单中的版本。从磁盘选择的
+  文件没有清单：只能使用为该次刷写输入的签名密钥来刷写（测试板）。
 - **板卡配置**：扩展板类型 / MLX9064x 传感器变体 / 自由工具配置（ID
   引脚 `11111`）/ 外设信息与序列号——`0x1A0`-`0x1A7`。
 
@@ -154,19 +154,21 @@ SWD/JTAG 选项卡说明了桌面版 `URTC Flasher` 工具在本地会运行的�
   （`0x7F8`/`0x7F9`）,声明的严重错误（`0x111` 字节 1）会以一条实时
   故障横幅显示出来。
 
-## 🔐 安全说明：OTA 签名密钥
+## 🔐 安全说明：本应用不包含签名密钥
 
-与桌面版 `URTC Flasher` 一样,本应用在源码（`src/lib/flasher.ts`）中
-提交了项目的默认 HMAC-SHA256 签名密钥——这是引导程序自身用于门控是否
-接受一次 CAN-OTA 更新的防篡改密钥。这是刻意与桌面工具自身的惯例
-（`flasher_config.py` 的 `HMAC_KEY`,本身可通过一个本地的、不提交的
-配置覆盖）保持一致,而非疏忽。它伴随着一个特定于作为**网页应用**运行
-的注意事项：与一个下载的桌面可执行文件不同,任何加载此页面的人都可以
-直接从发布的 JS 包中读取该密钥——对于一个静态客户端应用而言,没有办法
-向其自身的访问者保密一个签名密钥。如果你为生产部署轮换了真实的签名
-密钥,请只将本应用部署到你自己控制访问权限的地方（内部网络、VPN,或
-门控访问的主机),或者以你对待分发桌面版 Flasher 工具本身相同的方式
-对待它——只面向授权技术人员,而非公开互联网。
+自 0.2.3 起，本应用**不**包含任何 HMAC-SHA256 签名密钥。URTC 构建会自行为
+每个应用镜像签名（发布版本使用私钥），并把签名发布在镜像旁边；Flasher
+Studio 只负责传送该签名——与桌面版 `URTC Flasher` 相同的模式。JS 包中没有
+任何机密，因此页面可以公开托管。
+
+唯一的例外是没有清单的自建镜像（用于测试板）：此时应用会要求输入签名密钥，
+仅在该次刷写期间保存在内存中，从不存储。使用公开开发密钥签名的镜像（清单中
+`signing_key_kind: "dev"`）只能安装到以相同方式构建引导程序的板卡上——日志
+会给出提示。参见 URTC 的 `docs/FIRMWARE_SIGNING.TXT`。
+
+`public/firmware/` 中正是 URTC 发布的文件（相同名称、相同字节，并附带附属
+文件）。使用 `npm run sync-firmware` 更新，它会检查每个摘要并重新生成
+`src/lib/bundledFirmware.ts`；测试会对照清单校验该文件包。
 
 ## 🚀 快速开始
 
@@ -301,18 +303,23 @@ npm run preview
 │   │   └── useKeepalive.ts          固定间隔重发钩子,支撑每个工具的
 │   │                                活动复选框看门狗保活
 │   ├── lib/
-│   │   ├── flasher.ts               OTA 协议常量、已提交的 HMAC-SHA256
-│   │   │                            签名密钥、CRC32/HMAC 辅助函数、
-│   │   │                            清单解析
+│   │   ├── flasher.ts               OTA 协议常量、CRC32/HMAC 辅助函数、
+│   │   │                            清单解析（不含签名密钥）
+│   │   ├── firmwareSignature.ts     选择要发送的签名：已发布的签名，或为单次
+│   │   │                            刷写输入的密钥；sha256 检查
+│   │   ├── quickState.ts            0x111 解码（热故障、复位原因）
+│   │   ├── bundledFirmware.ts       由 scripts/sync-firmware.mjs 生成
 │   │   └── canIds.ts                Tester Studio 的 CAN ID 常量——逐字节
 │   │                                 镜像 tester_config.py
 │   └── locales/                     界面字符串——en.json、es.json、
 │                                     de.json、fr.json、it.json、
 │                                     zh.json、ja.json
 ├── scripts/
-│   └── bump-version.mjs             无依赖的版本递增脚本;如今已是
-│                                     遗留脚本,仅作参考 - 已由 bump_manifest_version.py
-│                                     取代（见上方“版本管理”）
+│   ├── bump-version.mjs             无依赖的版本递增脚本;如今已是
+│   │                                 遗留脚本,仅作参考 - 已由 bump_manifest_version.py
+│   │                                 取代（见上方“版本管理”）
+│   └── sync-firmware.mjs            将 URTC 构建复制到 public/firmware/
+│   │                                 （校验摘要）- npm run sync-firmware
 ├── public/
 │   └── firmware/                    主应用程序、主引导程序、扩展从属
 │                                     应用程序,以及扩展从属引导程序的

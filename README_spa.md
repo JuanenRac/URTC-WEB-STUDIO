@@ -123,12 +123,13 @@ CAN ID:
 - **Consulta de versión de placa en vivo** (`0x7F8`/`0x7F9`/`0x7FA`) - muestra el
   respondedor real (app o bootloader), HardwareID, y versión, no un interruptor
   simulado.
-- **Soporte de sidecar `<file>.manifest.json`** - al flashear un archivo que vino del
-  listado de firmware de GitHub (o de la carpeta local `public/firmware/`), la
-  versión declarada de un manifest coincidente tiene prioridad al reportar qué se
-  está instalando, y su `sha256` (si está presente) se comprueba como una advertencia
-  de cordura temprana y no bloqueante - mismo comportamiento que el
-  `_check_manifest` de la herramienta de escritorio.
+- **Firma y resumen publicados** - cada imagen del build de URTC trae
+  `<file>.manifest.json` (versión, `sha256` y la firma `hmac_sha256` que
+  espera el bootloader) y `<file>.sha256`. La app envía esa firma publicada,
+  un `sha256` del manifiesto que no coincide con el archivo **bloquea** la
+  grabación, y la versión del manifiesto es la que se informa al bootloader.
+  Un archivo elegido del disco no tiene manifiesto: solo se puede grabar con
+  una clave de firma introducida para esa grabación (placas de banco).
 - **Configuración de placa**: tipo de placa de expansión / variante de sensor
   MLX9064x / configuración de herramienta libre (pines ID `11111`) / información de
   periféricos y número de serie - `0x1A0`-`0x1A7`.
@@ -176,23 +177,27 @@ Portado desde los propios `tester_tool_panels.py` /
   versión de placa (`0x7F8`/`0x7F9`), y un error crítico declarado (`0x111` byte 1)
   aparece como un banner de fallo en vivo.
 
-## 🔐 Nota de seguridad: la clave de firma OTA
+## 🔐 Nota de seguridad: esta app no lleva clave de firma
 
-Al igual que el `URTC Flasher` de escritorio, esta app se distribuye con la clave de
-firma HMAC-SHA256 por defecto del proyecto commiteada en el código fuente
-(`src/lib/flasher.ts`) - la propia clave anti-manipulación del bootloader que
-determina si se acepta una actualización CAN-OTA. Esto es una coincidencia
-intencional con la propia convención de la herramienta de escritorio (el `HMAC_KEY`
-de `flasher_config.py`, a su vez sobreescribible mediante una configuración local no
-commiteada), no un descuido. Viene con una advertencia específica de ejecutarse como
-**app web**: a diferencia de un ejecutable de escritorio descargado, cualquiera que
-cargue esta página puede leer la clave directamente del bundle JS distribuido - no
-hay forma de que una app estática del lado del cliente mantenga un secreto de firma
-privado frente a sus propios visitantes. Si rotas la clave de firma real para un
-despliegue de producción, despliega esta app solo en algún sitio cuyo acceso
-controles (una red interna, VPN, o host con acceso restringido), o trátalo de la
-misma forma en que tratarías la entrega de la propia herramienta Flasher de
-escritorio - a técnicos autorizados, no a la internet pública.
+Desde la 0.2.3 esta app **no** contiene ninguna clave de firma HMAC-SHA256.
+El build de URTC firma él mismo cada imagen de aplicación (con una clave
+privada en las versiones de release) y publica la firma a su lado; Flasher
+Studio solo transporta esa firma - el mismo modelo que el `URTC Flasher` de
+escritorio. El bundle JS no contiene nada secreto, así que la página puede
+publicarse abiertamente.
+
+La única excepción es una imagen compilada por ti sin manifiesto, para una
+placa de banco: la app pide entonces la clave de firma, la guarda en memoria
+solo para esa grabación y nunca la almacena. Las imágenes firmadas con la
+clave PÚBLICA de desarrollo (`signing_key_kind: "dev"` en el manifiesto)
+solo se instalan en placas cuyo bootloader se compiló igual - el registro lo
+indica. Ver `docs/FIRMWARE_SIGNING.TXT` de URTC.
+
+`public/firmware/` contiene exactamente los archivos que publicó URTC (mismos
+nombres, mismos bytes, con sus archivos adjuntos). Se actualiza con
+`npm run sync-firmware`, que comprueba cada resumen y regenera
+`src/lib/bundledFirmware.ts`; un test verifica el paquete contra sus
+manifiestos.
 
 ## 🚀 Primeros pasos
 
@@ -353,17 +358,22 @@ resumen del trabajo anterior en este proyecto.
 │   │                                respalda el keepalive de watchdog de la
 │   │                                casilla activa de cada herramienta
 │   ├── lib/
-│   │   ├── flasher.ts               Constantes del protocolo OTA, la clave de
-│   │   │                            firma HMAC-SHA256 commiteada, helpers de
-│   │   │                            CRC32/HMAC, parseo de manifest
+│   │   ├── flasher.ts               Constantes del protocolo OTA, ayudas CRC32/HMAC,
+│   │   │                            lectura de manifiestos (sin clave de firma)
+│   │   ├── firmwareSignature.ts     Elige la firma a enviar: la publicada o una
+│   │   │                            clave introducida para una grabación; sha256
+│   │   ├── quickState.ts            Decodificación de 0x111 (fallo térmico, reset)
+│   │   ├── bundledFirmware.ts       Generado por scripts/sync-firmware.mjs
 │   │   └── canIds.ts                Constantes de CAN ID para Tester Studio -
 │   │                                 refleja tester_config.py byte a byte
 │   └── locales/                     Cadenas de UI - en.json, es.json, de.json,
 │                                     fr.json, it.json, ja.json, zh.json
 ├── scripts/
-│   └── bump-version.mjs             Script de subida de version sin dependencias;
-│                                     hoy es legado, se mantiene solo como referencia
-│                                     - reemplazado por bump_manifest_version.py (ver "Versionado")
+│   ├── bump-version.mjs             Script de subida de version sin dependencias;
+│   │                                 hoy es legado, se mantiene solo como referencia
+│   │                                 - reemplazado por bump_manifest_version.py (ver "Versionado")
+│   └── sync-firmware.mjs            Copia el build de URTC a public/firmware/
+│                                     (resúmenes comprobados) - npm run sync-firmware
 ├── public/
 │   └── firmware/                    .bin/.elf/.hex incluidos para la aplicacion
 │                                     principal, el bootloader principal, la
