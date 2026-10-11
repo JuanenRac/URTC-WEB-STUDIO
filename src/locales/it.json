@@ -229,7 +229,6 @@
     "error_fetch_github": "Recupero da GitHub non riuscito",
     "error_fetch_firmware": "Recupero del file firmware non riuscito",
     "log_manifest_found": "Manifesto trovato: verrà segnalata al bootloader la versione dichiarata {{version}}.",
-    "log_manifest_mismatch": "AVVISO: lo sha256 del manifesto non corrisponde al file selezionato (manifesto={{manifest}}, effettivo={{actual}}). Si continua - il controllo CRC32+HMAC del bootloader è la verifica reale.",
     "status_update_failed": "Aggiornamento non riuscito",
     "log_error_prefix": "ERRORE: {{message}}",
     "status_reading_back": "Lettura dello slot principale via CAN...",

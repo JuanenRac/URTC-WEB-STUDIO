@@ -229,7 +229,6 @@
     "error_fetch_github": "从 GitHub 获取失败",
     "error_fetch_firmware": "获取固件文件失败",
     "log_manifest_found": "找到清单：向引导程序报告声明的版本 {{version}}。",
-    "log_manifest_mismatch": "警告：清单的 sha256 与所选文件不匹配（清单={{manifest}}，实际={{actual}}）。继续进行——引导程序自身的 CRC32+HMAC 检查才是真正的关卡。",
     "status_update_failed": "更新失败",
     "log_error_prefix": "错误：{{message}}",
     "status_reading_back": "正在通过 CAN 读回主槽…",

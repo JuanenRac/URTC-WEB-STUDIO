@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { BUNDLED_FIRMWARE } from '../lib/bundledFirmware';
 import { useTranslation } from 'react-i18next';
 import { FlasherState, CanFrame } from '../types';
 import { RefreshCw, ShieldCheck, Cpu, CheckCircle2, AlertOctagon, Terminal, DownloadCloud, XCircle, Fingerprint } from 'lucide-react';
@@ -30,13 +31,16 @@ interface FlasherStudioProps {
   onWaitForFrame?: (id: number, timeoutMs?: number) => Promise<CanFrame | null>;
 }
 
+// Generated from the URTC build by scripts/sync-firmware.mjs: the same files,
+// byte for byte, that URTC/firmware publishes - each with its .sha256 and
+// .manifest.json sidecars, so they flash with the published signature.
 const LOCAL_FIRMWARE_FILES = [
-  { name: 'URTC_V1.1_F303CC.bin', label: 'URTC_V1.1_F303CC.bin (main application)' },
-  { name: 'URTC_SLAVE_APP.bin', label: 'URTC_SLAVE_APP.bin (expansion slave application)' },
+  { name: BUNDLED_FIRMWARE.mainApplication, label: `${BUNDLED_FIRMWARE.mainApplication} (main application)` },
+  { name: BUNDLED_FIRMWARE.slaveApplication, label: `${BUNDLED_FIRMWARE.slaveApplication} (expansion slave application)` },
 ];
 const LOCAL_BOOTLOADER_FILES = [
-  { name: 'URTC_BOOTLOADER.bin', label: 'URTC_BOOTLOADER.bin (main board)' },
-  { name: 'URTC_SLAVE_BOOTLOADER.bin', label: 'URTC_SLAVE_BOOTLOADER.bin (expansion slave)' },
+  { name: BUNDLED_FIRMWARE.mainBootloader, label: `${BUNDLED_FIRMWARE.mainBootloader} (main board)` },
+  { name: BUNDLED_FIRMWARE.slaveBootloader, label: `${BUNDLED_FIRMWARE.slaveBootloader} (expansion slave)` },
 ];
 
 export const FlasherStudio: React.FC<FlasherStudioProps> = ({
@@ -55,7 +59,7 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
 }) => {
   const { t } = useTranslation();
   const [flashTarget, setFlashTarget] = useState<'main' | 'slave'>('main');
-  const [selectedFirmware, setSelectedFirmware] = useState<string>('URTC_V1.1_F303CC.bin');
+  const [selectedFirmware, setSelectedFirmware] = useState<string>(BUNDLED_FIRMWARE.mainApplication);
   const [runAppTrigger, setRunAppTrigger] = useState<boolean>(true);
   const [eraseFram, setEraseFram] = useState<boolean>(false);
   const [allowDowngrade, setAllowDowngrade] = useState<boolean>(false);
@@ -94,9 +98,9 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
     if (flashTarget === 'slave') {
       setAllowDowngrade(false);
       setEraseFram(false);
-      if (!customFile) setSelectedFirmware('URTC_SLAVE_APP.bin');
+      if (!customFile) setSelectedFirmware(BUNDLED_FIRMWARE.slaveApplication);
     } else if (!customFile) {
-      setSelectedFirmware('URTC_V1.1_F303CC.bin');
+      setSelectedFirmware(BUNDLED_FIRMWARE.mainApplication);
     }
   }, [flashTarget]);
 
@@ -104,8 +108,8 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
 
   // SWD State
   const [swdTool, setSwdTool] = useState<string>('STM32CubeProgrammer');
-  const [swdBootloader, setSwdBootloader] = useState<string>('URTC_BOOTLOADER.bin');
-  const [swdApp, setSwdApp] = useState<string>('URTC_V1.1_F303CC.bin');
+  const [swdBootloader, setSwdBootloader] = useState<string>(BUNDLED_FIRMWARE.mainBootloader);
+  const [swdApp, setSwdApp] = useState<string>(BUNDLED_FIRMWARE.mainApplication);
   const [swdBackup, setSwdBackup] = useState<boolean>(false);
   const [swdDryRun, setSwdDryRun] = useState<boolean>(true);
 

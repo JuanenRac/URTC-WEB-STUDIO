@@ -12,6 +12,26 @@ build`/`vite build` on its own is deliberately compilation-only) bumps the
 version automatically, so the number reflects build count, not the size or
 compatibility of a change.
 
+## [0.2.3] - No signing key in the app, published signatures, real firmware
+
+- **The HMAC signing keys are gone from `src/lib/flasher.ts`.** The URTC
+  build now signs each application image and publishes `hmac_sha256` in
+  `<bin>.manifest.json`; `lib/firmwareSignature.ts` (new) sends that
+  published signature. An image with no published signature (a self-built
+  file picked from disk) can only be flashed with a key typed in for that one
+  flash - kept in memory, never stored. See URTC `docs/FIRMWARE_SIGNING.TXT`.
+- **A manifest sha256 mismatch now blocks the flash** instead of only
+  warning.
+- **`public/firmware` holds the real URTC build** (main 0.3.2 / boot 0.3.7,
+  slave 0.1.8 / boot 0.2.1) with its `.sha256`/`.manifest.json` sidecars,
+  replacing stale binaries under old names (`URTC_V1.1_F303CC.bin`,
+  `URTC_SLAVE_APP.bin`...). `npm run sync-firmware` (`scripts/sync-firmware.mjs`,
+  new) re-copies them from URTC, verifying each sha256, and regenerates
+  `lib/bundledFirmware.ts`; a test checks the bundle against its manifests.
+- **`0x111` decoding** (`lib/quickState.ts`, new): firmware 0.3.2's thermal
+  runaway code and reset cause are shown in the error message; 4-byte
+  answers from older firmware still work.
+
 ## [0.2.2] - Device state model
 
 - Added a per-device state model (offline, connecting, online, error) in which a configuration change stays pending until the device confirms it, and is rolled back with its reason if refused or the link drops.

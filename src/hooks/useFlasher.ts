@@ -12,8 +12,8 @@ import {
   CAN_ID_SLAVE_VERIFY_FAIL_REASON,
   ENTER_BOOTLOADER_MAGIC, AUTHORIZE_DOWNGRADE_MAGIC,
   THIS_HARDWARE_ID, SLAVE_HARDWARE_ID, FLASH_PAGE_SIZE, SLAVE_DATA_PACING_MS,
-  APP_MAX_SIZE, SLAVE_APP_MAX_SIZE, SLAVE_HMAC_KEY,
-  computeHmacSha256, packUInt32BE, packUInt16BE, unpackUInt32BE, getCrc32
+  APP_MAX_SIZE, SLAVE_APP_MAX_SIZE,
+  packUInt32BE, packUInt16BE, unpackUInt32BE, getCrc32
 } from '../lib/flasher';
 import { CAN_ID_ERASE_FRAM, CAN_ID_FRAM_STATE_RESP, ERASE_FRAM_MAGIC, VERIFY_FAIL_REASONS } from '../lib/canIds';
 
@@ -23,6 +23,7 @@ export interface FlashOptions {
   allowDowngrade: boolean;
   reportMajor: number;
   reportMinor: number;
+  signature: Uint8Array; // HMAC-SHA256 published with the image - see lib/firmwareSignature.ts
 }
 
 class FlashError extends Error {}
@@ -90,7 +91,8 @@ export function useFlasher(serialCan: SerialCanBus) {
     if (data.length > APP_MAX_SIZE) throw new FlashError(t('flasher.err_exceeds_app_slot', 'Firmware exceeds the {{max}} byte application slot', { max: APP_MAX_SIZE }));
 
     const crc32 = getCrc32(data);
-    const signature = await computeHmacSha256(data.buffer as ArrayBuffer);
+    const signature = opts.signature;
+    if (signature.length !== 32) throw new FlashError('HMAC-SHA256 signature must be 32 bytes');
 
     setFlasherState(prev => ({
       ...prev, mode: 'erasing', progress: 0,
@@ -236,19 +238,17 @@ export function useFlasher(serialCan: SerialCanBus) {
   }, [serialCan, appendLog]);
 
   // ---- Expansion slave OTA, relayed through the main board's I2C bridge (0x210-0x219) ----
-  const flashSlave = useCallback(async (data: Uint8Array, opts: { triggerBootloader: boolean; reportMajor: number; reportMinor: number }) => {
+  const flashSlave = useCallback(async (data: Uint8Array, opts: { triggerBootloader: boolean; reportMajor: number; reportMinor: number; signature: Uint8Array }) => {
     stopRequestedRef.current = false;
     checkSecureContext();
     if (data.length === 0) throw new FlashError(t('flasher.err_empty_file', 'Firmware file is empty'));
     if (data.length > SLAVE_APP_MAX_SIZE) throw new FlashError(t('flasher.err_exceeds_slave_slot', 'Firmware exceeds the {{max}} byte slave application slot', { max: SLAVE_APP_MAX_SIZE }));
 
     const crc32 = getCrc32(data);
-    // Slave board's own key, deliberately different from the master
-    // board's default key computeHmacSha256 uses elsewhere in this file -
-    // see slaveboot_common.h's own comment on why: signing a slave image
-    // with the master's key would make its bootloader reject every real
-    // update sent to it.
-    const signature = await computeHmacSha256(data.buffer as ArrayBuffer, SLAVE_HMAC_KEY);
+    // Signed by the URTC build with the slave board's own key (different
+    // from the master's - see slaveboot_common.h); published with the image.
+    const signature = opts.signature;
+    if (signature.length !== 32) throw new FlashError('HMAC-SHA256 signature must be 32 bytes');
 
     setFlasherState(prev => ({ ...prev, mode: 'erasing', progress: 0, statusText: t('flasher.status_entering_slave_bootloader', '1/5: Entering slave bootloader (relayed via I2C)...'), log: [t('flasher.log_computing_crc', 'Computing CRC32 and HMAC-SHA256 over the selected image...')] }));
 

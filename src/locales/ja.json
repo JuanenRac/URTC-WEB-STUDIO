@@ -229,7 +229,6 @@
     "error_fetch_github": "GitHub からの取得に失敗しました",
     "error_fetch_firmware": "ファームウェアファイルの取得に失敗しました",
     "log_manifest_found": "マニフェストが見つかりました：宣言されたバージョン {{version}} をブートローダーへ報告します。",
-    "log_manifest_mismatch": "警告：マニフェストの sha256 が選択したファイルと一致しません（マニフェスト={{manifest}}、実際={{actual}}）。続行します——ブートローダー自身の CRC32+HMAC チェックが本当の関門です。",
     "status_update_failed": "更新に失敗しました",
     "log_error_prefix": "エラー：{{message}}",
     "status_reading_back": "CAN 経由でメインスロットを読み戻し中…",

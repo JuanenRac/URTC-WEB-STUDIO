@@ -229,7 +229,6 @@
     "error_fetch_github": "Échec de la récupération depuis GitHub",
     "error_fetch_firmware": "Échec de la récupération du fichier de firmware",
     "log_manifest_found": "Manifeste trouvé : la version déclarée {{version}} sera signalée au bootloader.",
-    "log_manifest_mismatch": "AVERTISSEMENT : le sha256 du manifeste ne correspond pas au fichier sélectionné (manifeste={{manifest}}, réel={{actual}}). Poursuite - la propre vérification CRC32+HMAC du bootloader est le vrai contrôle.",
     "status_update_failed": "Échec de la mise à jour",
     "log_error_prefix": "ERREUR : {{message}}",
     "status_reading_back": "Lecture de l'emplacement principal via CAN...",

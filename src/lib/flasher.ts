@@ -1,26 +1,14 @@
 import CRC32 from 'crc-32';
 import { CanFrame } from '../types';
 
-// Real CSPRNG-generated keys, matching bootloader_crypto.c
-// (master) and slaveboot_crypto.c (slave) in the URTC firmware repo -
-// deliberately different from each other (see slaveboot_common.h's own
-// comment on why: a master-signed image must never verify against the
-// slave's key, or vice versa). Committed to a public repo, so treat
-// these as non-confidential functional defaults, not a real security
-// boundary - see bootloader_crypto.c's own comment for the full
-// reasoning on rotating them for real production use.
-export const HMAC_KEY = new Uint8Array([
-  0x25, 0x26, 0xCC, 0x3E, 0x90, 0x11, 0xEC, 0x7C,
-  0x49, 0xEC, 0xD2, 0xD2, 0xB7, 0xF3, 0x89, 0xE3,
-  0x59, 0xAA, 0x24, 0x60, 0x14, 0xFF, 0x51, 0x54,
-  0xA0, 0xAF, 0x8A, 0x3C, 0x3B, 0xF9, 0x55, 0x81
-]);
-export const SLAVE_HMAC_KEY = new Uint8Array([
-  0xF6, 0xFC, 0x5E, 0xC3, 0xC7, 0xC0, 0xB8, 0x32,
-  0x5F, 0x08, 0x83, 0x85, 0xCD, 0x10, 0x9E, 0x63,
-  0x7D, 0x45, 0x58, 0xD4, 0x53, 0x5F, 0x61, 0x9C,
-  0xD0, 0x6F, 0x3D, 0xF2, 0xAF, 0xDC, 0x38, 0x1D
-]);
+// No signing key lives in this app any more. The bootloaders authenticate an
+// image with HMAC-SHA256, and whoever computes that HMAC must hold the key -
+// so the URTC build computes it (firmware_signing.py) and publishes it next
+// to each application image as "hmac_sha256" in <bin>.manifest.json. This
+// app only TRANSPORTS that published signature (see firmwareSignature.ts).
+// The only time it signs anything itself is a self-built image for a bench
+// board, with a key the user types in at run time and that is never stored.
+// See URTC docs/FIRMWARE_SIGNING.TXT.
 export const THIS_HARDWARE_ID = 0x0303CC01;
 export const FLASH_PAGE_SIZE = 2048;
 
@@ -67,7 +55,7 @@ export const SLAVE_DATA_PACING_MS = 4; // I2C bit-banging is slower per-byte tha
 
 export const APP_MAX_SIZE = 112 * 1024;
 
-export async function computeHmacSha256(data: ArrayBuffer, signingKey: Uint8Array<ArrayBuffer> = HMAC_KEY): Promise<Uint8Array> {
+export async function computeHmacSha256(data: ArrayBuffer, signingKey: Uint8Array<ArrayBuffer>): Promise<Uint8Array> {
   const key = await crypto.subtle.importKey(
     'raw',
     signingKey,
@@ -118,6 +106,9 @@ export interface FirmwareManifest {
   versionMinor?: number;
   buildDate?: string;
   sha256?: string;
+  hmacSha256?: string;      // 64 lowercase hex chars - the signature the bootloader expects
+  signingKeyKind?: string;  // "release" or "dev" (signed with the PUBLIC development key)
+  signingKeyId?: string;
 }
 
 // Mirrors URTCFlasher._check_manifest from the Python flasher: a <file>.manifest.json
@@ -126,9 +117,9 @@ export interface FirmwareManifest {
 // what's being installed in the END_UPDATE payload - this matters specifically for a
 // deliberate downgrade, so the bootloader's anti-rollback check sees the file's real,
 // older version rather than whatever this tool would otherwise claim as "current".
-// The sha256 field, if present, is only a non-blocking early sanity warning - the
-// bootloader's own CRC32+HMAC check during the real transfer remains the sole
-// authoritative gate either way.
+// The sha256 field, if present, MUST match the selected file (the flash is
+// refused otherwise - see resolveSignature), and hmac_sha256 is the signature
+// sent to the bootloader.
 export function parseManifest(json: any): FirmwareManifest {
   const manifest: FirmwareManifest = {};
   if (typeof json?.version === 'string') {
@@ -141,5 +132,11 @@ export function parseManifest(json: any): FirmwareManifest {
   }
   if (typeof json?.build_date === 'string') manifest.buildDate = json.build_date;
   if (typeof json?.sha256 === 'string') manifest.sha256 = json.sha256.trim().toLowerCase().replace(/^0x/, '');
+  if (typeof json?.hmac_sha256 === 'string') {
+    const hex = json.hmac_sha256.trim().toLowerCase().replace(/^0x/, '');
+    if (/^[0-9a-f]{64}$/.test(hex)) manifest.hmacSha256 = hex;
+  }
+  if (typeof json?.signing_key_kind === 'string') manifest.signingKeyKind = json.signing_key_kind;
+  if (typeof json?.signing_key_id === 'string') manifest.signingKeyId = json.signing_key_id;
   return manifest;
 }

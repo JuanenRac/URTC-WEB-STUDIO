@@ -229,7 +229,6 @@
     "error_fetch_github": "Abrufen von GitHub fehlgeschlagen",
     "error_fetch_firmware": "Abrufen der Firmware-Datei fehlgeschlagen",
     "log_manifest_found": "Manifest gefunden: dem Bootloader wird die deklarierte Version {{version}} gemeldet.",
-    "log_manifest_mismatch": "WARNUNG: Der SHA256 des Manifests stimmt nicht mit der ausgewählten Datei überein (Manifest={{manifest}}, tatsächlich={{actual}}). Fortsetzung - die eigene CRC32+HMAC-Prüfung des Bootloaders ist die tatsächliche Kontrolle.",
     "status_update_failed": "Update fehlgeschlagen",
     "log_error_prefix": "FEHLER: {{message}}",
     "status_reading_back": "Haupt-Slot wird über CAN zurückgelesen...",

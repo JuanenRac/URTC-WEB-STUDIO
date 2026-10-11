@@ -18,8 +18,11 @@ import { useFlasher } from './hooks/useFlasher';
 import {
   CAN_ID_QUERY_VERSION, CAN_ID_VERSION_RESPONSE, CAN_ID_BOOTLOADER_VERSION_RESPONSE,
   THIS_HARDWARE_ID, FIRMWARE_VERSION_MAJOR, FIRMWARE_VERSION_MINOR,
-  parseManifest, computeSha256Hex, FirmwareManifest
+  parseManifest, FirmwareManifest
 } from './lib/flasher';
+import { resolveSignature } from './lib/firmwareSignature';
+import { BUNDLED_FIRMWARE } from './lib/bundledFirmware';
+import { decodeQuickState } from './lib/quickState';
 import { CAN_ID_QUERY_ACTIVE_TOOL } from './lib/canIds';
 
 export interface BoardVersionInfo {
@@ -68,8 +71,9 @@ export default function App() {
           Boolean(toolId & 0x08),
           Boolean(toolId & 0x10)
         ];
-        newState.systemError = frame.data[1] !== 0;
-        newState.systemErrorMessage = newState.systemError ? 'CRITICAL ERROR DECLARED' : '';
+        const quick = decodeQuickState(frame.data);
+        newState.systemError = quick.systemError;
+        newState.systemErrorMessage = quick.errorMessage;
       }
 
       // Parse Telemetry (e.g., Solder Temperature 0x135)
@@ -458,18 +462,34 @@ export default function App() {
       reportMinor = manifest.versionMinor!;
       flasher.appendLog(t('flasher.log_manifest_found', 'Manifest found: reporting declared version {{version}} to the bootloader.', { version: manifest.version }));
     }
-    if (manifest?.sha256) {
-      const actual = await computeSha256Hex(data.buffer as ArrayBuffer);
-      if (actual !== manifest.sha256) {
-        flasher.appendLog(t('flasher.log_manifest_mismatch', "WARNING: manifest sha256 does not match the selected file (manifest={{manifest}}, actual={{actual}}). Continuing - the bootloader's own CRC32+HMAC check is the real gate.", { manifest: manifest.sha256, actual }));
+    // The signature is published by the URTC build next to the image; this
+    // app holds no key. Only an image WITHOUT a published signature (a
+    // self-built file picked from disk, for a bench board) asks for a key,
+    // kept in this function's memory for this one flash and never stored.
+    let runtimeKey: string | null = null;
+    if (!manifest?.hmacSha256) {
+      runtimeKey = window.prompt(t('flasher.prompt_signing_key', 'This image has no published signature (<file>.manifest.json with hmac_sha256). To flash a self-built image to a bench board, enter its {{board}} signing key (64 hex characters). It is not stored.', { board: target === 'slave' ? 'slave' : 'master' }));
+    }
+    let signature: Uint8Array;
+    try {
+      const resolved = await resolveSignature(data, manifest, runtimeKey);
+      signature = resolved.signature;
+      if (resolved.source === 'manifest') {
+        flasher.appendLog(t('flasher.log_signature_from_manifest', 'Using the signature published in the manifest (key: {{kind}}).', { kind: resolved.keyKind ?? 'unknown' }));
+        if (resolved.keyKind === 'dev') flasher.appendLog(t('flasher.log_dev_key_warning', 'NOTE: signed with the PUBLIC development key - only boards whose bootloader was built with that same key accept it.'));
+      } else {
+        flasher.appendLog(t('flasher.log_signature_runtime_key', 'Signed locally with the key entered for this flash.'));
       }
+    } catch (e: any) {
+      flasher.setFlasherState(prev => ({ ...prev, mode: 'idle', statusText: t('flasher.status_update_failed', 'Update failed'), log: [...prev.log, t('flasher.log_error_prefix', 'ERROR: {{message}}', { message: e.message })] }));
+      return;
     }
 
     try {
       if (target === 'slave') {
-        await flasher.flashSlave(data, { triggerBootloader: opts.triggerBootloader, reportMajor, reportMinor });
+        await flasher.flashSlave(data, { triggerBootloader: opts.triggerBootloader, reportMajor, reportMinor, signature });
       } else {
-        await flasher.flashMain(data, { ...opts, reportMajor, reportMinor });
+        await flasher.flashMain(data, { ...opts, reportMajor, reportMinor, signature });
         handleResetSplash();
       }
     } catch (e: any) {
@@ -541,7 +561,7 @@ export default function App() {
   // URTC Flasher desktop tool (same repo family) for SWD/JTAG programming.
   const handleStartSwdFlash = (fwFile: string, fileObj?: File | null, bootloaderFile?: string, bootloaderObj?: File | null) => {
     const appName = fileObj ? fileObj.name : fwFile;
-    const bootName = bootloaderObj ? bootloaderObj.name : (bootloaderFile || 'URTC_BOOTLOADER.bin');
+    const bootName = bootloaderObj ? bootloaderObj.name : (bootloaderFile || BUNDLED_FIRMWARE.mainBootloader);
 
     flasher.setFlasherState(prev => ({
       ...prev,
