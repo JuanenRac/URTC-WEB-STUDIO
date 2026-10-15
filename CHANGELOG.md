@@ -127,7 +127,7 @@ compatibility of a change.
   double-sent every CAN-OTA frame against real hardware. Corrected stale
   local firmware filenames. Removed unused `@google/genai` and
   `tesseract.js` dependencies.
-- **Full read-only audit, then fixes.** Audited the whole
+- **Full read-only review, then fixes.** Reviewed the whole
   codebase and confirmed ten findings (an oversized 8209-line `.gitignore`
   that silently failed to ignore new files, three more orphaned
   dependencies, a known `nanoid` CVE, unvalidated raw CAN frame injection,
