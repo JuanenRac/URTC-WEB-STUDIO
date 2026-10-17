@@ -140,3 +140,17 @@ export function parseManifest(json: any): FirmwareManifest {
   if (typeof json?.signing_key_id === 'string') manifest.signingKeyId = json.signing_key_id;
   return manifest;
 }
+
+/**
+ * The real bootloader writes (and acknowledges) a page when its buffer is FULL; the last page of an image that is not a whole number of pages is written and acknowledged only when
+ * END_UPDATE arrives. Waiting for that acknowledgement before sending END_UPDATE waits for a frame the board sends only after one this tool sends only afterwards.
+ */
+export function isLastPartialPage(imageSize: number, pageEnd: number, pageSize: number): boolean {
+  return pageEnd === imageSize && imageSize % pageSize !== 0;
+}
+
+/** How many bytes of a readback data frame belong to the image: a frame of 1 to 8 bytes (the last one is shorter when the size is not a multiple of 8), never more than what is left. */
+export function readbackChunkLength(frameLength: number, remaining: number): number {
+  if (frameLength < 1 || frameLength > 8) return 0;
+  return Math.min(frameLength, remaining);
+}

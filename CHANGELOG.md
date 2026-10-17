@@ -12,6 +12,14 @@ build`/`vite build` on its own is deliberately compilation-only) bumps the
 version automatically, so the number reflects build count, not the size or
 compatibility of a change.
 
+## [0.2.5] - The update of any image size works and a readback of any size is complete
+
+- **An update of an image whose size is not a whole number of pages now completes:** the last, partial page is acknowledged by the bootloader only when the end of the update arrives, so it is no longer waited for before sending it (the official image of 73476 bytes could never be installed).
+- **The start of an update waits for the bootloader to finish erasing:** the first status after the start (erasing) is no longer taken for a refusal; only the status that says it is receiving starts the transfer.
+- **The last frame of the image keeps its real length** instead of being padded with zeros, which made the board count bytes that are not in the image.
+- **A readback of an image whose size is not a multiple of 8 is complete:** the last frame has fewer than 8 bytes and used to make the backup fail.
+- Tests: 41 (before 37): the rules for the last page and for the length of a readback frame.
+
 ## [0.2.4] - Bundled firmware 0.3.3, READMEs updated
 
 - `public/firmware` re-synced with URTC's current build (main 0.3.3 / boot

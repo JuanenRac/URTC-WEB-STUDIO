@@ -13,7 +13,7 @@ import {
   ENTER_BOOTLOADER_MAGIC, AUTHORIZE_DOWNGRADE_MAGIC,
   THIS_HARDWARE_ID, SLAVE_HARDWARE_ID, FLASH_PAGE_SIZE, SLAVE_DATA_PACING_MS,
   APP_MAX_SIZE, SLAVE_APP_MAX_SIZE,
-  packUInt32BE, packUInt16BE, unpackUInt32BE, getCrc32
+  packUInt32BE, packUInt16BE, unpackUInt32BE, getCrc32, isLastPartialPage, readbackChunkLength
 } from '../lib/flasher';
 import { CAN_ID_ERASE_FRAM, CAN_ID_FRAM_STATE_RESP, ERASE_FRAM_MAGIC, VERIFY_FAIL_REASONS } from '../lib/canIds';
 
@@ -121,8 +121,16 @@ export function useFlasher(serialCan: SerialCanBus) {
     checkCancelled();
 
     await serialCan.sendFrame(CAN_ID_START_UPDATE, [...packUInt32BE(data.length), ...packUInt32BE(THIS_HARDWARE_ID)], 'START_UPDATE (size + HardwareID)');
-    const status2 = await serialCan.waitForFrame(CAN_ID_STATUS, 5000);
-    if (!status2 || status2.data[0] !== 0x03) {
+    // ERASING (0x02) arrives first and RECEIVING (0x03) when the erase is done (up to a couple of seconds later): the first is not a refusal, only 0x03 starts the transfer.
+    let receiving = false;
+    const startDeadline = Date.now() + 5000;
+    while (Date.now() < startDeadline) {
+      const status2 = await serialCan.waitForFrame(CAN_ID_STATUS, Math.max(100, startDeadline - Date.now()));
+      if (!status2) break;
+      if (status2.data[0] === 0x03) { receiving = true; break; }
+      if (status2.data[0] === 0x05 || status2.data[0] === 0xFF) break;
+    }
+    if (!receiving) {
       throw new FlashError(t('flasher.err_bootloader_rejected', 'Bootloader rejected update start (expected RECEIVING status)'));
     }
 
@@ -157,24 +165,27 @@ export function useFlasher(serialCan: SerialCanBus) {
         const end = Math.min(i + 8, pageData.length);
         const chunk: number[] = [];
         for (let j = i; j < end; j++) chunk.push(pageData[j]);
-        while (chunk.length < 8) chunk.push(0);
+        // the last frame of the image keeps its real length (DLC): padding it made the board count bytes that are not in the image
         await serialCan.sendFrame(CAN_ID_DATA, chunk, `Data page ${pageIndex}, offset ${offset + i}`);
         await new Promise(r => setTimeout(r, 2));
       }
 
       // Page-ACK: never resend page data on a lost ACK (only re-wait), since a
       // duplicate resend could desync the bootloader's own page counter.
-      let ack = null;
-      for (let attempt = 0; attempt < 3 && !ack; attempt++) {
-        if (attempt > 0) await new Promise(r => setTimeout(r, 300 * Math.pow(2, attempt - 1)));
-        ack = await serialCan.waitForFrame(CAN_ID_PAGE_ACK, 3000);
-      }
-      if (!ack || ack.data.length < 4) {
-        throw new FlashError(t('flasher.err_page_ack_timeout', 'Timeout waiting for page-ACK on page {{page}}', { page: pageIndex }));
-      }
-      const ackedPage = unpackUInt32BE(ack.data);
-      if (ackedPage !== pageIndex) {
-        throw new FlashError(t('flasher.err_page_ack_mismatch', 'Page-ACK mismatch: expected page {{expected}}, board acked page {{actual}}', { expected: pageIndex, actual: ackedPage }));
+      // The last, partial page is acknowledged by the board only when END_UPDATE arrives, so it is not waited for here (it is read after END_UPDATE).
+      if (!isLastPartialPage(data.length, pageEnd, FLASH_PAGE_SIZE)) {
+        let ack = null;
+        for (let attempt = 0; attempt < 3 && !ack; attempt++) {
+          if (attempt > 0) await new Promise(r => setTimeout(r, 300 * Math.pow(2, attempt - 1)));
+          ack = await serialCan.waitForFrame(CAN_ID_PAGE_ACK, 3000);
+        }
+        if (!ack || ack.data.length < 4) {
+          throw new FlashError(t('flasher.err_page_ack_timeout', 'Timeout waiting for page-ACK on page {{page}}', { page: pageIndex }));
+        }
+        const ackedPage = unpackUInt32BE(ack.data);
+        if (ackedPage !== pageIndex) {
+          throw new FlashError(t('flasher.err_page_ack_mismatch', 'Page-ACK mismatch: expected page {{expected}}, board acked page {{actual}}', { expected: pageIndex, actual: ackedPage }));
+        }
       }
 
       offset = pageEnd;
@@ -358,8 +369,8 @@ export function useFlasher(serialCan: SerialCanBus) {
       checkCancelled();
       if (Date.now() > overallDeadline) throw new FlashError(t('flasher.err_readback_timeout_overall', 'Readback timed out (180s overall limit)'));
       const chunk = await serialCan.waitForFrame(CAN_ID_READBACK, 5000);
-      if (!chunk || chunk.dlc !== 8) throw new FlashError(t('flasher.err_readback_timeout_offset', 'Timeout waiting for readback data at offset {{offset}}', { offset: received }));
-      const n = Math.min(8, totalSize - received);
+      const n = chunk ? readbackChunkLength(chunk.dlc, totalSize - received) : 0;
+      if (!chunk || n === 0) throw new FlashError(t('flasher.err_readback_timeout_offset', 'Timeout waiting for readback data at offset {{offset}}', { offset: received }));
       buffer.set(chunk.data.slice(0, n), received);
       received += n;
       onProgress?.(Math.floor((received / totalSize) * 100));
