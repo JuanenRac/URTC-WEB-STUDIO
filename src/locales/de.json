@@ -1,7 +1,9 @@
 {
   "app": {
     "dismiss": "Verwerfen",
-    "browser_unsupported_banner": "Dieser Browser unterstuetzt die Web Serial API nicht - eine Verbindung zu echter Hardware ist hier nicht moeglich. Bitte wechseln Sie zu Chrome oder Edge."
+    "browser_unsupported_banner": "Dieser Browser unterstuetzt die Web Serial API nicht - eine Verbindung zu echter Hardware ist hier nicht moeglich. Bitte wechseln Sie zu Chrome oder Edge.",
+    "simulator_notice": "Simulator: Dieser Tab bildet eine Platine nach und sendet nichts auf den Bus. Verbinde einen USB-CAN-Adapter, um in Tester Studio und Flasher Studio mit der echten Platine zu arbeiten.",
+    "simulator_notice_connected": "Simulator: Dieser Tab bildet eine Platine nach und sendet nichts auf den Bus. Was er zeigt, ist nicht das, was die angeschlossene Platine meldet; nutze Tester Studio und Flasher Studio für die echte Platine."
   },
   "config": {
     "language_en": "English",
@@ -131,7 +133,7 @@
     "exp_adv5160_motor": "10A-Schrittmotor + ADS1115/MLX90640"
   },
   "canbus": {
-    "title": "CAN-Bus-Protokollanalysator (1 Mbps / SocketCAN / SLCAN)",
+    "title": "CAN-Bus-Protokollanalysator (500 kbit/s / SocketCAN / SLCAN)",
     "subtitle": "Latenzarme Echtzeit-Telemetrie & Watchdog-Ping (docs/CANBUS.TXT)",
     "clear_log": "Protokoll löschen",
     "presets_title": "Vordefinierte URTC-Protokollnachrichten (docs/CANBUS.TXT):",
@@ -145,14 +147,17 @@
     "desc_placeholder": "Benutzerdefinierter Befehl",
     "tx": "Tx",
     "stream_title": "ECHTZEIT-CAN-NACHRICHTENSTROM ({{count}} NACHRICHTEN)",
-    "mbps_active": "1 Mbps AKTIV",
+    "mbps_active": "500 kbit/s",
     "th_timestamp": "ZEITSTEMPEL",
     "th_dir": "RICHT.",
     "th_id": "ID (HEX)",
     "th_dlc": "DLC",
     "th_data": "DATENBYTES",
     "th_description": "BESCHREIBUNG",
-    "no_frames": "Noch keine CAN-Nachrichten protokolliert. Sende oben einen Befehl oder schalte Werkzeuge um."
+    "no_frames": "Noch keine CAN-Nachrichten protokolliert. Sende oben einen Befehl oder schalte Werkzeuge um.",
+    "presets_notice_connected": "Platine verbunden: Eine vordefinierte Nachricht, die eine einfache Abfrage ist, wird an die Platine gesendet, und deren eigene Antwort erscheint im Protokoll. Jede andere vordefinierte Nachricht ist nur ein simuliertes Beispiel, mit SIM gekennzeichnet, und wird nicht übertragen.",
+    "presets_notice": "Keine Platine verbunden: Die vordefinierten Nachrichten spielen einen simulierten Austausch ab, mit SIM gekennzeichnet. Es wird nichts übertragen.",
+    "sim_badge": "SIM"
   },
   "flasher": {
     "title": "URTC Flasher Studio (CAN OTA)",
@@ -293,7 +298,9 @@
     "prompt_signing_key": "Dieses Image hat keine veröffentlichte Signatur (<Datei>.manifest.json mit hmac_sha256). Um ein selbst gebautes Image auf eine Werkbank-Platine zu flashen, geben Sie deren {{board}}-Signaturschlüssel ein (64 Hex-Zeichen). Er wird nicht gespeichert.",
     "log_signature_from_manifest": "Es wird die im Manifest veröffentlichte Signatur verwendet (Schlüssel: {{kind}}).",
     "log_dev_key_warning": "HINWEIS: Mit dem ÖFFENTLICHEN Entwicklungsschlüssel signiert - nur Platinen, deren Bootloader mit demselben Schlüssel gebaut wurde, akzeptieren es.",
-    "log_signature_runtime_key": "Lokal mit dem für dieses Flashen eingegebenen Schlüssel signiert."
+    "log_signature_runtime_key": "Lokal mit dem für dieses Flashen eingegebenen Schlüssel signiert.",
+    "hardware_id_is_slave": "Das ist der Erweiterungs-Slave, nicht die Hauptplatine.",
+    "config_serial_invalid": "Die Seriennummer muss eine ganze Zahl von 0 bis 255 sein."
   },
   "thermal": {
     "title": "MLX90640-Wärmebildkamera 32x24",
@@ -381,7 +388,12 @@
     "tab_selftest": "Selbsttest",
     "tab_bus": "Bus-Monitor",
     "tab_custom": "Benutzerdefinierte Nachricht",
-    "no_panel": "Kein Panel für Werkzeug #{{id}} implementiert."
+    "no_panel": "Kein Panel für Werkzeug #{{id}} implementiert.",
+    "tool_needs_connection": "Verbinde den USB-CAN-Adapter (obere Kopfzeile), um ein Werkzeug zu steuern.",
+    "tool_waiting_for_board": "Warte darauf, dass die Platine meldet, welches Werkzeug sie hat. Nutze die Erkennen-Schaltfläche; bis die Platine geantwortet hat, wird kein Werkzeugpanel angezeigt.",
+    "tool_invalid": "Die Platine meldet Werkzeugnummer {{id}}, die ungültig ist. Prüfe die ID-Jumper und die Konfiguration des freien Werkzeugs.",
+    "detect_no_answer": "Keine Platine hat geantwortet. Prüfe Verkabelung, Stromversorgung und ob der Adapter verbunden ist.",
+    "selftest_needs_tool": "Der Selbsttest braucht zuerst die Werkzeugmeldung der Platine. Nutze die Erkennen-Schaltfläche."
   },
   "testerglobal": {
     "global_title": "Globale Steuerungen (0x100)",
@@ -535,16 +547,38 @@
     "reading_progress": "Wird gelesen... {{pct}}%",
     "read_thermal_image": "Wärmebild lesen",
     "no_handler_notice": "Kein CAN-Handler für dieses Werkzeug - sein Aktuator/Sensor befindet sich auf der Roboter-Hauptplatine, nicht auf dieser Platine.",
-    "setpoint_0_445": "Sollwert (0-445 C)"
+    "setpoint_0_445": "Sollwert (0-445 C)",
+    "thermal_read_failed": "Das Auslesen des Wärmebilds ist fehlgeschlagen: {{message}}"
   },
   "hooks": {
     "web_serial_unsupported": "Die Web-Serial-API wird von diesem Browser nicht unterstützt. Bitte Chrome oder Edge verwenden.",
-    "iframe_blocked": "Kein Zugriff auf USB/Seriell aus diesem iframe möglich. Bitte auf die Schaltfläche \"In neuem Tab öffnen\" oben rechts im Vorschaufenster klicken, um die Web-Serial-API zu nutzen.",
+    "iframe_blocked": "Von hier ist kein Zugriff auf USB/Seriell möglich: Diese Seite ist in einen Frame eingebettet, der das nicht erlaubt. Öffne die Seite in einem eigenen Browser-Tab.",
     "connection_failed": "Verbindung fehlgeschlagen: {{message}}",
     "no_bus_response": "Keine Antwort von einer URTC-Platine bei keiner bekannten CAN-Bitrate (versucht: 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Verkabelung und Stromversorgung prüfen.",
     "send_failed": "Senden des CAN-Frames fehlgeschlagen ({{description}}): {{message}}",
     "writer_unavailable": "Der Serial-Port-Writer ist nicht verfügbar (Port getrennt).",
     "invalid_frame": "Ungültiger CAN-Frame wird abgelehnt: {{reason}}",
     "not_connected": "Nicht mit einem USB-CAN-Adapter verbunden."
+  },
+  "confirm": {
+    "title_caution": "Bitte bestätigen",
+    "title_danger": "Gefährliche Aktion",
+    "go_on": "Fortfahren",
+    "cancel": "Abbrechen",
+    "msg_laser": "Der Laser wird scharfgeschaltet und strahlt mit der hier eingestellten Leistung. Stelle sicher, dass der Bereich frei ist und Augenschutz getragen wird.",
+    "msg_drill": "Der Bohrer dreht sich. Stelle sicher, dass sich nichts darin verfangen kann.",
+    "msg_uv": "Das UV-Licht schaltet sich ein. Halte Augen und Haut vom Strahl fern.",
+    "msg_weld": "Ein Schweißimpuls wird ausgelöst. Stelle sicher, dass die Spitze richtig sitzt und der Bereich frei ist.",
+    "msg_heater": "Ein Heizelement wird auf {{value}} C eingeschaltet. Es bleibt heiß, bis du es ausschaltest.",
+    "msg_motion": "Das Werkzeug bewegt sich. Stelle sicher, dass der Weg frei ist.",
+    "msg_paste": "Paste wird dosiert.",
+    "msg_feeder_reset": "Die Position des Zuführers wird auf 0 zurückgesetzt.",
+    "msg_program_config": "Dies wird in den nichtflüchtigen Speicher der Platine geschrieben und bleibt nach einem Neustart erhalten.",
+    "msg_erase_fram": "Der gespeicherte Zustand der Platine (die dauerhaft gespeicherten Werkzeug-Sollwerte) wird gelöscht.",
+    "msg_raw_frame": "Dieser Frame wird so, wie eingegeben, an die Platine gesendet.",
+    "raw_memory": "Der Identifier 0x{{id}} schreibt in den nichtflüchtigen Speicher der Platine und bleibt nach einem Neustart erhalten.",
+    "raw_bootloader": "Der Identifier 0x{{id}} ist ein Bootloader-Befehl; er kann die Platine im Update-Modus lassen, bis sie aktualisiert oder aus- und wieder eingeschaltet wird.",
+    "raw_actuator": "Der Identifier 0x{{id}} steuert einen Aktor an; er kann bewegen, heizen oder auslösen.",
+    "raw_blocked": "Der Identifier 0x{{id}} wird nur von der Platine selbst gesendet; ihn von hier zu senden würde mit der Platine kollidieren und den anderen Geräten am Bus falsche Daten liefern."
   }
 }

@@ -1,7 +1,9 @@
 {
   "app": {
     "dismiss": "Ignorer",
-    "browser_unsupported_banner": "Ce navigateur ne prend pas en charge l'API Web Serial - il n'est pas possible de se connecter a du materiel reel ici. Veuillez passer a Chrome ou Edge."
+    "browser_unsupported_banner": "Ce navigateur ne prend pas en charge l'API Web Serial - il n'est pas possible de se connecter a du materiel reel ici. Veuillez passer a Chrome ou Edge.",
+    "simulator_notice": "Simulateur : cet onglet modélise une carte et n'envoie rien sur le bus. Branchez un adaptateur USB-CAN pour travailler avec la vraie carte dans Tester Studio et Flasher Studio.",
+    "simulator_notice_connected": "Simulateur : cet onglet modélise une carte et n'envoie rien sur le bus. Ce qu'il affiche n'est pas ce que la carte connectée signale ; utilisez Tester Studio et Flasher Studio pour la vraie carte."
   },
   "config": {
     "language_en": "English",
@@ -131,7 +133,7 @@
     "exp_adv5160_motor": "Moteur 10A + ADS1115/MLX90640"
   },
   "canbus": {
-    "title": "Analyseur de Protocole CAN (1 Mbps / SocketCAN / SLCAN)",
+    "title": "Analyseur de Protocole CAN (500 kbit/s / SocketCAN / SLCAN)",
     "subtitle": "Télémétrie temps réel basse latence & ping du watchdog (docs/CANBUS.TXT)",
     "clear_log": "Effacer le Journal",
     "presets_title": "Messages de protocole URTC prédéfinis (docs/CANBUS.TXT) :",
@@ -145,14 +147,17 @@
     "desc_placeholder": "Commande personnalisée",
     "tx": "Tx",
     "stream_title": "FLUX DE TRAMES CAN TEMPS RÉEL ({{count}} TRAMES)",
-    "mbps_active": "1 Mbps ACTIF",
+    "mbps_active": "500 kbit/s",
     "th_timestamp": "HORODATAGE",
     "th_dir": "DIR",
     "th_id": "ID (HEX)",
     "th_dlc": "DLC",
     "th_data": "OCTETS DE DONNÉES",
     "th_description": "DESCRIPTION",
-    "no_frames": "Aucune trame CAN enregistrée pour l'instant. Envoyez une commande ci-dessus ou activez des outils."
+    "no_frames": "Aucune trame CAN enregistrée pour l'instant. Envoyez une commande ci-dessus ou activez des outils.",
+    "presets_notice_connected": "Carte connectée : un message prédéfini qui est une simple requête est envoyé à la carte et sa propre réponse apparaît dans le journal. Tout autre message prédéfini n'est qu'un exemple simulé, marqué SIM, et n'est pas transmis.",
+    "presets_notice": "Aucune carte connectée : les messages prédéfinis jouent un échange simulé, marqué SIM. Rien n'est transmis.",
+    "sim_badge": "SIM"
   },
   "flasher": {
     "title": "URTC Flasher Studio (CAN OTA)",
@@ -293,7 +298,9 @@
     "prompt_signing_key": "Cette image n'a pas de signature publiée (<fichier>.manifest.json avec hmac_sha256). Pour flasher une image compilée par vos soins sur une carte d'établi, saisissez sa clé de signature {{board}} (64 caractères hex). Elle n'est pas enregistrée.",
     "log_signature_from_manifest": "Utilisation de la signature publiée dans le manifeste (clé : {{kind}}).",
     "log_dev_key_warning": "NOTE : signée avec la clé de développement PUBLIQUE - seules les cartes dont le bootloader a été compilé avec cette même clé l'acceptent.",
-    "log_signature_runtime_key": "Signée localement avec la clé saisie pour ce flashage."
+    "log_signature_runtime_key": "Signée localement avec la clé saisie pour ce flashage.",
+    "hardware_id_is_slave": "Il s'agit de l'esclave d'extension, pas de la carte principale.",
+    "config_serial_invalid": "Le numéro de série doit être un entier de 0 à 255."
   },
   "thermal": {
     "title": "Caméra Thermique Infrarouge MLX90640 32x24",
@@ -381,7 +388,12 @@
     "tab_selftest": "Auto-test",
     "tab_bus": "Moniteur de Bus",
     "tab_custom": "Trame Personnalisée",
-    "no_panel": "Aucun panneau implémenté pour l'outil #{{id}}."
+    "no_panel": "Aucun panneau implémenté pour l'outil #{{id}}.",
+    "tool_needs_connection": "Connectez l'adaptateur USB-CAN (en-tête supérieur) pour piloter un outil.",
+    "tool_waiting_for_board": "En attente que la carte indique quel outil elle porte. Utilisez le bouton de détection ; aucun panneau d'outil n'est affiché tant que la carte n'a pas répondu.",
+    "tool_invalid": "La carte signale l'outil numéro {{id}}, qui n'est pas valide. Vérifiez les cavaliers d'ID et la configuration d'outil libre.",
+    "detect_no_answer": "Aucune carte n'a répondu. Vérifiez le câblage, l'alimentation et que l'adaptateur est connecté.",
+    "selftest_needs_tool": "L'auto-test exige que la carte indique d'abord son outil. Utilisez le bouton de détection."
   },
   "testerglobal": {
     "global_title": "Contrôles Globaux (0x100)",
@@ -535,16 +547,38 @@
     "reading_progress": "Lecture... {{pct}}%",
     "read_thermal_image": "Lire l'Image Thermique",
     "no_handler_notice": "Aucun gestionnaire CAN pour cet outil - son actionneur/capteur se trouve sur la carte principale du robot, pas sur cette carte.",
-    "setpoint_0_445": "Consigne (0-445 C)"
+    "setpoint_0_445": "Consigne (0-445 C)",
+    "thermal_read_failed": "La lecture de l'image thermique a échoué : {{message}}"
   },
   "hooks": {
     "web_serial_unsupported": "L'API Web Serial n'est pas prise en charge par ce navigateur. Veuillez utiliser Chrome ou Edge.",
-    "iframe_blocked": "Impossible d'accéder à l'USB/Série depuis cet iframe. Cliquez sur le bouton \"Ouvrir dans un nouvel onglet\" en haut à droite du panneau d'aperçu pour utiliser l'API Web Serial.",
+    "iframe_blocked": "Impossible d'accéder à l'USB/série d'ici : cette page est intégrée dans un cadre qui ne l'autorise pas. Ouvrez la page dans son propre onglet de navigateur.",
     "connection_failed": "Échec de la connexion : {{message}}",
     "no_bus_response": "Aucune réponse d'une carte URTC à aucun débit CAN connu (essayés : 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Vérifiez le câblage et l'alimentation.",
     "send_failed": "Échec de l'envoi de la trame CAN ({{description}}) : {{message}}",
     "writer_unavailable": "L'écrivain du port série n'est pas disponible (port déconnecté).",
     "invalid_frame": "Trame CAN non valide rejetée : {{reason}}",
     "not_connected": "Aucun adaptateur USB-CAN connecté."
+  },
+  "confirm": {
+    "title_caution": "Veuillez confirmer",
+    "title_danger": "Action dangereuse",
+    "go_on": "Continuer",
+    "cancel": "Annuler",
+    "msg_laser": "Le laser sera armé et émettra à la puissance réglée ici. Vérifiez que la zone est dégagée et que la protection oculaire est en place.",
+    "msg_drill": "La perceuse va tourner. Vérifiez que rien ne peut s'y prendre.",
+    "msg_uv": "La lumière UV va s'allumer. Gardez les yeux et la peau à l'écart du faisceau.",
+    "msg_weld": "Une impulsion de soudage va être déclenchée. Vérifiez que la pointe est bien placée et que la zone est dégagée.",
+    "msg_heater": "Un élément chauffant sera allumé à {{value}} C. Il reste chaud jusqu'à ce que vous l'éteigniez.",
+    "msg_motion": "L'outil va bouger. Vérifiez que sa trajectoire est dégagée.",
+    "msg_paste": "De la pâte sera dosée.",
+    "msg_feeder_reset": "La position de l'alimentateur sera remise à 0.",
+    "msg_program_config": "Ceci est écrit dans la mémoire non volatile de la carte et persiste après un redémarrage.",
+    "msg_erase_fram": "L'état enregistré de la carte (ses consignes d'outil mémorisées) sera effacé.",
+    "msg_raw_frame": "Cette trame est envoyée à la carte telle que saisie.",
+    "raw_memory": "L'identifiant 0x{{id}} écrit dans la mémoire non volatile de la carte et persiste après un redémarrage.",
+    "raw_bootloader": "L'identifiant 0x{{id}} est une commande du bootloader ; il peut laisser la carte en mode mise à jour jusqu'à ce qu'elle soit mise à jour ou éteinte puis rallumée.",
+    "raw_actuator": "L'identifiant 0x{{id}} commande un actionneur ; il peut déplacer, chauffer ou déclencher.",
+    "raw_blocked": "L'identifiant 0x{{id}} n'est émis que par la carte elle-même ; l'envoyer d'ici entrerait en collision avec la carte et fournirait de fausses données aux autres appareils du bus."
   }
 }

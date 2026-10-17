@@ -1,7 +1,9 @@
 {
   "app": {
     "dismiss": "Dispensar",
-    "browser_unsupported_banner": "Este navegador não suporta a API Web Serial - não é possível ligar a hardware real aqui. Mude para Chrome ou Edge."
+    "browser_unsupported_banner": "Este navegador não suporta a API Web Serial - não é possível ligar a hardware real aqui. Mude para Chrome ou Edge.",
+    "simulator_notice": "Simulador: este separador simula uma placa e não envia nada para o barramento. Ligue um adaptador USB-CAN para trabalhar com a placa real no Tester Studio e no Flasher Studio.",
+    "simulator_notice_connected": "Simulador: este separador simula uma placa e não envia nada para o barramento. O que mostra não é o que a placa ligada comunica; use o Tester Studio e o Flasher Studio para a placa real."
   },
   "config": {
     "language_en": "English",
@@ -131,7 +133,7 @@
     "exp_adv5160_motor": "Motor de 10A + ADS1115/MLX90640"
   },
   "canbus": {
-    "title": "Analisador de Protocolo CAN (1 Mbps / SocketCAN / SLCAN)",
+    "title": "Analisador de Protocolo CAN (500 kbit/s / SocketCAN / SLCAN)",
     "subtitle": "Telemetria em Tempo Real de Baixa Latência e Ping de Watchdog (docs/CANBUS.TXT)",
     "clear_log": "Limpar Registo",
     "presets_title": "Mensagens Predefinidas do Protocolo URTC (docs/CANBUS.TXT):",
@@ -145,14 +147,17 @@
     "desc_placeholder": "Comando personalizado",
     "tx": "Tx",
     "stream_title": "FLUXO DE TRAMAS CAN EM TEMPO REAL ({{count}} TRAMAS)",
-    "mbps_active": "1 Mbps ATIVO",
+    "mbps_active": "500 kbit/s",
     "th_timestamp": "CARIMBO TEMPORAL",
     "th_dir": "DIR",
     "th_id": "ID (HEX)",
     "th_dlc": "DLC",
     "th_data": "BYTES DE DADOS",
     "th_description": "DESCRIÇÃO",
-    "no_frames": "Ainda não foram registadas tramas CAN. Envie um comando acima ou ative ferramentas."
+    "no_frames": "Ainda não foram registadas tramas CAN. Envie um comando acima ou ative ferramentas.",
+    "presets_notice_connected": "Placa ligada: uma mensagem predefinida que seja uma simples consulta é enviada à placa e a resposta da própria placa aparece no registo. Qualquer outra mensagem predefinida é apenas um exemplo simulado, marcado SIM, e não é transmitida.",
+    "presets_notice": "Sem placa ligada: as mensagens predefinidas reproduzem uma troca simulada, marcada SIM. Nada é transmitido.",
+    "sim_badge": "SIM"
   },
   "flasher": {
     "title": "URTC Flasher Studio (CAN OTA)",
@@ -293,7 +298,9 @@
     "err_image_bad_reset": "O manipulador de reset não aponta para dentro da ranhura de aplicação desta placa: parece um bootloader ou uma imagem da outra placa.",
     "err_manifest_signature_malformed": "O manifesto tem um hmac_sha256 que não tem 64 caracteres hexadecimais.",
     "err_manifest_wrong_target": "O manifesto é de outra placa: declara {{got}} e esta atualização precisa de {{want}}.",
-    "err_version_unknown": "A versão desta imagem é desconhecida: adicione um manifesto com versão, ou mantenha a versão no nome do ficheiro (por exemplo _v0.3.3.bin)."
+    "err_version_unknown": "A versão desta imagem é desconhecida: adicione um manifesto com versão, ou mantenha a versão no nome do ficheiro (por exemplo _v0.3.3.bin).",
+    "hardware_id_is_slave": "Este é o escravo de expansão, não a placa principal.",
+    "config_serial_invalid": "O número de série tem de ser um número inteiro de 0 a 255."
   },
   "thermal": {
     "title": "Câmara Térmica Infravermelha MLX90640 de 32x24",
@@ -381,7 +388,12 @@
     "tab_selftest": "Autoteste",
     "tab_bus": "Monitor de Barramento",
     "tab_custom": "Trama Personalizada",
-    "no_panel": "Não há painel implementado para a ferramenta #{{id}}."
+    "no_panel": "Não há painel implementado para a ferramenta #{{id}}.",
+    "tool_needs_connection": "Ligue o adaptador USB-CAN (cabeçalho superior) para controlar uma ferramenta.",
+    "tool_waiting_for_board": "A aguardar que a placa indique que ferramenta tem. Use o botão de deteção; não é mostrado nenhum painel de ferramenta até a placa responder.",
+    "tool_invalid": "A placa comunica a ferramenta número {{id}}, que não é válida. Verifique os jumpers de ID e a configuração de ferramenta livre.",
+    "detect_no_answer": "Nenhuma placa respondeu. Verifique a cablagem, a alimentação e se o adaptador está ligado.",
+    "selftest_needs_tool": "O autoteste precisa que a placa comunique primeiro a sua ferramenta. Use o botão de deteção."
   },
   "testerglobal": {
     "global_title": "Controlos Globais (0x100)",
@@ -535,16 +547,38 @@
     "reading_progress": "A ler... {{pct}}%",
     "read_thermal_image": "Ler Imagem Térmica",
     "no_handler_notice": "Não há gestor CAN para esta ferramenta - o seu atuador/sensor reside na placa principal do robô, não nesta placa.",
-    "setpoint_0_445": "Setpoint (0-445 C)"
+    "setpoint_0_445": "Setpoint (0-445 C)",
+    "thermal_read_failed": "A leitura da imagem térmica falhou: {{message}}"
   },
   "hooks": {
     "web_serial_unsupported": "A API Web Serial não é suportada por este navegador. Utilize o Chrome ou o Edge.",
-    "iframe_blocked": "Não é possível aceder a USB/Serial a partir desta iframe. Clique no botão \"Abrir num novo separador\" no canto superior direito do painel de pré-visualização para utilizar a API Web Serial.",
+    "iframe_blocked": "Não é possível aceder a USB/série a partir daqui: esta página está incorporada numa moldura que não o permite. Abra a página no seu próprio separador do navegador.",
     "connection_failed": "Ligação falhada: {{message}}",
     "no_bus_response": "Sem resposta de nenhuma placa URTC a nenhum bitrate CAN conhecido (testados 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Verifique a cablagem e a alimentação.",
     "send_failed": "Falha ao enviar trama CAN ({{description}}): {{message}}",
     "writer_unavailable": "O escritor da porta série não está disponível (porta desligada).",
     "invalid_frame": "Trama CAN inválida rejeitada: {{reason}}",
     "not_connected": "Sem ligação a um adaptador USB-CAN."
+  },
+  "confirm": {
+    "title_caution": "Confirme, por favor",
+    "title_danger": "Ação perigosa",
+    "go_on": "Continuar",
+    "cancel": "Cancelar",
+    "msg_laser": "O laser será armado e emitirá com a potência definida aqui. Confirme que a zona está livre e que usa proteção ocular.",
+    "msg_drill": "O berbequim vai rodar. Confirme que nada pode ficar preso.",
+    "msg_uv": "A luz UV vai ligar. Mantenha os olhos e a pele longe do feixe.",
+    "msg_weld": "Vai ser disparado um impulso de soldadura. Confirme que a ponta está onde deve e que a zona está livre.",
+    "msg_heater": "Um aquecedor vai ser ligado a {{value}} C. Fica quente até o desligar.",
+    "msg_motion": "A ferramenta vai mover-se. Confirme que o percurso está livre.",
+    "msg_paste": "Vai ser dispensada pasta.",
+    "msg_feeder_reset": "A posição do alimentador será reposta a 0.",
+    "msg_program_config": "Isto é escrito na memória não volátil da placa e mantém-se após reiniciar.",
+    "msg_erase_fram": "O estado guardado da placa (as consignas de ferramenta persistentes) será apagado.",
+    "msg_raw_frame": "Esta trama é enviada à placa tal como foi escrita.",
+    "raw_memory": "O identificador 0x{{id}} escreve na memória não volátil da placa e mantém-se após reiniciar.",
+    "raw_bootloader": "O identificador 0x{{id}} é um comando do bootloader; pode deixar a placa em modo de atualização até ser atualizada ou desligada e ligada.",
+    "raw_actuator": "O identificador 0x{{id}} comanda um atuador; pode mover, aquecer ou disparar.",
+    "raw_blocked": "O identificador 0x{{id}} só é enviado pela própria placa; enviá-lo daqui colidiria com a placa e daria dados falsos aos outros dispositivos do barramento."
   }
 }

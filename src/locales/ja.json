@@ -1,7 +1,9 @@
 {
   "app": {
     "dismiss": "閉じる",
-    "browser_unsupported_banner": "このブラウザは Web Serial API に対応していないため、実機への接続はできません。Chrome または Edge に切り替えてください。"
+    "browser_unsupported_banner": "このブラウザは Web Serial API に対応していないため、実機への接続はできません。Chrome または Edge に切り替えてください。",
+    "simulator_notice": "シミュレーター：このタブはボードを模擬するだけで、バスには何も送信しません。実際のボードを扱うには、USB-CAN アダプターを接続して Tester Studio と Flasher Studio を使用してください。",
+    "simulator_notice_connected": "シミュレーター：このタブはボードを模擬するだけで、バスには何も送信しません。ここに表示される内容は、接続中のボードが報告する内容ではありません。実際のボードには Tester Studio と Flasher Studio を使用してください。"
   },
   "config": {
     "language_en": "English",
@@ -131,7 +133,7 @@
     "exp_adv5160_motor": "10A ステッピングモーター + ADS1115/MLX90640"
   },
   "canbus": {
-    "title": "CAN バスプロトコルアナライザー（1 Mbps / SocketCAN / SLCAN）",
+    "title": "CAN バスプロトコルアナライザー（500 kbit/s / SocketCAN / SLCAN）",
     "subtitle": "低遅延リアルタイムテレメトリとウォッチドッグピンガー（docs/CANBUS.TXT）",
     "clear_log": "ログをクリア",
     "presets_title": "定義済みの URTC プロトコルメッセージ（docs/CANBUS.TXT）：",
@@ -145,14 +147,17 @@
     "desc_placeholder": "カスタムコマンド",
     "tx": "送信",
     "stream_title": "リアルタイム CAN フレームストリーム（{{count}} フレーム）",
-    "mbps_active": "1 Mbps アクティブ",
+    "mbps_active": "500 kbit/s",
     "th_timestamp": "タイムスタンプ",
     "th_dir": "方向",
     "th_id": "ID（16進数）",
     "th_dlc": "DLC",
     "th_data": "データバイト",
     "th_description": "説明",
-    "no_frames": "まだ CAN フレームは記録されていません。上でコマンドを送信するか、ツールを切り替えてください。"
+    "no_frames": "まだ CAN フレームは記録されていません。上でコマンドを送信するか、ツールを切り替えてください。",
+    "presets_notice_connected": "ボード接続中：単純な問い合わせにあたる定義済みメッセージはボードに送信され、ボード自身の応答がログに表示されます。それ以外の定義済みメッセージは SIM と表示されるシミュレーション例にすぎず、送信されません。",
+    "presets_notice": "ボード未接続：定義済みメッセージは SIM と表示されるシミュレーションのやり取りを再生します。何も送信されません。",
+    "sim_badge": "SIM"
   },
   "flasher": {
     "title": "URTC Flasher Studio（CAN OTA）",
@@ -293,7 +298,9 @@
     "prompt_signing_key": "このイメージには公開された署名がありません（hmac_sha256 を含む <ファイル>.manifest.json）。自作のイメージを実験用ボードに書き込むには、その {{board}} 署名キー（16進64文字）を入力してください。保存されません。",
     "log_signature_from_manifest": "マニフェストで公開されている署名を使用します（キー: {{kind}}）。",
     "log_dev_key_warning": "注意: 公開の開発用キーで署名されています。同じキーでビルドされたブートローダーのボードのみ受け付けます。",
-    "log_signature_runtime_key": "この書き込みのために入力されたキーでローカル署名しました。"
+    "log_signature_runtime_key": "この書き込みのために入力されたキーでローカル署名しました。",
+    "hardware_id_is_slave": "これは拡張スレーブであり、メインボードではありません。",
+    "config_serial_invalid": "シリアル番号は 0 から 255 までの整数でなければなりません。"
   },
   "thermal": {
     "title": "MLX90640 32x24 サーマル赤外線カメラアレイ",
@@ -381,7 +388,12 @@
     "tab_selftest": "自己診断",
     "tab_bus": "バスモニター",
     "tab_custom": "カスタムフレーム",
-    "no_panel": "ツール #{{id}} 用のパネルは実装されていません。"
+    "no_panel": "ツール #{{id}} 用のパネルは実装されていません。",
+    "tool_needs_connection": "ツールを制御するには、上部のヘッダーから USB-CAN アダプターを接続してください。",
+    "tool_waiting_for_board": "ボードがどのツールを搭載しているか応答するのを待っています。検出ボタンを使用してください。ボードが応答するまでツールパネルは表示されません。",
+    "tool_invalid": "ボードはツール番号 {{id}} を報告していますが、これは有効なツールではありません。ID ジャンパーとフリーツール設定を確認してください。",
+    "detect_no_answer": "ボードから応答がありません。配線、電源、アダプターの接続を確認してください。",
+    "selftest_needs_tool": "セルフテストを行うには、まずボードがツールを報告する必要があります。検出ボタンを使用してください。"
   },
   "testerglobal": {
     "global_title": "グローバル制御（0x100）",
@@ -535,16 +547,38 @@
     "reading_progress": "読み取り中… {{pct}}%",
     "read_thermal_image": "サーマル画像を読み取り",
     "no_handler_notice": "このツールには対応する CAN ハンドラーがありません——そのアクチュエーター/センサーは本ボードではなく、ロボットのメインボード上にあります。",
-    "setpoint_0_445": "設定値 (0-445 C)"
+    "setpoint_0_445": "設定値 (0-445 C)",
+    "thermal_read_failed": "サーマル画像の読み取りに失敗しました：{{message}}"
   },
   "hooks": {
     "web_serial_unsupported": "このブラウザは Web Serial API をサポートしていません。Chrome または Edge を使用してください。",
-    "iframe_blocked": "この iframe から USB/シリアルにアクセスできません。Web Serial API を使用するには、プレビューペインの右上にある「新しいタブで開く」ボタンをクリックしてください。",
+    "iframe_blocked": "ここからは USB/シリアルにアクセスできません。このページは許可されていないフレーム内に埋め込まれています。ページを専用のブラウザータブで開いてください。",
     "connection_failed": "接続に失敗しました：{{message}}",
     "no_bus_response": "既知のどの CAN ビットレート（500k、250k、125k、1M、100k、50k、20k、10k、800k を試行）でも URTC ボードからの応答がありません。配線と電源を確認してください。",
     "send_failed": "CAN 送信に失敗しました（{{description}}）：{{message}}",
     "writer_unavailable": "シリアルポートライターが利用できません（ポートが切断されています）。",
     "invalid_frame": "不正な CAN フレームを拒否しました: {{reason}}",
     "not_connected": "USB-CAN アダプターに接続されていません。"
+  },
+  "confirm": {
+    "title_caution": "確認してください",
+    "title_danger": "危険な操作",
+    "go_on": "続行",
+    "cancel": "キャンセル",
+    "msg_laser": "レーザーが有効化され、ここで設定した出力で照射されます。周囲に人がいないこと、保護メガネを着用していることを確認してください。",
+    "msg_drill": "ドリルが回転します。巻き込まれるものがないことを確認してください。",
+    "msg_uv": "UV 光が点灯します。目や肌を光線に近づけないでください。",
+    "msg_weld": "溶接パルスが出力されます。先端が正しい位置にあり、周囲が安全であることを確認してください。",
+    "msg_heater": "ヒーターが {{value}} C でオンになります。オフにするまで高温のままです。",
+    "msg_motion": "ツールが動きます。動作経路に障害物がないことを確認してください。",
+    "msg_paste": "ペーストが吐出されます。",
+    "msg_feeder_reset": "フィーダーの位置が 0 にリセットされます。",
+    "msg_program_config": "ボードの不揮発メモリに書き込まれ、再起動後も残ります。",
+    "msg_erase_fram": "ボードに保存されている状態（保持されているツールの設定値）が消去されます。",
+    "msg_raw_frame": "このフレームは入力されたとおりにボードへ送信されます。",
+    "raw_memory": "識別子 0x{{id}} はボードの不揮発メモリに書き込み、再起動後も残ります。",
+    "raw_bootloader": "識別子 0x{{id}} はブートローダーのコマンドです。更新するか電源を入れ直すまで、ボードが更新モードのままになることがあります。",
+    "raw_actuator": "識別子 0x{{id}} はアクチュエーターを制御します。動作、加熱、照射などが起こる可能性があります。",
+    "raw_blocked": "識別子 0x{{id}} はボード自身だけが送信します。ここから送信するとボードと衝突し、バス上の他の機器に誤ったデータを与えてしまいます。"
   }
 }

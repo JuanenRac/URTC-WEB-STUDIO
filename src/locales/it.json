@@ -1,7 +1,9 @@
 {
   "app": {
     "dismiss": "Ignora",
-    "browser_unsupported_banner": "Questo browser non supporta l'API Web Serial - non e possibile connettersi a hardware reale qui. Passa a Chrome o Edge."
+    "browser_unsupported_banner": "Questo browser non supporta l'API Web Serial - non e possibile connettersi a hardware reale qui. Passa a Chrome o Edge.",
+    "simulator_notice": "Simulatore: questa pagina modella una scheda e non invia nulla al bus. Collega un adattatore USB-CAN per lavorare con la scheda reale in Tester Studio e Flasher Studio.",
+    "simulator_notice_connected": "Simulatore: questa pagina modella una scheda e non invia nulla al bus. Ciò che mostra non è ciò che segnala la scheda collegata; usa Tester Studio e Flasher Studio per la scheda reale."
   },
   "config": {
     "language_en": "English",
@@ -131,7 +133,7 @@
     "exp_adv5160_motor": "Motore 10A + ADS1115/MLX90640"
   },
   "canbus": {
-    "title": "Analizzatore Protocollo CAN (1 Mbps / SocketCAN / SLCAN)",
+    "title": "Analizzatore Protocollo CAN (500 kbit/s / SocketCAN / SLCAN)",
     "subtitle": "Telemetria in tempo reale a bassa latenza & ping watchdog (docs/CANBUS.TXT)",
     "clear_log": "Cancella Registro",
     "presets_title": "Messaggi Protocollo URTC Predefiniti (docs/CANBUS.TXT):",
@@ -145,14 +147,17 @@
     "desc_placeholder": "Comando personalizzato",
     "tx": "Tx",
     "stream_title": "FLUSSO TRAME CAN IN TEMPO REALE ({{count}} TRAME)",
-    "mbps_active": "1 Mbps ATTIVO",
+    "mbps_active": "500 kbit/s",
     "th_timestamp": "TIMESTAMP",
     "th_dir": "DIR",
     "th_id": "ID (HEX)",
     "th_dlc": "DLC",
     "th_data": "BYTE DATI",
     "th_description": "DESCRIZIONE",
-    "no_frames": "Nessuna trama CAN registrata finora. Invia un comando qui sopra o attiva gli utensili."
+    "no_frames": "Nessuna trama CAN registrata finora. Invia un comando qui sopra o attiva gli utensili.",
+    "presets_notice_connected": "Scheda collegata: un messaggio predefinito che è una semplice interrogazione viene inviato alla scheda e la sua risposta compare nel registro. Ogni altro messaggio predefinito è solo un esempio simulato, contrassegnato SIM, e non viene trasmesso.",
+    "presets_notice": "Nessuna scheda collegata: i messaggi predefiniti riproducono uno scambio simulato, contrassegnato SIM. Non viene trasmesso nulla.",
+    "sim_badge": "SIM"
   },
   "flasher": {
     "title": "URTC Flasher Studio (CAN OTA)",
@@ -293,7 +298,9 @@
     "prompt_signing_key": "Questa immagine non ha una firma pubblicata (<file>.manifest.json con hmac_sha256). Per flashare un'immagine compilata da te su una scheda da banco, inserisci la sua chiave di firma {{board}} (64 caratteri esadecimali). Non viene salvata.",
     "log_signature_from_manifest": "Uso della firma pubblicata nel manifest (chiave: {{kind}}).",
     "log_dev_key_warning": "NOTA: firmata con la chiave di sviluppo PUBBLICA - la accettano solo le schede il cui bootloader è stato compilato con la stessa chiave.",
-    "log_signature_runtime_key": "Firmata localmente con la chiave inserita per questo flash."
+    "log_signature_runtime_key": "Firmata localmente con la chiave inserita per questo flash.",
+    "hardware_id_is_slave": "È lo slave di espansione, non la scheda principale.",
+    "config_serial_invalid": "Il numero di serie deve essere un numero intero da 0 a 255."
   },
   "thermal": {
     "title": "Termocamera Infrarossa MLX90640 32x24",
@@ -381,7 +388,12 @@
     "tab_selftest": "Autotest",
     "tab_bus": "Monitor Bus",
     "tab_custom": "Trama Personalizzata",
-    "no_panel": "Nessun pannello implementato per l'utensile #{{id}}."
+    "no_panel": "Nessun pannello implementato per l'utensile #{{id}}.",
+    "tool_needs_connection": "Collega l'adattatore USB-CAN (intestazione in alto) per controllare un utensile.",
+    "tool_waiting_for_board": "In attesa che la scheda indichi quale utensile ha. Usa il pulsante di rilevamento; nessun pannello utensile viene mostrato finché la scheda non ha risposto.",
+    "tool_invalid": "La scheda segnala l'utensile numero {{id}}, che non è valido. Controlla i jumper ID e la configurazione dell'utensile libero.",
+    "detect_no_answer": "Nessuna scheda ha risposto. Controlla il cablaggio, l'alimentazione e che l'adattatore sia collegato.",
+    "selftest_needs_tool": "L'autotest richiede che la scheda segnali prima il proprio utensile. Usa il pulsante di rilevamento."
   },
   "testerglobal": {
     "global_title": "Controlli Globali (0x100)",
@@ -535,16 +547,38 @@
     "reading_progress": "Lettura... {{pct}}%",
     "read_thermal_image": "Leggi Immagine Termica",
     "no_handler_notice": "Nessun gestore CAN per questo utensile - il suo attuatore/sensore si trova sulla scheda principale del robot, non su questa scheda.",
-    "setpoint_0_445": "Setpoint (0-445 C)"
+    "setpoint_0_445": "Setpoint (0-445 C)",
+    "thermal_read_failed": "Lettura dell'immagine termica non riuscita: {{message}}"
   },
   "hooks": {
     "web_serial_unsupported": "L'API Web Serial non è supportata in questo browser. Usa Chrome o Edge.",
-    "iframe_blocked": "Impossibile accedere a USB/Seriale da questo iframe. Clicca sul pulsante \"Apri in una nuova scheda\" in alto a destra nel pannello di anteprima per usare l'API Web Serial.",
+    "iframe_blocked": "Impossibile accedere a USB/seriale da qui: questa pagina è incorporata in un frame che non lo consente. Apri la pagina in una scheda del browser a sé.",
     "connection_failed": "Connessione non riuscita: {{message}}",
     "no_bus_response": "Nessuna risposta da una scheda URTC a nessun bitrate CAN noto (provati 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Controlla il cablaggio e l'alimentazione.",
     "send_failed": "Invio del frame CAN non riuscito ({{description}}): {{message}}",
     "writer_unavailable": "Il writer della porta seriale non è disponibile (porta disconnessa).",
     "invalid_frame": "Frame CAN non valido rifiutato: {{reason}}",
     "not_connected": "Nessun adattatore USB-CAN connesso."
+  },
+  "confirm": {
+    "title_caution": "Conferma richiesta",
+    "title_danger": "Azione pericolosa",
+    "go_on": "Continua",
+    "cancel": "Annulla",
+    "msg_laser": "Il laser verrà armato ed emetterà alla potenza impostata qui. Verifica che l'area sia libera e che la protezione per gli occhi sia indossata.",
+    "msg_drill": "Il trapano girerà. Verifica che nulla possa restarne impigliato.",
+    "msg_uv": "La luce UV si accenderà. Tieni occhi e pelle lontani dal fascio.",
+    "msg_weld": "Verrà emesso un impulso di saldatura. Verifica che la punta sia dove deve essere e che l'area sia libera.",
+    "msg_heater": "Un riscaldatore verrà acceso a {{value}} C. Resta caldo finché non lo spegni.",
+    "msg_motion": "L'utensile si muoverà. Verifica che il percorso sia libero.",
+    "msg_paste": "Verrà erogata pasta.",
+    "msg_feeder_reset": "La posizione dell'alimentatore verrà azzerata.",
+    "msg_program_config": "Viene scritto nella memoria non volatile della scheda e resta dopo un riavvio.",
+    "msg_erase_fram": "Lo stato salvato della scheda (i setpoint degli utensili memorizzati) verrà cancellato.",
+    "msg_raw_frame": "Questo frame viene inviato alla scheda così com'è stato digitato.",
+    "raw_memory": "L'identificatore 0x{{id}} scrive nella memoria non volatile della scheda e resta dopo un riavvio.",
+    "raw_bootloader": "L'identificatore 0x{{id}} è un comando del bootloader; può lasciare la scheda in modalità aggiornamento finché non viene aggiornata o spenta e riaccesa.",
+    "raw_actuator": "L'identificatore 0x{{id}} comanda un attuatore; può muovere, scaldare o attivare.",
+    "raw_blocked": "L'identificatore 0x{{id}} viene inviato solo dalla scheda stessa; inviarlo da qui andrebbe in collisione con la scheda e fornirebbe dati falsi agli altri dispositivi del bus."
   }
 }

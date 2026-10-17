@@ -1,7 +1,9 @@
 {
   "app": {
     "dismiss": "Dismiss",
-    "browser_unsupported_banner": "This browser does not support the Web Serial API - connecting to real hardware is not possible here. Please switch to Chrome or Edge."
+    "browser_unsupported_banner": "This browser does not support the Web Serial API - connecting to real hardware is not possible here. Please switch to Chrome or Edge.",
+    "simulator_notice": "Simulator: this tab models a board and sends nothing to the bus. Connect a USB-CAN adapter to work with the real board in Tester Studio and Flasher Studio.",
+    "simulator_notice_connected": "Simulator: this tab models a board and sends nothing to the bus. What it shows is not what the connected board reports; use Tester Studio and Flasher Studio for the real board."
   },
   "config": {
     "language_en": "English",
@@ -131,7 +133,7 @@
     "exp_adv5160_motor": "10A Stepper + ADS1115/MLX90640"
   },
   "canbus": {
-    "title": "CAN Bus Protocol Analyzer (1 Mbps / SocketCAN / SLCAN)",
+    "title": "CAN Bus Protocol Analyzer (500 kbit/s / SocketCAN / SLCAN)",
     "subtitle": "Low-Latency Real-Time Telemetry & Watchdog Pinger (docs/CANBUS.TXT)",
     "clear_log": "Clear Log",
     "presets_title": "Predefined URTC Protocol Messages (docs/CANBUS.TXT):",
@@ -145,14 +147,17 @@
     "desc_placeholder": "Custom command",
     "tx": "Tx",
     "stream_title": "REAL-TIME CAN FRAME STREAM ({{count}} FRAMES)",
-    "mbps_active": "1 Mbps ACTIVE",
+    "mbps_active": "500 kbit/s",
     "th_timestamp": "TIMESTAMP",
     "th_dir": "DIR",
     "th_id": "ID (HEX)",
     "th_dlc": "DLC",
     "th_data": "DATA BYTES",
     "th_description": "DESCRIPTION",
-    "no_frames": "No CAN frames logged yet. Send a command above or toggle tools."
+    "no_frames": "No CAN frames logged yet. Send a command above or toggle tools.",
+    "presets_notice_connected": "Board connected: a predefined message that is a plain query is sent to the board and its own answer appears in the log. Every other predefined message is only a simulated example, marked SIM, and is not transmitted.",
+    "presets_notice": "No board connected: the predefined messages play a simulated exchange, marked SIM. Nothing is transmitted.",
+    "sim_badge": "SIM"
   },
   "flasher": {
     "title": "URTC Flasher Studio (CAN OTA)",
@@ -293,7 +298,9 @@
     "err_image_bad_reset": "The reset handler does not point inside the application slot of this board: this looks like a bootloader, or an image for the other board.",
     "err_manifest_signature_malformed": "The manifest has an hmac_sha256 that is not 64 hexadecimal characters.",
     "err_manifest_wrong_target": "The manifest is for another board: it declares {{got}} and this update needs {{want}}.",
-    "err_version_unknown": "The version of this image is unknown: add a manifest with a version, or keep the version in the file name (for example _v0.3.3.bin)."
+    "err_version_unknown": "The version of this image is unknown: add a manifest with a version, or keep the version in the file name (for example _v0.3.3.bin).",
+    "hardware_id_is_slave": "This is the expansion slave, not the main board.",
+    "config_serial_invalid": "The serial number must be a whole number from 0 to 255."
   },
   "thermal": {
     "title": "MLX90640 32x24 Thermal Infrared Camera Array",
@@ -381,7 +388,12 @@
     "tab_selftest": "Self-Test",
     "tab_bus": "Bus Monitor",
     "tab_custom": "Custom Frame",
-    "no_panel": "No panel implemented for tool #{{id}}."
+    "no_panel": "No panel implemented for tool #{{id}}.",
+    "tool_needs_connection": "Connect the USB-CAN adapter (top header) to control a tool.",
+    "tool_waiting_for_board": "Waiting for the board to say which tool it has. Use the Detect button; no tool panel is shown until the board has answered.",
+    "tool_invalid": "The board reports tool number {{id}}, which is not a valid tool. Check the ID jumpers and the free tool configuration.",
+    "detect_no_answer": "No board answered. Check the wiring, the power and that the adapter is connected.",
+    "selftest_needs_tool": "The self-test needs the board to report its tool first. Use the Detect button."
   },
   "testerglobal": {
     "global_title": "Global Controls (0x100)",
@@ -535,16 +547,38 @@
     "reading_progress": "Reading... {{pct}}%",
     "read_thermal_image": "Read Thermal Image",
     "no_handler_notice": "No CAN handler for this tool - its actuator/sensor lives on the robot mainboard, not this board.",
-    "setpoint_0_445": "Setpoint (0-445 C)"
+    "setpoint_0_445": "Setpoint (0-445 C)",
+    "thermal_read_failed": "Reading the thermal image failed: {{message}}"
   },
   "hooks": {
     "web_serial_unsupported": "Web Serial API is not supported in this browser. Please use Chrome or Edge.",
-    "iframe_blocked": "Cannot access USB/Serial from this iframe. Please click the \"Open in new tab\" button at the top right of the preview pane to use the Web Serial API.",
+    "iframe_blocked": "Cannot access USB/Serial from here: this page is embedded in a frame that does not allow it. Open the page in its own browser tab.",
     "connection_failed": "Connection failed: {{message}}",
     "no_bus_response": "No response from a URTC board at any known CAN bitrate (tried 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Check wiring and power.",
     "send_failed": "CAN send failed ({{description}}): {{message}}",
     "writer_unavailable": "Serial port writer is not available (port disconnected).",
     "invalid_frame": "Refusing malformed CAN frame: {{reason}}",
     "not_connected": "Not connected to a USB-CAN adapter."
+  },
+  "confirm": {
+    "title_caution": "Please confirm",
+    "title_danger": "Dangerous action",
+    "go_on": "Continue",
+    "cancel": "Cancel",
+    "msg_laser": "The laser will be armed and fire at the power set here. Make sure the area is clear and eye protection is in place.",
+    "msg_drill": "The drill will spin. Make sure nothing can be caught by it.",
+    "msg_uv": "The UV light will switch on. Keep eyes and skin away from the beam.",
+    "msg_weld": "A welding pulse will be fired. Make sure the tip is where it should be and the area is clear.",
+    "msg_heater": "A heater will be switched on at {{value}} C. It stays hot until you switch it off.",
+    "msg_motion": "The tool will move. Make sure its path is clear.",
+    "msg_paste": "Paste will be dispensed.",
+    "msg_feeder_reset": "The feeder position will be reset to 0.",
+    "msg_program_config": "This is written to the non-volatile memory of the board and stays after a restart.",
+    "msg_erase_fram": "The saved state of the board (its persisted tool setpoints) will be erased.",
+    "msg_raw_frame": "This frame is sent to the board as typed.",
+    "raw_memory": "Identifier 0x{{id}} writes to the non-volatile memory of the board and stays after a restart.",
+    "raw_bootloader": "Identifier 0x{{id}} is a bootloader command; it can leave the board in update mode until it is updated or powered off and on.",
+    "raw_actuator": "Identifier 0x{{id}} commands an actuator; it can move, heat or fire.",
+    "raw_blocked": "Identifier 0x{{id}} is only ever sent by the board; sending it from here would collide with the board and feed false data to the other devices on the bus."
   }
 }

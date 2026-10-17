@@ -1,7 +1,9 @@
 {
   "app": {
     "dismiss": "关闭",
-    "browser_unsupported_banner": "此浏览器不支持 Web Serial API，无法连接真实硬件。请切换到 Chrome 或 Edge。"
+    "browser_unsupported_banner": "此浏览器不支持 Web Serial API，无法连接真实硬件。请切换到 Chrome 或 Edge。",
+    "simulator_notice": "模拟器：此标签页仅模拟一块板子，不会向总线发送任何内容。请连接 USB-CAN 适配器，在 Tester Studio 和 Flasher Studio 中操作真实的板子。",
+    "simulator_notice_connected": "模拟器：此标签页仅模拟一块板子，不会向总线发送任何内容。这里显示的并非已连接板子上报的内容；请使用 Tester Studio 和 Flasher Studio 操作真实的板子。"
   },
   "config": {
     "language_en": "English",
@@ -131,7 +133,7 @@
     "exp_adv5160_motor": "10A 步进电机 + ADS1115/MLX90640"
   },
   "canbus": {
-    "title": "CAN 总线协议分析器（1 Mbps / SocketCAN / SLCAN）",
+    "title": "CAN 总线协议分析器（500 kbit/s / SocketCAN / SLCAN）",
     "subtitle": "低延迟实时遥测与看门狗探测器（docs/CANBUS.TXT）",
     "clear_log": "清除日志",
     "presets_title": "预定义的 URTC 协议消息（docs/CANBUS.TXT）：",
@@ -145,14 +147,17 @@
     "desc_placeholder": "自定义指令",
     "tx": "发送",
     "stream_title": "实时 CAN 帧流（{{count}} 帧）",
-    "mbps_active": "1 Mbps 生效中",
+    "mbps_active": "500 kbit/s",
     "th_timestamp": "时间戳",
     "th_dir": "方向",
     "th_id": "ID（十六进制）",
     "th_dlc": "DLC",
     "th_data": "数据字节",
     "th_description": "描述",
-    "no_frames": "尚未记录任何 CAN 帧。请在上方发送指令或切换工具。"
+    "no_frames": "尚未记录任何 CAN 帧。请在上方发送指令或切换工具。",
+    "presets_notice_connected": "已连接板子：属于简单查询的预定义消息会发送给板子，板子自己的应答会显示在日志中。其他所有预定义消息只是标有 SIM 的模拟示例，不会被发送。",
+    "presets_notice": "未连接板子：预定义消息只会播放标有 SIM 的模拟交互，不会发送任何内容。",
+    "sim_badge": "SIM"
   },
   "flasher": {
     "title": "URTC Flasher Studio（CAN OTA）",
@@ -293,7 +298,9 @@
     "prompt_signing_key": "此镜像没有已发布的签名（带 hmac_sha256 的 <文件>.manifest.json）。要将自行编译的镜像烧录到台架板，请输入其 {{board}} 签名密钥（64 个十六进制字符）。密钥不会被保存。",
     "log_signature_from_manifest": "正在使用清单中发布的签名（密钥：{{kind}}）。",
     "log_dev_key_warning": "注意：使用公开的开发密钥签名——只有引导程序用同一密钥构建的板子才会接受。",
-    "log_signature_runtime_key": "已使用本次烧录输入的密钥在本地签名。"
+    "log_signature_runtime_key": "已使用本次烧录输入的密钥在本地签名。",
+    "hardware_id_is_slave": "这是扩展从机，不是主板。",
+    "config_serial_invalid": "序列号必须是 0 到 255 之间的整数。"
   },
   "thermal": {
     "title": "MLX90640 32x24 热成像红外相机阵列",
@@ -381,7 +388,12 @@
     "tab_selftest": "自检",
     "tab_bus": "总线监视器",
     "tab_custom": "自定义帧",
-    "no_panel": "工具 #{{id}} 尚未实现对应面板。"
+    "no_panel": "工具 #{{id}} 尚未实现对应面板。",
+    "tool_needs_connection": "请通过顶部标题栏连接 USB-CAN 适配器，以控制工具。",
+    "tool_waiting_for_board": "正在等待板子报告其所用工具。请使用检测按钮；在板子应答之前不会显示工具面板。",
+    "tool_invalid": "板子报告的工具编号为 {{id}}，这不是有效的工具。请检查 ID 跳线和自由工具配置。",
+    "detect_no_answer": "没有板子应答。请检查接线、供电以及适配器是否已连接。",
+    "selftest_needs_tool": "自检需要板子先报告其工具。请使用检测按钮。"
   },
   "testerglobal": {
     "global_title": "全局控制（0x100）",
@@ -535,16 +547,38 @@
     "reading_progress": "读取中… {{pct}}%",
     "read_thermal_image": "读取热成像",
     "no_handler_notice": "此工具没有对应的 CAN 处理程序——其执行器/传感器位于机器人主板上，而非本板卡。",
-    "setpoint_0_445": "设定值 (0-445 C)"
+    "setpoint_0_445": "设定值 (0-445 C)",
+    "thermal_read_failed": "读取热成像图像失败：{{message}}"
   },
   "hooks": {
     "web_serial_unsupported": "此浏览器不支持 Web Serial API。请使用 Chrome 或 Edge。",
-    "iframe_blocked": "无法从此 iframe 访问 USB/串口。请点击预览面板右上角的“在新标签页中打开”按钮以使用 Web Serial API。",
+    "iframe_blocked": "无法从此处访问 USB/串口：本页面嵌入在不允许该操作的框架中。请在独立的浏览器标签页中打开本页面。",
     "connection_failed": "连接失败：{{message}}",
     "no_bus_response": "在任何已知的 CAN 比特率下均未收到 URTC 板卡的响应（已尝试 500k、250k、125k、1M、100k、50k、20k、10k、800k）。请检查接线和电源。",
     "send_failed": "CAN 发送失败（{{description}}）：{{message}}",
     "writer_unavailable": "串口写入器不可用（端口已断开连接）。",
     "invalid_frame": "已拒绝格式错误的 CAN 帧：{{reason}}",
     "not_connected": "未连接到 USB-CAN 适配器。"
+  },
+  "confirm": {
+    "title_caution": "请确认",
+    "title_danger": "危险操作",
+    "go_on": "继续",
+    "cancel": "取消",
+    "msg_laser": "激光将被启用，并按此处设置的功率发射。请确认周围区域无人，并已佩戴护目装备。",
+    "msg_drill": "钻头将开始旋转。请确认没有东西会被卷入。",
+    "msg_uv": "紫外线灯将亮起。请让眼睛和皮肤远离光束。",
+    "msg_weld": "将发出一次焊接脉冲。请确认焊头位置正确且周围区域安全。",
+    "msg_heater": "加热器将以 {{value}} C 开启。在你关闭之前它会一直保持高温。",
+    "msg_motion": "工具将会移动。请确认其运动路径畅通。",
+    "msg_paste": "将会挤出焊膏。",
+    "msg_feeder_reset": "送料器位置将被重置为 0。",
+    "msg_program_config": "这将写入板子的非易失存储器，重启后仍然保留。",
+    "msg_erase_fram": "板子保存的状态（持久化的工具设定值）将被擦除。",
+    "msg_raw_frame": "此帧将按输入内容原样发送给板子。",
+    "raw_memory": "标识符 0x{{id}} 会写入板子的非易失存储器，重启后仍然保留。",
+    "raw_bootloader": "标识符 0x{{id}} 是引导程序命令；它可能使板子停留在更新模式，直到完成更新或重新上电。",
+    "raw_actuator": "标识符 0x{{id}} 控制执行器；它可能造成运动、加热或触发动作。",
+    "raw_blocked": "标识符 0x{{id}} 只应由板子自己发送；从这里发送会与板子冲突，并向总线上的其他设备提供错误数据。"
   }
 }

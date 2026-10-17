@@ -23,6 +23,8 @@ export interface CanFrame {
   timestamp: string;
   direction: 'Tx' | 'Rx';
   description: string;
+  // True for a frame the simulator made up. It was never on the bus, so it must never be taken as something the board (or this app) really sent.
+  simulated?: boolean;
   // Monotonically increasing, assigned at creation - a stable React list key.
   // Frame lists (CAN log, raw bus monitor) prepend new entries rather than
   // appending, so an array-index key would silently reassign every row's

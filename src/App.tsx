@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle, X } from 'lucide-react';
 import { Header } from './components/Header';
@@ -11,10 +11,12 @@ import { FlasherStudio } from './components/FlasherStudio';
 import { ThermalCameraViewer } from './components/ThermalCameraViewer';
 import { SpecsAndBomViewer } from './components/SpecsAndBomViewer';
 import { TesterStudio } from './components/TesterStudio';
+import { ConfirmDialog } from './components/ConfirmDialog';
 import { TOOL_PROFILES } from './data/toolsData';
 import { HardwareState, CanFrame, ExpansionBoardType } from './types';
 import { useSerialCanBus } from './hooks/useSerialCanBus';
 import { useFlasher } from './hooks/useFlasher';
+import { useConfirmAction } from './hooks/useConfirmAction';
 import {
   CAN_ID_QUERY_VERSION, CAN_ID_VERSION_RESPONSE, CAN_ID_BOOTLOADER_VERSION_RESPONSE,
   THIS_HARDWARE_ID, APP_MAX_SIZE, SLAVE_APP_MAX_SIZE,
@@ -24,8 +26,13 @@ import { resolveSignature } from './lib/firmwareSignature';
 import { validateImage, checkSidecar, resolveVersion } from './lib/firmwareImage';
 import { parseCustomFrame, customFrameErrorText } from './lib/customFrame';
 import { BUNDLED_FIRMWARE } from './lib/bundledFirmware';
-import { decodeQuickState } from './lib/quickState';
 import { CAN_ID_QUERY_ACTIVE_TOOL } from './lib/canIds';
+import { createBatcher, Batcher } from './lib/frameBatcher';
+import { summarizeBoardFrames, heaterToolId, BoardStatus, NO_BOARD_STATUS } from './lib/boardTelemetry';
+import { planPreset } from './lib/simPresets';
+import { rawSendPolicy } from './lib/dangerousActions';
+import { runAllSafeOff } from './lib/safeOff';
+import { downloadBlob } from './lib/download';
 
 export interface BoardVersionInfo {
   responder: 'application' | 'bootloader';
@@ -54,41 +61,44 @@ export default function App() {
   // from independent counters that both start at 1.
   const canFramesSeqRef = useRef(0);
 
-  const handleFrameReceived = React.useCallback((frame: CanFrame) => {
-    setCanFrames(prev => [{ ...frame, seq: ++canFramesSeqRef.current }, ...prev.slice(0, 99)]);
-    setHardwareState(prev => {
-      const newState = {
-        ...prev,
-        canActive: true,
-        lastCanTimestamp: Date.now()
-      };
-      
-      // Parse CAN_ID_ACTIVE_TOOL_RESP (0x111)
-      if (frame.id === 0x111 && frame.data.length >= 4) {
-        const toolId = frame.data[0];
-        newState.jumpers = [
-          Boolean(toolId & 0x01),
-          Boolean(toolId & 0x02),
-          Boolean(toolId & 0x04),
-          Boolean(toolId & 0x08),
-          Boolean(toolId & 0x10)
-        ];
-        const quick = decodeQuickState(frame.data);
-        newState.systemError = quick.systemError;
-        newState.systemErrorMessage = quick.errorMessage;
-      }
+  // What the real board has said (0x111): the tool it reports and its fault
+  // state. Tester Studio works from this, never from the simulator below.
+  const [boardStatus, setBoardStatus] = useState<BoardStatus>(NO_BOARD_STATUS);
 
-      // Parse Telemetry (e.g., Solder Temperature 0x135)
-      // Assuming payload has temperature in some bytes. Real payload: struct.pack(">hB", current_temp, endstop)
-      if (frame.id === 0x135 && frame.data.length >= 2) {
-         const temp = (frame.data[0] << 8) | frame.data[1];
-         // It's tricky to map it perfectly without knowing active tool ID, but we can just set liveReadings for ID 1
-         setLiveReadings(r => ({ ...r, 1: temp }));
+  // The bus can deliver dozens of frames per second. Updating the screen once
+  // per frame re-rendered the whole app each time, so frames are collected and
+  // applied together a few times per second (see lib/frameBatcher.ts).
+  const batcherRef = useRef<Batcher<CanFrame> | null>(null);
+  if (batcherRef.current === null) {
+    batcherRef.current = createBatcher<CanFrame>((frames) => {
+      const stamped = frames.map(f => ({ ...f, seq: ++canFramesSeqRef.current }));
+      setCanFrames(prev => [...stamped.reverse(), ...prev].slice(0, 100));
+
+      const facts = summarizeBoardFrames(frames);
+      if (facts.status) setBoardStatus(facts.status);
+      setHardwareState(prev => {
+        const next = { ...prev, canActive: true, lastCanTimestamp: Date.now() };
+        if (facts.status) {
+          // The sandbox panels mirror the tool the real board reports.
+          const toolId = facts.status.toolId ?? 0;
+          next.jumpers = [Boolean(toolId & 0x01), Boolean(toolId & 0x02), Boolean(toolId & 0x04), Boolean(toolId & 0x08), Boolean(toolId & 0x10)];
+          next.systemError = facts.status.systemError;
+          next.systemErrorMessage = facts.status.errorMessage;
+        }
+        return next;
+      });
+      if (facts.heaterTemp !== undefined) {
+        const temp = facts.heaterTemp;
+        const toolId = heaterToolId(boardToolIdRef.current);
+        setLiveReadings(r => ({ ...r, [toolId]: temp }));
       }
-      
-      return newState;
-    });
-  }, []);
+    }, { delayMs: 100, maxItems: 200 });
+  }
+  const boardToolIdRef = useRef<number | null>(null);
+  boardToolIdRef.current = boardStatus.toolId;
+  useEffect(() => () => batcherRef.current?.dispose(), []);
+
+  const handleFrameReceived = useCallback((frame: CanFrame) => { batcherRef.current!.push(frame); }, []);
 
   const serialCan = useSerialCanBus(handleFrameReceived);
 
@@ -154,7 +164,7 @@ export default function App() {
   const [firmwareVersion, setFirmwareVersion] = useState<string>('0.1.0');
   const handleSetFirmwareVersion = (ver: string) => {
     setFirmwareVersion(ver);
-    logCanFrame('0x7F9', `01 ${ver === '0.0.0' ? '00' : '01'} 00 F3 03 00 00 00`, `Sandbox firmware version switched to v${ver}`, 'Rx');
+    logSimFrame('0x7F9', `00 03 03 CC 01 00 00 ${ver === '0.0.0' ? '00' : '01'}`, `Sandbox firmware version switched to v${ver}`, 'Rx');
   };
 
   const flasher = useFlasher(serialCan);
@@ -162,8 +172,8 @@ export default function App() {
 
   const handleQueryVersion = async () => {
     if (!serialCan.isConnected) return;
-    await serialCan.sendFrame(CAN_ID_QUERY_VERSION, [0x00], 'Query board version');
-    const resp = await serialCan.waitForFrame(CAN_ID_VERSION_RESPONSE, 1500);
+    serialCan.flushFrames(CAN_ID_BOOTLOADER_VERSION_RESPONSE);
+    const resp = await serialCan.request(CAN_ID_QUERY_VERSION, [0x00], CAN_ID_VERSION_RESPONSE, 1500, 'Query board version');
     if (!resp || resp.data.length < 8) { setBoardVersion(null); return; }
     const responder: BoardVersionInfo['responder'] = resp.data[0] === 0x00 ? 'application' : 'bootloader';
     const hardwareId = ((resp.data[1] << 24) | (resp.data[2] << 16) | (resp.data[3] << 8) | resp.data[4]) >>> 0;
@@ -183,45 +193,33 @@ export default function App() {
     setBoardVersion(info);
   };
 
-  // Helper to log a CAN frame (or send it if hardware is connected)
-  const logCanFrame = (idHex: string, dataHex: string, desc: string, direction: 'Tx' | 'Rx' = 'Tx') => {
+  // Adds a SIMULATED frame to the log. It is only ever local: it is never
+  // transmitted, it is flagged in the log, and it never counts as something the
+  // board said. While a real board is connected no simulated answer (Rx) is
+  // produced at all, so it cannot be mistaken for the board's.
+  const logSimFrame = (idHex: string, dataHex: string, desc: string, direction: 'Tx' | 'Rx' = 'Tx') => {
+    if (direction === 'Rx' && serialCan.isConnected) return;
+
     const idNum = parseInt(idHex.replace('0x', ''), 16);
     const dataBytes = dataHex.trim().split(/\s+/).filter(Boolean).map(h => parseInt(h, 16));
-
-    if (direction === 'Tx' && serialCan.isConnected) {
-      serialCan.sendFrame(idNum, dataBytes, desc).catch(console.error);
-      return; // sendFrame already adds to the log
-    }
-
-    if (direction === 'Rx' && serialCan.isConnected) {
-      // Don't simulate Rx if we have real hardware connected
-      return;
-    }
-
-    const dlc = dataBytes.length;
     const now = new Date();
     const timestamp = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}.${now.getMilliseconds().toString().padStart(3, '0')}`;
-    
+
     const frame: CanFrame = {
       id: idNum,
       idHex,
-      dlc,
+      dlc: dataBytes.length,
       data: dataBytes,
       dataHex,
       timestamp,
       direction,
       description: desc,
+      simulated: true,
       seq: ++canFramesSeqRef.current
     };
 
     setCanFrames(prev => [frame, ...prev.slice(0, 99)]);
-    
-    // Update CAN active timestamp
-    setHardwareState(prev => ({
-      ...prev,
-      canActive: true,
-      lastCanTimestamp: Date.now()
-    }));
+    setHardwareState(prev => ({ ...prev, canActive: true, lastCanTimestamp: Date.now() }));
   };
 
   // Periodic simulation loop (CAN watchdog LED reset). Mount-once: reads the
@@ -270,17 +268,38 @@ export default function App() {
     }
   }, [serialCan.isConnected]);
 
-  // Handle jumper toggle
-  const handleJumperToggle = (idx: number) => {
-    setHardwareState(prev => {
-      const nextJumpers = [...prev.jumpers];
-      nextJumpers[idx] = !nextJumpers[idx];
-      return { ...prev, jumpers: nextJumpers };
-    });
-    logCanFrame('0x111', `${activeToolId.toString(16).padStart(2, '0')} 00 00 00 00 00 00 00`, `Active Tool ID Changed to #${activeToolId}`, 'Rx');
+  // Closing the page, or disconnecting, switches every running actuator off first.
+  useEffect(() => {
+    const switchOff = () => { void runAllSafeOff(); };
+    window.addEventListener('pagehide', switchOff);
+    window.addEventListener('beforeunload', switchOff);
+    return () => {
+      window.removeEventListener('pagehide', switchOff);
+      window.removeEventListener('beforeunload', switchOff);
+    };
+  }, []);
+
+  const handleDisconnect = async () => {
+    await runAllSafeOff();
+    await serialCan.disconnect();
   };
 
-  // Handle direct tool selection from catalog
+  // What the board reported is only valid while it is connected.
+  useEffect(() => {
+    if (!serialCan.isConnected) setBoardStatus(NO_BOARD_STATUS);
+  }, [serialCan.isConnected]);
+
+  // Handle jumper toggle (sandbox only: it changes the simulated board, nothing is sent)
+  const handleJumperToggle = (idx: number) => {
+    const nextJumpers = [...hardwareState.jumpers];
+    nextJumpers[idx] = !nextJumpers[idx];
+    const nextId = nextJumpers.reduce((acc, bit, i) => acc + (bit ? (1 << i) : 0), 0);
+    const resolvedId = nextId === 31 ? hardwareState.freeConfigFramId : nextId;
+    setHardwareState(prev => ({ ...prev, jumpers: nextJumpers }));
+    logSimFrame('0x111', `${resolvedId.toString(16).toUpperCase().padStart(2, '0')} 00 00 00`, `Active Tool ID Changed to #${resolvedId}`, 'Rx');
+  };
+
+  // Handle direct tool selection from catalog (sandbox only: nothing is sent)
   const handleSelectToolFromCatalog = (id: number) => {
     // Set 5-bit jumpers corresponding to ID
     const jumpers = [
@@ -291,23 +310,17 @@ export default function App() {
       Boolean(id & 0x10)
     ];
     setHardwareState(prev => ({ ...prev, jumpers }));
-    logCanFrame('0x110', `${id.toString(16).padStart(2, '0')} 00 00 00 00 00 00 00`, `Catalog Selected Tool #${id} (${TOOL_PROFILES[id]?.name})`, 'Tx');
+    logSimFrame('0x111', `${id.toString(16).toUpperCase().padStart(2, '0')} 00 00 00`, `Catalog Selected Tool #${id} (${TOOL_PROFILES[id]?.name})`, 'Rx');
   };
 
-  // Setpoint change. Encoded as a 16-bit big-endian value (same layout the
-  // real per-tool commands use, e.g. tester/ToolPanels.tsx's soldering iron
-  // setpoint: [(temp >> 8) & 0xFF, temp & 0xFF]) - several tool profiles have
-  // a maxVal above 255 (T12 soldering iron up to 450 degC, Hot Air Rework up
-  // to 480 degC, Press-Fit Inserter up to 1000 N, Ultrasonic Welder up to
-  // 2000 ms), so a single masked byte (`val & 0xFF`) would silently wrap
-  // those setpoints around instead of sending the real value.
+  // Setpoint change in the sandbox: it moves the simulated setpoint only. A real
+  // setpoint is set from Tester Studio, which uses each tool's own command and
+  // its safeguards.
   const handleSetpointChange = (val: number) => {
     setSetpoints(prev => ({ ...prev, [activeToolId]: val }));
-    const v16 = Math.round(val) & 0xFFFF;
-    logCanFrame('0x190', `${activeToolId.toString(16).padStart(2, '0')} ${((v16 >> 8) & 0xFF).toString(16).padStart(2, '0')} ${(v16 & 0xFF).toString(16).padStart(2, '0')} 00 00 00 00 00`, `Setpoint Updated for Tool #${activeToolId} -> ${val.toFixed(1)}`);
   };
 
-  // Save to F-RAM
+  // Save to F-RAM in the sandbox: snapshots the simulated setpoints.
   const handleSaveToFram = () => {
     const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 19);
     setHardwareState(prev => ({
@@ -315,23 +328,43 @@ export default function App() {
       framSavedSetpoints: { ...setpoints },
       framLastWriteTime: nowStr
     }));
-    logCanFrame('0x191', `0x191 ACK`, `FM24CL64B F-RAM Setpoints Saved Snapshot`, 'Rx');
+    logSimFrame('0x191', '01 00 00 01 40 00 00 00', 'Simulated F-RAM snapshot saved', 'Rx');
   };
 
   // Custom CAN send - raw frame injector (CanBusAnalyzer). Validated the same
   // way as its twin, tester/GlobalPanels.tsx's CustomFramePanel: an invalid
   // identifier or byte is refused with a message, never masked or dropped.
-  const handleSendCustomFrame = (idHex: string, dataHex: string, desc: string) => {
+  const confirm = useConfirmAction();
+  const handleSendCustomFrame = async (idHex: string, dataHex: string, desc: string) => {
     const parsed = parseCustomFrame(idHex, dataHex);
     if (parsed.ok === false) {
       alert(customFrameErrorText(t, parsed.error));
       return;
     }
     const bytes = parsed.data;
-    const safeIdHex = `0x${parsed.id.toString(16).toUpperCase().padStart(3, '0')}`;
+    const rawId = parsed.id.toString(16).toUpperCase().padStart(3, '0');
+    const safeIdHex = `0x${rawId}`;
     const safeDataHex = bytes.map(b => b.toString(16).toUpperCase().padStart(2, '0')).join(' ');
 
-    logCanFrame(safeIdHex, safeDataHex, desc, 'Tx');
+    if (serialCan.isConnected) {
+      // A real board: identifiers only the board transmits are refused, and writes to its memory, bootloader commands and actuator commands are confirmed.
+      const policy = rawSendPolicy(parsed.id);
+      if (policy.kind === 'blocked') {
+        alert(t('confirm.raw_blocked', 'Identifier 0x{{id}} is only ever sent by the board; sending it from here would collide with the board and feed false data to the other devices on the bus.', { id: rawId }));
+        return;
+      }
+      if (policy.kind === 'confirm') {
+        const message = policy.reason === 'memory'
+          ? t('confirm.raw_memory', 'Identifier 0x{{id}} writes to the non-volatile memory of the board and stays after a restart.', { id: rawId })
+          : policy.reason === 'bootloader'
+            ? t('confirm.raw_bootloader', 'Identifier 0x{{id}} is a bootloader command; it can leave the board in update mode until it is updated or powered off and on.', { id: rawId })
+            : t('confirm.raw_actuator', 'Identifier 0x{{id}} commands an actuator; it can move, heat or fire.', { id: rawId });
+        if (!(await confirm('raw_frame', { message }))) return;
+      }
+      serialCan.sendFrame(parsed.id, bytes, desc).catch(console.error); // sendFrame adds it to the log
+    } else {
+      logSimFrame(safeIdHex, safeDataHex, desc, 'Tx');
+    }
 
     // Handle special command triggers
     if (safeIdHex.toLowerCase() === '0x100' && bytes.length >= 3) {
@@ -344,52 +377,20 @@ export default function App() {
     }
   };
 
-  // Preset triggers
+  // Preset triggers. See lib/simPresets.ts: with a board connected only a plain
+  // query is sent; everything else is a flagged, local demonstration.
   const handleTriggerPreset = (presetId: string) => {
-    switch (presetId) {
-      case '0x110':
-        logCanFrame('0x110', '00 00 00 00 00 00 00 00', 'Host Query Active Tool Profile', 'Tx');
-        setTimeout(() => {
-          logCanFrame('0x111', `${activeToolId.toString(16).padStart(2, '0')} 00 00 00 00 00 00 00`, `URTC Response: Active Tool #${activeToolId} (${activeTool.name})`, 'Rx');
-        }, 150);
-        break;
-      case '0x100':
-        logCanFrame('0x100', 'FF 80 00 64 00 00 00 00', 'Set LED RGB (255,128,0) & Ring 100%', 'Tx');
-        setHardwareState(prev => ({
-          ...prev,
-          ledMode: 'override',
-          ledOverrideColor: { r: 255, g: 128, b: 0 },
-          ledOverrideExpires: Date.now() + 10000
-        }));
-        break;
-      case '0x190':
-        logCanFrame('0x190', '00 00 00 00 00 00 00 00', 'Host Request F-RAM Setpoints Dump', 'Tx');
-        setTimeout(() => {
-          logCanFrame('0x191', '00 01 40 01 00 00 00 00', 'F-RAM Dump: Tool setpoints retrieved', 'Rx');
-        }, 150);
-        break;
-      case '0x180':
-        logCanFrame('0x180', '80 00 01 07 00 00 00 00', 'Expansion SPI Passthrough -> TMC5160 DRVCTRL', 'Tx');
-        setTimeout(() => {
-          logCanFrame('0x181', '00 00 01 07 00 00 00 00', 'Expansion SPI Reply <- TMC5160 Register Status', 'Rx');
-        }, 150);
-        break;
-      case '0x7F0':
-        logCanFrame('0x7F0', 'B0 07 1D 5A 00 00 00 00', 'Trigger CAN OTA Reset Payload', 'Tx');
-        setTimeout(() => {
-          logCanFrame('0x7F5', '01 00 00 00 00 00 00 00', 'Bootloader Status: Listening (0x01)', 'Rx');
-        }, 300);
-        break;
-      case '0x7F8':
-        logCanFrame('0x7F8', '00 00 00 00 00 00 00 00', 'Version Query Request', 'Tx');
-        setTimeout(() => {
-          logCanFrame('0x7F9', '01 01 00 F3 03 00 00 00', 'App Version: 0.1.0, HW ID: 0xF303', 'Rx');
-          logCanFrame('0x7FA', '01 01 01 F3 03 00 00 00', 'Bootloader Version: 0.1.1, HW ID: 0xF303', 'Rx');
-        }, 150);
-        break;
-      default:
-        logCanFrame(presetId, '00 00 00 00 00 00 00 00', `Generic predefined command ${presetId}`, 'Tx');
-        break;
+    const plan = planPreset(presetId, { connected: serialCan.isConnected, activeToolId, activeToolName: activeTool.name });
+    if (plan.realQuery) {
+      serialCan.sendFrame(plan.realQuery.id, plan.realQuery.data, plan.realQuery.description).catch(console.error);
+    }
+    for (const f of plan.simulated) {
+      if (f.delayMs > 0) setTimeout(() => logSimFrame(f.idHex, f.dataHex, f.description, f.direction), f.delayMs);
+      else logSimFrame(f.idHex, f.dataHex, f.description, f.direction);
+    }
+    if (plan.led) {
+      const led = plan.led;
+      setHardwareState(prev => ({ ...prev, ledMode: 'override', ledOverrideColor: led, ledOverrideExpires: Date.now() + 10000 }));
     }
   };
 
@@ -570,13 +571,7 @@ export default function App() {
           throw pickerErr;
         }
       } else {
-        const blob = new Blob([data.buffer as ArrayBuffer], { type: 'application/octet-stream' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = suggestedName;
-        a.click();
-        URL.revokeObjectURL(url);
+        downloadBlob(new Blob([data.buffer as ArrayBuffer], { type: 'application/octet-stream' }), suggestedName);
       }
       flasher.setFlasherState(prev => ({ ...prev, mode: 'idle', progress: 100, statusText: t('flasher.status_readback_complete', 'Readback complete: {{bytes}} bytes saved.', { bytes: data.length }), log: [...prev.log, t('flasher.log_readback_success', 'Readback SUCCESS: {{bytes}} bytes.', { bytes: data.length })] }));
     } catch (e: any) {
@@ -609,6 +604,8 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 font-sans flex flex-col">
       
+      <ConfirmDialog />
+
       {/* Header */}
       <Header
         hardwareState={hardwareState}
@@ -617,7 +614,7 @@ export default function App() {
         onSetFirmwareVersion={handleSetFirmwareVersion}
         isConnected={serialCan.isConnected}
         onConnect={serialCan.connect}
-        onDisconnect={serialCan.disconnect}
+        onDisconnect={handleDisconnect}
         portName={serialCan.portName}
       />
 
@@ -666,6 +663,15 @@ export default function App() {
         {/* Main Workspace */}
         <main className="flex-1 p-2 md:p-4 space-y-4 pb-8 min-w-0">
           
+          {(activeTab === 'control' || activeTab === 'oled' || activeTab === 'thermal') && (
+            <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-sky-950/60 text-sky-300 border border-sky-800/70 text-xs font-medium">
+              <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+              <span>{serialCan.isConnected
+                ? t('app.simulator_notice_connected', 'Simulator: this tab models a board and sends nothing to the bus. What it shows is not what the connected board reports; use Tester Studio and Flasher Studio for the real board.')
+                : t('app.simulator_notice', 'Simulator: this tab models a board and sends nothing to the bus. Connect a USB-CAN adapter to work with the real board in Tester Studio and Flasher Studio.')}</span>
+            </div>
+          )}
+
           {/* TAB 1: Tool Matrix & Live Control */}
           {activeTab === 'control' && (
           <div className="space-y-4">
@@ -761,6 +767,7 @@ export default function App() {
         {activeTab === 'can' && (
           <CanBusAnalyzer
             canFrames={canFrames}
+            isConnected={serialCan.isConnected}
             onSendCustomFrame={handleSendCustomFrame}
             onClearLog={() => setCanFrames([])}
             onTriggerPreset={handleTriggerPreset}
@@ -781,7 +788,7 @@ export default function App() {
             errorCounters={flasher.errorCounters}
             onQueryErrorCounters={flasher.queryErrorCounters}
             onSendFrame={serialCan.sendFrame}
-            onWaitForFrame={serialCan.waitForFrame}
+            onRequest={serialCan.request}
           />
         )}
 
@@ -798,13 +805,13 @@ export default function App() {
         {/* TAB 7: Tester Studio */}
         {activeTab === 'tester' && (
           <TesterStudio
-            hardwareState={hardwareState}
-            activeToolId={activeToolId}
-            activeToolName={activeTool.name}
+            boardStatus={boardStatus}
             canFrames={canFrames}
             isConnected={serialCan.isConnected}
             onSendFrame={serialCan.sendFrame}
             onWaitForFrame={serialCan.waitForFrame}
+            onRequest={serialCan.request}
+            onFlushFrames={serialCan.flushFrames}
             subscribe={serialCan.subscribe}
             subscribeAll={serialCan.subscribeAll}
           />
