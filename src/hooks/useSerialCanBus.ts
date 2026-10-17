@@ -1,9 +1,9 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CanFrame } from '../types';
 import { CAN_ID_QUERY_VERSION, CAN_ID_VERSION_RESPONSE, CAN_ID_BOOTLOADER_VERSION_RESPONSE } from '../lib/flasher';
 import { parseSlcanLine } from '../lib/slcan';
-import { QueuedFrame, takeFreshFrame, pushQueuedFrame } from '../lib/frameQueue';
+import { FrameRouter } from '../lib/frameRouter';
 
 // Standard SLCAN/Lawicel "Sx" bitrate codes, in the same most-likely-first try
 // order as URTC-FLASHER/URTC-TESTER's own auto_detect_bitrate: URTC's bus is
@@ -44,7 +44,8 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
   const writerRef = useRef<any>(null);
   const keepReadingRef = useRef<boolean>(true);
   const rxBufferRef = useRef<string>('');
-  const frameQueueRef = useRef<QueuedFrame<CanFrame>[]>([]);
+  // Routes received frames to whoever waits for an answer (see lib/frameRouter.ts).
+  const routerRef = useRef(new FrameRouter<CanFrame>());
 
   // Stable per-frame identity for React list keys (CAN log tables prepend
   // new frames rather than appending, so an array index isn't a valid key -
@@ -88,57 +89,30 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
     onFrameReceived(frame);
   }, [onFrameReceived]);
 
-  // Per-caller correlation for waitForFrame: each call registers its own
-  // waiter in a per-ID FIFO queue, so when two callers await the same CAN ID
-  // concurrently, incoming frames are handed to the oldest still-waiting
-  // caller for that ID first, deterministically - never to whichever caller
-  // happens to poll or resolve first.
-  const waitersRef = useRef<Map<number, Array<(frame: CanFrame) => void>>>(new Map());
+  // Waits for the next frame with this id. A frame that arrived more than a
+  // second ago is never served (see lib/frameQueue.ts); to be sure an answer
+  // belongs to a request just made, use request() below.
+  const waitForFrame = (expectedId: number, timeoutMs: number = 3000): Promise<CanFrame | null> =>
+    routerRef.current.wait(expectedId, timeoutMs);
 
-  const waitForFrame = (expectedId: number, timeoutMs: number = 3000): Promise<CanFrame | null> => {
-    // Serve immediately from anything already queued (arrived before this
-    // particular call was made).
-    const queued = takeFreshFrame(frameQueueRef.current, expectedId, Date.now());
-    if (queued) return Promise.resolve(queued);
+  // Forgets the frames kept for an id: whatever is on the bus now answers
+  // something that already happened.
+  const flushFrames = (id?: number) => routerRef.current.flush(id);
 
-    return new Promise<CanFrame | null>((resolve) => {
-      let settled = false;
-      const waiter = (frame: CanFrame) => {
-        if (settled) return;
-        settled = true;
-        clearTimeout(timer);
-        resolve(frame);
-      };
+  // Request / answer in one call: forgets old frames of the answering id,
+  // registers the waiter, sends, and resolves with the first frame that arrives
+  // after the send (null on timeout). Throws like sendFrame when it cannot send.
+  const request = (
+    id: number,
+    data: number[],
+    respId: number,
+    timeoutMs: number = 1500,
+    description?: string,
+    accept?: (frame: CanFrame) => boolean
+  ): Promise<CanFrame | null> =>
+    routerRef.current.request(respId, () => sendFrame(id, data, description), timeoutMs, accept);
 
-      let list = waitersRef.current.get(expectedId);
-      if (!list) { list = []; waitersRef.current.set(expectedId, list); }
-      list.push(waiter);
-
-      const timer = setTimeout(() => {
-        if (settled) return;
-        settled = true;
-        const l = waitersRef.current.get(expectedId);
-        if (l) {
-          const i = l.indexOf(waiter);
-          if (i !== -1) l.splice(i, 1);
-        }
-        resolve(null);
-      }, timeoutMs);
-    });
-  };
-
-  // Hands a freshly-received frame to the oldest pending waitForFrame caller
-  // for its ID (FIFO), if any; otherwise queues it in frameQueueRef for a
-  // future waitForFrame call to pick up (same 500-frame cap as before).
-  const deliverOrQueue = (frame: CanFrame) => {
-    const list = waitersRef.current.get(frame.id);
-    if (list && list.length > 0) {
-      const waiter = list.shift()!;
-      waiter(frame);
-      return;
-    }
-    pushQueuedFrame(frameQueueRef.current, frame, Date.now());
-  };
+  const deliverOrQueue = (frame: CanFrame) => routerRef.current.deliver(frame);
 
   // Fires when the OS reports the physical port gone (cable unplugged,
   // adapter powered off) - distinct from disconnect() below, which is the
@@ -147,8 +121,12 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
   // port is already gone, so this only resets local state to match reality
   // instead of leaving the UI claiming "connected" to a port that no
   // longer exists.
+  const onNativeDisconnectRef = useRef<(event: any) => void>(() => {});
   const handlePortGone = useCallback(() => {
     keepReadingRef.current = false;
+    // @ts-ignore
+    navigator.serial?.removeEventListener('disconnect', onNativeDisconnectRef.current);
+    routerRef.current.flush();
     portRef.current = null;
     writerRef.current = null;
     readerRef.current = null;
@@ -161,6 +139,7 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
       handlePortGone();
     }
   }, [handlePortGone]);
+  onNativeDisconnectRef.current = onNativeDisconnect;
 
   // Resolves true as soon as a CAN_ID_VERSION_RESPONSE or
   // CAN_ID_BOOTLOADER_VERSION_RESPONSE frame is dispatched (whichever the
@@ -278,7 +257,7 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
       setPortName('');
 
       if (e.message?.includes('requestPort') || e.name === 'SecurityError') {
-        alert(t('hooks.iframe_blocked', 'Cannot access USB/Serial from this iframe. Please click the "Open in new tab" button at the top right of the preview pane to use the Web Serial API.'));
+        alert(t('hooks.iframe_blocked', 'Cannot access USB/Serial from here: this page is embedded in a frame that does not allow it. Open the page in its own browser tab.'));
       } else if (e.name === 'NotFoundError' || e.message?.includes('No port selected by the user') || e.message?.includes('Request failed')) {
         // User cancelled the prompt, do not show an alert
         console.log('User cancelled serial port selection.');
@@ -475,13 +454,26 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
     }
   };
 
+  // The functions above are rebuilt on every render and read the latest state
+  // through refs, so the ones handed out are thin, stable wrappers: a panel
+  // that lists them as an effect dependency is not torn down and rebuilt each
+  // time a frame arrives.
+  const latest = useRef({ connect, disconnect, sendFrame, waitForFrame, request, flushFrames });
+  latest.current = { connect, disconnect, sendFrame, waitForFrame, request, flushFrames };
+  const stable = useMemo(() => ({
+    connect: () => latest.current.connect(),
+    disconnect: () => latest.current.disconnect(),
+    sendFrame: (id: number, data: number[], description?: string) => latest.current.sendFrame(id, data, description),
+    waitForFrame: (id: number, timeoutMs?: number) => latest.current.waitForFrame(id, timeoutMs),
+    request: (id: number, data: number[], respId: number, timeoutMs?: number, description?: string, accept?: (frame: CanFrame) => boolean) =>
+      latest.current.request(id, data, respId, timeoutMs, description, accept),
+    flushFrames: (id?: number) => latest.current.flushFrames(id),
+  }), []);
+
   return {
     isConnected,
     portName,
-    connect,
-    disconnect,
-    sendFrame,
-    waitForFrame,
+    ...stable,
     subscribe,
     subscribeAll,
     sendError,

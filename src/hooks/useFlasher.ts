@@ -72,8 +72,7 @@ export function useFlasher(serialCan: SerialCanBus) {
 
   const queryErrorCounters = useCallback(async (): Promise<{ tec: number; rec: number } | null> => {
     if (!serialCan.isConnected) return null;
-    await serialCan.sendFrame(CAN_ID_QUERY_ERROR_COUNTERS, [], 'Query CAN error counters (TEC/REC)');
-    const resp = await serialCan.waitForFrame(CAN_ID_ERROR_COUNTERS_RESPONSE, 1500);
+    const resp = await serialCan.request(CAN_ID_QUERY_ERROR_COUNTERS, [], CAN_ID_ERROR_COUNTERS_RESPONSE, 1500, 'Query CAN error counters (TEC/REC)');
     if (!resp || resp.data.length < 2) {
       setErrorCounters(null);
       return null;
@@ -103,10 +102,11 @@ export function useFlasher(serialCan: SerialCanBus) {
     if (opts.triggerBootloader) {
       // F-RAM is erased by the running application: the bootloader does not know that command, so it goes first.
       if (opts.eraseFram) {
-        await serialCan.sendFrame(CAN_ID_ERASE_FRAM, ERASE_FRAM_MAGIC, 'Erase F-RAM before flashing');
-        const fram = await serialCan.waitForFrame(CAN_ID_FRAM_STATE_RESP, 2000);
+        const fram = await serialCan.request(CAN_ID_ERASE_FRAM, ERASE_FRAM_MAGIC, CAN_ID_FRAM_STATE_RESP, 2000, 'Erase F-RAM before flashing');
         appendLog(fram ? t('flasher.log_fram_erase_confirmed', 'F-RAM erase confirmed.') : t('flasher.log_fram_erase_not_confirmed', 'F-RAM erase not confirmed within 2s (non-fatal, continuing).'));
       }
+      // A status left over from an earlier attempt must not be taken for the bootloader that is about to start.
+      serialCan.flushFrames(CAN_ID_STATUS);
       await serialCan.sendFrame(CAN_ID_ENTER_BOOTLOADER, ENTER_BOOTLOADER_MAGIC, 'CAN OTA reset command (enter bootloader)');
       await new Promise(r => setTimeout(r, 800));
     }
@@ -120,6 +120,7 @@ export function useFlasher(serialCan: SerialCanBus) {
     setFlasherState(prev => ({ ...prev, mode: 'receiving', progress: 5, log: [...prev.log, t('flasher.log_bootloader_listening', 'Bootloader listening. Sending START_UPDATE...')] }));
     checkCancelled();
 
+    serialCan.flushFrames(CAN_ID_STATUS); // only statuses sent after START_UPDATE count
     await serialCan.sendFrame(CAN_ID_START_UPDATE, [...packUInt32BE(data.length), ...packUInt32BE(THIS_HARDWARE_ID)], 'START_UPDATE (size + HardwareID)');
     // ERASING (0x02) arrives first and RECEIVING (0x03) when the erase is done (up to a couple of seconds later): the first is not a refusal, only 0x03 starts the transfer.
     let receiving = false;
@@ -239,8 +240,7 @@ export function useFlasher(serialCan: SerialCanBus) {
     // No terminal status within the window - the reset transient can eat the
     // final confirmation frame even on a fully successful flash. Re-query.
     appendLog(t('flasher.log_requery', 'No terminal status received - re-querying version to check for a silent success...'));
-    await serialCan.sendFrame(CAN_ID_QUERY_VERSION, [0x00], 'Re-query version after timeout');
-    const versionResp = await serialCan.waitForFrame(CAN_ID_VERSION_RESPONSE, 2000);
+    const versionResp = await serialCan.request(CAN_ID_QUERY_VERSION, [0x00], CAN_ID_VERSION_RESPONSE, 2000, 'Re-query version after timeout');
     if (versionResp && versionResp.data[0] === 0x00) {
       setFlasherState(prev => ({ ...prev, mode: 'idle', progress: 100, statusText: t('flasher.status_likely_succeeded', 'Update likely succeeded (board answers as application).'), log: [...prev.log, t('flasher.log_recovered', 'Recovered from a lost confirmation frame.')] }));
       return;
@@ -274,8 +274,7 @@ export function useFlasher(serialCan: SerialCanBus) {
     const startDeadline = Date.now() + 5000;
     let receiving = false;
     while (Date.now() < startDeadline) {
-      await serialCan.sendFrame(CAN_ID_SLAVE_STATUS, [], 'Slave: query status');
-      const resp = await serialCan.waitForFrame(CAN_ID_SLAVE_STATUS, 300);
+      const resp = await serialCan.request(CAN_ID_SLAVE_STATUS, [], CAN_ID_SLAVE_STATUS, 300, 'Slave: query status');
       if (resp && resp.data[0] === 0x03) { receiving = true; break; }
       if (resp && resp.data[0] === 0xFF) throw new FlashError(t('flasher.err_slave_rejected', 'Slave bootloader rejected update start'));
       await new Promise(r => setTimeout(r, 200));
@@ -322,15 +321,13 @@ export function useFlasher(serialCan: SerialCanBus) {
     let finalStatus: number | null = null;
     while (Date.now() < endDeadline) {
       checkCancelled();
-      await serialCan.sendFrame(CAN_ID_SLAVE_STATUS, [], 'Slave: poll status');
-      const resp = await serialCan.waitForFrame(CAN_ID_SLAVE_STATUS, 300);
+      const resp = await serialCan.request(CAN_ID_SLAVE_STATUS, [], CAN_ID_SLAVE_STATUS, 300, 'Slave: poll status');
       if (resp) {
         if (resp.data[0] === 0x04) { finalStatus = 0x04; break; }
         if (resp.data[0] === 0x05) { finalStatus = 0x05; break; }
         if (resp.data[0] === 0xFF) { finalStatus = 0xFF; break; }
       }
-      await serialCan.sendFrame(CAN_ID_SLAVE_PROGRESS, [], 'Slave: poll progress');
-      const prog = await serialCan.waitForFrame(CAN_ID_SLAVE_PROGRESS, 300);
+      const prog = await serialCan.request(CAN_ID_SLAVE_PROGRESS, [], CAN_ID_SLAVE_PROGRESS, 300, 'Slave: poll progress');
       if (prog && prog.data[0] !== 0xFF) {
         setFlasherState(prev => ({ ...prev, progress: 70 + Math.floor(prog.data[0] * 0.3) }));
       }
@@ -342,8 +339,7 @@ export function useFlasher(serialCan: SerialCanBus) {
       return;
     }
     if (finalStatus === 0x05) {
-      await serialCan.sendFrame(CAN_ID_SLAVE_VERIFY_FAIL_REASON, [], 'Slave: query verify-fail reason');
-      const reasonFrame = await serialCan.waitForFrame(CAN_ID_SLAVE_VERIFY_FAIL_REASON, 1000);
+      const reasonFrame = await serialCan.request(CAN_ID_SLAVE_VERIFY_FAIL_REASON, [], CAN_ID_SLAVE_VERIFY_FAIL_REASON, 1000, 'Slave: query verify-fail reason');
       const reason = reasonFrame ? (VERIFY_FAIL_REASONS[reasonFrame.data[0]] || `unknown (0x${reasonFrame.data[0].toString(16)})`) : 'unknown';
       throw new FlashError(t('flasher.err_slave_verification_failed', 'Slave update verification FAILED: {{reason}}', { reason }));
     }
@@ -354,8 +350,7 @@ export function useFlasher(serialCan: SerialCanBus) {
   // ---- Backup / readback the main slot's current contents over CAN (0x7FE/0x7FF) ----
   const readBack = useCallback(async (onProgress?: (pct: number) => void): Promise<Uint8Array> => {
     stopRequestedRef.current = false;
-    await serialCan.sendFrame(CAN_ID_READBACK, [], 'Start flash readback');
-    const sizeFrame = await serialCan.waitForFrame(CAN_ID_READBACK, 5000);
+    const sizeFrame = await serialCan.request(CAN_ID_READBACK, [], CAN_ID_READBACK, 5000, 'Start flash readback');
     if (!sizeFrame || sizeFrame.dlc !== 4) throw new FlashError(t('flasher.err_readback_no_size', 'No readback size reply - bootloader may not implement 0x7FE, or nothing valid is installed'));
     const totalSize = unpackUInt32BE(sizeFrame.data);
     if (totalSize === 0) throw new FlashError(t('flasher.err_readback_no_firmware', 'Bootloader reports no valid firmware currently installed'));
