@@ -287,7 +287,13 @@
     "err_readback_no_size": "No readback size reply - bootloader may not implement 0x7FE, or nothing valid is installed",
     "err_readback_no_firmware": "Bootloader reports no valid firmware currently installed",
     "err_readback_timeout_overall": "Readback timed out (180s overall limit)",
-    "err_readback_timeout_offset": "Timeout waiting for readback data at offset {{offset}}"
+    "err_readback_timeout_offset": "Timeout waiting for readback data at offset {{offset}}",
+    "err_image_too_small": "The file is too small to contain a vector table.",
+    "err_image_bad_stack": "The first word of the file is not a valid initial stack pointer for this chip: this is not a firmware image.",
+    "err_image_bad_reset": "The reset handler does not point inside the application slot of this board: this looks like a bootloader, or an image for the other board.",
+    "err_manifest_signature_malformed": "The manifest has an hmac_sha256 that is not 64 hexadecimal characters.",
+    "err_manifest_wrong_target": "The manifest is for another board: it declares {{got}} and this update needs {{want}}.",
+    "err_version_unknown": "The version of this image is unknown: add a manifest with a version, or keep the version in the file name (for example _v0.3.3.bin)."
   },
   "thermal": {
     "title": "MLX90640 32x24 Thermal Infrared Camera Array",
@@ -432,11 +438,13 @@
     "repeat_every": "Repeat every",
     "ms": "ms",
     "keepalive_active": "Active",
-    "keepalive_watchdog": "({{ms}}ms watchdog)"
+    "keepalive_watchdog": "({{ms}}ms watchdog)",
+    "custom_frame_bad_id": "The identifier must be 1 to 3 hexadecimal digits, from 0 to 7FF.",
+    "custom_frame_bad_byte": "Every data byte must be 1 or 2 hexadecimal digits.",
+    "custom_frame_too_many": "A CAN frame carries at most 8 data bytes."
   },
   "testertool": {
     "soldering_heater_title": "Heater (0x130 / telemetry 0x135)",
-    "setpoint_0_450": "Setpoint (0-450 C)",
     "setpoint_0_300": "Setpoint (0-300 C)",
     "live_label": "Live:",
     "wire_feeder_title": "Wire Feeder (0x120 motion, 0x131/0x132 position)",
@@ -457,7 +465,7 @@
     "yes": "YES",
     "no": "no",
     "drill_title": "Drill (0x140 / telemetry 0x147)",
-    "drill_subtitle": "One-shot send, no watchdog - the board holds the last value.",
+    "drill_subtitle": "The command is resent while Active is checked; the board stops the drill 250 ms after the last one.",
     "speed_label": "Speed ({{speed}})",
     "clockwise": "Clockwise",
     "counter_clockwise": "Counter-clockwise",
@@ -471,7 +479,7 @@
     "mode_off": "Off",
     "mode_sync": "Synchronous strobe",
     "mode_fixed": "Fixed continuous",
-    "strobe_period_label": "Strobe period (us)",
+    "strobe_period_label": "Strobe period (ms)",
     "laser_title": "Laser Engraver (0x160 / telemetry 0x165)",
     "laser_interlock_notice": "Interlock must be armed for power to actually do anything (firmware-side gate).",
     "power_label": "Power ({{power}})",
@@ -526,7 +534,8 @@
     "status_error": "Error",
     "reading_progress": "Reading... {{pct}}%",
     "read_thermal_image": "Read Thermal Image",
-    "no_handler_notice": "No CAN handler for this tool - its actuator/sensor lives on the robot mainboard, not this board."
+    "no_handler_notice": "No CAN handler for this tool - its actuator/sensor lives on the robot mainboard, not this board.",
+    "setpoint_0_445": "Setpoint (0-445 C)"
   },
   "hooks": {
     "web_serial_unsupported": "Web Serial API is not supported in this browser. Please use Chrome or Edge.",
@@ -535,6 +544,7 @@
     "no_bus_response": "No response from a URTC board at any known CAN bitrate (tried 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Check wiring and power.",
     "send_failed": "CAN send failed ({{description}}): {{message}}",
     "writer_unavailable": "Serial port writer is not available (port disconnected).",
-    "invalid_frame": "Refusing malformed CAN frame: {{reason}}"
+    "invalid_frame": "Refusing malformed CAN frame: {{reason}}",
+    "not_connected": "Not connected to a USB-CAN adapter."
   }
 }

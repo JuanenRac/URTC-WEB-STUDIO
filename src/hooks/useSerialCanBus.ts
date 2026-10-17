@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { CanFrame } from '../types';
 import { CAN_ID_QUERY_VERSION, CAN_ID_VERSION_RESPONSE, CAN_ID_BOOTLOADER_VERSION_RESPONSE } from '../lib/flasher';
 import { parseSlcanLine } from '../lib/slcan';
+import { QueuedFrame, takeFreshFrame, pushQueuedFrame } from '../lib/frameQueue';
 
 // Standard SLCAN/Lawicel "Sx" bitrate codes, in the same most-likely-first try
 // order as URTC-FLASHER/URTC-TESTER's own auto_detect_bitrate: URTC's bus is
@@ -23,6 +24,9 @@ const BITRATE_TRY_ORDER: Array<{ label: string; code: string }> = [
 export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
   const { t } = useTranslation();
   const [isConnected, setIsConnected] = useState(false);
+  // The ref is what a send checks: a callback captured before the connection was made still sees the real state.
+  const isConnectedRef = useRef(false);
+  const setConnected = (value: boolean) => { isConnectedRef.current = value; setIsConnected(value); };
   const [portName, setPortName] = useState<string>('');
   // Surfaces sendFrame() write failures to the UI. Most callers (one-shot
   // "Send"/"Fire" buttons across tester/ToolPanels.tsx and tester/GlobalPanels.tsx,
@@ -40,7 +44,7 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
   const writerRef = useRef<any>(null);
   const keepReadingRef = useRef<boolean>(true);
   const rxBufferRef = useRef<string>('');
-  const frameQueueRef = useRef<CanFrame[]>([]);
+  const frameQueueRef = useRef<QueuedFrame<CanFrame>[]>([]);
 
   // Stable per-frame identity for React list keys (CAN log tables prepend
   // new frames rather than appending, so an array index isn't a valid key -
@@ -94,10 +98,8 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
   const waitForFrame = (expectedId: number, timeoutMs: number = 3000): Promise<CanFrame | null> => {
     // Serve immediately from anything already queued (arrived before this
     // particular call was made).
-    const idx = frameQueueRef.current.findIndex(f => f.id === expectedId);
-    if (idx !== -1) {
-      return Promise.resolve(frameQueueRef.current.splice(idx, 1)[0]);
-    }
+    const queued = takeFreshFrame(frameQueueRef.current, expectedId, Date.now());
+    if (queued) return Promise.resolve(queued);
 
     return new Promise<CanFrame | null>((resolve) => {
       let settled = false;
@@ -135,10 +137,7 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
       waiter(frame);
       return;
     }
-    frameQueueRef.current.push(frame);
-    if (frameQueueRef.current.length > 500) {
-      frameQueueRef.current.shift();
-    }
+    pushQueuedFrame(frameQueueRef.current, frame, Date.now());
   };
 
   // Fires when the OS reports the physical port gone (cable unplugged,
@@ -153,7 +152,7 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
     portRef.current = null;
     writerRef.current = null;
     readerRef.current = null;
-    setIsConnected(false);
+    setConnected(false);
     setPortName('');
   }, []);
 
@@ -244,7 +243,7 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
         throw new Error(t('hooks.no_bus_response', 'No response from a URTC board at any known CAN bitrate (tried 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Check wiring and power.'));
       }
 
-      setIsConnected(true);
+      setConnected(true);
       setPortName(`USB-CAN Adapter (${detectedLabel})`);
     } catch (e: any) {
       console.error('Failed to connect', e);
@@ -313,7 +312,7 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
     portRef.current = null;
     writerRef.current = null;
     readerRef.current = null;
-    setIsConnected(false);
+    setConnected(false);
     setPortName('');
   };
 
@@ -332,7 +331,12 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
   };
 
   const sendFrame = async (id: number, data: number[], description: string = 'Sent from Web Studio') => {
-    if (!isConnected) return;
+    // A send that goes nowhere must fail, not look like it worked (a keepalive or a button would otherwise believe the command left).
+    if (!isConnectedRef.current) {
+      const message = t('hooks.not_connected', 'Not connected to a USB-CAN adapter.');
+      setSendError(message);
+      throw new Error(message);
+    }
 
     // Do not serialize invalid UI input into an SLCAN command. Several panels
     // accept editable hexadecimal values; without this guard a NaN byte, an

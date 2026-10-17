@@ -283,7 +283,17 @@
     "err_readback_no_size": "Nessuna risposta sulla dimensione di lettura - il bootloader potrebbe non implementare 0x7FE, oppure non c'è nulla di valido installato",
     "err_readback_no_firmware": "Il bootloader segnala che nessun firmware valido è attualmente installato",
     "err_readback_timeout_overall": "Timeout di lettura (limite complessivo di 180s)",
-    "err_readback_timeout_offset": "Timeout in attesa dei dati di lettura all'offset {{offset}}"
+    "err_readback_timeout_offset": "Timeout in attesa dei dati di lettura all'offset {{offset}}",
+    "err_image_too_small": "Il file è troppo piccolo per contenere una tabella dei vettori.",
+    "err_image_bad_stack": "La prima parola del file non è un puntatore di stack iniziale valido per questo chip: non è un'immagine firmware.",
+    "err_image_bad_reset": "Il gestore di reset non punta all'interno dello slot applicazione di questa scheda: sembra un bootloader o un'immagine dell'altra scheda.",
+    "err_manifest_signature_malformed": "Il manifest ha un hmac_sha256 che non è di 64 caratteri esadecimali.",
+    "err_manifest_wrong_target": "Il manifest è di un'altra scheda: dichiara {{got}} e questo aggiornamento richiede {{want}}.",
+    "err_version_unknown": "La versione di questa immagine è sconosciuta: aggiungi un manifest con la versione, oppure mantieni la versione nel nome del file (ad esempio _v0.3.3.bin).",
+    "prompt_signing_key": "Questa immagine non ha una firma pubblicata (<file>.manifest.json con hmac_sha256). Per flashare un'immagine compilata da te su una scheda da banco, inserisci la sua chiave di firma {{board}} (64 caratteri esadecimali). Non viene salvata.",
+    "log_signature_from_manifest": "Uso della firma pubblicata nel manifest (chiave: {{kind}}).",
+    "log_dev_key_warning": "NOTA: firmata con la chiave di sviluppo PUBBLICA - la accettano solo le schede il cui bootloader è stato compilato con la stessa chiave.",
+    "log_signature_runtime_key": "Firmata localmente con la chiave inserita per questo flash."
   },
   "thermal": {
     "title": "Termocamera Infrarossa MLX90640 32x24",
@@ -428,11 +438,13 @@
     "repeat_every": "Ripeti ogni",
     "ms": "ms",
     "keepalive_active": "Attivo",
-    "keepalive_watchdog": "({{ms}}ms di watchdog)"
+    "keepalive_watchdog": "({{ms}}ms di watchdog)",
+    "custom_frame_bad_id": "L'identificatore deve avere da 1 a 3 cifre esadecimali, da 0 a 7FF.",
+    "custom_frame_bad_byte": "Ogni byte di dati deve avere 1 o 2 cifre esadecimali.",
+    "custom_frame_too_many": "Un frame CAN contiene al massimo 8 byte di dati."
   },
   "testertool": {
     "soldering_heater_title": "Resistenza (0x130 / telemetria 0x135)",
-    "setpoint_0_450": "Setpoint (0-450 C)",
     "setpoint_0_300": "Setpoint (0-300 C)",
     "live_label": "In tempo reale:",
     "wire_feeder_title": "Alimentatore Filo (movimento 0x120, posizione 0x131/0x132)",
@@ -453,7 +465,7 @@
     "yes": "SÌ",
     "no": "no",
     "drill_title": "Trapano (0x140 / telemetria 0x147)",
-    "drill_subtitle": "Invio singolo, nessun watchdog - la scheda mantiene l'ultimo valore.",
+    "drill_subtitle": "Il comando viene rinviato finché Attivo è selezionato; la scheda ferma il trapano 250 ms dopo l'ultimo.",
     "speed_label": "Velocità ({{speed}})",
     "clockwise": "Orario",
     "counter_clockwise": "Antiorario",
@@ -467,7 +479,7 @@
     "mode_off": "Spento",
     "mode_sync": "Strobo sincrono",
     "mode_fixed": "Continuo fisso",
-    "strobe_period_label": "Periodo strobo (us)",
+    "strobe_period_label": "Periodo dello stroboscopio (ms)",
     "laser_title": "Incisore Laser (0x160 / telemetria 0x165)",
     "laser_interlock_notice": "L'interlock deve essere armato affinché la potenza abbia effettivamente effetto (blocco lato firmware).",
     "power_label": "Potenza ({{power}})",
@@ -522,7 +534,8 @@
     "status_error": "Errore",
     "reading_progress": "Lettura... {{pct}}%",
     "read_thermal_image": "Leggi Immagine Termica",
-    "no_handler_notice": "Nessun gestore CAN per questo utensile - il suo attuatore/sensore si trova sulla scheda principale del robot, non su questa scheda."
+    "no_handler_notice": "Nessun gestore CAN per questo utensile - il suo attuatore/sensore si trova sulla scheda principale del robot, non su questa scheda.",
+    "setpoint_0_445": "Setpoint (0-445 C)"
   },
   "hooks": {
     "web_serial_unsupported": "L'API Web Serial non è supportata in questo browser. Usa Chrome o Edge.",
@@ -531,6 +544,7 @@
     "no_bus_response": "Nessuna risposta da una scheda URTC a nessun bitrate CAN noto (provati 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Controlla il cablaggio e l'alimentazione.",
     "send_failed": "Invio del frame CAN non riuscito ({{description}}): {{message}}",
     "writer_unavailable": "Il writer della porta seriale non è disponibile (porta disconnessa).",
-    "invalid_frame": "Frame CAN non valido rifiutato: {{reason}}"
+    "invalid_frame": "Frame CAN non valido rifiutato: {{reason}}",
+    "not_connected": "Nessun adattatore USB-CAN connesso."
   }
 }

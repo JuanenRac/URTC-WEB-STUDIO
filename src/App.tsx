@@ -17,10 +17,12 @@ import { useSerialCanBus } from './hooks/useSerialCanBus';
 import { useFlasher } from './hooks/useFlasher';
 import {
   CAN_ID_QUERY_VERSION, CAN_ID_VERSION_RESPONSE, CAN_ID_BOOTLOADER_VERSION_RESPONSE,
-  THIS_HARDWARE_ID, FIRMWARE_VERSION_MAJOR, FIRMWARE_VERSION_MINOR,
+  THIS_HARDWARE_ID, APP_MAX_SIZE, SLAVE_APP_MAX_SIZE,
   parseManifest, FirmwareManifest
 } from './lib/flasher';
 import { resolveSignature } from './lib/firmwareSignature';
+import { validateImage, checkSidecar, resolveVersion } from './lib/firmwareImage';
+import { parseCustomFrame, customFrameErrorText } from './lib/customFrame';
 import { BUNDLED_FIRMWARE } from './lib/bundledFirmware';
 import { decodeQuickState } from './lib/quickState';
 import { CAN_ID_QUERY_ACTIVE_TOOL } from './lib/canIds';
@@ -317,17 +319,16 @@ export default function App() {
   };
 
   // Custom CAN send - raw frame injector (CanBusAnalyzer). Validated the same
-  // way as its protected twin, tester/GlobalPanels.tsx's CustomFramePanel:
-  // mask the ID to the 11-bit CAN standard range, and drop any non-hex/out
-  // -of-range data tokens before capping to the 8-byte CAN payload limit.
+  // way as its twin, tester/GlobalPanels.tsx's CustomFramePanel: an invalid
+  // identifier or byte is refused with a message, never masked or dropped.
   const handleSendCustomFrame = (idHex: string, dataHex: string, desc: string) => {
-    const idNum = (parseInt(idHex.replace('0x', ''), 16) || 0) & 0x7FF;
-    const bytes = dataHex.trim().split(/\s+/).filter(Boolean)
-      .map(h => parseInt(h, 16))
-      .filter(b => Number.isFinite(b) && b >= 0 && b <= 0xFF)
-      .slice(0, 8);
-
-    const safeIdHex = `0x${idNum.toString(16).toUpperCase().padStart(3, '0')}`;
+    const parsed = parseCustomFrame(idHex, dataHex);
+    if (parsed.ok === false) {
+      alert(customFrameErrorText(t, parsed.error));
+      return;
+    }
+    const bytes = parsed.data;
+    const safeIdHex = `0x${parsed.id.toString(16).toUpperCase().padStart(3, '0')}`;
     const safeDataHex = bytes.map(b => b.toString(16).toUpperCase().padStart(2, '0')).join(' ');
 
     logCanFrame(safeIdHex, safeDataHex, desc, 'Tx');
@@ -455,11 +456,40 @@ export default function App() {
       return;
     }
 
+    const refuse = (message: string) => {
+      flasher.setFlasherState(prev => ({ ...prev, mode: 'idle', statusText: t('flasher.status_update_failed', 'Update failed'), log: [...prev.log, t('flasher.log_error_prefix', 'ERROR: {{message}}', { message })] }));
+    };
+
+    // Only an application image of the chosen board goes out: a bootloader, a text file or the other board's image is refused before any frame is sent.
+    const problem = validateImage(data, target);
+    if (problem) {
+      const imageErrors: Record<string, string> = {
+        empty: t('flasher.err_empty_file', 'Firmware file is empty'),
+        too_large: t('flasher.err_exceeds_app_slot', 'Firmware exceeds the {{max}} byte application slot', { max: target === 'slave' ? SLAVE_APP_MAX_SIZE : APP_MAX_SIZE }),
+        too_small: t('flasher.err_image_too_small', 'The file is too small to contain a vector table.'),
+        bad_stack: t('flasher.err_image_bad_stack', 'The first word of the file is not a valid initial stack pointer for this chip: this is not a firmware image.'),
+        bad_reset: t('flasher.err_image_bad_reset', 'The reset handler does not point inside the application slot of this board: this looks like a bootloader, or an image for the other board.'),
+      };
+      refuse(imageErrors[problem]);
+      return;
+    }
+
     const manifest = fileObj ? null : await tryFetchManifest(fileName, downloadUrl);
-    let reportMajor = FIRMWARE_VERSION_MAJOR, reportMinor = FIRMWARE_VERSION_MINOR;
+    const sidecarProblem = checkSidecar(manifest, target);
+    if (sidecarProblem) {
+      refuse(sidecarProblem.code === 'malformed_signature'
+        ? t('flasher.err_manifest_signature_malformed', 'The manifest has an hmac_sha256 that is not 64 hexadecimal characters.')
+        : t('flasher.err_manifest_wrong_target', 'The manifest is for another board: it declares {{got}} and this update needs {{want}}.', { got: sidecarProblem.got, want: sidecarProblem.want }));
+      return;
+    }
+    // No invented version: a wrong one stored in the board would make every later update look like a rollback.
+    const version = resolveVersion(manifest, fileName);
+    if (!version) {
+      refuse(t('flasher.err_version_unknown', 'The version of this image is unknown: add a manifest with a version, or keep the version in the file name (for example _v0.3.3.bin).'));
+      return;
+    }
+    const reportMajor = version.major, reportMinor = version.minor;
     if (manifest?.versionMajor !== undefined) {
-      reportMajor = manifest.versionMajor;
-      reportMinor = manifest.versionMinor!;
       flasher.appendLog(t('flasher.log_manifest_found', 'Manifest found: reporting declared version {{version}} to the bootloader.', { version: manifest.version }));
     }
     // The signature is published by the URTC build next to the image; this

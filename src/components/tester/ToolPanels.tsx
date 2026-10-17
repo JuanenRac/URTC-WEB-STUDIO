@@ -23,6 +23,9 @@ import {
   CAN_ID_THERMAL_TRIGGER, CAN_ID_THERMAL_STATUS, CAN_ID_THERMAL_CAL_CHUNK_REQ, CAN_ID_THERMAL_CAL_CHUNK_RESP, THERMAL_CHUNK_COUNT,
   KEEPALIVE_INTERVAL_MS, LAYERFAN_KEEPALIVE_INTERVAL_MS
 } from '../../lib/canIds';
+import {
+  MAX_HEATER_SETPOINT_C, MAX_MOTION_STEPS, AOI_STROBE_MIN_MS, AOI_STROBE_MAX_MS, PASTE_PULSE_MIN_MS, PASTE_PULSE_MAX_MS, stepsToBytes
+} from '../../lib/toolLimits';
 
 export interface ToolCtx {
   sendFrame: (id: number, data: number[], description?: string) => Promise<void>;
@@ -67,8 +70,8 @@ export const SolderingIronPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <Section title={t('testertool.soldering_heater_title', 'Heater (0x130 / telemetry 0x135)')}>
         <div className="flex items-end gap-3">
-          <Field label={t('testertool.setpoint_0_450', 'Setpoint (0-450 C)')}>
-            <input type="number" min={0} max={450} value={temp} onChange={(e) => setTemp(safeInt(e.target.value, 0, 0, 450))} className={inputCls} />
+          <Field label={t('testertool.setpoint_0_445', 'Setpoint (0-445 C)')}>
+            <input type="number" min={0} max={MAX_HEATER_SETPOINT_C} value={temp} onChange={(e) => setTemp(safeInt(e.target.value, 0, 0, MAX_HEATER_SETPOINT_C))} className={inputCls} />
           </Field>
           <KeepaliveCheckbox checked={active} onChange={(v) => { setActive(v); if (!v) stopHeater(); }} watchdogMs={250} />
         </div>
@@ -87,9 +90,9 @@ export const SolderingIronPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
             </select>
           </Field>
           <Field label={t('testertool.steps_label', 'Steps')}>
-            <input type="number" min={1} value={steps} onChange={(e) => setSteps(safeInt(e.target.value, 1, 1))} className={inputCls} />
+            <input type="number" min={1} max={MAX_MOTION_STEPS} value={steps} onChange={(e) => setSteps(safeInt(e.target.value, 1, 1, MAX_MOTION_STEPS))} className={inputCls} />
           </Field>
-          <button className={btnPrimaryCls} onClick={() => ctx.sendFrame(CAN_ID_MOTION_CMD, [dir === 'fwd' ? 1 : 0, (steps >>> 24) & 0xFF, (steps >>> 16) & 0xFF, (steps >>> 8) & 0xFF, steps & 0xFF], 'Move feeder')}>{t('testertool.move', 'Move')}</button>
+          <button className={btnPrimaryCls} onClick={() => ctx.sendFrame(CAN_ID_MOTION_CMD, [dir === 'fwd' ? 1 : 0, ...stepsToBytes(steps)], 'Move feeder')}>{t('testertool.move', 'Move')}</button>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-xs text-slate-400">{t('testertool.position_label', 'Position:')} <span className="font-mono text-slate-200">{position ?? '--'}</span></span>
@@ -116,9 +119,10 @@ export const MotionPanel: React.FC<{ ctx: ToolCtx; cmdId: number; label: string 
           </select>
         </Field>
         <Field label={t('testertool.steps_label', 'Steps')}>
-          <input type="number" min={1} value={steps} onChange={(e) => setSteps(safeInt(e.target.value, 1, 1))} className={inputCls} />
+          <input type="number" min={1} max={MAX_MOTION_STEPS} value={steps} onChange={(e) => setSteps(safeInt(e.target.value, 1, 1, MAX_MOTION_STEPS))} className={inputCls} />
         </Field>
-        <button className={btnPrimaryCls} onClick={() => ctx.sendFrame(cmdId, [dir === 'fwd' ? 1 : 0, (steps >>> 24) & 0xFF, (steps >>> 16) & 0xFF, (steps >>> 8) & 0xFF, steps & 0xFF], `Move (${label})`)}>{t('testertool.move', 'Move')}</button>
+        <button className={btnPrimaryCls} onClick={() => ctx.sendFrame(cmdId, [dir === 'fwd' ? 1 : 0, ...stepsToBytes(steps)], `Move (${label})`)}>{t('testertool.move', 'Move')}</button>
+        <button className={btnCls} onClick={() => ctx.sendFrame(cmdId, [dir === 'fwd' ? 1 : 0, 0, 0, 0, 0], `Stop (${label})`)}>{t('testertool.stop', 'Stop')}</button>
       </div>
     </Section>
   );
@@ -147,11 +151,14 @@ export const DrillPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   const { t } = useTranslation();
   const [speed, setSpeed] = useState(0);
   const [dir, setDir] = useState<'cw' | 'ccw'>('cw');
+  const [active, setActive] = useState(false);
+  // The firmware stops the drill (and latches a fault) 250 ms after the last command, so the command is resent while Active is checked.
+  useKeepalive(active, KEEPALIVE_INTERVAL_MS, () => ctx.sendFrame(CAN_ID_DRILL_CMD, [speed, dir === 'ccw' ? 1 : 0], 'Drill command'), () => setActive(false));
   const telemetry = useTelemetry(ctx, CAN_ID_DRILL_TELEMETRY, (d) => d.length >= 2 ? (d[0] << 8) | d[1] : null);
   const [endstop, setEndstop] = useState<number | null>(null);
   useEffect(() => ctx.subscribe(CAN_ID_DRILL_TELEMETRY, (f) => { if (f.data.length >= 3) setEndstop(f.data[2]); }), [ctx]);
   return (
-    <Section title={t('testertool.drill_title', 'Drill (0x140 / telemetry 0x147)')} subtitle={t('testertool.drill_subtitle', 'One-shot send, no watchdog - the board holds the last value.')}>
+    <Section title={t('testertool.drill_title', 'Drill (0x140 / telemetry 0x147)')} subtitle={t('testertool.drill_subtitle', 'The command is resent while Active is checked; the board stops the drill 250 ms after the last one.')}>
       <div className="flex items-end gap-3 mb-3">
         <Field label={t('testertool.speed_label', 'Speed ({{speed}})', { speed })}>
           <input type="range" min={0} max={255} value={speed} onChange={(e) => setSpeed(parseInt(e.target.value))} className="w-40" />
@@ -162,8 +169,8 @@ export const DrillPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
             <option value="ccw">{t('testertool.counter_clockwise', 'Counter-clockwise')}</option>
           </select>
         </Field>
-        <button className={btnPrimaryCls} onClick={() => ctx.sendFrame(CAN_ID_DRILL_CMD, [speed, dir === 'ccw' ? 1 : 0], 'Drill command')}>{t('testertool.send', 'Send')}</button>
-        <button className={btnCls} onClick={() => { setSpeed(0); ctx.sendFrame(CAN_ID_DRILL_CMD, [0, 0], 'Drill stop'); }}>{t('testertool.stop', 'Stop')}</button>
+        <KeepaliveCheckbox checked={active} onChange={setActive} watchdogMs={250} />
+        <button className={btnCls} onClick={() => { setActive(false); setSpeed(0); ctx.sendFrame(CAN_ID_DRILL_CMD, [0, 0], 'Drill stop'); }}>{t('testertool.stop', 'Stop')}</button>
       </div>
       <div className="text-xs text-slate-400">{t('testertool.rpm_label', 'RPM:')} <span className="font-mono text-slate-200">{telemetry ?? '--'}</span> &bull; {t('testertool.endstop_label', 'Endstop:')} <span className="font-mono text-slate-200">{endstop ?? '--'}</span></div>
     </Section>
@@ -174,7 +181,7 @@ export const DrillPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
 export const AoiPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   const { t } = useTranslation();
   const [mode, setMode] = useState<'off' | 'sync' | 'fixed'>('off');
-  const [period, setPeriod] = useState(1000);
+  const [period, setPeriod] = useState(100);
   const endstop = useTelemetry(ctx, CAN_ID_AOI_TELEMETRY, (d) => d.length >= 1 ? d[0] : null);
   const modeByte = mode === 'off' ? 0 : mode === 'sync' ? 1 : 2;
   return (
@@ -187,8 +194,8 @@ export const AoiPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
             <option value="fixed">{t('testertool.mode_fixed', 'Fixed continuous')}</option>
           </select>
         </Field>
-        <Field label={t('testertool.strobe_period_label', 'Strobe period (us)')}>
-          <input type="number" min={1} max={65535} value={period} onChange={(e) => setPeriod(safeInt(e.target.value, 1, 1, 65535))} className={inputCls} />
+        <Field label={t('testertool.strobe_period_label', 'Strobe period (ms)')}>
+          <input type="number" min={AOI_STROBE_MIN_MS} max={AOI_STROBE_MAX_MS} value={period} onChange={(e) => setPeriod(safeInt(e.target.value, AOI_STROBE_MIN_MS, AOI_STROBE_MIN_MS, AOI_STROBE_MAX_MS))} className={inputCls} />
         </Field>
         <button className={btnPrimaryCls} onClick={() => ctx.sendFrame(CAN_ID_AOI_CMD, [modeByte, (period >> 8) & 0xFF, period & 0xFF], 'AOI ring command')}>{t('testertool.send', 'Send')}</button>
       </div>
@@ -233,12 +240,13 @@ export const Printer3DPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   const [extSteps, setExtSteps] = useState(0);
   const hotendTemp = useTelemetry(ctx, CAN_ID_3DP_HOTEND_TELEMETRY, (d) => d.length >= 2 ? (d[0] << 8) | d[1] : null);
 
-  const sendThermalMotion = (steps: number) => ctx.sendFrame(
+  // The heater setpoint travels in every frame: an "off" or a one-off extruder move must not (re)arm the heater, so it sends 0 unless the heater is switched on.
+  const sendThermalMotion = (steps: number, temp: number = nozzleActive ? nozzleTemp : 0) => ctx.sendFrame(
     CAN_ID_3DP_THERMAL_MOTION,
-    [(nozzleTemp >> 8) & 0xFF, nozzleTemp & 0xFF, extDir === 'fwd' ? 1 : 0, (steps >> 16) & 0xFF, (steps >> 8) & 0xFF, steps & 0xFF],
+    [(temp >> 8) & 0xFF, temp & 0xFF, extDir === 'fwd' ? 1 : 0, (steps >> 16) & 0xFF, (steps >> 8) & 0xFF, steps & 0xFF],
     '3D printer nozzle+extruder command'
   );
-  useKeepalive(nozzleActive, KEEPALIVE_INTERVAL_MS, () => sendThermalMotion(0), () => setNozzleActive(false));
+  useKeepalive(nozzleActive, KEEPALIVE_INTERVAL_MS, () => sendThermalMotion(0, nozzleTemp), () => setNozzleActive(false));
 
   const [layerFanActive, setLayerFanActive] = useState(false);
   const [layerFanPower, setLayerFanPower] = useState(0);
@@ -255,7 +263,7 @@ export const Printer3DPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
           <Field label={t('testertool.setpoint_0_300', 'Setpoint (0-300 C)')}>
             <input type="number" min={0} max={300} value={nozzleTemp} onChange={(e) => setNozzleTemp(safeInt(e.target.value, 0, 0, 300))} className={inputCls} />
           </Field>
-          <KeepaliveCheckbox checked={nozzleActive} onChange={(v) => { setNozzleActive(v); if (!v) { setExtSteps(0); sendThermalMotion(0); } }} watchdogMs={250} />
+          <KeepaliveCheckbox checked={nozzleActive} onChange={(v) => { setNozzleActive(v); if (!v) { setExtSteps(0); sendThermalMotion(0, 0); } }} watchdogMs={250} />
         </div>
         <div className="flex items-end gap-3">
           <Field label={t('testertool.extruder_direction_label', 'Extruder Direction')}>
@@ -415,8 +423,8 @@ export const HotAirReworkPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   return (
     <Section title={t('testertool.hotair_title', 'Hot Air Rework (0x1E0, telemetry shared with 0x135)')}>
       <div className="flex items-end gap-3">
-        <Field label={t('testertool.setpoint_0_450', 'Setpoint (0-450 C)')}>
-          <input type="number" min={0} max={450} value={temp} onChange={(e) => setTemp(safeInt(e.target.value, 0, 0, 450))} className={inputCls} />
+        <Field label={t('testertool.setpoint_0_445', 'Setpoint (0-445 C)')}>
+          <input type="number" min={0} max={MAX_HEATER_SETPOINT_C} value={temp} onChange={(e) => setTemp(safeInt(e.target.value, 0, 0, MAX_HEATER_SETPOINT_C))} className={inputCls} />
         </Field>
         <Field label={t('testertool.blower_label', 'Blower ({{power}})', { power: blower })}>
           <input type="range" min={0} max={255} value={blower} onChange={(e) => setBlower(parseInt(e.target.value))} className="w-32" />
@@ -448,7 +456,7 @@ export const PasteJettingPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
       <Section title={t('testertool.paste_fire_title', 'Fire Pulse (0x231)')} subtitle={t('testertool.paste_fire_subtitle', 'Reuses the last-configured channel.')}>
         <div className="flex items-end gap-3">
           <Field label={t('testertool.duty_label', 'Duty (%)')}><input type="number" min={0} max={100} value={duty} onChange={(e) => setDuty(safeInt(e.target.value, 0, 0, 100))} className={inputCls} /></Field>
-          <Field label={t('testertool.duration_ms_label', 'Duration (ms)')}><input type="number" min={0} max={255} value={pulseMs} onChange={(e) => setPulseMs(safeInt(e.target.value, 0, 0, 255))} className={inputCls} /></Field>
+          <Field label={t('testertool.duration_ms_label', 'Duration (ms)')}><input type="number" min={PASTE_PULSE_MIN_MS} max={PASTE_PULSE_MAX_MS} value={pulseMs} onChange={(e) => setPulseMs(safeInt(e.target.value, PASTE_PULSE_MIN_MS, PASTE_PULSE_MIN_MS, PASTE_PULSE_MAX_MS))} className={inputCls} /></Field>
           <button className={btnPrimaryCls} onClick={() => ctx.sendFrame(CAN_ID_PASTE_JETTING_PULSE, [channel, duty, pulseMs], 'Paste jetting pulse')}>{t('testertool.fire_pulse', 'Fire Pulse')}</button>
         </div>
       </Section>

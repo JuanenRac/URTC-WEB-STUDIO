@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BUNDLED_FIRMWARE } from '../lib/bundledFirmware';
+import { isFlashableFirmwareName } from '../lib/firmwareImage';
 import { useTranslation } from 'react-i18next';
 import { FlasherState, CanFrame } from '../types';
 import { RefreshCw, ShieldCheck, Cpu, CheckCircle2, AlertOctagon, Terminal, DownloadCloud, XCircle, Fingerprint } from 'lucide-react';
@@ -34,6 +35,7 @@ interface FlasherStudioProps {
 // Generated from the URTC build by scripts/sync-firmware.mjs: the same files,
 // byte for byte, that URTC/firmware publishes - each with its .sha256 and
 // .manifest.json sidecars, so they flash with the published signature.
+
 const LOCAL_FIRMWARE_FILES = [
   { name: BUNDLED_FIRMWARE.mainApplication, label: `${BUNDLED_FIRMWARE.mainApplication} (main application)` },
   { name: BUNDLED_FIRMWARE.slaveApplication, label: `${BUNDLED_FIRMWARE.slaveApplication} (expansion slave application)` },
@@ -78,7 +80,7 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
       const res = await fetch('https://api.github.com/repos/JuanenRac/URTC/contents/firmware');
       if (!res.ok) throw new Error(t('flasher.error_fetch_github', 'Failed to fetch from GitHub'));
       const data = await res.json();
-      const files = data.filter((item: any) => item.type === 'file' && (item.name.endsWith('.bin') || item.name.endsWith('.hex')));
+      const files = data.filter((item: any) => item.type === 'file' && item.name.endsWith('.bin'));
       setGithubFirmwares(files);
     } catch (e: any) {
       setGithubError(e.message);
@@ -305,7 +307,7 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
                       </optgroup>
                       {githubFirmwares.length > 0 && (
                         <optgroup label={t('flasher.optgroup_github', 'GitHub Repository (JuanenRac/URTC)')}>
-                          {githubFirmwares.filter(fw => !fw.name.toLowerCase().includes('bootloader')).map(fw => (
+                          {githubFirmwares.filter(fw => isFlashableFirmwareName(fw.name, flashTarget)).map(fw => (
                             <option key={fw.name} value={fw.name}>{fw.name} ({Math.round(fw.size / 1024)}KB)</option>
                           ))}
                         </optgroup>

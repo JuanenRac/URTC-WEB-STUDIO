@@ -12,6 +12,22 @@ build`/`vite build` on its own is deliberately compilation-only) bumps the
 version automatically, so the number reflects build count, not the size or
 compatibility of a change.
 
+## [0.2.6] - Only real application images are flashed, the manifest is checked, and the panels respect the firmware limits
+
+- **Only application images of the chosen board are offered and flashed:** the GitHub list no longer shows Intel HEX files, bootloaders or the other board image, and before anything is sent the file is checked (initial stack pointer in RAM, reset handler inside the application slot of the board), so a bootloader or a text file is refused with a clear message instead of reaching the board.
+- **The manifest is checked like the desktop Flasher does:** a malformed hmac_sha256 is an error instead of being ignored, and a manifest whose component or hardware id belongs to the other board is refused.
+- **No invented version:** an image without a version in its manifest or its file name is refused, instead of declaring version 1.1 to the bootloader (which made later legitimate updates look like a rollback).
+- **Erasing the F-RAM happens before the board enters the bootloader**, where the running application can still do it (it was sent to the bootloader, which does not know the command).
+- **A frame typed by hand is validated, not repaired:** an identifier outside 0-7FF, an invalid byte or more than 8 bytes is refused with a message instead of being masked, dropped or cut.
+- **A reply is never taken from an old frame:** a frame that arrived more than one second before a request waits for it is discarded, so a self-test or a query no longer passes with a stale answer.
+- **Sending without a connection fails** with a message instead of silently doing nothing (a keepalive or a button could believe the command had left).
+- **Tester limits follow the firmware:** heater setpoints stop at 445 C (also in the simulator), move steps are 1 to 4294967295 and no longer wrap into another count, the motion panels have a Stop button, the AOI strobe period is in milliseconds (1 to 500) and the paste jetting pulse is at least 1 ms.
+- **The drill is kept alive:** the command is resent while Active is checked, because the board stops the drill 250 ms after the last command.
+- **The 3D printer nozzle Off and a one-off extruder move no longer re-arm the heater:** they send a temperature of 0 unless the heater is switched on.
+- The five translations that lacked the signing texts (German, French, Italian, Japanese, Chinese) are complete, every new text exists in all 8 languages, and a test keeps the 8 files identical in keys and placeholders.
+- The favicon is served in the production build, and the README asks for Node.js 20 LTS or newer.
+- Tests: 68 (before 41): image and manifest checks against the real bundled firmware, hand-typed frames, stale frames, limits and language parity.
+
 ## [0.2.5] - The update of any image size works and a readback of any size is complete
 
 - **An update of an image whose size is not a whole number of pages now completes:** the last, partial page is acknowledged by the bootloader only when the end of the update arrives, so it is no longer waited for before sending it (the official image of 73476 bytes could never be installed).

@@ -287,7 +287,13 @@
     "err_readback_no_size": "Sem resposta de tamanho de leitura - o bootloader pode não implementar 0x7FE, ou não há nada válido instalado",
     "err_readback_no_firmware": "O bootloader reporta que não há firmware válido instalado atualmente",
     "err_readback_timeout_overall": "Tempo limite de leitura esgotado (limite global de 180s)",
-    "err_readback_timeout_offset": "Tempo limite esgotado à espera de dados de leitura no offset {{offset}}"
+    "err_readback_timeout_offset": "Tempo limite esgotado à espera de dados de leitura no offset {{offset}}",
+    "err_image_too_small": "O ficheiro é demasiado pequeno para conter uma tabela de vetores.",
+    "err_image_bad_stack": "A primeira palavra do ficheiro não é um apontador de pilha inicial válido para este chip: não é uma imagem de firmware.",
+    "err_image_bad_reset": "O manipulador de reset não aponta para dentro da ranhura de aplicação desta placa: parece um bootloader ou uma imagem da outra placa.",
+    "err_manifest_signature_malformed": "O manifesto tem um hmac_sha256 que não tem 64 caracteres hexadecimais.",
+    "err_manifest_wrong_target": "O manifesto é de outra placa: declara {{got}} e esta atualização precisa de {{want}}.",
+    "err_version_unknown": "A versão desta imagem é desconhecida: adicione um manifesto com versão, ou mantenha a versão no nome do ficheiro (por exemplo _v0.3.3.bin)."
   },
   "thermal": {
     "title": "Câmara Térmica Infravermelha MLX90640 de 32x24",
@@ -432,11 +438,13 @@
     "repeat_every": "Repetir a cada",
     "ms": "ms",
     "keepalive_active": "Ativo",
-    "keepalive_watchdog": "({{ms}}ms de watchdog)"
+    "keepalive_watchdog": "({{ms}}ms de watchdog)",
+    "custom_frame_bad_id": "O identificador deve ter de 1 a 3 dígitos hexadecimais, de 0 a 7FF.",
+    "custom_frame_bad_byte": "Cada byte de dados deve ter 1 ou 2 dígitos hexadecimais.",
+    "custom_frame_too_many": "Uma trama CAN leva no máximo 8 bytes de dados."
   },
   "testertool": {
     "soldering_heater_title": "Resistência (0x130 / telemetria 0x135)",
-    "setpoint_0_450": "Setpoint (0-450 C)",
     "setpoint_0_300": "Setpoint (0-300 C)",
     "live_label": "Em direto:",
     "wire_feeder_title": "Alimentador de Estanho (movimento 0x120, posição 0x131/0x132)",
@@ -457,7 +465,7 @@
     "yes": "SIM",
     "no": "não",
     "drill_title": "Broca (0x140 / telemetria 0x147)",
-    "drill_subtitle": "Envio pontual, sem watchdog - a placa mantém o último valor.",
+    "drill_subtitle": "O comando é reenviado enquanto Ativo estiver marcado; a placa pára o berbequim 250 ms depois do último.",
     "speed_label": "Velocidade ({{speed}})",
     "clockwise": "Horário",
     "counter_clockwise": "Anti-horário",
@@ -471,7 +479,7 @@
     "mode_off": "Desligado",
     "mode_sync": "Estroboscópio síncrono",
     "mode_fixed": "Contínuo fixo",
-    "strobe_period_label": "Período do estroboscópio (us)",
+    "strobe_period_label": "Período do estroboscópio (ms)",
     "laser_title": "Gravador Laser (0x160 / telemetria 0x165)",
     "laser_interlock_notice": "O interlock tem de estar armado para que a potência faça realmente alguma coisa (bloqueio do lado do firmware).",
     "power_label": "Potência ({{power}})",
@@ -526,7 +534,8 @@
     "status_error": "Erro",
     "reading_progress": "A ler... {{pct}}%",
     "read_thermal_image": "Ler Imagem Térmica",
-    "no_handler_notice": "Não há gestor CAN para esta ferramenta - o seu atuador/sensor reside na placa principal do robô, não nesta placa."
+    "no_handler_notice": "Não há gestor CAN para esta ferramenta - o seu atuador/sensor reside na placa principal do robô, não nesta placa.",
+    "setpoint_0_445": "Setpoint (0-445 C)"
   },
   "hooks": {
     "web_serial_unsupported": "A API Web Serial não é suportada por este navegador. Utilize o Chrome ou o Edge.",
@@ -535,6 +544,7 @@
     "no_bus_response": "Sem resposta de nenhuma placa URTC a nenhum bitrate CAN conhecido (testados 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Verifique a cablagem e a alimentação.",
     "send_failed": "Falha ao enviar trama CAN ({{description}}): {{message}}",
     "writer_unavailable": "O escritor da porta série não está disponível (porta desligada).",
-    "invalid_frame": "Trama CAN inválida rejeitada: {{reason}}"
+    "invalid_frame": "Trama CAN inválida rejeitada: {{reason}}",
+    "not_connected": "Sem ligação a um adaptador USB-CAN."
   }
 }

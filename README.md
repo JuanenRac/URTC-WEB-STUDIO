@@ -196,7 +196,7 @@ verifies the bundle against its manifests.
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js (v18+)
+- Node.js 20 LTS+
 - npm
 
 ### Installation

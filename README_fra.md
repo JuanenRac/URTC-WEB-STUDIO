@@ -207,7 +207,7 @@ manifestes.
 ## 🚀 Pour commencer
 
 ### Prérequis
-- Node.js (v18+)
+- Node.js 20 LTS+
 - npm
 
 ### Installation

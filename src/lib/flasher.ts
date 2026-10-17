@@ -30,8 +30,6 @@ export const CAN_ID_READBACK = 0x7FE; // DLC=4 (size reply) or DLC=8 (data chunk
 export const CAN_ID_READBACK_PAGE_ACK = 0x7FF;
 export const AUTHORIZE_DOWNGRADE_MAGIC = [0xD0, 0x9E, 0x12, 0xAD];
 export const ENTER_BOOTLOADER_MAGIC = [0xB0, 0x07, 0x1D, 0x5A];
-export const FIRMWARE_VERSION_MAJOR = 1;
-export const FIRMWARE_VERSION_MINOR = 1;
 
 // --- Expansion slave (STM32F303CBT6) OTA - relayed through the main board's
 // own bit-banged I2C bridge, since the slave has no CAN peripheral of its
@@ -109,11 +107,14 @@ export interface FirmwareManifest {
   hmacSha256?: string;      // 64 lowercase hex chars - the signature the bootloader expects
   signingKeyKind?: string;  // "release" or "dev" (signed with the PUBLIC development key)
   signingKeyId?: string;
+  hmacMalformed?: boolean;  // hmac_sha256 is present but is not 64 hex characters
+  component?: string;       // "main_application", "slave_application", ...
+  hardwareId?: number;      // parsed hardware_id; NaN when it is present but not a number
 }
 
 // Mirrors URTCFlasher._check_manifest from the Python flasher: a <file>.manifest.json
 // sidecar is optional. Its "version" field (if parseable as "major.minor") takes
-// priority over the tool's own compiled FIRMWARE_VERSION_MAJOR/MINOR when reporting
+// priority over the version in the file name when reporting
 // what's being installed in the END_UPDATE payload - this matters specifically for a
 // deliberate downgrade, so the bootloader's anti-rollback check sees the file's real,
 // older version rather than whatever this tool would otherwise claim as "current".
@@ -132,9 +133,16 @@ export function parseManifest(json: any): FirmwareManifest {
   }
   if (typeof json?.build_date === 'string') manifest.buildDate = json.build_date;
   if (typeof json?.sha256 === 'string') manifest.sha256 = json.sha256.trim().toLowerCase().replace(/^0x/, '');
-  if (typeof json?.hmac_sha256 === 'string') {
-    const hex = json.hmac_sha256.trim().toLowerCase().replace(/^0x/, '');
+  if (json?.hmac_sha256 !== undefined && json?.hmac_sha256 !== null) {
+    // A signature that is present but malformed is an error (the Python flasher refuses it too), never silently ignored.
+    const hex = typeof json.hmac_sha256 === 'string' ? json.hmac_sha256.trim().toLowerCase().replace(/^0x/, '') : '';
     if (/^[0-9a-f]{64}$/.test(hex)) manifest.hmacSha256 = hex;
+    else manifest.hmacMalformed = true;
+  }
+  if (typeof json?.component === 'string') manifest.component = json.component;
+  if (json?.hardware_id !== undefined && json?.hardware_id !== null && json?.hardware_id !== '') {
+    const raw = String(json.hardware_id).trim();
+    manifest.hardwareId = /^(0x[0-9a-f]+|\d+)$/i.test(raw) ? Number(raw) : NaN;
   }
   if (typeof json?.signing_key_kind === 'string') manifest.signingKeyKind = json.signing_key_kind;
   if (typeof json?.signing_key_id === 'string') manifest.signingKeyId = json.signing_key_id;

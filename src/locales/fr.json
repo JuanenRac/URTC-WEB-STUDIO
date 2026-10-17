@@ -283,7 +283,17 @@
     "err_readback_no_size": "Aucune réponse de taille de lecture - le bootloader n'implémente peut-être pas 0x7FE, ou rien de valide n'est installé",
     "err_readback_no_firmware": "Le bootloader signale qu'aucun firmware valide n'est actuellement installé",
     "err_readback_timeout_overall": "Délai de lecture dépassé (limite globale de 180s)",
-    "err_readback_timeout_offset": "Délai d'attente dépassé en attendant les données de lecture à l'offset {{offset}}"
+    "err_readback_timeout_offset": "Délai d'attente dépassé en attendant les données de lecture à l'offset {{offset}}",
+    "err_image_too_small": "Le fichier est trop petit pour contenir une table de vecteurs.",
+    "err_image_bad_stack": "Le premier mot du fichier n'est pas un pointeur de pile initial valide pour cette puce : ce n'est pas une image de firmware.",
+    "err_image_bad_reset": "Le gestionnaire de reset ne pointe pas dans l'emplacement d'application de cette carte : cela ressemble à un bootloader ou à une image de l'autre carte.",
+    "err_manifest_signature_malformed": "Le manifeste contient un hmac_sha256 qui n'est pas composé de 64 caractères hexadécimaux.",
+    "err_manifest_wrong_target": "Le manifeste est celui d'une autre carte : il déclare {{got}} et cette mise à jour exige {{want}}.",
+    "err_version_unknown": "La version de cette image est inconnue : ajoutez un manifeste avec une version, ou gardez la version dans le nom du fichier (par exemple _v0.3.3.bin).",
+    "prompt_signing_key": "Cette image n'a pas de signature publiée (<fichier>.manifest.json avec hmac_sha256). Pour flasher une image compilée par vos soins sur une carte d'établi, saisissez sa clé de signature {{board}} (64 caractères hex). Elle n'est pas enregistrée.",
+    "log_signature_from_manifest": "Utilisation de la signature publiée dans le manifeste (clé : {{kind}}).",
+    "log_dev_key_warning": "NOTE : signée avec la clé de développement PUBLIQUE - seules les cartes dont le bootloader a été compilé avec cette même clé l'acceptent.",
+    "log_signature_runtime_key": "Signée localement avec la clé saisie pour ce flashage."
   },
   "thermal": {
     "title": "Caméra Thermique Infrarouge MLX90640 32x24",
@@ -428,11 +438,13 @@
     "repeat_every": "Répéter toutes les",
     "ms": "ms",
     "keepalive_active": "Actif",
-    "keepalive_watchdog": "({{ms}}ms de watchdog)"
+    "keepalive_watchdog": "({{ms}}ms de watchdog)",
+    "custom_frame_bad_id": "L'identifiant doit comporter de 1 à 3 chiffres hexadécimaux, de 0 à 7FF.",
+    "custom_frame_bad_byte": "Chaque octet de données doit comporter 1 ou 2 chiffres hexadécimaux.",
+    "custom_frame_too_many": "Une trame CAN contient au plus 8 octets de données."
   },
   "testertool": {
     "soldering_heater_title": "Résistance (0x130 / télémétrie 0x135)",
-    "setpoint_0_450": "Consigne (0-450 C)",
     "setpoint_0_300": "Consigne (0-300 C)",
     "live_label": "En direct :",
     "wire_feeder_title": "Dérouleur de Fil (mouvement 0x120, position 0x131/0x132)",
@@ -453,7 +465,7 @@
     "yes": "OUI",
     "no": "non",
     "drill_title": "Perceuse (0x140 / télémétrie 0x147)",
-    "drill_subtitle": "Envoi ponctuel, pas de watchdog - la carte conserve la dernière valeur.",
+    "drill_subtitle": "La commande est renvoyée tant que Actif est coché ; la carte arrête la perceuse 250 ms après la dernière.",
     "speed_label": "Vitesse ({{speed}})",
     "clockwise": "Horaire",
     "counter_clockwise": "Antihoraire",
@@ -467,7 +479,7 @@
     "mode_off": "Éteint",
     "mode_sync": "Stroboscope synchrone",
     "mode_fixed": "Continu fixe",
-    "strobe_period_label": "Période stroboscope (us)",
+    "strobe_period_label": "Période du stroboscope (ms)",
     "laser_title": "Graveur Laser (0x160 / télémétrie 0x165)",
     "laser_interlock_notice": "L'interlock doit être armé pour que la puissance ait un effet réel (verrouillage côté firmware).",
     "power_label": "Puissance ({{power}})",
@@ -522,7 +534,8 @@
     "status_error": "Erreur",
     "reading_progress": "Lecture... {{pct}}%",
     "read_thermal_image": "Lire l'Image Thermique",
-    "no_handler_notice": "Aucun gestionnaire CAN pour cet outil - son actionneur/capteur se trouve sur la carte principale du robot, pas sur cette carte."
+    "no_handler_notice": "Aucun gestionnaire CAN pour cet outil - son actionneur/capteur se trouve sur la carte principale du robot, pas sur cette carte.",
+    "setpoint_0_445": "Consigne (0-445 C)"
   },
   "hooks": {
     "web_serial_unsupported": "L'API Web Serial n'est pas prise en charge par ce navigateur. Veuillez utiliser Chrome ou Edge.",
@@ -531,6 +544,7 @@
     "no_bus_response": "Aucune réponse d'une carte URTC à aucun débit CAN connu (essayés : 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Vérifiez le câblage et l'alimentation.",
     "send_failed": "Échec de l'envoi de la trame CAN ({{description}}) : {{message}}",
     "writer_unavailable": "L'écrivain du port série n'est pas disponible (port déconnecté).",
-    "invalid_frame": "Trame CAN non valide rejetée : {{reason}}"
+    "invalid_frame": "Trame CAN non valide rejetée : {{reason}}",
+    "not_connected": "Aucun adaptateur USB-CAN connecté."
   }
 }

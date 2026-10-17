@@ -101,14 +101,14 @@ export function useFlasher(serialCan: SerialCanBus) {
     }));
 
     if (opts.triggerBootloader) {
-      await serialCan.sendFrame(CAN_ID_ENTER_BOOTLOADER, ENTER_BOOTLOADER_MAGIC, 'CAN OTA reset command (enter bootloader)');
-      await new Promise(r => setTimeout(r, 800));
-
+      // F-RAM is erased by the running application: the bootloader does not know that command, so it goes first.
       if (opts.eraseFram) {
         await serialCan.sendFrame(CAN_ID_ERASE_FRAM, ERASE_FRAM_MAGIC, 'Erase F-RAM before flashing');
         const fram = await serialCan.waitForFrame(CAN_ID_FRAM_STATE_RESP, 2000);
         appendLog(fram ? t('flasher.log_fram_erase_confirmed', 'F-RAM erase confirmed.') : t('flasher.log_fram_erase_not_confirmed', 'F-RAM erase not confirmed within 2s (non-fatal, continuing).'));
       }
+      await serialCan.sendFrame(CAN_ID_ENTER_BOOTLOADER, ENTER_BOOTLOADER_MAGIC, 'CAN OTA reset command (enter bootloader)');
+      await new Promise(r => setTimeout(r, 800));
     }
     checkCancelled();
 

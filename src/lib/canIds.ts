@@ -1,10 +1,10 @@
 // =============================================================================
 // URTC Web Studio - CAN protocol constants shared by Tester Studio and (where
-// relevant) Flasher Studio. Mirrors tester_config.py / flasher_config.py from
-// the URTC-TESTER and URTC-FLASHER Python tools byte-for-byte - see
-// docs/CANBUS.TXT in the URTC firmware repo for the authoritative wire-level
-// reference. Kept in sync by hand across all 3 tools, same as the Python
-// tools are kept in sync with the firmware and with each other.
+// relevant) Flasher Studio. Follows tester_config.py / flasher_config.py from
+// the URTC-TESTER and URTC-FLASHER Python tools for the identifiers it uses
+// (not every identifier of those tools is here, and some names differ; the
+// bootloader identifiers live in lib/flasher.ts) - see docs/CANBUS.TXT in the
+// URTC firmware repo for the authoritative wire-level reference.
 // =============================================================================
 
 // --- Global / cross-tool commands ---

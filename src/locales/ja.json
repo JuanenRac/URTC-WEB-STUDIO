@@ -283,7 +283,17 @@
     "err_readback_no_size": "読み戻しサイズの応答がありません——ブートローダーが 0x7FE を実装していないか、有効なものが何もインストールされていません",
     "err_readback_no_firmware": "ブートローダーは現在有効なファームウェアがインストールされていないと報告しています",
     "err_readback_timeout_overall": "読み戻しがタイムアウトしました（全体の上限は 180 秒）",
-    "err_readback_timeout_offset": "オフセット {{offset}} での読み戻しデータ待ちがタイムアウトしました"
+    "err_readback_timeout_offset": "オフセット {{offset}} での読み戻しデータ待ちがタイムアウトしました",
+    "err_image_too_small": "ファイルが小さすぎて、ベクターテーブルを含められません。",
+    "err_image_bad_stack": "ファイルの先頭ワードが、このチップの有効な初期スタックポインタではありません。ファームウェアイメージではありません。",
+    "err_image_bad_reset": "リセットハンドラがこのボードのアプリケーション領域内を指していません。ブートローダー、または別のボード用のイメージのようです。",
+    "err_manifest_signature_malformed": "マニフェストの hmac_sha256 が 64 桁の16進文字ではありません。",
+    "err_manifest_wrong_target": "マニフェストは別のボード用です。{{got}} を宣言していますが、この更新には {{want}} が必要です。",
+    "err_version_unknown": "このイメージのバージョンが不明です。バージョン付きのマニフェストを追加するか、ファイル名にバージョンを含めてください（例: _v0.3.3.bin）。",
+    "prompt_signing_key": "このイメージには公開された署名がありません（hmac_sha256 を含む <ファイル>.manifest.json）。自作のイメージを実験用ボードに書き込むには、その {{board}} 署名キー（16進64文字）を入力してください。保存されません。",
+    "log_signature_from_manifest": "マニフェストで公開されている署名を使用します（キー: {{kind}}）。",
+    "log_dev_key_warning": "注意: 公開の開発用キーで署名されています。同じキーでビルドされたブートローダーのボードのみ受け付けます。",
+    "log_signature_runtime_key": "この書き込みのために入力されたキーでローカル署名しました。"
   },
   "thermal": {
     "title": "MLX90640 32x24 サーマル赤外線カメラアレイ",
@@ -428,11 +438,13 @@
     "repeat_every": "繰り返し間隔",
     "ms": "ms",
     "keepalive_active": "アクティブ",
-    "keepalive_watchdog": "（{{ms}}ms ウォッチドッグ）"
+    "keepalive_watchdog": "（{{ms}}ms ウォッチドッグ）",
+    "custom_frame_bad_id": "識別子は 0 から 7FF までの 1 ～ 3 桁の16進数で指定してください。",
+    "custom_frame_bad_byte": "各データバイトは 1 桁または 2 桁の16進数で指定してください。",
+    "custom_frame_too_many": "CAN フレームのデータは最大 8 バイトです。"
   },
   "testertool": {
     "soldering_heater_title": "ヒーター（0x130 / テレメトリ 0x135）",
-    "setpoint_0_450": "設定値（0-450 °C）",
     "setpoint_0_300": "設定値（0-300 °C）",
     "live_label": "リアルタイム：",
     "wire_feeder_title": "ワイヤーフィーダー（0x120 モーション、0x131/0x132 位置）",
@@ -453,7 +465,7 @@
     "yes": "はい",
     "no": "いいえ",
     "drill_title": "ドリル（0x140 / テレメトリ 0x147）",
-    "drill_subtitle": "ワンショット送信、ウォッチドッグなし——ボードは最後の値を保持します。",
+    "drill_subtitle": "「有効」がオンの間はコマンドを再送します。最後のコマンドから 250 ms 後にボードがドリルを停止します。",
     "speed_label": "速度（{{speed}}）",
     "clockwise": "時計回り",
     "counter_clockwise": "反時計回り",
@@ -467,7 +479,7 @@
     "mode_off": "オフ",
     "mode_sync": "同期ストロボ",
     "mode_fixed": "固定連続点灯",
-    "strobe_period_label": "ストロボ周期（us）",
+    "strobe_period_label": "ストロボ周期 (ms)",
     "laser_title": "レーザー彫刻機（0x160 / テレメトリ 0x165）",
     "laser_interlock_notice": "出力が実際に何かをするには、まずインターロックを有効化する必要があります（ファームウェア側のゲート）。",
     "power_label": "出力（{{power}}）",
@@ -522,7 +534,8 @@
     "status_error": "エラー",
     "reading_progress": "読み取り中… {{pct}}%",
     "read_thermal_image": "サーマル画像を読み取り",
-    "no_handler_notice": "このツールには対応する CAN ハンドラーがありません——そのアクチュエーター/センサーは本ボードではなく、ロボットのメインボード上にあります。"
+    "no_handler_notice": "このツールには対応する CAN ハンドラーがありません——そのアクチュエーター/センサーは本ボードではなく、ロボットのメインボード上にあります。",
+    "setpoint_0_445": "設定値 (0-445 C)"
   },
   "hooks": {
     "web_serial_unsupported": "このブラウザは Web Serial API をサポートしていません。Chrome または Edge を使用してください。",
@@ -531,6 +544,7 @@
     "no_bus_response": "既知のどの CAN ビットレート（500k、250k、125k、1M、100k、50k、20k、10k、800k を試行）でも URTC ボードからの応答がありません。配線と電源を確認してください。",
     "send_failed": "CAN 送信に失敗しました（{{description}}）：{{message}}",
     "writer_unavailable": "シリアルポートライターが利用できません（ポートが切断されています）。",
-    "invalid_frame": "不正な CAN フレームを拒否しました: {{reason}}"
+    "invalid_frame": "不正な CAN フレームを拒否しました: {{reason}}",
+    "not_connected": "USB-CAN アダプターに接続されていません。"
   }
 }

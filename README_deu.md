@@ -214,7 +214,7 @@ seine Manifeste.
 ## 🚀 Erste Schritte
 
 ### Voraussetzungen
-- Node.js (v18+)
+- Node.js 20 LTS+
 - npm
 
 ### Installation

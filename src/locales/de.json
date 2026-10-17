@@ -283,7 +283,17 @@
     "err_readback_no_size": "Keine Rücklese-Größenantwort - Bootloader implementiert 0x7FE eventuell nicht, oder es ist nichts Gültiges installiert",
     "err_readback_no_firmware": "Bootloader meldet, dass aktuell keine gültige Firmware installiert ist",
     "err_readback_timeout_overall": "Zeitüberschreitung beim Rücklesen (Gesamtlimit 180s)",
-    "err_readback_timeout_offset": "Zeitüberschreitung beim Warten auf Rücklesedaten bei Offset {{offset}}"
+    "err_readback_timeout_offset": "Zeitüberschreitung beim Warten auf Rücklesedaten bei Offset {{offset}}",
+    "err_image_too_small": "Die Datei ist zu klein, um eine Vektortabelle zu enthalten.",
+    "err_image_bad_stack": "Das erste Wort der Datei ist kein gültiger anfänglicher Stackpointer für diesen Chip: Das ist kein Firmware-Image.",
+    "err_image_bad_reset": "Der Reset-Handler zeigt nicht in den Anwendungsbereich dieser Platine: Das sieht nach einem Bootloader oder einem Image für die andere Platine aus.",
+    "err_manifest_signature_malformed": "Das Manifest enthält ein hmac_sha256, das keine 64 Hexadezimalzeichen hat.",
+    "err_manifest_wrong_target": "Das Manifest gehört zu einer anderen Platine: Es nennt {{got}}, dieses Update benötigt {{want}}.",
+    "err_version_unknown": "Die Version dieses Images ist unbekannt: Fügen Sie ein Manifest mit Version hinzu oder behalten Sie die Version im Dateinamen (zum Beispiel _v0.3.3.bin).",
+    "prompt_signing_key": "Dieses Image hat keine veröffentlichte Signatur (<Datei>.manifest.json mit hmac_sha256). Um ein selbst gebautes Image auf eine Werkbank-Platine zu flashen, geben Sie deren {{board}}-Signaturschlüssel ein (64 Hex-Zeichen). Er wird nicht gespeichert.",
+    "log_signature_from_manifest": "Es wird die im Manifest veröffentlichte Signatur verwendet (Schlüssel: {{kind}}).",
+    "log_dev_key_warning": "HINWEIS: Mit dem ÖFFENTLICHEN Entwicklungsschlüssel signiert - nur Platinen, deren Bootloader mit demselben Schlüssel gebaut wurde, akzeptieren es.",
+    "log_signature_runtime_key": "Lokal mit dem für dieses Flashen eingegebenen Schlüssel signiert."
   },
   "thermal": {
     "title": "MLX90640-Wärmebildkamera 32x24",
@@ -428,11 +438,13 @@
     "repeat_every": "Wiederholen alle",
     "ms": "ms",
     "keepalive_active": "Aktiv",
-    "keepalive_watchdog": "({{ms}}ms Watchdog)"
+    "keepalive_watchdog": "({{ms}}ms Watchdog)",
+    "custom_frame_bad_id": "Die Kennung muss aus 1 bis 3 Hexadezimalziffern bestehen, von 0 bis 7FF.",
+    "custom_frame_bad_byte": "Jedes Datenbyte muss aus 1 oder 2 Hexadezimalziffern bestehen.",
+    "custom_frame_too_many": "Ein CAN-Frame enthält höchstens 8 Datenbytes."
   },
   "testertool": {
     "soldering_heater_title": "Heizung (0x130 / Telemetrie 0x135)",
-    "setpoint_0_450": "Sollwert (0-450 C)",
     "setpoint_0_300": "Sollwert (0-300 C)",
     "live_label": "Live:",
     "wire_feeder_title": "Drahtvorschub (Bewegung 0x120, Position 0x131/0x132)",
@@ -453,7 +465,7 @@
     "yes": "JA",
     "no": "nein",
     "drill_title": "Bohrer (0x140 / Telemetrie 0x147)",
-    "drill_subtitle": "Einmaliges Senden, kein Watchdog - die Platine behält den letzten Wert bei.",
+    "drill_subtitle": "Der Befehl wird erneut gesendet, solange Aktiv angehakt ist; die Platine stoppt den Bohrer 250 ms nach dem letzten Befehl.",
     "speed_label": "Drehzahl ({{speed}})",
     "clockwise": "Im Uhrzeigersinn",
     "counter_clockwise": "Gegen den Uhrzeigersinn",
@@ -467,7 +479,7 @@
     "mode_off": "Aus",
     "mode_sync": "Synchrones Stroboskop",
     "mode_fixed": "Dauerhaft fest",
-    "strobe_period_label": "Stroboskopperiode (us)",
+    "strobe_period_label": "Stroboskop-Periode (ms)",
     "laser_title": "Lasergravierer (0x160 / Telemetrie 0x165)",
     "laser_interlock_notice": "Die Verriegelung muss aktiviert sein, damit die Leistung überhaupt wirkt (firmwareseitige Sperre).",
     "power_label": "Leistung ({{power}})",
@@ -522,7 +534,8 @@
     "status_error": "Fehler",
     "reading_progress": "Wird gelesen... {{pct}}%",
     "read_thermal_image": "Wärmebild lesen",
-    "no_handler_notice": "Kein CAN-Handler für dieses Werkzeug - sein Aktuator/Sensor befindet sich auf der Roboter-Hauptplatine, nicht auf dieser Platine."
+    "no_handler_notice": "Kein CAN-Handler für dieses Werkzeug - sein Aktuator/Sensor befindet sich auf der Roboter-Hauptplatine, nicht auf dieser Platine.",
+    "setpoint_0_445": "Sollwert (0-445 C)"
   },
   "hooks": {
     "web_serial_unsupported": "Die Web-Serial-API wird von diesem Browser nicht unterstützt. Bitte Chrome oder Edge verwenden.",
@@ -531,6 +544,7 @@
     "no_bus_response": "Keine Antwort von einer URTC-Platine bei keiner bekannten CAN-Bitrate (versucht: 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Verkabelung und Stromversorgung prüfen.",
     "send_failed": "Senden des CAN-Frames fehlgeschlagen ({{description}}): {{message}}",
     "writer_unavailable": "Der Serial-Port-Writer ist nicht verfügbar (Port getrennt).",
-    "invalid_frame": "Ungültiger CAN-Frame wird abgelehnt: {{reason}}"
+    "invalid_frame": "Ungültiger CAN-Frame wird abgelehnt: {{reason}}",
+    "not_connected": "Nicht mit einem USB-CAN-Adapter verbunden."
   }
 }

@@ -283,7 +283,17 @@
     "err_readback_no_size": "没有读回大小的回复——引导程序可能未实现 0x7FE，或当前未安装任何有效内容",
     "err_readback_no_firmware": "引导程序报告当前未安装任何有效固件",
     "err_readback_timeout_overall": "读回超时（总体限制为 180 秒）",
-    "err_readback_timeout_offset": "在偏移量 {{offset}} 处等待读回数据超时"
+    "err_readback_timeout_offset": "在偏移量 {{offset}} 处等待读回数据超时",
+    "err_image_too_small": "文件太小，无法包含向量表。",
+    "err_image_bad_stack": "文件的第一个字不是此芯片有效的初始栈指针：这不是固件镜像。",
+    "err_image_bad_reset": "复位处理函数没有指向此板的应用程序区：这看起来是引导程序，或是另一块板的镜像。",
+    "err_manifest_signature_malformed": "清单中的 hmac_sha256 不是 64 个十六进制字符。",
+    "err_manifest_wrong_target": "该清单属于另一块板：它声明为 {{got}}，而本次更新需要 {{want}}。",
+    "err_version_unknown": "此镜像的版本未知：请添加带版本的清单，或在文件名中保留版本（例如 _v0.3.3.bin）。",
+    "prompt_signing_key": "此镜像没有已发布的签名（带 hmac_sha256 的 <文件>.manifest.json）。要将自行编译的镜像烧录到台架板，请输入其 {{board}} 签名密钥（64 个十六进制字符）。密钥不会被保存。",
+    "log_signature_from_manifest": "正在使用清单中发布的签名（密钥：{{kind}}）。",
+    "log_dev_key_warning": "注意：使用公开的开发密钥签名——只有引导程序用同一密钥构建的板子才会接受。",
+    "log_signature_runtime_key": "已使用本次烧录输入的密钥在本地签名。"
   },
   "thermal": {
     "title": "MLX90640 32x24 热成像红外相机阵列",
@@ -428,11 +438,13 @@
     "repeat_every": "重复间隔",
     "ms": "毫秒",
     "keepalive_active": "活动中",
-    "keepalive_watchdog": "（{{ms}}ms 看门狗）"
+    "keepalive_watchdog": "（{{ms}}ms 看门狗）",
+    "custom_frame_bad_id": "标识符必须是 1 到 3 位十六进制数字，范围 0 到 7FF。",
+    "custom_frame_bad_byte": "每个数据字节必须是 1 或 2 位十六进制数字。",
+    "custom_frame_too_many": "一个 CAN 帧最多携带 8 个数据字节。"
   },
   "testertool": {
     "soldering_heater_title": "加热器（0x130 / 遥测 0x135）",
-    "setpoint_0_450": "设定值（0-450 °C）",
     "setpoint_0_300": "设定值（0-300 °C）",
     "live_label": "实时：",
     "wire_feeder_title": "送丝器（0x120 运动，0x131/0x132 位置）",
@@ -453,7 +465,7 @@
     "yes": "是",
     "no": "否",
     "drill_title": "钻头（0x140 / 遥测 0x147）",
-    "drill_subtitle": "一次性发送，无看门狗——板卡会保持最后一次的值。",
+    "drill_subtitle": "勾选“启用”期间会重复发送命令；最后一条命令 250 ms 后，板子会停止钻头。",
     "speed_label": "速度（{{speed}}）",
     "clockwise": "顺时针",
     "counter_clockwise": "逆时针",
@@ -467,7 +479,7 @@
     "mode_off": "关闭",
     "mode_sync": "同步频闪",
     "mode_fixed": "固定常亮",
-    "strobe_period_label": "频闪周期（微秒）",
+    "strobe_period_label": "频闪周期 (ms)",
     "laser_title": "激光雕刻机（0x160 / 遥测 0x165）",
     "laser_interlock_notice": "必须先启用联锁，功率才能实际生效（固件端门控）。",
     "power_label": "功率（{{power}}）",
@@ -522,7 +534,8 @@
     "status_error": "错误",
     "reading_progress": "读取中… {{pct}}%",
     "read_thermal_image": "读取热成像",
-    "no_handler_notice": "此工具没有对应的 CAN 处理程序——其执行器/传感器位于机器人主板上，而非本板卡。"
+    "no_handler_notice": "此工具没有对应的 CAN 处理程序——其执行器/传感器位于机器人主板上，而非本板卡。",
+    "setpoint_0_445": "设定值 (0-445 C)"
   },
   "hooks": {
     "web_serial_unsupported": "此浏览器不支持 Web Serial API。请使用 Chrome 或 Edge。",
@@ -531,6 +544,7 @@
     "no_bus_response": "在任何已知的 CAN 比特率下均未收到 URTC 板卡的响应（已尝试 500k、250k、125k、1M、100k、50k、20k、10k、800k）。请检查接线和电源。",
     "send_failed": "CAN 发送失败（{{description}}）：{{message}}",
     "writer_unavailable": "串口写入器不可用（端口已断开连接）。",
-    "invalid_frame": "已拒绝格式错误的 CAN 帧：{{reason}}"
+    "invalid_frame": "已拒绝格式错误的 CAN 帧：{{reason}}",
+    "not_connected": "未连接到 USB-CAN 适配器。"
   }
 }

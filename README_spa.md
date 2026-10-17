@@ -203,7 +203,7 @@ manifiestos.
 ## 🚀 Primeros pasos
 
 ### Requisitos previos
-- Node.js (v18+)
+- Node.js 20 LTS+
 - npm
 
 ### Instalación

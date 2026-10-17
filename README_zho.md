@@ -174,7 +174,7 @@ Studio 只负责传送该签名——与桌面版 `URTC Flasher` 相同的模式
 ## 🚀 快速开始
 
 ### 前置条件
-- Node.js（v18+）
+- Node.js 20 LTS+
 - npm
 
 ### 安装

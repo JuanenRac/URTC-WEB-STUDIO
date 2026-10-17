@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CanFrame } from '../../types';
 import { useKeepalive } from '../../hooks/useKeepalive';
+import { parseCustomFrame, customFrameErrorText } from '../../lib/customFrame';
 import { Section, Field, inputCls, btnCls, btnPrimaryCls, safeInt } from './shared';
 import { ToolCtx } from './ToolPanels';
 import {
@@ -67,7 +68,7 @@ export const GlobalControlsPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
         </div>
       </div>
       <div className="mt-3">
-        <button className={btnPrimaryCls} onClick={send} disabled={!ctx.isConnected}>{t('testerglobal.send', 'Send')}</button>
+        <button className={btnPrimaryCls} onClick={() => { try { Promise.resolve(send()).catch(() => {}); } catch { /* the message is shown below */ } }} disabled={!ctx.isConnected}>{t('testerglobal.send', 'Send')}</button>
       </div>
     </Section>
   );
@@ -309,13 +310,19 @@ export const CustomFramePanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   const [repeat, setRepeat] = useState(false);
   const [intervalMs, setIntervalMs] = useState(100);
 
+  const [frameError, setFrameError] = useState('');
+
   const send = () => {
-    const id = parseInt(idHex, 16) & 0x7FF;
-    const data = dataHex.trim().split(/\s+/).filter(Boolean).slice(0, 8).map(h => parseInt(h, 16));
-    return ctx.sendFrame(id, data, 'Custom frame');
+    const parsed = parseCustomFrame(idHex, dataHex);
+    if (parsed.ok === false) {
+      setFrameError(customFrameErrorText(t, parsed.error));
+      throw new Error('invalid custom frame');
+    }
+    setFrameError('');
+    return ctx.sendFrame(parsed.id, parsed.data, 'Custom frame');
   };
 
-  useKeepalive(repeat, Math.max(10, intervalMs), send);
+  useKeepalive(repeat, Math.max(10, intervalMs), send, () => setRepeat(false));
 
   return (
     <Section title={t('testerglobal.custom_frame_title', 'Custom Frame')}>
@@ -329,6 +336,7 @@ export const CustomFramePanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
         <input type="number" min={10} max={10000} value={intervalMs} onChange={(e) => setIntervalMs(safeInt(e.target.value, 100, 10, 10000))} className={`${inputCls} w-20`} />
         <span className="text-xs text-slate-500">{t('testerglobal.ms', 'ms')}</span>
       </div>
+      {frameError && <div className="mt-2 text-xs text-red-400">{frameError}</div>}
     </Section>
   );
 };
