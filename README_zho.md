@@ -108,13 +108,25 @@ CAN ID：
 - **通过 CAN 进行固件读回/备份**（`0x7FE`/`0x7FF`）——在你覆盖它之前,
   以每页 2KB 的速度配合主机 ACK,读回主槽当前的内容,并将其保存为
   `.bin` 下载文件。
-- **实时板卡版本查询**（`0x7F8`/`0x7F9`/`0x7FA`）——显示真实的应答方
+- **实时板卡版本查询**（`0x7F8`/`0x7F9`/`0x7FA`/`0x7E9`）——显示真实的应答方
   （应用或引导程序）、HardwareID 和版本,而非一个模拟的开关。
 - **已发布的签名和摘要**——URTC 构建生成的每个镜像都附带
   `<file>.manifest.json`（版本、`sha256` 以及引导程序期望的 `hmac_sha256`
   签名）和 `<file>.sha256`。应用发送该已发布的签名；如果清单中的 `sha256`
   与文件不符，将**阻止**刷写；向引导程序报告的是清单中的版本。从磁盘选择的
-  文件没有清单：只能使用为该次刷写输入的签名密钥来刷写（测试板）。
+  文件没有清单：只能使用为该次刷写输入的签名密钥来刷写（测试板），除非同时
+  选择了它的 `.manifest.json`。
+- **固件补丁号**（`0x7E9`，以及从属板扩展的 `0x218`）——已安装的固件和所选镜像
+  以 主版本.次版本.补丁 显示。只有双方都带有补丁号时它才参与比较；早于此功能的
+  板卡（不发送 `0x7E9`）继续按 主版本.次版本 工作；补丁号只会发给已声明支持它
+  的引导程序，写入 END_UPDATE。日志会说明镜像比板卡报告的版本更旧、相同还是更新。
+- **来自最新 GitHub 发布版本的固件**——二进制文件是每个 URTC 版本发布版本的
+  附件，而不是 git 中的文件。列表来自 `JuanenRac/URTC` 的发布版本 API（只列出
+  所选板卡的应用镜像，每个都带有其 `.sha256` 和 `.manifest.json`）；下载的镜像
+  必须与发布版本公布的摘要一致，镜像、清单和签名检查依然保留。GitHub 从不发送
+  CORS 头的主机提供这些文件，因此浏览器可能无法下载：日志会说明，此时可使用
+  内置文件夹中的镜像，或从发布页面下载后通过“浏览”连同其 `.manifest.json`
+  一起选择。
 - **板卡配置**：扩展板类型 / MLX9064x 传感器变体 / 自由工具配置（ID
   引脚 `11111`）/ 外设信息与序列号——`0x1A0`-`0x1A7`。
 
@@ -166,6 +178,7 @@ SWD/JTAG 选项卡说明了桌面版 `URTC Flasher` 工具在本地会运行的�
 - 热成像检测的错误计数器（`0x1AA`/`0x1AB`）。
 - 仅监听模式和手动选择比特率：无法接入没有任何板子应答的总线。
 - 读取热成像图像时不会先检查传感器是否就绪，也不会重试丢失的数据块。
+- 在浏览器中直接从 GitHub 发布版本下载固件文件：GitHub 从不带 CORS 头的主机提供发布版本的文件，因此下载可能被阻止（内置镜像，或从磁盘选择的文件连同其 `.manifest.json`，始终可用）。
 
 ## 🔐 安全说明：本应用不包含签名密钥
 
@@ -180,7 +193,11 @@ Studio 只负责传送该签名——与桌面版 `URTC Flasher` 相同的模式
 会给出提示。参见 URTC 的 `docs/FIRMWARE_SIGNING.TXT`。
 
 `public/firmware/` 中正是 URTC 发布的文件（相同名称、相同字节，并附带附属
-文件）。使用 `npm run sync-firmware` 更新，它会检查每个摘要并重新生成
+文件）。URTC 的二进制文件不在 git 中：它们是每个版本 GitHub 发布版本的附件。
+`npm run sync-firmware` 会下载最新的发布版本（指定版本用
+`npm run sync-firmware -- --tag v0.3.5`），或把本地文件夹作为参数
+（台架构建用 `npm run sync-firmware -- ../URTC/firmware`）。两种方式都会在改动
+`public/firmware/` 之前检查每个摘要和签名字段，并重新生成
 `src/lib/bundledFirmware.ts`；测试会对照清单校验该文件包。
 
 ## 🚀 快速开始
@@ -318,6 +335,9 @@ npm run preview
 │   ├── lib/
 │   │   ├── flasher.ts               OTA 协议常量、CRC32/HMAC 辅助函数、
 │   │   │                            清单解析（不含签名密钥）
+│   │   ├── boardVersion.ts          版本查询：0x7F9/0x7FA/0x7E9 以及从属板的 0x217/0x218
+│   │   ├── githubRelease.ts         最新 GitHub 发布版本的镜像及其下载
+│   │   ├── firmwareImage.ts         镜像检查、清单目标与版本（含补丁号）
 │   │   ├── firmwareSignature.ts     选择要发送的签名：已发布的签名，或为单次
 │   │   │                            刷写输入的密钥；sha256 检查
 │   │   ├── quickState.ts            0x111 解码（热故障、复位原因）
@@ -326,13 +346,13 @@ npm run preview
 │   │                                 镜像 tester_config.py
 │   └── locales/                     界面字符串——en.json、es.json、
 │                                     de.json、fr.json、it.json、
-│                                     zh.json、ja.json
+│                                     zh.json、ja.json、pt.json
 ├── scripts/
 │   ├── bump-version.mjs             无依赖的版本递增脚本;如今已是
 │   │                                 遗留脚本,仅作参考 - 已由 bump_manifest_version.py
 │   │                                 取代（见上方“版本管理”）
-│   └── sync-firmware.mjs            将 URTC 构建复制到 public/firmware/
-│   │                                 （校验摘要）- npm run sync-firmware
+│   └── sync-firmware.mjs            将 URTC 发布版本文件（或本地文件夹）复制到
+│   │                                 public/firmware/，校验摘要 - npm run sync-firmware
 ├── public/
 │   └── firmware/                    主应用程序、主引导程序、扩展从属
 │                                     应用程序,以及扩展从属引导程序的

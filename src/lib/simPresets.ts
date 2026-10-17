@@ -55,6 +55,7 @@ export const PRESET_GROUPS: { system: PresetButton[]; tool: PresetButton[]; boot
     { label: '0x7F8 Query Version', id: '0x7F8' },
     { label: '0x7F9 Version Response', id: '0x7F9' },
     { label: '0x7FA Bootloader Version', id: '0x7FA' },
+    { label: '0x7E9 Version Patch', id: '0x7E9' },
   ],
 };
 
@@ -103,7 +104,7 @@ function simulationOf(presetId: string, activeToolId: number, activeToolName: st
     case '0x7F0':
       return { frames: [tx('0x7F0', 'B0 07 1D 5A', 'Enter bootloader (magic)'), rx('0x7F5', '01', 'Bootloader status: listening', 300)] };
     case '0x7F8':
-      return { frames: [tx('0x7F8', '00', 'Query board version'), rx('0x7F9', '00 03 03 CC 01 00 00 01', 'Application 0.1, HardwareID 0x0303CC01', 150)] };
+      return { frames: [tx('0x7F8', '00', 'Query board version'), rx('0x7F9', '00 03 03 CC 01 00 00 01', 'Application 0.1, HardwareID 0x0303CC01', 150), rx('0x7E9', '00 FF 00', 'Patch number not reported (old firmware)', 200)] };
     default:
       return { frames: [tx(presetId, '00 00 00 00 00 00 00 00', `Simulated example frame for ${presetId}`)] };
   }

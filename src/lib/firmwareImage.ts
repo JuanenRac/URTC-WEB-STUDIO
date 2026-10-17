@@ -1,4 +1,4 @@
-import { FirmwareManifest, APP_MAX_SIZE, SLAVE_APP_MAX_SIZE, THIS_HARDWARE_ID, SLAVE_HARDWARE_ID } from './flasher';
+import { FirmwareVersion, FirmwareManifest, APP_MAX_SIZE, SLAVE_APP_MAX_SIZE, THIS_HARDWARE_ID, SLAVE_HARDWARE_ID } from './flasher';
 
 // Checks that run before anything is sent to a board, shared by every place
 // that offers or flashes an image. They mirror the desktop Flasher's own
@@ -62,16 +62,23 @@ function hex32(v: number): string {
 }
 
 /**
- * The version declared to the bootloader's anti-rollback check: the manifest's, else the one in the file name ("..._v0.3.3.bin"). There is no made-up fallback: a wrong
+ * The version declared to the bootloader's anti-rollback check: the manifest's, else the one in the file name ("..._v0.3.3.bin").
+ * The third component, when present, is the PATCH. There is no made-up fallback: a wrong
  * version stored in the board would make every later legitimate update look like a rollback.
  */
-export function resolveVersion(manifest: FirmwareManifest | null, fileName: string): { major: number; minor: number } | null {
-  const candidates: Array<[number, number] | null> = [];
-  if (manifest?.versionMajor !== undefined && manifest.versionMinor !== undefined) candidates.push([manifest.versionMajor, manifest.versionMinor]);
-  const m = /[vV](\d+)\.(\d+)/.exec(fileName);
-  if (m) candidates.push([parseInt(m[1], 10), parseInt(m[2], 10)]);
+export function resolveVersion(manifest: FirmwareManifest | null, fileName: string): FirmwareVersion | null {
+  const candidates: FirmwareVersion[] = [];
+  if (manifest?.versionMajor !== undefined && manifest.versionMinor !== undefined) {
+    candidates.push({ major: manifest.versionMajor, minor: manifest.versionMinor, patch: manifest.versionPatch });
+  }
+  const m = /[vV](\d+)\.(\d+)(?:\.(\d+))?/.exec(fileName);
+  if (m) candidates.push({ major: parseInt(m[1], 10), minor: parseInt(m[2], 10), patch: m[3] !== undefined ? parseInt(m[3], 10) : undefined });
   for (const c of candidates) {
-    if (c && c[0] >= 0 && c[0] <= 255 && c[1] >= 0 && c[1] <= 255) return { major: c[0], minor: c[1] };
+    if (c.major >= 0 && c.major <= 255 && c.minor >= 0 && c.minor <= 255) {
+      // a patch outside 0..127 cannot travel in the minor field, so it is not claimed
+      const patch = c.patch !== undefined && c.patch >= 0 && c.patch <= 0x7F ? c.patch : undefined;
+      return patch === undefined ? { major: c.major, minor: c.minor } : { major: c.major, minor: c.minor, patch };
+    }
   }
   return null;
 }

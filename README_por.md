@@ -117,7 +117,7 @@ CAN IDs:
 - **Leitura de volta / cópia de segurança do firmware por CAN** (`0x7FE`/`0x7FF`) - lê o conteúdo
   atual do slot principal antes de o sobrescrever, a um ritmo de 2KB/página
   com ACKs do host, e guarda-o como uma transferência `.bin`.
-- **Consulta da versão da placa em direto** (`0x7F8`/`0x7F9`/`0x7FA`) - mostra o
+- **Consulta da versão da placa em direto** (`0x7F8`/`0x7F9`/`0x7FA`/`0x7E9`) - mostra o
   respondedor real (app ou bootloader), o HardwareID e a versão, não um interruptor
   simulado.
 - **Assinatura e digest publicados** - cada imagem da build do URTC traz
@@ -126,7 +126,25 @@ CAN IDs:
   um `sha256` do manifesto que não corresponda ao ficheiro **bloqueia** a gravação,
   e a versão do manifesto é a que é comunicada ao bootloader. Um ficheiro escolhido
   a partir do disco não tem manifesto: só pode ser gravado com uma chave de assinatura
-  introduzida para essa gravação (placas de bancada).
+  introduzida para essa gravação (placas de bancada), a não ser que o seu
+  `.manifest.json` seja escolhido em conjunto.
+- **Número de patch do firmware** (`0x7E9`, e o `0x218` alargado do escravo) -
+  o firmware instalado e a imagem selecionada são mostrados como
+  maior.menor.patch. O patch só entra na comparação quando os dois lados o
+  trazem, uma placa anterior (não envia `0x7E9`) continua a funcionar com
+  maior.menor, e o patch só vai em END_UPDATE para um bootloader que o tenha
+  anunciado. O registo diz se a imagem é mais antiga, igual ou mais recente do
+  que o comunicado pela placa.
+- **Firmware da release mais recente do GitHub** - os binários são anexos da
+  release de cada versão do URTC, não ficheiros no git. A lista vem da API de
+  releases de `JuanenRac/URTC` (apenas as imagens de aplicação da placa
+  selecionada, cada uma com o seu `.sha256` e o seu `.manifest.json`); uma
+  imagem transferida tem de corresponder aos digests que a release publica, e
+  mantêm-se as verificações de imagem, manifesto e assinatura. O GitHub serve os
+  ficheiros a partir de um anfitrião que não envia cabeçalhos CORS, pelo que um
+  navegador pode não os conseguir transferir: o registo di-lo, e a imagem pode
+  ser tirada da pasta incluída, ou transferida da página da release e escolhida
+  com Procurar em conjunto com o seu `.manifest.json`.
 - **Configuração da placa**: tipo de placa de expansão / variante do sensor MLX9064x /
   configuração livre de ferramenta (pinos de ID `11111`) / informação de periféricos e
   número de série - `0x1A0`-`0x1A7`.
@@ -187,6 +205,7 @@ Portado a partir dos próprios `tester_tool_panels.py` /
 - Os contadores de erro da inspeção térmica (`0x1AA`/`0x1AB`).
 - Um modo só de escuta e a escolha da velocidade à mão: não é possível entrar num barramento em que nenhuma placa responde.
 - A leitura da imagem térmica não verifica antes se o sensor está pronto nem repete um bloco perdido.
+- Transferir um ficheiro de firmware diretamente da release do GitHub dentro do navegador: o GitHub serve os ficheiros de uma release a partir de um anfitrião sem cabeçalhos CORS, pelo que a transferência pode ser bloqueada (a imagem incluída, ou um ficheiro escolhido do disco com o seu `.manifest.json`, funcionam sempre).
 
 ## 🔐 Nota de segurança: nenhuma chave de assinatura nesta aplicação
 
@@ -205,8 +224,13 @@ só se instalam em placas cujo bootloader tenha sido compilado da mesma forma - 
 registo indica-o. Consulte o `docs/FIRMWARE_SIGNING.TXT` do URTC.
 
 `public/firmware/` contém exatamente os ficheiros que o URTC publicou (mesmos
-nomes, mesmos bytes, com os seus ficheiros auxiliares). Atualize-o com
-`npm run sync-firmware`, que verifica cada digest e regenera
+nomes, mesmos bytes, com os seus ficheiros auxiliares). Os binários do URTC não
+estão no git: são anexos da release de cada versão no GitHub.
+`npm run sync-firmware` transfere a release mais recente
+(`npm run sync-firmware -- --tag v0.3.5` para uma em concreto), ou recebe uma
+pasta local como argumento (`npm run sync-firmware -- ../URTC/firmware` para
+uma build de bancada). Em ambos os casos verifica cada digest e os campos de
+assinatura antes de tocar em `public/firmware/`, e regenera
 `src/lib/bundledFirmware.ts`; um teste verifica o pacote contra os seus
 manifestos.
 
@@ -350,6 +374,9 @@ projeto.
 │   ├── lib/
 │   │   ├── flasher.ts               Constantes do protocolo OTA, auxiliares CRC32/HMAC,
 │   │   │                            leitura de manifestos (sem chave de assinatura)
+│   │   ├── boardVersion.ts          Consultas de versão: 0x7F9/0x7FA/0x7E9 e 0x217/0x218 do escravo
+│   │   ├── githubRelease.ts         Imagens da release mais recente do GitHub e a sua transferência
+│   │   ├── firmwareImage.ts         Verificações da imagem, destino do manifesto e versão (com patch)
 │   │   ├── firmwareSignature.ts     Escolhe a assinatura a enviar: a publicada,
 │   │   │                            ou uma chave introduzida para uma gravacao; verificacao sha256
 │   │   ├── quickState.ts            Descodificacao de 0x111 (falha termica, causa de reset)
@@ -357,13 +384,14 @@ projeto.
 │   │   └── canIds.ts                Constantes de CAN ID para o Tester Studio - espelha
 │   │                                 tester_config.py byte a byte
 │   └── locales/                     Cadeias da UI - en.json, es.json, de.json, fr.json,
-│                                     it.json, ja.json, zh.json
+│                                     it.json, ja.json, zh.json, pt.json
 ├── scripts/
 │   ├── bump-version.mjs             Script de subida de versao sem dependencias; legado
 │   │                                 hoje, mantido apenas como referencia - substituido
 │   │                                 por bump_manifest_version.py (ver "Versionamento")
-│   └── sync-firmware.mjs            Copia a build do URTC para public/firmware/
-│                                     (digests verificados) - npm run sync-firmware
+│   └── sync-firmware.mjs            Copia os ficheiros da release do URTC (ou uma
+│                                     pasta local) para public/firmware/, digests
+│                                     verificados - npm run sync-firmware
 ├── public/
 │   └── firmware/                    .bin/.elf/.hex incluidos para a aplicacao principal,
 │                                     o bootloader principal, a aplicacao do slave de expansao,

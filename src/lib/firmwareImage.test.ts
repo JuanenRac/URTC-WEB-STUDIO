@@ -66,8 +66,8 @@ describe("the sidecar of an image", () => {
 
 describe("the version declared to the bootloader", () => {
   it("comes from the manifest first, then from the file name", () => {
-    expect(resolveVersion(parseManifest({ version: "0.3.3" }), "x.bin")).toEqual({ major: 0, minor: 3 });
-    expect(resolveVersion(null, "URTC_MAIN_FIRMWARE_v0.4.1.bin")).toEqual({ major: 0, minor: 4 });
+    expect(resolveVersion(parseManifest({ version: "0.3.3" }), "x.bin")).toEqual({ major: 0, minor: 3, patch: 3 });
+    expect(resolveVersion(null, "URTC_MAIN_FIRMWARE_v0.4.1.bin")).toEqual({ major: 0, minor: 4, patch: 1 });
   });
   it("is unknown, never made up, when neither has one", () => {
     expect(resolveVersion(null, "firmware.bin")).toBeNull();

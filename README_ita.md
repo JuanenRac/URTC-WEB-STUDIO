@@ -118,7 +118,7 @@ ID:
 - **Rilettura/backup firmware via CAN** (`0x7FE`/`0x7FF`) - legge il contenuto
   attuale dello slot principale prima che tu lo sovrascriva, al ritmo di 2KB/pagina
   con ACK dell'host, e lo salva come download `.bin`.
-- **Interrogazione versione scheda dal vivo** (`0x7F8`/`0x7F9`/`0x7FA`) - mostra il
+- **Interrogazione versione scheda dal vivo** (`0x7F8`/`0x7F9`/`0x7FA`/`0x7E9`) - mostra il
   vero rispondente (app o bootloader), HardwareID, e versione, non un interruttore
   simulato.
 - **Firma e impronta pubblicate** - ogni immagine della build URTC arriva
@@ -127,7 +127,25 @@ ID:
   uno `sha256` del manifest che non corrisponde al file **blocca** il flash,
   e la versione del manifest è quella comunicata al bootloader. Un file
   scelto dal disco non ha manifest: si può flashare solo con una chiave di
-  firma inserita per quel singolo flash (schede da banco).
+  firma inserita per quel singolo flash (schede da banco), a meno che non si
+  scelga insieme il suo `.manifest.json`.
+- **Numero di patch del firmware** (`0x7E9`, e il `0x218` esteso dello slave) -
+  il firmware installato e l'immagine scelta sono mostrati come
+  major.minor.patch. La patch entra nel confronto solo quando la portano
+  entrambi i lati, una scheda precedente (non invia `0x7E9`) continua a
+  funzionare con major.minor, e la patch va in END_UPDATE solo verso un
+  bootloader che l'ha annunciata. Il registro dice se l'immagine è più
+  vecchia, uguale o più recente di quanto riportato dalla scheda.
+- **Firmware dalla release GitHub più recente** - i binari sono file allegati
+  alla release di ogni versione di URTC, non file in git. L'elenco viene
+  dall'API delle release di `JuanenRac/URTC` (solo le immagini applicative
+  della scheda scelta, ciascuna con il suo `.sha256` e il suo
+  `.manifest.json`); un'immagine scaricata deve corrispondere alle impronte
+  pubblicate dalla release, e restano i controlli di immagine, manifest e
+  firma. GitHub serve i file da un host che non invia intestazioni CORS,
+  quindi un browser può non riuscire a scaricarli: il registro lo dice, e
+  l'immagine può essere presa dalla cartella inclusa, oppure scaricata dalla
+  pagina della release e scelta con Sfoglia insieme al suo `.manifest.json`.
 - **Configurazione scheda**: tipo di scheda di espansione / variante sensore
   MLX9064x / configurazione utensile libero (pin ID `11111`) / info periferiche e
   numero di serie - `0x1A0`-`0x1A7`.
@@ -189,6 +207,7 @@ Portato dai propri `tester_tool_panels.py` /
 - I contatori di errore dell'ispezione termica (`0x1AA`/`0x1AB`).
 - Una modalità di solo ascolto e la scelta manuale della velocità: non ci si può agganciare a un bus su cui nessuna scheda risponde.
 - La lettura dell'immagine termica non controlla prima che il sensore sia pronto e non ritenta un blocco perso.
+- Scaricare un file firmware direttamente dalla release GitHub nel browser: GitHub serve i file di una release da un host senza intestazioni CORS, quindi il download può essere bloccato (l'immagine inclusa, o un file scelto dal disco con il suo `.manifest.json`, funzionano sempre).
 
 ## 🔐 Nota di sicurezza: nessuna chiave di firma in questa app
 
@@ -207,8 +226,13 @@ solo su schede il cui bootloader è stato compilato allo stesso modo - il log
 lo segnala. Vedi `docs/FIRMWARE_SIGNING.TXT` in URTC.
 
 `public/firmware/` contiene esattamente i file pubblicati da URTC (stessi
-nomi, stessi byte, con i loro file associati). Si aggiorna con
-`npm run sync-firmware`, che verifica ogni impronta e rigenera
+nomi, stessi byte, con i loro file associati). I binari di URTC non sono in
+git: sono file allegati alla release di ogni versione.
+`npm run sync-firmware` scarica la release più recente
+(`npm run sync-firmware -- --tag v0.3.5` per una precisa), oppure prende una
+cartella locale come argomento (`npm run sync-firmware -- ../URTC/firmware`
+per una build da banco). In entrambi i casi verifica ogni impronta e i campi
+di firma prima di toccare `public/firmware/`, e rigenera
 `src/lib/bundledFirmware.ts`; un test verifica il pacchetto rispetto ai suoi
 manifest.
 
@@ -372,6 +396,9 @@ progetto.
 │   ├── lib/
 │   │   ├── flasher.ts               Costanti del protocollo OTA, helper CRC32/HMAC,
 │   │   │                            lettura dei manifest (nessuna chiave di firma)
+│   │   ├── boardVersion.ts          Richieste di versione: 0x7F9/0x7FA/0x7E9 e 0x217/0x218 dello slave
+│   │   ├── githubRelease.ts         Immagini della release GitHub più recente e relativo download
+│   │   ├── firmwareImage.ts         Controlli dell'immagine, destinazione del manifest e versione (con patch)
 │   │   ├── firmwareSignature.ts     Sceglie la firma da inviare: quella pubblicata o
 │   │   │                            una chiave inserita per un flash; verifica sha256
 │   │   ├── quickState.ts            Decodifica di 0x111 (guasto termico, reset)
@@ -379,13 +406,14 @@ progetto.
 │   │   └── canIds.ts                Costanti CAN ID per Tester Studio -
 │   │                                 rispecchia tester_config.py byte per byte
 │   └── locales/                     Stringhe UI - en.json, es.json, de.json,
-│                                     fr.json, it.json, ja.json, zh.json
+│                                     fr.json, it.json, ja.json, zh.json, pt.json
 ├── scripts/
 │   ├── bump-version.mjs             Script di incremento versione senza dipendenze;
 │   │                                 oggi legacy, mantenuto solo come riferimento
 │   │                                 - sostituito da bump_manifest_version.py (vedi "Versionamento")
-│   └── sync-firmware.mjs            Copia la build URTC in public/firmware/
-│                                     (impronte verificate) - npm run sync-firmware
+│   └── sync-firmware.mjs            Copia i file della release URTC (o una
+│                                     cartella locale) in public/firmware/,
+│                                     impronte verificate - npm run sync-firmware
 ├── public/
 │   └── firmware/                    .bin/.elf/.hex inclusi per l'applicazione
 │                                     principale, il bootloader principale,

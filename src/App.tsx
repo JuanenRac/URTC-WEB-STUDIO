@@ -18,10 +18,11 @@ import { useSerialCanBus } from './hooks/useSerialCanBus';
 import { useFlasher } from './hooks/useFlasher';
 import { useConfirmAction } from './hooks/useConfirmAction';
 import {
-  CAN_ID_QUERY_VERSION, CAN_ID_VERSION_RESPONSE, CAN_ID_BOOTLOADER_VERSION_RESPONSE,
-  THIS_HARDWARE_ID, APP_MAX_SIZE, SLAVE_APP_MAX_SIZE,
-  parseManifest, FirmwareManifest
+  THIS_HARDWARE_ID, SLAVE_HARDWARE_ID, APP_MAX_SIZE, SLAVE_APP_MAX_SIZE,
+  parseManifest, FirmwareManifest, compareVersions, formatVersion, computeSha256Hex
 } from './lib/flasher';
+import { BoardVersionInfo, SlaveVersionInfo, installedVersion } from './lib/boardVersion';
+import { RemoteFirmware, downloadAsset, downloadAssetText, digestMismatch, GithubReleaseError } from './lib/githubRelease';
 import { resolveSignature } from './lib/firmwareSignature';
 import { validateImage, checkSidecar, resolveVersion } from './lib/firmwareImage';
 import { parseCustomFrame, customFrameErrorText } from './lib/customFrame';
@@ -34,15 +35,7 @@ import { rawSendPolicy } from './lib/dangerousActions';
 import { runAllSafeOff } from './lib/safeOff';
 import { downloadBlob } from './lib/download';
 
-export interface BoardVersionInfo {
-  responder: 'application' | 'bootloader';
-  hardwareId: number;
-  appMajor: number;
-  appMinor: number;
-  bootMajor?: number;
-  bootMinor?: number;
-  bootPatch?: number;
-}
+export type { BoardVersionInfo, SlaveVersionInfo };
 
 export default function App() {
   const { t } = useTranslation();
@@ -170,27 +163,14 @@ export default function App() {
   const flasher = useFlasher(serialCan);
   const [boardVersion, setBoardVersion] = useState<BoardVersionInfo | null>(null);
 
-  const handleQueryVersion = async () => {
-    if (!serialCan.isConnected) return;
-    serialCan.flushFrames(CAN_ID_BOOTLOADER_VERSION_RESPONSE);
-    const resp = await serialCan.request(CAN_ID_QUERY_VERSION, [0x00], CAN_ID_VERSION_RESPONSE, 1500, 'Query board version');
-    if (!resp || resp.data.length < 8) { setBoardVersion(null); return; }
-    const responder: BoardVersionInfo['responder'] = resp.data[0] === 0x00 ? 'application' : 'bootloader';
-    const hardwareId = ((resp.data[1] << 24) | (resp.data[2] << 16) | (resp.data[3] << 8) | resp.data[4]) >>> 0;
-    const appMajor = (resp.data[5] << 8) | resp.data[6];
-    const appMinor = resp.data[7];
-    const info: BoardVersionInfo = { responder, hardwareId, appMajor, appMinor };
+  const [slaveVersion, setSlaveVersion] = useState<SlaveVersionInfo | null>(null);
 
-    if (responder === 'bootloader') {
-      // Order between 0x7F9/0x7FA isn't guaranteed - grace window for the companion frame.
-      const bootResp = await serialCan.waitForFrame(CAN_ID_BOOTLOADER_VERSION_RESPONSE, 300);
-      if (bootResp && bootResp.data.length >= 3) {
-        info.bootMajor = bootResp.data[0];
-        info.bootMinor = bootResp.data[1];
-        info.bootPatch = bootResp.data[2];
-      }
-    }
-    setBoardVersion(info);
+  const handleQueryVersion = async () => {
+    setBoardVersion(await flasher.queryVersion());
+  };
+
+  const handleQuerySlaveVersion = async () => {
+    setSlaveVersion(await flasher.queryExpansionVersion());
   };
 
   // Adds a SIMULATED frame to the log. It is only ever local: it is never
@@ -412,26 +392,41 @@ export default function App() {
     }, 2500);
   };
 
-  // Best-effort <file>.manifest.json sidecar lookup, mirroring the Python
-  // flasher's own URTCFlasher._check_manifest: only reachable for files that
-  // came from a known URL (GitHub listing or the local /firmware/ folder) -
-  // a browser-picked File object has no fetchable sidecar.
-  const tryFetchManifest = async (fileName: string, downloadUrl?: string): Promise<FirmwareManifest | null> => {
-    const manifestUrl = downloadUrl ? `${downloadUrl}.manifest.json` : `/firmware/${fileName}.manifest.json`;
+  // <file>.manifest.json sidecar, mirroring the Python flasher's own
+  // URTCFlasher._check_manifest. An image of the newest GitHub release brings its
+  // sidecar among the release assets (a failed download is an error there: going on
+  // without it would ask for a signing key instead of using the published signature);
+  // a bundled image has it next to it in /firmware/; a browser-picked File has none.
+  const tryFetchManifest = async (fileName: string, remote?: RemoteFirmware): Promise<FirmwareManifest | null> => {
     try {
-      const res = await fetch(manifestUrl);
+      if (remote) {
+        if (!remote.manifest) return null;
+        return parseManifest(JSON.parse(await downloadAssetText(fetch, remote.manifest)));
+      }
+      const res = await fetch(`/firmware/${fileName}.manifest.json`);
       if (!res.ok) return null;
       return parseManifest(await res.json());
     } catch {
+      if (remote) throw new Error(t('flasher.err_manifest_download', 'The manifest of this image could not be downloaded from the GitHub release.'));
       return null;
     }
   };
 
-  const loadFirmwareBytes = async (fwFile: string, fileObj?: File | null, downloadUrl?: string): Promise<Uint8Array> => {
+  const loadFirmwareBytes = async (fwFile: string, fileObj?: File | null, remote?: RemoteFirmware): Promise<Uint8Array> => {
     if (fileObj) return new Uint8Array(await fileObj.arrayBuffer());
-    const res = await fetch(downloadUrl || `/firmware/${fwFile}`);
+    if (remote) return new Uint8Array(await downloadAsset(fetch, remote.asset));
+    const res = await fetch(`/firmware/${fwFile}`);
     if (!res.ok) throw new Error(t('flasher.error_fetch_firmware', 'Failed to fetch firmware file'));
     return new Uint8Array(await res.arrayBuffer());
+  };
+
+  const githubErrorText = (e: unknown): string => {
+    if (e instanceof GithubReleaseError) {
+      if (e.code === 'rate_limit') return t('flasher.error_github_rate_limit', 'GitHub request limit reached: try again later, or use the bundled image or a file from disk.');
+      if (e.code === 'no_release' || e.code === 'no_images') return t('flasher.error_github_no_release', 'The newest GitHub release has no firmware image.');
+      if (e.code === 'network') return t('flasher.error_github_download_blocked', 'The browser could not download this file from GitHub (release files are served from a host that does not allow downloads from a web page). Download it from the release page, then pick it with Browse together with its .manifest.json, or use the bundled image.');
+    }
+    return t('flasher.error_fetch_firmware', 'Failed to fetch firmware file');
   };
 
   // Start REAL CAN-OTA update (main board or expansion slave)
@@ -439,8 +434,9 @@ export default function App() {
     target: 'main' | 'slave',
     fwFile: string,
     fileObj: File | null | undefined,
-    downloadUrl: string | undefined,
-    opts: { triggerBootloader: boolean; eraseFram: boolean; allowDowngrade: boolean }
+    remote: RemoteFirmware | undefined,
+    opts: { triggerBootloader: boolean; eraseFram: boolean; allowDowngrade: boolean },
+    manifestFile?: File | null
   ) => {
     if (!serialCan.isConnected) {
       alert(t('flasher.alert_connect_first', 'Please connect to the USB-CAN adapter first using the top header.'));
@@ -451,9 +447,9 @@ export default function App() {
 
     let data: Uint8Array;
     try {
-      data = await loadFirmwareBytes(fwFile, fileObj, downloadUrl);
+      data = await loadFirmwareBytes(fwFile, fileObj, remote);
     } catch (e: any) {
-      flasher.setFlasherState(prev => ({ ...prev, log: [...prev.log, t('flasher.log_could_not_read', 'ERROR: could not read firmware file: {{message}}', { message: e.message })] }));
+      flasher.setFlasherState(prev => ({ ...prev, log: [...prev.log, t('flasher.log_could_not_read', 'ERROR: could not read firmware file: {{message}}', { message: remote ? githubErrorText(e) : e.message })] }));
       return;
     }
 
@@ -475,7 +471,34 @@ export default function App() {
       return;
     }
 
-    const manifest = fileObj ? null : await tryFetchManifest(fileName, downloadUrl);
+    let manifest: FirmwareManifest | null = null;
+    if (fileObj && manifestFile) {
+      try {
+        manifest = parseManifest(JSON.parse(await manifestFile.text()));
+      } catch {
+        refuse(t('flasher.err_manifest_unreadable', 'The selected manifest is not valid JSON.'));
+        return;
+      }
+    } else if (!fileObj) {
+      try {
+        manifest = await tryFetchManifest(fileName, remote);
+      } catch (e: any) {
+        refuse(e.message);
+        return;
+      }
+    }
+    // An image of the release must match the digests the release publishes for it (its .sha256 file and the digest GitHub lists).
+    if (remote && !fileObj) {
+      let sidecarText: string | null = null;
+      if (remote.sha256) {
+        try { sidecarText = await downloadAssetText(fetch, remote.sha256); } catch { refuse(t('flasher.err_manifest_download', 'The manifest of this image could not be downloaded from the GitHub release.')); return; }
+      }
+      const expected = digestMismatch(await computeSha256Hex(data.slice().buffer as ArrayBuffer), sidecarText, remote.asset.digest);
+      if (expected) {
+        refuse(t('flasher.err_release_digest', 'The downloaded image does not match the sha256 published by the release ({{expected}}).', { expected }));
+        return;
+      }
+    }
     const sidecarProblem = checkSidecar(manifest, target);
     if (sidecarProblem) {
       refuse(sidecarProblem.code === 'malformed_signature'
@@ -489,7 +512,20 @@ export default function App() {
       refuse(t('flasher.err_version_unknown', 'The version of this image is unknown: add a manifest with a version, or keep the version in the file name (for example _v0.3.3.bin).'));
       return;
     }
-    const reportMajor = version.major, reportMinor = version.minor;
+    const reportMajor = version.major, reportMinor = version.minor, reportPatch = version.patch;
+    // Compared with what the board reported, if it was queried and is the board being updated; the patch counts only when both sides carry one.
+    const installed = target === 'slave'
+      ? (slaveVersion && slaveVersion.hardwareId === SLAVE_HARDWARE_ID ? installedVersion(slaveVersion) : null)
+      : (boardVersion && boardVersion.hardwareId === THIS_HARDWARE_ID ? installedVersion(boardVersion) : null);
+    if (installed) {
+      const order = compareVersions(installed, version);
+      const params = { installed: formatVersion(installed), image: formatVersion(version) };
+      flasher.appendLog(order < 0
+        ? t('flasher.log_image_older', 'The image ({{image}}) is older than the installed firmware ({{installed}}): the bootloader refuses it unless a downgrade is authorized.', params)
+        : order === 0
+          ? t('flasher.log_image_same', 'The image ({{image}}) has the same version as the installed firmware ({{installed}}).', params)
+          : t('flasher.log_image_newer', 'The image ({{image}}) is newer than the installed firmware ({{installed}}).', params));
+    }
     if (manifest?.versionMajor !== undefined) {
       flasher.appendLog(t('flasher.log_manifest_found', 'Manifest found: reporting declared version {{version}} to the bootloader.', { version: manifest.version }));
     }
@@ -518,9 +554,9 @@ export default function App() {
 
     try {
       if (target === 'slave') {
-        await flasher.flashSlave(data, { triggerBootloader: opts.triggerBootloader, reportMajor, reportMinor, signature });
+        await flasher.flashSlave(data, { triggerBootloader: opts.triggerBootloader, reportMajor, reportMinor, reportPatch, signature });
       } else {
-        await flasher.flashMain(data, { ...opts, reportMajor, reportMinor, signature });
+        await flasher.flashMain(data, { ...opts, reportMajor, reportMinor, reportPatch, signature });
         handleResetSplash();
       }
     } catch (e: any) {
@@ -785,6 +821,8 @@ export default function App() {
             isConnected={serialCan.isConnected}
             boardVersion={boardVersion}
             onQueryVersion={handleQueryVersion}
+            slaveVersion={slaveVersion}
+            onQuerySlaveVersion={handleQuerySlaveVersion}
             errorCounters={flasher.errorCounters}
             onQueryErrorCounters={flasher.queryErrorCounters}
             onSendFrame={serialCan.sendFrame}

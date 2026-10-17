@@ -117,7 +117,7 @@ IDs:
 - **Firmware readback / backup over CAN** (`0x7FE`/`0x7FF`) - reads the main
   slot's current contents back before you overwrite it, paced 2KB/page with
   host ACKs, and saves it as a `.bin` download.
-- **Live board version query** (`0x7F8`/`0x7F9`/`0x7FA`) - shows the real
+- **Live board version query** (`0x7F8`/`0x7F9`/`0x7FA`/`0x7E9`) - shows the real
   responder (app or bootloader), HardwareID, and version, not a simulated
   toggle.
 - **Published signature and digest** - every image from the URTC build ships
@@ -126,7 +126,24 @@ IDs:
   published signature, a manifest `sha256` that does not match the file
   **blocks** the flash, and the manifest's version is what gets reported to
   the bootloader. A file picked from disk has no manifest: it can only be
-  flashed with a signing key typed in for that one flash (bench boards).
+  flashed with a signing key typed in for that one flash (bench boards),
+  unless its `.manifest.json` is picked together with it.
+- **Firmware patch number** (`0x7E9`, and the extended `0x218` of the slave) -
+  the installed firmware and the selected image are shown as
+  major.minor.patch. The patch takes part in the comparison only when both
+  sides carry one, a board that predates it (it sends no `0x7E9`) keeps
+  working with major.minor, and the patch goes into END_UPDATE only towards a
+  bootloader that announced it. The log says whether the image is older,
+  equal or newer than what the board reported.
+- **Firmware from the newest GitHub release** - the binaries are assets of the
+  release of each URTC version, not files in git. The list comes from the
+  releases API of `JuanenRac/URTC` (only the application images of the selected
+  board, each with its `.sha256` and `.manifest.json`); a downloaded image must
+  match the digests the release publishes, and the image, manifest and
+  signature checks stay. GitHub serves the files from a host that sends no CORS
+  headers, so a browser may be unable to download them: the log then says so,
+  and the image can be taken from the bundled folder, or downloaded from the
+  release page and picked with Browse together with its `.manifest.json`.
 - **Board config**: expansion board type / MLX9064x sensor variant / free
   tool configuration (ID pins `11111`) / peripheral info & serial number -
   `0x1A0`-`0x1A7`.
@@ -185,6 +202,7 @@ Ported from `URTC-TESTER`'s own `tester_tool_panels.py` /
 - The thermal inspection error counters (`0x1AA`/`0x1AB`).
 - A listen-only mode and choosing the bitrate by hand: a bus on which no board answers cannot be joined.
 - Reading the thermal image does not check that the sensor is ready first and does not retry a lost chunk.
+- Downloading a firmware file straight from the GitHub release inside the browser: GitHub serves release files from a host without CORS headers, so the download may be blocked (the bundled image, or a file picked from disk with its `.manifest.json`, always work).
 
 ## 🔐 Security note: no signing key in this app
 
@@ -202,9 +220,13 @@ bootloader was built the same way - the log says so. See URTC's
 `docs/FIRMWARE_SIGNING.TXT`.
 
 `public/firmware/` holds exactly the files URTC published (same names, same
-bytes, with their sidecars). Refresh it with `npm run sync-firmware`, which
-checks every digest and regenerates `src/lib/bundledFirmware.ts`; a test
-verifies the bundle against its manifests.
+bytes, with their sidecars). The URTC binaries are not in git: they are assets
+of each version's GitHub release. `npm run sync-firmware` downloads the newest
+release (`npm run sync-firmware -- --tag v0.3.5` for a given one), or takes a
+local folder as an argument (`npm run sync-firmware -- ../URTC/firmware` for a
+bench build). Either way it checks every digest and the signature fields before
+touching `public/firmware/`, and regenerates `src/lib/bundledFirmware.ts`; a
+test verifies the bundle against its manifests.
 
 ## 🚀 Getting Started
 
@@ -346,6 +368,9 @@ project.
 │   ├── lib/
 │   │   ├── flasher.ts               OTA protocol constants, CRC32/HMAC helpers,
 │   │   │                            manifest parsing (no signing key)
+│   │   ├── boardVersion.ts          Version queries: 0x7F9/0x7FA/0x7E9 and the slave's 0x217/0x218
+│   │   ├── githubRelease.ts         Images of the newest GitHub release and their download
+│   │   ├── firmwareImage.ts         Image checks, manifest target and version (with patch)
 │   │   ├── firmwareSignature.ts     Picks the signature to send: the published one,
 │   │   │                            or a key typed in for one flash; sha256 check
 │   │   ├── quickState.ts            0x111 decoding (thermal fault, reset cause)
@@ -353,13 +378,14 @@ project.
 │   │   └── canIds.ts                CAN ID constants for Tester Studio - mirrors
 │   │                                 tester_config.py byte-for-byte
 │   └── locales/                     UI strings - en.json, es.json, de.json, fr.json,
-│                                     it.json, ja.json, zh.json
+│                                     it.json, ja.json, zh.json, pt.json
 ├── scripts/
 │   ├── bump-version.mjs             Dependency-free version-bump script; legacy
 │   │                                 today, kept for reference only - superseded
 │   │                                 by bump_manifest_version.py (see "Versioning")
-│   └── sync-firmware.mjs            Copies the URTC build into public/firmware/
-│                                     (digests checked) - npm run sync-firmware
+│   └── sync-firmware.mjs            Copies the URTC release assets (or a local
+│                                     folder) into public/firmware/, digests
+│                                     checked - npm run sync-firmware
 ├── public/
 │   └── firmware/                    Bundled .bin/.elf/.hex for the main application,
 │                                     main bootloader, expansion slave application, and

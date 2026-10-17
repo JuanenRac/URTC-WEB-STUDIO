@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { BUNDLED_FIRMWARE } from '../lib/bundledFirmware';
-import { isFlashableFirmwareName } from '../lib/firmwareImage';
+import { isFlashableFirmwareName, resolveVersion } from '../lib/firmwareImage';
+import { RemoteFirmware, listAllReleaseFirmware, GithubReleaseError } from '../lib/githubRelease';
 import { useTranslation } from 'react-i18next';
 import { useConfirmAction } from '../hooks/useConfirmAction';
-import { THIS_HARDWARE_ID, SLAVE_HARDWARE_ID } from '../lib/flasher';
+import { THIS_HARDWARE_ID, SLAVE_HARDWARE_ID, compareVersions, formatVersion } from '../lib/flasher';
+import { installedVersion } from '../lib/boardVersion';
 import { parseSerialNumber } from '../lib/boardConfig';
 import { FlasherState, CanFrame } from '../types';
 import { RefreshCw, ShieldCheck, Cpu, CheckCircle2, AlertOctagon, Terminal, DownloadCloud, XCircle, Fingerprint } from 'lucide-react';
 import { TOOL_PROFILES } from '../data/toolsData';
-import { BoardVersionInfo } from '../App';
+import { BoardVersionInfo, SlaveVersionInfo } from '../App';
 import {
   CAN_ID_EXPANSION_TYPE_RESP, CAN_ID_MLX_VARIANT_RESP, CAN_ID_SET_FREE_TOOL,
   CAN_ID_FREE_TOOL_CONFIG_RESP, CAN_ID_PERIPHERAL_INFO_RESP, CAN_ID_SET_DEVICE_SERIAL, EXPANSION_BOARD_TYPES, MLX_SENSOR_VARIANTS
@@ -19,8 +21,9 @@ interface FlasherStudioProps {
     target: 'main' | 'slave',
     firmwareFile: string,
     fileObj: File | null | undefined,
-    downloadUrl: string | undefined,
-    opts: { triggerBootloader: boolean; eraseFram: boolean; allowDowngrade: boolean }
+    remote: RemoteFirmware | undefined,
+    opts: { triggerBootloader: boolean; eraseFram: boolean; allowDowngrade: boolean },
+    manifestFile?: File | null
   ) => void;
   onStartSwdFlash: (firmwareFile: string, fileObj?: File | null, bootloaderFile?: string, bootloaderObj?: File | null) => void;
   onReadback: () => void;
@@ -29,6 +32,8 @@ interface FlasherStudioProps {
   isConnected: boolean;
   boardVersion: BoardVersionInfo | null;
   onQueryVersion: () => void;
+  slaveVersion: SlaveVersionInfo | null;
+  onQuerySlaveVersion: () => void | Promise<void>;
   errorCounters: { tec: number; rec: number } | null;
   onQueryErrorCounters: () => void;
   onSendFrame?: (id: number, data: number[], description?: string) => Promise<void>;
@@ -36,8 +41,8 @@ interface FlasherStudioProps {
   onRequest?: (id: number, data: number[], respId: number, timeoutMs?: number, description?: string) => Promise<CanFrame | null>;
 }
 
-// Generated from the URTC build by scripts/sync-firmware.mjs: the same files,
-// byte for byte, that URTC/firmware publishes - each with its .sha256 and
+// Generated from the URTC release assets by scripts/sync-firmware.mjs: the same files,
+// byte for byte, that the URTC release publishes - each with its .sha256 and
 // .manifest.json sidecars, so they flash with the published signature.
 
 const LOCAL_FIRMWARE_FILES = [
@@ -58,6 +63,8 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
   isConnected,
   boardVersion,
   onQueryVersion,
+  slaveVersion,
+  onQuerySlaveVersion,
   errorCounters,
   onQueryErrorCounters,
   onSendFrame,
@@ -73,23 +80,28 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
   const [allowDowngrade, setAllowDowngrade] = useState<boolean>(false);
   const [activeFlasherTab, setActiveFlasherTab] = useState<'can-ota' | 'swd' | 'config'>('can-ota');
   const [customFile, setCustomFile] = useState<File | null>(null);
+  // The <image>.manifest.json picked together with a browsed image: a page cannot read a file next to it, so it is picked with it.
+  const [customManifest, setCustomManifest] = useState<File | null>(null);
 
   // GitHub Firmware State
-  const [githubFirmwares, setGithubFirmwares] = useState<{ name: string, size: number, download_url: string }[]>([]);
+  const [githubFirmwares, setGithubFirmwares] = useState<RemoteFirmware[]>([]);
   const [isFetchingGithub, setIsFetchingGithub] = useState(false);
   const [githubError, setGithubError] = useState('');
 
+  // The firmware binaries are assets of the newest GitHub release of JuanenRac/URTC (not files in git).
   const fetchGithubFirmwares = async () => {
     setIsFetchingGithub(true);
     setGithubError('');
     try {
-      const res = await fetch('https://api.github.com/repos/JuanenRac/URTC/contents/firmware');
-      if (!res.ok) throw new Error(t('flasher.error_fetch_github', 'Failed to fetch from GitHub'));
-      const data = await res.json();
-      const files = data.filter((item: any) => item.type === 'file' && item.name.endsWith('.bin'));
-      setGithubFirmwares(files);
+      setGithubFirmwares(await listAllReleaseFirmware(fetch));
     } catch (e: any) {
-      setGithubError(e.message);
+      setGithubFirmwares([]);
+      const code = e instanceof GithubReleaseError ? e.code : 'network';
+      setGithubError(code === 'rate_limit'
+        ? t('flasher.error_github_rate_limit', 'GitHub request limit reached: try again later, or use the bundled image or a file from disk.')
+        : code === 'no_release' || code === 'no_images'
+          ? t('flasher.error_github_no_release', 'The newest GitHub release has no firmware image.')
+          : t('flasher.error_fetch_github', 'Failed to fetch from GitHub'));
     } finally {
       setIsFetchingGithub(false);
     }
@@ -145,6 +157,15 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
     const resp = await onRequest(id, [], id, timeoutMs, `Query ${label}`);
     if (resp) apply(resp.data);
   };
+
+  const [slaveQueried, setSlaveQueried] = useState(false);
+
+  // The version of the selected image (from its file name; the manifest, when present, is read at flash time) against what the board reported.
+  const imageVersion = resolveVersion(null, selectedFirmware);
+  const installedForTarget = flashTarget === 'slave'
+    ? (slaveVersion && slaveVersion.hardwareId === SLAVE_HARDWARE_ID ? installedVersion(slaveVersion) : null)
+    : (boardVersion && boardVersion.hardwareId === THIS_HARDWARE_ID ? installedVersion(boardVersion) : null);
+  const versionOrder = imageVersion && installedForTarget ? compareVersions(installedForTarget, imageVersion) : null;
 
   const busy = flasherState.mode !== 'idle';
   const isBootloaderMode = boardVersion?.responder === 'bootloader';
@@ -206,8 +227,11 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
                 <div className="p-2 rounded bg-slate-900 border border-slate-800">
                   <div className="text-slate-500">{t('flasher.app_version_label', 'App Version')}</div>
                   <div className="text-slate-200 font-semibold">
-                    {boardVersion.hardwareId === 0 ? t('flasher.none_installed', 'none installed') : `${boardVersion.appMajor}.${boardVersion.appMinor}`}
+                    {boardVersion.hardwareId === 0 ? t('flasher.none_installed', 'none installed') : formatVersion(installedVersion(boardVersion))}
                   </div>
+                  {boardVersion.hardwareId !== 0 && boardVersion.appPatch === undefined && (
+                    <div className="text-[10px] text-slate-500 mt-0.5">{t('flasher.patch_not_reported', 'patch number not reported by this firmware')}</div>
+                  )}
                 </div>
                 <div className="p-2 rounded bg-slate-900 border border-slate-800">
                   <div className="text-slate-500">{t('flasher.bootloader_version_label', 'Bootloader Version')}</div>
@@ -305,7 +329,7 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
                   <div className="flex gap-2 items-center">
                     <select
                       value={selectedFirmware}
-                      onChange={(e) => { setSelectedFirmware(e.target.value); setCustomFile(null); }}
+                      onChange={(e) => { setSelectedFirmware(e.target.value); setCustomFile(null); setCustomManifest(null); }}
                       className="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs font-mono text-amber-300 focus:outline-none focus:border-amber-500"
                     >
                       <optgroup label={t('flasher.optgroup_local', 'Local (public/firmware/)')}>
@@ -322,15 +346,56 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
                       )}
                       {customFile && <option value={customFile.name}>{customFile.name} {t('flasher.option_browsed', '(browsed)')}</option>}
                     </select>
-                    <input type="file" accept=".bin" ref={fileInputRef} className="hidden"
+                    <input type="file" accept=".bin,.json" multiple ref={fileInputRef} className="hidden"
                       onChange={(e) => {
-                        if (e.target.files && e.target.files.length > 0) {
-                          setCustomFile(e.target.files[0]);
-                          setSelectedFirmware(e.target.files[0].name);
+                        const picked = Array.from(e.target.files ?? []);
+                        const image = picked.find(f => f.name.toLowerCase().endsWith('.bin'));
+                        if (image) {
+                          setCustomFile(image);
+                          setCustomManifest(picked.find(f => f.name === `${image.name}.manifest.json`) ?? null);
+                          setSelectedFirmware(image.name);
                         }
+                        e.target.value = '';
                       }} />
                     <button onClick={() => fileInputRef.current?.click()} className="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs text-slate-300 transition whitespace-nowrap">{t('flasher.browse', 'Browse...')}</button>
                   </div>
+                  {imageVersion && (
+                    <div className="text-[10px] text-slate-400 mt-1 font-mono">
+                      {t('flasher.image_version', 'Image version: {{version}}', { version: formatVersion(imageVersion) })}
+                      {versionOrder !== null && installedForTarget && imageVersion && (
+                        <span className={versionOrder < 0 ? 'text-amber-400' : 'text-slate-400'}>
+                          {' - '}
+                          {t(versionOrder < 0 ? 'flasher.log_image_older' : versionOrder === 0 ? 'flasher.log_image_same' : 'flasher.log_image_newer', { installed: formatVersion(installedForTarget), image: formatVersion(imageVersion) })}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  {flashTarget === 'slave' && (
+                    <div className="flex items-center gap-2 mt-1.5 text-[11px] text-slate-400">
+                      <button
+                        onClick={async () => { await onQuerySlaveVersion(); setSlaveQueried(true); }}
+                        disabled={!isConnected || busy}
+                        className="px-2.5 py-1 rounded border text-[11px] font-semibold bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700 disabled:opacity-40 transition"
+                      >
+                        {t('flasher.query_slave_version', 'Query slave version (0x217/0x218)')}
+                      </button>
+                      {slaveVersion ? (
+                        <span className="font-mono">
+                          {t('flasher.slave_version_line', 'Slave: application {{app}}, bootloader {{boot}}', {
+                            app: formatVersion(installedVersion(slaveVersion)),
+                            boot: slaveVersion.bootMajor === undefined ? '?' : slaveVersion.bootMinor === undefined ? String(slaveVersion.bootMajor) : formatVersion({ major: slaveVersion.bootMajor, minor: slaveVersion.bootMinor, patch: slaveVersion.bootPatch }),
+                          })}
+                        </span>
+                      ) : slaveQueried ? <span>{t('flasher.slave_no_answer', 'The slave did not answer.')}</span> : null}
+                    </div>
+                  )}
+                  {customFile && (
+                    <div className="text-[10px] text-slate-400 mt-1">
+                      {customManifest
+                        ? t('flasher.browsed_manifest_found', 'Manifest selected: {{name}}', { name: customManifest.name })
+                        : t('flasher.browsed_manifest_hint', 'To use the published signature, select the .bin together with its .bin.manifest.json (Ctrl-click).')}
+                    </div>
+                  )}
                   {githubError && <div className="text-[10px] text-red-400 mt-1">{t('flasher.github_listing_error', 'GitHub listing:')} {githubError}</div>}
                 </div>
 
@@ -367,7 +432,7 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
                     onClick={() => {
                       if (allowDowngrade && !window.confirm(t('flasher.alert_downgrade_confirm', 'You are about to authorize a firmware DOWNGRADE, bypassing the bootloader\'s anti-rollback protection. Continue?'))) return;
                       if (!window.confirm(t('flasher.alert_flash_confirm', 'Flash "{{firmware}}" to the {{target}} now?', { firmware: selectedFirmware, target: flashTarget === 'slave' ? t('flasher.alert_target_slave', 'expansion slave') : t('flasher.alert_target_main', 'main board') }))) return;
-                      onStartCanOta(flashTarget, selectedFirmware, customFile, githubFirmwares.find(f => f.name === selectedFirmware)?.download_url, { triggerBootloader: runAppTrigger, eraseFram, allowDowngrade });
+                      onStartCanOta(flashTarget, selectedFirmware, customFile, githubFirmwares.find(f => f.name === selectedFirmware), { triggerBootloader: runAppTrigger, eraseFram, allowDowngrade }, customFile ? customManifest : null);
                     }}
                     disabled={busy || !isConnected}
                     className="flex-1 py-2.5 px-4 rounded-lg bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-slate-950 font-semibold text-xs transition shadow-md shadow-amber-500/10 flex items-center justify-center gap-2"

@@ -13,8 +13,10 @@ import {
   ENTER_BOOTLOADER_MAGIC, AUTHORIZE_DOWNGRADE_MAGIC,
   THIS_HARDWARE_ID, SLAVE_HARDWARE_ID, FLASH_PAGE_SIZE, SLAVE_DATA_PACING_MS,
   APP_MAX_SIZE, SLAVE_APP_MAX_SIZE,
-  packUInt32BE, packUInt16BE, unpackUInt32BE, getCrc32, isLastPartialPage, readbackChunkLength
+  packUInt32BE, packUInt16BE, unpackUInt32BE, getCrc32, isLastPartialPage, readbackChunkLength,
+  minorField, formatVersion
 } from '../lib/flasher';
+import { queryMainVersion, querySlaveVersion, BoardVersionInfo, SlaveVersionInfo } from '../lib/boardVersion';
 import { CAN_ID_ERASE_FRAM, CAN_ID_FRAM_STATE_RESP, ERASE_FRAM_MAGIC, VERIFY_FAIL_REASONS } from '../lib/canIds';
 
 export interface FlashOptions {
@@ -23,6 +25,7 @@ export interface FlashOptions {
   allowDowngrade: boolean;
   reportMajor: number;
   reportMinor: number;
+  reportPatch?: number; // declared only to a bootloader that announced the patch extension (CANBUS.TXT, FIRMWARE PATCH NUMBER)
   signature: Uint8Array; // HMAC-SHA256 published with the image - see lib/firmwareSignature.ts
 }
 
@@ -82,6 +85,32 @@ export function useFlasher(serialCan: SerialCanBus) {
     return counters;
   }, [serialCan]);
 
+  // ---- Version queries: 0x7F8 -> 0x7F9/0x7FA/0x7E9 (main board), 0x217 -> 0x217/0x218 (expansion slave) ----
+  const queryVersion = useCallback(async (): Promise<BoardVersionInfo | null> => {
+    if (!serialCan.isConnected) return null;
+    return queryMainVersion(serialCan);
+  }, [serialCan]);
+
+  const queryExpansionVersion = useCallback(async (): Promise<SlaveVersionInfo | null> => {
+    if (!serialCan.isConnected) return null;
+    return querySlaveVersion(serialCan);
+  }, [serialCan]);
+
+  // The patch goes to END_UPDATE only towards a bootloader that announced it in its own answer, asked once it is listening.
+  const bootloaderAcceptsPatch = async (patch: number | undefined, query: () => Promise<{ acceptsPatchInEndUpdate: boolean } | null>, version: string): Promise<boolean> => {
+    if (patch === undefined) return false;
+    let accepts = false;
+    try {
+      accepts = !!(await query())?.acceptsPatchInEndUpdate;
+    } catch {
+      accepts = false;
+    }
+    appendLog(accepts
+      ? t('flasher.log_patch_declared', 'The bootloader accepts the patch number: declaring version {{version}}.', { version })
+      : t('flasher.log_patch_not_declared', 'The bootloader does not announce patch support: declaring the version without the patch.'));
+    return accepts;
+  };
+
   // ---- Main board CAN-OTA (0x7F0-0x7F7, 0x7FD) ----
   const flashMain = useCallback(async (data: Uint8Array, opts: FlashOptions) => {
     stopRequestedRef.current = false;
@@ -118,6 +147,13 @@ export function useFlasher(serialCan: SerialCanBus) {
     }
 
     setFlasherState(prev => ({ ...prev, mode: 'receiving', progress: 5, log: [...prev.log, t('flasher.log_bootloader_listening', 'Bootloader listening. Sending START_UPDATE...')] }));
+    checkCancelled();
+
+    const sendPatch = await bootloaderAcceptsPatch(
+      opts.reportPatch,
+      async () => { const info = await queryMainVersion(serialCan); return info?.responder === 'bootloader' ? info : null; },
+      formatVersion({ major: opts.reportMajor, minor: opts.reportMinor, patch: opts.reportPatch })
+    );
     checkCancelled();
 
     serialCan.flushFrames(CAN_ID_STATUS); // only statuses sent after START_UPDATE count
@@ -202,7 +238,7 @@ export function useFlasher(serialCan: SerialCanBus) {
 
     await serialCan.sendFrame(
       CAN_ID_END_UPDATE,
-      [...packUInt32BE(crc32), ...packUInt16BE(opts.reportMajor), ...packUInt16BE(opts.reportMinor)],
+      [...packUInt32BE(crc32), ...packUInt16BE(opts.reportMajor), ...packUInt16BE(minorField(opts.reportMinor, opts.reportPatch, sendPatch))],
       'END_UPDATE (CRC32 + declared version)'
     );
 
@@ -224,7 +260,7 @@ export function useFlasher(serialCan: SerialCanBus) {
     if (finalStatus === 0x04) {
       setFlasherState(prev => ({
         ...prev, mode: 'idle', progress: 100,
-        statusText: t('flasher.status_ota_complete', '5/5: OTA update complete! Booting v{{major}}.{{minor}}', { major: opts.reportMajor, minor: opts.reportMinor }),
+        statusText: t('flasher.status_ota_complete', '5/5: OTA update complete! Booting v{{version}}', { version: formatVersion({ major: opts.reportMajor, minor: opts.reportMinor, patch: sendPatch ? opts.reportPatch : undefined }) }),
         log: [...prev.log, t('flasher.log_update_success', 'Update SUCCESS.')]
       }));
       return;
@@ -249,7 +285,7 @@ export function useFlasher(serialCan: SerialCanBus) {
   }, [serialCan, appendLog]);
 
   // ---- Expansion slave OTA, relayed through the main board's I2C bridge (0x210-0x219) ----
-  const flashSlave = useCallback(async (data: Uint8Array, opts: { triggerBootloader: boolean; reportMajor: number; reportMinor: number; signature: Uint8Array }) => {
+  const flashSlave = useCallback(async (data: Uint8Array, opts: { triggerBootloader: boolean; reportMajor: number; reportMinor: number; reportPatch?: number; signature: Uint8Array }) => {
     stopRequestedRef.current = false;
     checkSecureContext();
     if (data.length === 0) throw new FlashError(t('flasher.err_empty_file', 'Firmware file is empty'));
@@ -267,6 +303,13 @@ export function useFlasher(serialCan: SerialCanBus) {
       await serialCan.sendFrame(CAN_ID_SLAVE_ENTER_BOOTLOADER, ENTER_BOOTLOADER_MAGIC, 'Slave: enter bootloader (relayed)');
       await new Promise(r => setTimeout(r, 800));
     }
+    checkCancelled();
+
+    const sendPatch = await bootloaderAcceptsPatch(
+      opts.reportPatch,
+      () => querySlaveVersion(serialCan),
+      formatVersion({ major: opts.reportMajor, minor: opts.reportMinor, patch: opts.reportPatch })
+    );
     checkCancelled();
 
     await serialCan.sendFrame(CAN_ID_SLAVE_START_UPDATE, [...packUInt32BE(data.length), ...packUInt32BE(SLAVE_HARDWARE_ID)], 'Slave START_UPDATE (size + HardwareID)');
@@ -313,7 +356,7 @@ export function useFlasher(serialCan: SerialCanBus) {
 
     setFlasherState(prev => ({ ...prev, mode: 'verifying', progress: 85, statusText: t('flasher.status_slave_verifying', '3/5: Transfer complete. Verifying...'), log: [...prev.log, t('flasher.log_slave_all_data_sent', 'All data sent. Sending END_UPDATE.')] }));
 
-    await serialCan.sendFrame(CAN_ID_SLAVE_END_UPDATE, [...packUInt32BE(crc32), ...packUInt16BE(opts.reportMajor), ...packUInt16BE(opts.reportMinor)], 'Slave END_UPDATE (CRC32 + declared version)');
+    await serialCan.sendFrame(CAN_ID_SLAVE_END_UPDATE, [...packUInt32BE(crc32), ...packUInt16BE(opts.reportMajor), ...packUInt16BE(minorField(opts.reportMinor, opts.reportPatch, sendPatch))], 'Slave END_UPDATE (CRC32 + declared version)');
 
     setFlasherState(prev => ({ ...prev, mode: 'flashing', progress: 95, statusText: t('flasher.status_copying_backup', '4/5: Copying verified backup into main slot...') }));
 
@@ -335,7 +378,7 @@ export function useFlasher(serialCan: SerialCanBus) {
     }
 
     if (finalStatus === 0x04) {
-      setFlasherState(prev => ({ ...prev, mode: 'idle', progress: 100, statusText: t('flasher.status_slave_complete', '5/5: Slave OTA update complete! v{{major}}.{{minor}}', { major: opts.reportMajor, minor: opts.reportMinor }), log: [...prev.log, t('flasher.log_slave_success', 'Slave update SUCCESS.')] }));
+      setFlasherState(prev => ({ ...prev, mode: 'idle', progress: 100, statusText: t('flasher.status_slave_complete', '5/5: Slave OTA update complete! v{{version}}', { version: formatVersion({ major: opts.reportMajor, minor: opts.reportMinor, patch: sendPatch ? opts.reportPatch : undefined }) }), log: [...prev.log, t('flasher.log_slave_success', 'Slave update SUCCESS.')] }));
       return;
     }
     if (finalStatus === 0x05) {
@@ -380,5 +423,5 @@ export function useFlasher(serialCan: SerialCanBus) {
     return buffer;
   }, [serialCan]);
 
-  return { flasherState, setFlasherState, appendLog, cancel, queryErrorCounters, errorCounters, flashMain, flashSlave, readBack };
+  return { flasherState, setFlasherState, appendLog, cancel, queryVersion, queryExpansionVersion, queryErrorCounters, errorCounters, flashMain, flashSlave, readBack };
 }

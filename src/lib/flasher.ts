@@ -23,6 +23,7 @@ export const CAN_ID_HMAC_CHUNK = 0x7F7;
 export const CAN_ID_QUERY_VERSION = 0x7F8;
 export const CAN_ID_VERSION_RESPONSE = 0x7F9;
 export const CAN_ID_BOOTLOADER_VERSION_RESPONSE = 0x7FA;
+export const CAN_ID_VERSION_PATCH_RESPONSE = 0x7E9; // DLC 3: side, application patch (0xFF = unknown), flags
 export const CAN_ID_QUERY_ERROR_COUNTERS = 0x7FB;
 export const CAN_ID_ERROR_COUNTERS_RESPONSE = 0x7FC;
 export const CAN_ID_AUTHORIZE_DOWNGRADE = 0x7FD;
@@ -46,6 +47,11 @@ export const CAN_ID_SLAVE_PROGRESS = 0x216; // empty payload = query, same ID an
 export const CAN_ID_SLAVE_VERSION_RESP_1 = 0x217;
 export const CAN_ID_SLAVE_VERSION_RESP_2 = 0x218;
 export const CAN_ID_SLAVE_VERIFY_FAIL_REASON = 0x219; // empty payload = query, same ID answers
+
+export const PATCH_UNKNOWN = 0xFF;
+export const PATCH_FLAG = 0x80; // in the high byte of the minor field of END_UPDATE: 0x80 | PATCH
+export const PATCH_FLAG_ACCEPTS_IN_END_UPDATE = 0x01; // bit 0 of the flags of 0x7E9
+export const PATCH_GRACE_MS = 300;
 
 export const SLAVE_HARDWARE_ID = 0x0303CB01;
 export const SLAVE_APP_MAX_SIZE = 54 * 1024;
@@ -102,6 +108,7 @@ export interface FirmwareManifest {
   version?: string;
   versionMajor?: number;
   versionMinor?: number;
+  versionPatch?: number;    // third component of "major.minor.patch", when the manifest carries one
   buildDate?: string;
   sha256?: string;
   hmacSha256?: string;      // 64 lowercase hex chars - the signature the bootloader expects
@@ -129,6 +136,7 @@ export function parseManifest(json: any): FirmwareManifest {
       manifest.version = json.version;
       manifest.versionMajor = parseInt(parts[0], 10);
       manifest.versionMinor = parseInt(parts[1], 10);
+      if (parts.length >= 3 && /^\d+$/.test(parts[2])) manifest.versionPatch = parseInt(parts[2], 10);
     }
   }
   if (typeof json?.build_date === 'string') manifest.buildDate = json.build_date;
@@ -161,4 +169,57 @@ export function isLastPartialPage(imageSize: number, pageEnd: number, pageSize: 
 export function readbackChunkLength(frameLength: number, remaining: number): number {
   if (frameLength < 1 || frameLength > 8) return 0;
   return Math.min(frameLength, remaining);
+}
+
+// --- Version with an optional PATCH (CANBUS.TXT, "FIRMWARE PATCH NUMBER") ---
+
+export interface FirmwareVersion {
+  major: number;
+  minor: number;
+  patch?: number; // undefined = this side does not carry a patch
+}
+
+/** "0.3.5", or "0.3" when no patch is known. */
+export function formatVersion(v: FirmwareVersion): string {
+  return v.patch === undefined ? `${v.major}.${v.minor}` : `${v.major}.${v.minor}.${v.patch}`;
+}
+
+/**
+ * Orders two versions by major, then minor; the patch decides only when BOTH carry one
+ * (the same rule as the bootloader's anti-rollback). -1: candidate is older, 0: same, 1: newer.
+ */
+export function compareVersions(installed: FirmwareVersion, candidate: FirmwareVersion): -1 | 0 | 1 {
+  if (candidate.major !== installed.major) return candidate.major > installed.major ? 1 : -1;
+  if (candidate.minor !== installed.minor) return candidate.minor > installed.minor ? 1 : -1;
+  if (installed.patch !== undefined && candidate.patch !== undefined && candidate.patch !== installed.patch) {
+    return candidate.patch > installed.patch ? 1 : -1;
+  }
+  return 0;
+}
+
+export interface PatchInfo {
+  side: 'application' | 'bootloader';
+  patch: number | undefined; // undefined when the board reported 0xFF
+  acceptsPatchInEndUpdate: boolean;
+}
+
+/** Reads a 0x7E9 frame: length 3 or more (extra bytes ignored), anything shorter is not one. */
+export function parsePatchFrame(data: number[]): PatchInfo | null {
+  if (data.length < 3) return null;
+  return {
+    side: data[0] === 0x00 ? 'application' : 'bootloader',
+    patch: data[1] === PATCH_UNKNOWN ? undefined : data[1],
+    acceptsPatchInEndUpdate: (data[2] & PATCH_FLAG_ACCEPTS_IN_END_UPDATE) !== 0,
+  };
+}
+
+/**
+ * The 16-bit minor field of END_UPDATE: the plain minor for a legacy bootloader, or 0x80 | PATCH in the high
+ * byte only towards a bootloader that announced it (bit 0 of the flags of its own 0x7E9) and for a patch of 0 to 127.
+ */
+export function minorField(minor: number, patch: number | undefined, bootloaderAcceptsPatch: boolean): number {
+  if (bootloaderAcceptsPatch && patch !== undefined && patch >= 0 && patch <= 0x7F) {
+    return ((PATCH_FLAG | patch) << 8) | (minor & 0xFF);
+  }
+  return minor;
 }
