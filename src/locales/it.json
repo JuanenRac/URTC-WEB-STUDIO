@@ -130,7 +130,11 @@
     "exp_adv2209_label": "Slave Advanced (TMC2209 + sensori)",
     "exp_adv2209_motor": "Motore ausiliario + ADS1115/MLX90640",
     "exp_adv5160_label": "Slave Advanced (TMC5160A 10A + sensori)",
-    "exp_adv5160_motor": "Motore 10A + ADS1115/MLX90640"
+    "exp_adv5160_motor": "Motore 10A + ADS1115/MLX90640",
+    "exp_basic_ads_label": "Espansione base (solo ADS1115)",
+    "exp_basic_ads_motor": "Senza driver passo-passo né MCU slave",
+    "exp_basic_mlx_label": "Espansione base (solo MLX9064x)",
+    "exp_basic_mlx_motor": "Senza driver passo-passo né MCU slave"
   },
   "canbus": {
     "title": "Analizzatore Protocollo CAN (500 kbit/s / SocketCAN / SLCAN)",

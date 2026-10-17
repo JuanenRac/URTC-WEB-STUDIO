@@ -82,7 +82,8 @@ export const TOOL_PROFILES: ToolProfile[] = [
     defaultSetpoint: 12000,
     minVal: 1000,
     maxVal: 24000,
-    pinsUsed: ["PA8 (PWM Speed)", "PA11 (Tachometer Tach Input)", "PB12 (Brake/Dir)"],
+    watchdogMs: 250,
+    pinsUsed: ["PA8 (PWM Speed)", "PA3 (FGIN Tachometer Input)", "PA4 (FRIN Direction)", "PB9 (DRILL_BRAKE)"],
     features: ["Dynamic Braking", "Optical Tachometer Reading", "Direction Switch", "Dedicated Enable Line"],
     iconFrames: ["DRILL_1", "DRILL_2", "DRILL_3", "DRILL_4"]
   },
@@ -268,7 +269,7 @@ export const TOOL_PROFILES: ToolProfile[] = [
     defaultSetpoint: 80,
     minVal: 0,
     maxVal: 100,
-    watchdogMs: 500,
+    watchdogMs: 250,
     pinsUsed: ["PB0 (UV Driver MOSFET)", "PA1 (Heatsink NTC)", "PA4 (Safety Shield Switch)"],
     features: ["Dual Wavelength Control", "Exposure Timer", "Over-Temp Thermal Throttle"],
     iconFrames: ["UV_1", "UV_2", "UV_3", "UV_4"]

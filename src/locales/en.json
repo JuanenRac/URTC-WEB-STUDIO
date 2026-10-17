@@ -130,7 +130,11 @@
     "exp_adv2209_label": "Advanced Slave (TMC2209 + Sensors)",
     "exp_adv2209_motor": "Aux Stepper + ADS1115/MLX90640",
     "exp_adv5160_label": "Advanced Slave (TMC5160A 10A + Sensors)",
-    "exp_adv5160_motor": "10A Stepper + ADS1115/MLX90640"
+    "exp_adv5160_motor": "10A Stepper + ADS1115/MLX90640",
+    "exp_basic_ads_label": "Basic Expansion (ADS1115 only)",
+    "exp_basic_ads_motor": "No stepper driver, no slave MCU",
+    "exp_basic_mlx_label": "Basic Expansion (MLX9064x only)",
+    "exp_basic_mlx_motor": "No stepper driver, no slave MCU"
   },
   "canbus": {
     "title": "CAN Bus Protocol Analyzer (500 kbit/s / SocketCAN / SLCAN)",

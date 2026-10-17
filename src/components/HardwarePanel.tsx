@@ -280,7 +280,9 @@ export const HardwarePanel: React.FC<HardwarePanelProps> = ({
               { id: 'basic_tmc2209', label: t('hardware.exp_basic2209_label', 'Basic Expansion (TMC2209)'), motor: t('hardware.exp_basic2209_motor', 'Aux Stepper (2.0A)') },
               { id: 'basic_tmc5160a', label: t('hardware.exp_basic5160_label', 'Basic Expansion (TMC5160A)'), motor: t('hardware.exp_basic5160_motor', 'High-Current Stepper (10.0A)') },
               { id: 'advanced_tmc2209', label: t('hardware.exp_adv2209_label', 'Advanced Slave (TMC2209 + Sensors)'), motor: t('hardware.exp_adv2209_motor', 'Aux Stepper + ADS1115/MLX90640') },
-              { id: 'advanced_tmc5160a', label: t('hardware.exp_adv5160_label', 'Advanced Slave (TMC5160A 10A + Sensors)'), motor: t('hardware.exp_adv5160_motor', '10A Stepper + ADS1115/MLX90640') }
+              { id: 'advanced_tmc5160a', label: t('hardware.exp_adv5160_label', 'Advanced Slave (TMC5160A 10A + Sensors)'), motor: t('hardware.exp_adv5160_motor', '10A Stepper + ADS1115/MLX90640') },
+              { id: 'basic_ads1115', label: t('hardware.exp_basic_ads_label', 'Basic Expansion (ADS1115 only)'), motor: t('hardware.exp_basic_ads_motor', 'No stepper driver, no slave MCU') },
+              { id: 'basic_mlx9064x', label: t('hardware.exp_basic_mlx_label', 'Basic Expansion (MLX9064x only)'), motor: t('hardware.exp_basic_mlx_motor', 'No stepper driver, no slave MCU') }
             ].map(opt => (
               <button
                 key={opt.id}

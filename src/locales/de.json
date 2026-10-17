@@ -130,7 +130,11 @@
     "exp_adv2209_label": "Advanced-Slave (TMC2209 + Sensoren)",
     "exp_adv2209_motor": "Zusatz-Schrittmotor + ADS1115/MLX90640",
     "exp_adv5160_label": "Advanced-Slave (TMC5160A 10A + Sensoren)",
-    "exp_adv5160_motor": "10A-Schrittmotor + ADS1115/MLX90640"
+    "exp_adv5160_motor": "10A-Schrittmotor + ADS1115/MLX90640",
+    "exp_basic_ads_label": "Basis-Erweiterung (nur ADS1115)",
+    "exp_basic_ads_motor": "Kein Schrittmotortreiber, kein Slave-MCU",
+    "exp_basic_mlx_label": "Basis-Erweiterung (nur MLX9064x)",
+    "exp_basic_mlx_motor": "Kein Schrittmotortreiber, kein Slave-MCU"
   },
   "canbus": {
     "title": "CAN-Bus-Protokollanalysator (500 kbit/s / SocketCAN / SLCAN)",

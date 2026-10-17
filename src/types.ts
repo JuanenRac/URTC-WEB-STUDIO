@@ -38,7 +38,9 @@ export type ExpansionBoardType =
   | 'basic_tmc2209'
   | 'basic_tmc5160a'
   | 'advanced_tmc2209'
-  | 'advanced_tmc5160a';
+  | 'advanced_tmc5160a'
+  | 'basic_ads1115'
+  | 'basic_mlx9064x';
 
 export interface HardwareState {
   jumpers: boolean[]; // [ID0, ID1, ID2, ID3, ID4]
