@@ -29,12 +29,11 @@
 经由 USB-CAN 适配器与真实的 URTC 硬件通信，使用与两款桌面配套工具
 [URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER) 和
 [URTC Tester](https://github.com/JuanenRac/URTC-TESTER) 相同的 SLCAN 帧格式和
-CAN 协议。目标是在单个浏览器标签页内实现与这两款工具功能对等，而非它们的
-简化演示版——Flasher Studio 和 Tester Studio 选项卡发送和接收的正是
+CAN 协议。目标是把这两款工具的主要工作流集中到单个浏览器标签页内，而非它们的简化演示版；尚未达到完全对等（见下文“尚未覆盖”）——Flasher Studio 和 Tester Studio 选项卡发送和接收的正是
 [URTC 固件仓库](https://github.com/JuanenRac/URTC) `docs/CANBUS.TXT` 中所描述
 的真实 CAN 帧。
 
-**诚实核查 - 今天真正能运行的部分：** 这个仓库里没有任何自动化测试套件——`package.json` 没有 `test` 脚本，CI（`npm ci` 之后依次执行 `npm run typecheck --if-present`/`npm test --if-present`/`npm run lint --if-present`）最终真正运行的只有 `npm run lint`（`tsc --noEmit`），而它今天是通过的。哪些是真正由硬件驱动的、哪些只是沙盒，下文的"什么是真实的，什么是沙盒"已经做了精确的划分——Flasher Studio、Tester Studio 和 CAN 总线协议分析器都是真实代码，但在这个环境中从未针对真实的 URTC 硬件运行过（这里没有 USB-CAN 适配器可供测试），而 Control/OLED/Specs-BOM/Thermal IR Inspection 都是被公开标注为沙盒的标签页，完全没有真实的 CAN 流量。CAN 帧校验（`useSerialCanBus.ts`）、CAN-OTA 状态机（`useFlasher.ts`），以及 CAN ID 常量（`canIds.ts`/`flasher.ts`）都是真实的逻辑，逐字节镜像了桌面工具的协议，但在这里只经过了类型检查和人工代码审查的验证，没有经过任何测试框架或真实硬件会话的验证。具体已经交付了什么，请参见 `CHANGELOG.md`。
+**诚实检查——今天真正能运行的部分：** `npm test`（Vitest）覆盖纯逻辑：SLCAN 解析、请求与应答的匹配、固件镜像和清单检查、工具限值、确认对话框、将模拟器与真实总线隔离的规则、追踪导出以及八种界面语言。界面和 Web Serial 传输本身没有自动化测试，而且在本环境中这些都没有对真实的 URTC 板子运行过（这里没有可用于测试的 USB-CAN 适配器）：Flasher Studio、Tester Studio 和 CAN 总线协议分析器是真实代码，仅由这些测试、类型检查（`npm run lint`）和代码审查验证。Control/OLED/Specs-BOM/Thermal IR Inspection 是明确标注的沙盒选项卡，没有任何 CAN 流量。迄今已交付的确切内容请参阅 `CHANGELOG.md`。
 
 ---
 
@@ -66,8 +65,7 @@ CAN 协议。目标是在单个浏览器标签页内实现与这两款工具功�
   `candlelight`/`slcan` 的 CANable,或任何支持标准 `lawicel` SLCAN 串口
   协议的适配器）——这与两款桌面工具通过各自的串口传输方式所支持的适配器
   类型相同。
-- 总线设置为 **500 kbit/s**（本应用不会像桌面工具的 `--auto-detect`
-  标志那样自动检测比特率；它始终以 500k 打开）。
+- 总线设置为 **500 kbit/s**。连接时，应用会依次尝试 500、250、125 kbit/s 及其他标准速率，并保留第一个有板子应答版本查询的速率；目前还不能手动选择速率，也不能在没有板子应答时仅作监听。
 - 一款支持 Web Serial 的浏览器——**Chrome 或 Edge**。Firefox 和 Safari
   未实现 Web Serial,将完全无法连接。
 - Web Serial 需要安全上下文（HTTPS）或 `localhost`——并且不能在 iframe
@@ -143,17 +141,31 @@ SWD/JTAG 选项卡说明了桌面版 `URTC Flasher` 工具在本地会运行的�
 - 为每一个在固件端具有通信看门狗的工具（电烙铁、激光器、UV 固化、
   热风返修、3D 打印机喷嘴——在 250ms 看门狗下每 150ms 重发；3D 打印机
   层冷却风扇——在其自身 1000ms 看门狗下每 400ms 重发）提供**活动复选框
-  + 保活**,与桌面工具自身的时序完全一致。
+  + 保活**，重发间隔与桌面工具相同。取消勾选、切换面板或选项卡、断开连接
+  或关闭页面时，都会发送该工具的关闭命令。
 - **全局控制**（`0x100`）、**扩展板** SPI 透传 + TMC DIAG0 查询
   （`0x180`-`0x183`）、**F-RAM** 查询/擦除（`0x190`-`0x192`）、**自检**
   （每种工具的安全静止状态检查）、带 `.trc`/`.asc` 追踪导出的**原始
-  总线监视器**,以及带可选重复间隔的**自定义帧**注入器——验证方式与
-  CAN 总线协议分析器自身的帧注入器相同：ID 被限制在 11 位 CAN 标准范围
-  内,数据令牌在被限制为 8 字节 CAN 负载上限之前会被过滤为有效的十六
-  进制字节。
+  总线监视器**，以及带可选重复间隔的**自定义帧**注入器——验证方式与
+  CAN 总线协议分析器自身的帧注入器相同：超出 `0`-`7FF` 的标识符、无效的
+  数据字节或超过 8 字节的数据都会被拒绝并给出提示，绝不会被屏蔽、丢弃
+  或截断。仅由板子发送的标识符会被拒绝，写入板子存储器、引导程序命令
+  和执行器命令都会先要求确认。
 - **检测硬件**查询真实的当前工具（`0x110`/`0x111`）和板卡版本
   （`0x7F8`/`0x7F9`）,声明的严重错误（`0x111` 字节 1）会以一条实时
   故障横幅显示出来。
+
+### 安全与模拟器
+
+- 沙盒选项卡（Control、OLED、Thermal IR）不会发送任何内容。它们的帧带有 SIM 标记，并且在已连接板子时不会产生模拟应答。协议分析器的预定义消息中，只有简单查询会发送给已连接的板子；其余仍为模拟。
+- Tester Studio 仅为板子自己上报（`0x111`）的工具显示工具面板，在板子应答之前不显示任何面板。
+- 激光器、钻头、UV 固化、焊接、加热器、运动、焊膏喷射、写入板子存储器以及有风险的手动输入帧，都会先要求确认。
+
+### 尚未覆盖
+
+- 热成像检测的错误计数器（`0x1AA`/`0x1AB`）。
+- 仅监听模式和手动选择比特率：无法接入没有任何板子应答的总线。
+- 读取热成像图像时不会先检查传感器是否就绪，也不会重试丢失的数据块。
 
 ## 🔐 安全说明：本应用不包含签名密钥
 
@@ -332,11 +344,9 @@ npm run preview
 │   ├── urtc_custom_icon.svg         应用图标,相同的图稿
 │   └── urtc_icon.ico                网站图标
 ├── index.html                       Vite 入口 HTML
-├── metadata.json                    应用名称/描述 + 请求的“serial”权限
-│                                     （由托管平台使用）
 ├── vite.config.ts                   Vite + Tailwind 插件配置
 ├── tsconfig.json                    TypeScript 配置
-├── .env.example                     VITE_APP_TITLE
+├── .env.example                     应用不读取任何环境变量
 ├── dev.bat / dev.sh                 安装依赖 + 启动 Vite 开发服务器
 ├── build.bat / build.sh             安装依赖 + 生成静态 dist/ 构建
 ├── tools/

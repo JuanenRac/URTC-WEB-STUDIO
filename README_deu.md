@@ -28,13 +28,11 @@ eine React/Vite-Single-Page-App, die mit echter URTC-Hardware über einen
 USB-CAN-Adapter via der [Web Serial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API)
 spricht, wobei dasselbe SLCAN-Framing und CAN-Protokoll wie bei den beiden
 Desktop-Begleit-Tools verwendet wird, [URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER) und
-[URTC Tester](https://github.com/JuanenRac/URTC-TESTER). Das Ziel ist
-Funktionsparität mit diesen beiden Tools innerhalb eines einzigen Browser-Tabs,
-keine vereinfachte Demo davon - die Tabs Flasher Studio und Tester Studio senden
+[URTC Tester](https://github.com/JuanenRac/URTC-TESTER). Das Ziel ist, die wichtigsten Abläufe dieser beiden Tools in einem einzigen Browser-Tab bereitzustellen, keine vereinfachte Demo davon; volle Funktionsparität ist noch nicht erreicht (siehe „Noch nicht abgedeckt“ weiter unten) - die Tabs Flasher Studio und Tester Studio senden
 und empfangen die echten CAN-Frames, die in `docs/CANBUS.TXT` des
 [URTC](https://github.com/JuanenRac/URTC)-Repository beschrieben sind.
 
-**Ehrlichkeitscheck - was heute wirklich funktioniert:** es gibt keine automatisierte Testsuite in diesem Repository - `package.json` hat kein `test`-Skript, und die CI (`npm ci`, dann `npm run typecheck --if-present` / `npm test --if-present` / `npm run lint --if-present`) führt am Ende nur wirklich `npm run lint` (`tsc --noEmit`) aus, was heute besteht. Was echt und hardwaregesteuert ist versus was nur eine Sandbox ist, wird bereits genau weiter unten in "Was echt ist vs. was eine Sandbox ist" aufgeschlüsselt - Flasher Studio, Tester Studio und der CAN-Bus-Protokollanalysator sind echter Code, der in dieser Umgebung nie gegen echte URTC-Hardware gelaufen ist (hier gibt es keinen USB-CAN-Adapter zum Testen), während Control/OLED/Specs-BOM/Thermal IR Inspection offen als Sandbox-Tabs gekennzeichnet sind, ohne jeglichen echten CAN-Verkehr. Die CAN-Frame-Validierung (`useSerialCanBus.ts`), die CAN-OTA-Zustandsmaschine (`useFlasher.ts`) und die CAN-ID-Konstanten (`canIds.ts`/`flasher.ts`) sind echte Logik, die das Protokoll der Desktop-Tools byteweise widerspiegelt, hier aber nur durch Typprüfung und manuelle Code-Durchsicht verifiziert wurde, nicht durch irgendeinen Test-Harness oder eine echte Hardware-Sitzung. Siehe `CHANGELOG.md` für das, was bisher genau ausgeliefert wurde.
+**Ehrlichkeitscheck - was heute wirklich funktioniert:** `npm test` (Vitest) deckt die reine Logik ab: SLCAN-Parsing, Zuordnung von Anfrage und Antwort, Prüfungen von Firmware-Images und Manifesten, Werkzeuggrenzen, Bestätigungen, die Regeln, die den Simulator vom echten Bus trennen, den Trace-Export und die acht Oberflächensprachen. Die Oberflächen und der Web-Serial-Transport selbst haben keine automatisierten Tests, und nichts davon ist in dieser Umgebung gegen eine echte URTC-Platine gelaufen (hier gibt es keinen USB-CAN-Adapter zum Testen): Flasher Studio, Tester Studio und der CAN-Bus-Protokollanalysator sind echter Code, der nur durch diese Tests, die Typprüfung (`npm run lint`) und Code-Durchsicht verifiziert ist. Control/OLED/Specs-BOM/Thermal IR Inspection sind offen als Sandbox-Tabs gekennzeichnet, ohne jeglichen CAN-Verkehr. Siehe `CHANGELOG.md` für das, was bisher genau ausgeliefert wurde.
 
 ---
 
@@ -71,9 +69,7 @@ Diese App hat zwei Arten von Tabs:
   `candlelight`/`slcan`, oder jeder Adapter, der das standardmäßige serielle
   SLCAN-Protokoll `lawicel` spricht) - dieselbe Adapterklasse, die beide
   Desktop-Tools über ihren eigenen seriellen Transport unterstützen.
-- Der Bus auf **500 kbit/s** eingestellt (diese App erkennt die Bitrate nicht
-  automatisch, so wie es das Flag `--auto-detect` der Desktop-Tools tut; sie
-  öffnet immer mit 500k).
+- Der Bus auf **500 kbit/s** eingestellt. Beim Verbinden probiert die App nacheinander 500, 250, 125 kbit/s und die übrigen Standardraten und behält die erste, bei der eine Platine auf eine Versionsabfrage antwortet; die Rate lässt sich noch nicht von Hand wählen, und ohne antwortende Platine kann man nicht nur mithören.
 - Ein Browser mit Web-Serial-Unterstützung - **Chrome oder Edge**. Firefox und
   Safari implementieren Web Serial nicht und können sich überhaupt nicht
   verbinden.
@@ -173,20 +169,35 @@ Portiert aus den eigenen `tester_tool_panels.py` /
   firmwareseitigen Kommunikations-Watchdog (Lötkolben, Laser, UV-Härtung,
   Heißluft-Rework, 3D-Drucker-Düse - erneutes Senden alle 150ms unter einem
   250ms-Watchdog; 3D-Drucker-Schichtlüfter - erneutes Senden alle 400ms
-  unter seinem eigenen 1000ms-Watchdog), was genau dem eigenen Timing des
-  Desktop-Tools entspricht.
+  unter seinem eigenen 1000ms-Watchdog), mit denselben Sendeintervallen wie
+  das Desktop-Tool. Beim Abwählen, beim Wechsel von Panel oder Tab, beim
+  Trennen oder beim Schließen der Seite wird der Aus-Befehl des Werkzeugs gesendet.
 - **Global Controls** (`0x100`), SPI-Durchleitung von **Expansion Board** +
   TMC-DIAG0-Abfrage (`0x180`-`0x183`), **F-RAM**-Abfrage/Löschung
   (`0x190`-`0x192`), **Self-Test** (sichere Prüfungen im Ruhezustand pro
   Werkzeug), ein **Raw Bus Monitor** mit `.trc`/`.asc`-Trace-Export, und ein
   **Custom Frame**-Injektor mit optionalem Wiederholungsintervall -
-  validiert auf dieselbe Weise wie der eigene Frame-Injektor des CAN Bus
-  Protocol Analyzer: die ID wird auf den 11-Bit-CAN-Standardbereich
-  maskiert, und Datentoken werden auf gültige Hex-Bytes gefiltert, bevor
-  sie auf das 8-Byte-CAN-Payload-Limit begrenzt werden.
+  validiert wie der eigene Frame-Injektor des CAN Bus Protocol Analyzer: ein
+  Identifier außerhalb von `0`-`7FF`, ein ungültiges Datenbyte oder mehr als
+  8 Bytes wird mit einer Meldung abgelehnt, nie maskiert, verworfen oder
+  gekürzt. Identifier, die nur die Platine sendet, werden abgelehnt, und
+  Schreibzugriffe auf den Platinenspeicher, Bootloader-Befehle und
+  Aktor-Befehle werden vorher bestätigt.
 - **Detect Hardware** fragt das echte aktive Werkzeug (`0x110`/`0x111`) und
   die Platinenversion (`0x7F8`/`0x7F9`) ab, und ein deklarierter kritischer
   Fehler (`0x111` Byte 1) erscheint als Live-Fehlerbanner.
+
+### Sicherheit und Simulator
+
+- Die Sandbox-Tabs (Control, OLED, Thermal IR) übertragen nichts. Ihre Frames sind mit SIM markiert, und solange eine Platine verbunden ist, erzeugen sie keine simulierte Antwort. Von den vordefinierten Nachrichten des Protokollanalysators werden an eine verbundene Platine nur einfache Abfragen gesendet; der Rest bleibt simuliert.
+- Tester Studio zeigt ein Werkzeugpanel nur für das Werkzeug, das die Platine selbst gemeldet hat (`0x111`), und keines, bevor die Platine geantwortet hat.
+- Laser, Bohrer, UV-Härtung, Schweißen, Heizungen, Bewegung, Pastendosierung, Schreibzugriffe auf den Platinenspeicher und riskante von Hand getippte Frames verlangen vorher eine Bestätigung.
+
+### Noch nicht abgedeckt
+
+- Die Fehlerzähler der Wärmebildinspektion (`0x1AA`/`0x1AB`).
+- Ein reiner Mithörmodus und die manuelle Wahl der Bitrate: Ein Bus, auf dem keine Platine antwortet, lässt sich nicht aufschalten.
+- Das Auslesen des Wärmebilds prüft nicht vorab, ob der Sensor bereit ist, und wiederholt keinen verlorenen Block.
 
 ## 🔐 Sicherheitshinweis: kein Signierschlüssel in dieser App
 
@@ -401,12 +412,9 @@ Projekt.
 │   ├── urtc_custom_icon.svg         App-Icon, gleiche Grafik
 │   └── urtc_icon.ico                Favicon
 ├── index.html                       Vite-Einstiegs-HTML
-├── metadata.json                    App-Name/-Beschreibung + angeforderte
-│                                     „serial"-Berechtigung (verwendet von
-│                                     der Hosting-Plattform)
 ├── vite.config.ts                   Vite + Tailwind-Plugin-Konfiguration
 ├── tsconfig.json                    TypeScript-Konfiguration
-├── .env.example                     VITE_APP_TITLE
+├── .env.example                     Die App liest keine Variablen
 ├── dev.bat / dev.sh                 Installiert Abhaengigkeiten + startet
 │                                     den Vite-Dev-Server
 ├── build.bat / build.sh             Installiert Abhaengigkeiten + erzeugt

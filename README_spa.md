@@ -28,13 +28,11 @@ una app de una sola página en React/Vite que habla con hardware URTC real a tra
 un adaptador USB-CAN mediante la [Web Serial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API),
 usando el mismo framing SLCAN y el mismo protocolo CAN que las dos herramientas
 compañeras de escritorio, [URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER) y
-[URTC Tester](https://github.com/JuanenRac/URTC-TESTER). El objetivo es la paridad de
-funcionalidades con esas dos herramientas dentro de una sola pestaña del navegador, no
-una demo simplificada de ellas - las pestañas Flasher Studio y Tester Studio envían y
+[URTC Tester](https://github.com/JuanenRac/URTC-TESTER). El objetivo es llevar los flujos principales de esas dos herramientas a una sola pestaña del navegador, no una demo simplificada de ellas; todavía no alcanza la paridad completa (véase «Aún no cubierto» más abajo) - las pestañas Flasher Studio y Tester Studio envían y
 reciben las tramas CAN reales descritas en `docs/CANBUS.TXT` del
 [repositorio de firmware de URTC](https://github.com/JuanenRac/URTC).
 
-**Comprobación de honestidad - lo que realmente funciona hoy:** no hay ninguna suite de tests automatizados en este repositorio - `package.json` no tiene ningún script `test`, y la CI (`npm ci` seguido de `npm run typecheck --if-present` / `npm test --if-present` / `npm run lint --if-present`) solo llega a ejecutar realmente `npm run lint` (`tsc --noEmit`), que hoy pasa sin problemas. Qué es real y manejado por hardware frente a qué es solo una sandbox ya está desglosado con precisión en "Qué es real y qué es una sandbox" justo abajo - Flasher Studio, Tester Studio y el Analizador de Protocolo CAN Bus son código real que nunca se ha ejecutado contra hardware URTC real en este entorno (no hay aquí un adaptador USB-CAN con el que probarlo), mientras que Control/OLED/Specs-BOM/Thermal IR Inspection son pestañas de sandbox declaradas abiertamente como tales, sin tráfico CAN real de ningún tipo. La validación de tramas CAN (`useSerialCanBus.ts`), la máquina de estados de CAN-OTA (`useFlasher.ts`), y las constantes de ID CAN (`canIds.ts`/`flasher.ts`) son lógica real que refleja el protocolo de las herramientas de escritorio byte a byte, pero aquí solo se ha verificado mediante comprobación de tipos y revisión manual del código, no mediante ningún arnés de tests ni una sesión real con hardware. Consulta `CHANGELOG.md` para ver exactamente qué se ha entregado hasta ahora.
+**Comprobación de honestidad - lo que realmente funciona hoy:** `npm test` (Vitest) cubre la lógica pura: el análisis SLCAN, la correspondencia petición/respuesta, las comprobaciones de imagen de firmware y de manifiesto, los límites de las herramientas, las confirmaciones, las reglas que separan el simulador del bus real, la exportación de trazas y los ocho idiomas de la interfaz. Las pantallas y el propio transporte Web Serial no tienen tests automatizados, y nada de esto se ha ejecutado contra una placa URTC real en este entorno (aquí no hay un adaptador USB-CAN con el que probarlo): Flasher Studio, Tester Studio y el Analizador de Protocolo CAN Bus son código real verificado solo con esos tests, la comprobación de tipos (`npm run lint`) y la revisión del código. Control/OLED/Specs-BOM/Thermal IR Inspection son pestañas de sandbox declaradas abiertamente como tales, sin tráfico CAN de ningún tipo. Consulta `CHANGELOG.md` para ver exactamente qué se ha entregado hasta ahora.
 
 ---
 
@@ -69,9 +67,7 @@ Esta app tiene dos tipos de pestañas:
   `candlelight`/`slcan`, o cualquier adaptador que hable el protocolo serie SLCAN
   `lawicel` estándar) - la misma clase de adaptador que soportan ambas herramientas de
   escritorio a través de su propio transporte Serial.
-- El bus configurado a **500 kbit/s** (esta app no autodetecta el bitrate de la forma
-  en que lo hace el flag `--auto-detect` de las herramientas de escritorio; siempre
-  abre a 500k).
+- El bus configurado a **500 kbit/s**. Al conectar, la app prueba por turnos 500, 250, 125 kbit/s y el resto de velocidades estándar, y se queda con la primera en la que una placa responde a una consulta de versión; todavía no se puede elegir la velocidad a mano ni escuchar sin que una placa responda.
 - Un navegador con soporte de Web Serial - **Chrome o Edge**. Firefox y Safari no
   implementan Web Serial y no podrán conectar en absoluto.
 - Web Serial requiere un contexto seguro (HTTPS) o `localhost` - y no se puede usar
@@ -163,20 +159,34 @@ Portado desde los propios `tester_tool_panels.py` /
   comunicación del lado del firmware (soldador, láser, curado UV, retrabajo con
   aire caliente, boquilla de impresora 3D - reenvío cada 150ms bajo un watchdog de
   250ms; ventilador de capa de impresora 3D - reenvío cada 400ms bajo su propio
-  watchdog de 1000ms), coincidiendo exactamente con el timing propio de la
-  herramienta de escritorio.
+  watchdog de 1000ms), con los mismos intervalos de reenvío que usa la
+  herramienta de escritorio. Al desmarcarla, cambiar de panel o de pestaña,
+  desconectar o cerrar la página se envía la orden de apagado de la herramienta.
 - **Global Controls** (`0x100`), passthrough SPI de **Expansion Board** + consulta
   TMC DIAG0 (`0x180`-`0x183`), consulta/borrado de **F-RAM** (`0x190`-`0x192`),
   **Self-Test** (comprobaciones seguras, en reposo, por herramienta), un
   **Raw Bus Monitor** con exportación de traza `.trc`/`.asc`, y un inyector de
-  **Custom Frame** con un intervalo de repetición opcional - validado de la misma
-  forma que el propio inyector de tramas del CAN Bus Protocol Analyzer: el ID se
-  enmascara al rango estándar CAN de 11 bits, y los tokens de datos se filtran a
-  bytes hexadecimales válidos antes de limitarse al máximo de 8 bytes del payload
-  CAN.
+  **Custom Frame** con un intervalo de repetición opcional - validado como el
+  propio inyector de tramas del CAN Bus Protocol Analyzer: un identificador fuera
+  de `0`-`7FF`, un byte de datos no válido o más de 8 bytes se rechaza con un
+  mensaje, nunca se enmascara, se descarta ni se recorta. Los identificadores que
+  solo transmite la placa se rechazan, y las escrituras en la memoria de la placa,
+  las órdenes del bootloader y las de actuadores se confirman antes.
 - **Detect Hardware** consulta la herramienta activa real (`0x110`/`0x111`) y la
   versión de placa (`0x7F8`/`0x7F9`), y un error crítico declarado (`0x111` byte 1)
   aparece como un banner de fallo en vivo.
+
+### Seguridad y simulador
+
+- Las pestañas de sandbox (Control, OLED, Thermal IR) no transmiten nada. Sus tramas llevan la marca SIM y, mientras hay una placa conectada, no producen ninguna respuesta simulada. De los mensajes predefinidos del analizador de protocolo solo se envían a una placa conectada las consultas simples; el resto sigue siendo simulado.
+- Tester Studio muestra un panel de herramienta solo para la herramienta que la propia placa ha comunicado (`0x111`), y ninguno antes de que la placa responda.
+- Láser, taladro, curado UV, soldadura, calentadores, movimiento, dispensado de pasta, escrituras en la memoria de la placa y tramas escritas a mano que entrañan riesgo piden confirmación antes.
+
+### Aún no cubierto
+
+- Los contadores de error de la inspección térmica (`0x1AA`/`0x1AB`).
+- Un modo solo escucha y elegir la velocidad a mano: no se puede entrar en un bus en el que ninguna placa responde.
+- La lectura de la imagen térmica no comprueba antes que el sensor esté listo ni reintenta un bloque perdido.
 
 ## 🔐 Nota de seguridad: esta app no lleva clave de firma
 
@@ -387,12 +397,9 @@ resumen del trabajo anterior en este proyecto.
 │   ├── urtc_custom_icon.svg         Icono de la app, mismo artwork
 │   └── urtc_icon.ico                Favicon
 ├── index.html                       HTML de entrada de Vite
-├── metadata.json                    Nombre/descripcion de la app + permiso
-│                                     "serial" solicitado (usado por la
-│                                     plataforma de hosting)
 ├── vite.config.ts                   Configuracion de Vite + plugin de Tailwind
 ├── tsconfig.json                    Configuracion de TypeScript
-├── .env.example                     VITE_APP_TITLE
+├── .env.example                     Ninguna variable la lee la app
 ├── dev.bat / dev.sh                 Instala dependencias + inicia el servidor de
 │                                     desarrollo de Vite
 ├── build.bat / build.sh             Instala dependencias + produce el build

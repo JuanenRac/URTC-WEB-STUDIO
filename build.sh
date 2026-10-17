@@ -39,7 +39,7 @@ printf '%s\n' "* v${HYDRA_UMC_VERSION_BEFORE:-unknown} -> v${HYDRA_UMC_VERSION_A
 printf '%s\n' '* Project manifest has been synchronised by the project build flow.'
 printf '%s\n' '*******************************************************************************'
 printf '\n'
-npm install
+npm ci
 
 echo "========================================"
 echo " Compiling URTC Web Studio (Prod Mode) "

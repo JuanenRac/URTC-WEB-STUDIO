@@ -69,7 +69,7 @@ compatibility of a change.
 
 ## [0.2.2] - Device state model
 
-- Added a per-device state model (offline, connecting, online, error) in which a configuration change stays pending until the device confirms it, and is rolled back with its reason if refused or the link drops.
+- Added, as a library only, a per-device state model (offline, connecting, online, error) in which a configuration change stays pending until the device confirms it. It was never connected to the screens and has been removed.
 
 ## [0.2.1] - Unsupported-browser banner shown before connecting
 

@@ -45,7 +45,7 @@ echo * Project manifest has been synchronised by the project build flow.
 echo *****************************************************************************
 echo.
 echo.
-call npm install
+call npm ci
 
 echo ========================================
 echo  Compiling URTC Web Studio (Prod Mode)

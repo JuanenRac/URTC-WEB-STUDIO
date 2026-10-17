@@ -29,13 +29,11 @@ a React/Vite single-page app that talks to real URTC hardware over a USB-CAN
 adapter via the [Web Serial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API),
 using the same SLCAN framing and CAN protocol as the two desktop companion
 tools, [URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER) and
-[URTC Tester](https://github.com/JuanenRac/URTC-TESTER). The goal is feature
-parity with those two tools inside a single browser tab, not a simplified
-demo of them - the Flasher Studio and Tester Studio tabs send and receive the
+[URTC Tester](https://github.com/JuanenRac/URTC-TESTER). The aim is to bring the main workflows of those two tools into a single browser tab, not a simplified demo of them; it does not reach full parity yet (see "Not covered yet" below) - the Flasher Studio and Tester Studio tabs send and receive the
 real CAN frames described in `docs/CANBUS.TXT` of the
 [URTC firmware repo](https://github.com/JuanenRac/URTC).
 
-**Honesty check - what actually runs today:** `npm test` (Vitest) now covers the pure SLCAN line-parsing core (`src/lib/slcan.ts`, extracted unchanged from `useSerialCanBus.ts`'s own `processBuffer()`) - the rest of the app has no automated coverage yet: `package.json`'s `test` script only runs that one suite, and CI (`npm ci` then `npm run typecheck --if-present` / `npm test --if-present` / `npm run lint --if-present`) now runs both `npm test` and `npm run lint` (`tsc --noEmit`). What's real hardware-driven versus sandbox-only is already broken down precisely in "What's real vs. what's a sandbox" right below - Flasher Studio, Tester Studio and the CAN Bus Protocol Analyzer are real code that has never been run against actual URTC hardware in this environment (no USB-CAN adapter here to test with), while Control/OLED/Specs-BOM/Thermal IR Inspection are openly labeled sandbox tabs with zero CAN traffic. The CAN-OTA state machine (`useFlasher.ts`) and the CAN ID constants (`canIds.ts`/`flasher.ts`) are real logic mirroring the desktop tools' own protocol byte-for-byte, but still verified only by type-checking and manual code review, not by any test harness or a real hardware session. See `CHANGELOG.md` for exactly what has shipped so far.
+**Honesty check - what actually runs today:** `npm test` (Vitest) covers the pure logic: SLCAN parsing, request/answer matching, firmware image and manifest checks, tool limits, confirmations, the rules that keep the simulator apart from the real bus, trace export and the eight interface languages. The screens and the Web Serial transport itself have no automated tests, and none of this has been run against a real URTC board in this environment (no USB-CAN adapter here to test with): Flasher Studio, Tester Studio and the CAN Bus Protocol Analyzer are real code verified only by those tests, type-checking (`npm run lint`) and code review. Control/OLED/Specs-BOM/Thermal IR Inspection are openly labeled sandbox tabs with zero CAN traffic. See `CHANGELOG.md` for exactly what has shipped so far.
 
 ---
 
@@ -70,8 +68,7 @@ This app has two kinds of tabs:
   `candlelight`/`slcan`, or any adapter that speaks the standard `lawicel`
   SLCAN serial protocol) - the same adapter class both desktop tools support
   via their own Serial transport.
-- The bus set to **500 kbit/s** (this app doesn't auto-detect bitrate the way
-  the desktop tools' `--auto-detect` flag does; it always opens at 500k).
+- The bus set to **500 kbit/s**. On connect the app tries 500, 250, 125 kbit/s and the other standard rates in turn and keeps the first one at which a board answers a version query; there is no way yet to choose the rate by hand or to listen without a board answering.
 - A browser with Web Serial support - **Chrome or Edge**. Firefox and Safari
   don't implement Web Serial and won't be able to connect at all.
 - Web Serial requires either a secure context (HTTPS) or `localhost` - and it
@@ -159,19 +156,35 @@ Ported from `URTC-TESTER`'s own `tester_tool_panels.py` /
 - **Active-checkbox + keepalive** for every tool with a firmware-side
   communication watchdog (soldering iron, laser, UV curing, hot air rework,
   3D printer nozzle - 150ms resend under a 250ms watchdog; 3D printer layer
-  fan - 400ms resend under its own 1000ms watchdog), matching the desktop
-  tool's own timing exactly.
+  fan - 400ms resend under its own 1000ms watchdog), the same resend
+  intervals the desktop tool uses. Unchecking it, replacing the panel,
+  changing tab, disconnecting or closing the page sends the tool's off
+  command.
 - **Global Controls** (`0x100`), **Expansion Board** SPI passthrough +
   TMC DIAG0 query (`0x180`-`0x183`), **F-RAM** query/erase (`0x190`-`0x192`),
   **Self-Test** (safe, at-rest checks per tool), a **Raw Bus Monitor** with
   `.trc`/`.asc` trace export, and a **Custom Frame** injector with an
-  optional repeat interval - validated the same way as the CAN Bus Protocol
-  Analyzer's own frame injector: the ID is masked to the 11-bit CAN standard
-  range, and data tokens are filtered to valid hex bytes before being capped
-  to the 8-byte CAN payload limit.
+  optional repeat interval - validated like the CAN Bus Protocol
+  Analyzer's own frame injector: an identifier outside `0`-`7FF`, an invalid
+  data byte or more than 8 bytes is refused with a message, never masked,
+  dropped or cut. Identifiers that only the board transmits are refused, and
+  writes to the board memory, bootloader commands and actuator commands are
+  confirmed first.
 - **Detect Hardware** queries the real active tool (`0x110`/`0x111`) and
   board version (`0x7F8`/`0x7F9`), and a declared critical error
   (`0x111` byte 1) surfaces as a live fault banner.
+
+### Safety and the simulator
+
+- The sandbox tabs (Control, OLED, Thermal IR) transmit nothing. Their frames are marked SIM, and while a board is connected they produce no simulated answer. Of the protocol analyzer's predefined messages only plain queries are sent to a connected board; the rest stay simulated.
+- Tester Studio shows a tool panel only for the tool the board itself reported (`0x111`), and none before the board has answered.
+- Laser, drill, UV curing, welding, heaters, motion, paste jetting, writes to the board memory and risky hand-typed frames ask for confirmation first.
+
+### Not covered yet
+
+- The thermal inspection error counters (`0x1AA`/`0x1AB`).
+- A listen-only mode and choosing the bitrate by hand: a bus on which no board answers cannot be joined.
+- Reading the thermal image does not check that the sensor is ready first and does not retry a lost chunk.
 
 ## 🔐 Security note: no signing key in this app
 
@@ -357,11 +370,9 @@ project.
 │   ├── urtc_custom_icon.svg         App icon, same artwork
 │   └── urtc_icon.ico                Favicon
 ├── index.html                       Vite entry HTML
-├── metadata.json                    App name/description + requested "serial"
-│                                     permission (used by the hosting platform)
 ├── vite.config.ts                   Vite + Tailwind plugin config
 ├── tsconfig.json                    TypeScript config
-├── .env.example                     VITE_APP_TITLE
+├── .env.example                     No variable is read by the app
 ├── dev.bat / dev.sh                 Install deps + start the Vite dev server
 ├── build.bat / build.sh             Install deps + produce the static dist/ build
 ├── tools/
