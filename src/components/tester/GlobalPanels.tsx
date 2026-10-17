@@ -2,6 +2,10 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CanFrame } from '../../types';
 import { useKeepalive } from '../../hooks/useKeepalive';
+import { useConfirmAction } from '../../hooks/useConfirmAction';
+import { rawSendPolicy } from '../../lib/dangerousActions';
+import { traceBitCount, traceFileName, toAscTrace, toTrcTrace } from '../../lib/traceExport';
+import { downloadBlob } from '../../lib/download';
 import { parseCustomFrame, customFrameErrorText } from '../../lib/customFrame';
 import { Section, Field, inputCls, btnCls, btnPrimaryCls, safeInt } from './shared';
 import { ToolCtx } from './ToolPanels';
@@ -85,8 +89,7 @@ export const ExpansionBoardPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
 
   const sendSpi = async () => {
     const bytes = txHex.trim().split(/\s+/).filter(Boolean).map(h => parseInt(h, 16)).slice(0, 7);
-    await ctx.sendFrame(CAN_ID_EXPANSION_SPI_REQ, [bytes.length, ...bytes], 'Expansion SPI passthrough');
-    const resp = await ctx.waitForFrame(CAN_ID_EXPANSION_SPI_RESP, 1000);
+    const resp = await ctx.request(CAN_ID_EXPANSION_SPI_REQ, [bytes.length, ...bytes], CAN_ID_EXPANSION_SPI_RESP, 1000, 'Expansion SPI passthrough');
     if (resp) {
       const n = resp.data[0];
       setSpiResult(resp.data.slice(1, 1 + n).map(b => b.toString(16).padStart(2, '0').toUpperCase()).join(' '));
@@ -94,19 +97,16 @@ export const ExpansionBoardPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   };
 
   const queryDiag0 = async () => {
-    await ctx.sendFrame(CAN_ID_EXPANSION_DIAG0_REQ, [], 'Query TMC DIAG0');
-    const resp = await ctx.waitForFrame(CAN_ID_EXPANSION_DIAG0_RESP, 1000);
+    const resp = await ctx.request(CAN_ID_EXPANSION_DIAG0_REQ, [], CAN_ID_EXPANSION_DIAG0_RESP, 1000, 'Query TMC DIAG0');
     if (resp) setDiag0(resp.data[0] !== 0);
   };
 
   const queryExpansionType = async () => {
-    await ctx.sendFrame(CAN_ID_EXPANSION_TYPE_RESP, [], 'Query expansion board type');
-    const resp = await ctx.waitForFrame(CAN_ID_EXPANSION_TYPE_RESP, 1500);
+    const resp = await ctx.request(CAN_ID_EXPANSION_TYPE_RESP, [], CAN_ID_EXPANSION_TYPE_RESP, 1500, 'Query expansion board type');
     if (resp) setExpansionType(resp.data[0]);
   };
   const queryMlxVariant = async () => {
-    await ctx.sendFrame(CAN_ID_MLX_VARIANT_RESP, [], 'Query MLX sensor variant');
-    const resp = await ctx.waitForFrame(CAN_ID_MLX_VARIANT_RESP, 1500);
+    const resp = await ctx.request(CAN_ID_MLX_VARIANT_RESP, [], CAN_ID_MLX_VARIANT_RESP, 1500, 'Query MLX sensor variant');
     if (resp) setMlxVariant(resp.data[0]);
   };
 
@@ -142,11 +142,11 @@ export const ExpansionBoardPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
 // ---- F-RAM ----
 export const FramPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   const { t } = useTranslation();
+  const confirm = useConfirmAction();
   const [state, setState] = useState<{ valid: number; toolId: number; hadError: number; temp: number; speed: number; dirOrInterlock: number; fan: number } | null>(null);
 
   const query = async () => {
-    await ctx.sendFrame(CAN_ID_FRAM_QUERY, [], 'Query F-RAM state');
-    const resp = await ctx.waitForFrame(CAN_ID_FRAM_STATE_RESP, 1500);
+    const resp = await ctx.request(CAN_ID_FRAM_QUERY, [], CAN_ID_FRAM_STATE_RESP, 1500, 'Query F-RAM state');
     if (resp && resp.data.length >= 8) {
       const d = resp.data;
       setState({ valid: d[0], toolId: d[1], hadError: d[2], temp: (d[3] << 8) | d[4], speed: d[5], dirOrInterlock: d[6], fan: d[7] });
@@ -154,7 +154,7 @@ export const FramPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   };
 
   const erase = async () => {
-    if (!window.confirm(t('testerglobal.erase_confirm', "Erase F-RAM saved state? This wipes the board's persisted tool setpoints."))) return;
+    if (!(await confirm('erase_fram'))) return;
     await ctx.sendFrame(CAN_ID_ERASE_FRAM, ERASE_FRAM_MAGIC, 'Erase F-RAM');
     await query();
   };
@@ -181,12 +181,12 @@ export const FramPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
 
 // ---- Self test ----
 const SELF_TEST_STEPS: Record<number, { run: (ctx: ToolCtx, log: (s: string) => void) => Promise<void> }> = {
-  0: { run: async (ctx, log) => { await ctx.sendFrame(CAN_ID_SOLDER_SETPOINT, [0, 0], 'Self-test: soldering iron 0C'); const r = await ctx.waitForFrame(CAN_ID_SOLDER_TELEMETRY, 1500); log(r ? 'PASS: 0x135 telemetry received' : 'FAIL: no 0x135 telemetry'); } },
-  5: { run: async (ctx, log) => { await ctx.sendFrame(CAN_ID_DRILL_CMD, [0, 0], 'Self-test: drill 0'); const r = await ctx.waitForFrame(CAN_ID_DRILL_TELEMETRY, 1500); log(r ? 'PASS: 0x147 telemetry received' : 'FAIL: no 0x147 telemetry'); } },
-  9: { run: async (ctx, log) => { await ctx.sendFrame(CAN_ID_LASER_CMD, [0, 0], 'Self-test: laser 0'); const r = await ctx.waitForFrame(CAN_ID_LASER_TELEMETRY, 1500); log(r ? 'PASS: 0x165 telemetry received' : 'FAIL: no 0x165 telemetry'); } },
-  10: { run: async (ctx, log) => { await ctx.sendFrame(CAN_ID_3DP_THERMAL_MOTION, [0, 0, 0, 0, 0, 0], 'Self-test: 3D printer 0'); const r = await ctx.waitForFrame(CAN_ID_3DP_HOTEND_TELEMETRY, 1500); log(r ? 'PASS: 0x175 telemetry received' : 'FAIL: no 0x175 telemetry'); } },
-  8: { run: async (ctx, log) => { const r = await ctx.waitForFrame(CAN_ID_AOI_TELEMETRY, 1500); log(r ? 'PASS: 0x155 seen passively' : 'INFO: no 0x155 seen (info-only, cannot force it)'); } },
-  4: { run: async (ctx, log) => { const r = await ctx.waitForFrame(CAN_ID_VACUUM_TELEMETRY, 1500); log(r ? 'PASS: 0x145 seen passively' : 'INFO: no 0x145 seen (info-only, cannot force it)'); } },
+  0: { run: async (ctx, log) => { const r = await ctx.request(CAN_ID_SOLDER_SETPOINT, [0, 0], CAN_ID_SOLDER_TELEMETRY, 1500, 'Self-test: soldering iron 0C'); log(r ? 'PASS: 0x135 telemetry received' : 'FAIL: no 0x135 telemetry'); } },
+  5: { run: async (ctx, log) => { const r = await ctx.request(CAN_ID_DRILL_CMD, [0, 0], CAN_ID_DRILL_TELEMETRY, 1500, 'Self-test: drill 0'); log(r ? 'PASS: 0x147 telemetry received' : 'FAIL: no 0x147 telemetry'); } },
+  9: { run: async (ctx, log) => { const r = await ctx.request(CAN_ID_LASER_CMD, [0, 0], CAN_ID_LASER_TELEMETRY, 1500, 'Self-test: laser 0'); log(r ? 'PASS: 0x165 telemetry received' : 'FAIL: no 0x165 telemetry'); } },
+  10: { run: async (ctx, log) => { const r = await ctx.request(CAN_ID_3DP_THERMAL_MOTION, [0, 0, 0, 0, 0, 0], CAN_ID_3DP_HOTEND_TELEMETRY, 1500, 'Self-test: 3D printer 0'); log(r ? 'PASS: 0x175 telemetry received' : 'FAIL: no 0x175 telemetry'); } },
+  8: { run: async (ctx, log) => { ctx.flushFrames(CAN_ID_AOI_TELEMETRY); const r = await ctx.waitForFrame(CAN_ID_AOI_TELEMETRY, 1500); log(r ? 'PASS: 0x155 seen passively' : 'INFO: no 0x155 seen (info-only, cannot force it)'); } },
+  4: { run: async (ctx, log) => { ctx.flushFrames(CAN_ID_VACUUM_TELEMETRY); const r = await ctx.waitForFrame(CAN_ID_VACUUM_TELEMETRY, 1500); log(r ? 'PASS: 0x145 seen passively' : 'INFO: no 0x145 seen (info-only, cannot force it)'); } },
 };
 
 export const SelfTestPanel: React.FC<{ ctx: ToolCtx; activeToolId: number }> = ({ ctx, activeToolId }) => {
@@ -200,12 +200,10 @@ export const SelfTestPanel: React.FC<{ ctx: ToolCtx; activeToolId: number }> = (
     setRunning(true);
     append(`Self-test starting for tool #${activeToolId} (${TOOL_NAMES[activeToolId] ?? 'unknown'})...`);
     try {
-      await ctx.sendFrame(CAN_ID_QUERY_ACTIVE_TOOL, [], 'Self-test: query active tool');
-      const toolResp = await ctx.waitForFrame(CAN_ID_ACTIVE_TOOL_RESP, 1500);
+      const toolResp = await ctx.request(CAN_ID_QUERY_ACTIVE_TOOL, [], CAN_ID_ACTIVE_TOOL_RESP, 1500, 'Self-test: query active tool');
       append(toolResp && (toolResp.data[0] & 0x1F) === activeToolId ? 'PASS: 0x111 confirms active tool ID' : 'FAIL: 0x111 tool ID mismatch or no response');
 
-      await ctx.sendFrame(CAN_ID_QUERY_VERSION, [0x00], 'Self-test: query version');
-      const verResp = await ctx.waitForFrame(CAN_ID_VERSION_RESPONSE, 1500);
+      const verResp = await ctx.request(CAN_ID_QUERY_VERSION, [0x00], CAN_ID_VERSION_RESPONSE, 1500, 'Self-test: query version');
       append(verResp ? 'PASS: 0x7F9 version response received' : 'FAIL: no 0x7F9 response');
 
       const specific = SELF_TEST_STEPS[activeToolId];
@@ -239,10 +237,13 @@ export const BusMonitorPanel: React.FC<{ ctx: ToolCtx; subscribeAll: (cb: (f: Ca
   const pausedRef = useRef(paused);
   pausedRef.current = paused;
   const [rate, setRate] = useState(0);
+  const [bits, setBits] = useState(0);
   const countRef = useRef(0);
+  const bitsRef = useRef(0);
 
   useEffect(() => subscribeAll((f) => {
     countRef.current++;
+    bitsRef.current += traceBitCount(f.dlc);
     if (pausedRef.current) return;
     setFrames(prev => {
       const next = [f, ...prev];
@@ -251,24 +252,17 @@ export const BusMonitorPanel: React.FC<{ ctx: ToolCtx; subscribeAll: (cb: (f: Ca
   }), [subscribeAll]);
 
   useEffect(() => {
-    const id = setInterval(() => { setRate(countRef.current); countRef.current = 0; }, 1000);
+    const id = setInterval(() => { setRate(countRef.current); setBits(bitsRef.current); countRef.current = 0; bitsRef.current = 0; }, 1000);
     return () => clearInterval(id);
   }, []);
 
-  const busLoadPct = Math.min(100, (rate * (47 + 8 * 4) / 500000) * 100);
+  // URTC's bus runs at 500 kbit/s; the load counts the real length of each frame seen in the last second.
+  const busLoadPct = Math.min(100, (bits / 500000) * 100);
 
   const exportTrace = (format: 'trc' | 'asc') => {
-    const lines = frames.slice().reverse().map((f, i) => {
-      if (format === 'trc') return `${i + 1})  ${f.timestamp}  Rx  ${f.idHex}  ${f.dlc}  ${f.dataHex}`;
-      return `${f.timestamp} 1  ${f.idHex.replace('0x', '')}x  Rx  d ${f.dlc} ${f.dataHex}`;
-    });
-    const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `urtc_bus_trace.${format}`;
-    a.click();
-    URL.revokeObjectURL(url);
+    const ordered = frames.slice().reverse();
+    const text = format === 'trc' ? toTrcTrace(ordered) : toAscTrace(ordered);
+    downloadBlob(new Blob([text], { type: 'text/plain' }), traceFileName(format));
   };
 
   return (
@@ -312,26 +306,63 @@ export const CustomFramePanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
 
   const [frameError, setFrameError] = useState('');
 
-  const send = () => {
+  const confirm = useConfirmAction();
+
+  // Parses what was typed and applies the rules for a frame that goes to a real board: identifiers only the board transmits are refused, and the ones that write to memory, enter the bootloader or move an actuator are confirmed first.
+  const prepare = async (): Promise<{ id: number; data: number[] } | null> => {
     const parsed = parseCustomFrame(idHex, dataHex);
     if (parsed.ok === false) {
       setFrameError(customFrameErrorText(t, parsed.error));
-      throw new Error('invalid custom frame');
+      return null;
+    }
+    const policy = rawSendPolicy(parsed.id);
+    if (policy.kind === 'blocked') {
+      setFrameError(t('confirm.raw_blocked', 'Identifier 0x{{id}} is only ever sent by the board; sending it from here would collide with the board and feed false data to the other devices on the bus.', { id: parsed.id.toString(16).toUpperCase().padStart(3, '0') }));
+      return null;
     }
     setFrameError('');
-    return ctx.sendFrame(parsed.id, parsed.data, 'Custom frame');
+    if (policy.kind === 'confirm') {
+      const rawId = parsed.id.toString(16).toUpperCase().padStart(3, '0');
+      const message = policy.reason === 'memory'
+        ? t('confirm.raw_memory', 'Identifier 0x{{id}} writes to the non-volatile memory of the board and stays after a restart.', { id: rawId })
+        : policy.reason === 'bootloader'
+          ? t('confirm.raw_bootloader', 'Identifier 0x{{id}} is a bootloader command; it can leave the board in update mode until it is updated or powered off and on.', { id: rawId })
+          : t('confirm.raw_actuator', 'Identifier 0x{{id}} commands an actuator; it can move, heat or fire.', { id: rawId });
+      if (!(await confirm('raw_frame', { message }))) return null;
+    }
+    return parsed;
   };
 
-  useKeepalive(repeat, Math.max(10, intervalMs), send, () => setRepeat(false));
+  const sendOnce = async () => {
+    const frame = await prepare();
+    if (!frame) return;
+    try { await ctx.sendFrame(frame.id, frame.data, 'Custom frame'); } catch { /* the banner above shows the reason */ }
+  };
+
+  // The repeated frame is the one that was approved when Repeat was checked.
+  const approved = useRef<{ id: number; data: number[] } | null>(null);
+  const toggleRepeat = async (on: boolean) => {
+    if (!on) { setRepeat(false); return; }
+    const frame = await prepare();
+    if (!frame) return;
+    approved.current = frame;
+    setRepeat(true);
+  };
+
+  useKeepalive(repeat, Math.max(10, intervalMs), () => {
+    const frame = approved.current;
+    if (!frame) throw new Error('no frame approved');
+    return ctx.sendFrame(frame.id, frame.data, 'Custom frame');
+  }, () => setRepeat(false));
 
   return (
     <Section title={t('testerglobal.custom_frame_title', 'Custom Frame')}>
       <div className="flex items-end gap-2 flex-wrap">
         <Field label={t('testerglobal.id_hex_label', 'ID (hex, 0-7FF)')}><input value={idHex} onChange={(e) => setIdHex(e.target.value)} className={`${inputCls} w-24`} /></Field>
         <Field label={t('testerglobal.data_hex_label', 'Data (hex bytes)')}><input value={dataHex} onChange={(e) => setDataHex(e.target.value)} className={`${inputCls} w-64`} /></Field>
-        <button className={btnPrimaryCls} onClick={send} disabled={!ctx.isConnected}>{t('testerglobal.send_once', 'Send Once')}</button>
+        <button className={btnPrimaryCls} onClick={sendOnce} disabled={!ctx.isConnected}>{t('testerglobal.send_once', 'Send Once')}</button>
         <label className="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer">
-          <input type="checkbox" checked={repeat} onChange={(e) => setRepeat(e.target.checked)} className="accent-purple-500" /> {t('testerglobal.repeat_every', 'Repeat every')}
+          <input type="checkbox" checked={repeat} onChange={(e) => { void toggleRepeat(e.target.checked); }} className="accent-purple-500" /> {t('testerglobal.repeat_every', 'Repeat every')}
         </label>
         <input type="number" min={10} max={10000} value={intervalMs} onChange={(e) => setIntervalMs(safeInt(e.target.value, 100, 10, 10000))} className={`${inputCls} w-20`} />
         <span className="text-xs text-slate-500">{t('testerglobal.ms', 'ms')}</span>

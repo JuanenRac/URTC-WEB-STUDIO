@@ -2,13 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { BUNDLED_FIRMWARE } from '../lib/bundledFirmware';
 import { isFlashableFirmwareName } from '../lib/firmwareImage';
 import { useTranslation } from 'react-i18next';
+import { useConfirmAction } from '../hooks/useConfirmAction';
+import { THIS_HARDWARE_ID, SLAVE_HARDWARE_ID } from '../lib/flasher';
+import { parseSerialNumber } from '../lib/boardConfig';
 import { FlasherState, CanFrame } from '../types';
 import { RefreshCw, ShieldCheck, Cpu, CheckCircle2, AlertOctagon, Terminal, DownloadCloud, XCircle, Fingerprint } from 'lucide-react';
 import { TOOL_PROFILES } from '../data/toolsData';
 import { BoardVersionInfo } from '../App';
 import {
   CAN_ID_EXPANSION_TYPE_RESP, CAN_ID_MLX_VARIANT_RESP, CAN_ID_SET_FREE_TOOL,
-  CAN_ID_FREE_TOOL_CONFIG_RESP, CAN_ID_PERIPHERAL_INFO_RESP, EXPANSION_BOARD_TYPES, MLX_SENSOR_VARIANTS
+  CAN_ID_FREE_TOOL_CONFIG_RESP, CAN_ID_PERIPHERAL_INFO_RESP, CAN_ID_SET_DEVICE_SERIAL, EXPANSION_BOARD_TYPES, MLX_SENSOR_VARIANTS
 } from '../lib/canIds';
 
 interface FlasherStudioProps {
@@ -30,6 +33,7 @@ interface FlasherStudioProps {
   onQueryErrorCounters: () => void;
   onSendFrame?: (id: number, data: number[], description?: string) => Promise<void>;
   onWaitForFrame?: (id: number, timeoutMs?: number) => Promise<CanFrame | null>;
+  onRequest?: (id: number, data: number[], respId: number, timeoutMs?: number, description?: string) => Promise<CanFrame | null>;
 }
 
 // Generated from the URTC build by scripts/sync-firmware.mjs: the same files,
@@ -57,9 +61,11 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
   errorCounters,
   onQueryErrorCounters,
   onSendFrame,
-  onWaitForFrame
+  onRequest
 }) => {
   const { t } = useTranslation();
+  const confirm = useConfirmAction();
+  const [serialError, setSerialError] = useState('');
   const [flashTarget, setFlashTarget] = useState<'main' | 'slave'>('main');
   const [selectedFirmware, setSelectedFirmware] = useState<string>(BUNDLED_FIRMWARE.mainApplication);
   const [runAppTrigger, setRunAppTrigger] = useState<boolean>(true);
@@ -135,9 +141,8 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
     apply: (data: number[]) => void,
     label: string
   ) => {
-    if (!onSendFrame || !onWaitForFrame) return;
-    await onSendFrame(id, [], `Query ${label}`);
-    const resp = await onWaitForFrame(id, timeoutMs);
+    if (!onRequest) return;
+    const resp = await onRequest(id, [], id, timeoutMs, `Query ${label}`);
     if (resp) apply(resp.data);
   };
 
@@ -191,9 +196,12 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
                 </div>
                 <div className="p-2 rounded bg-slate-900 border border-slate-800">
                   <div className="text-slate-500">{t('flasher.hardware_id_label', 'HardwareID')}</div>
-                  <div className={`font-semibold ${boardVersion.hardwareId === 0x0303CC01 || boardVersion.hardwareId === 0x0303CB01 ? 'text-emerald-400' : 'text-red-400'}`}>
+                  <div className={`font-semibold ${boardVersion.hardwareId === THIS_HARDWARE_ID ? 'text-emerald-400' : boardVersion.hardwareId === SLAVE_HARDWARE_ID ? 'text-amber-400' : 'text-red-400'}`}>
                     0x{boardVersion.hardwareId.toString(16).toUpperCase().padStart(8, '0')}
                   </div>
+                  {boardVersion.hardwareId === SLAVE_HARDWARE_ID && (
+                    <div className="text-[10px] text-amber-400/90 mt-0.5">{t('flasher.hardware_id_is_slave', 'This is the expansion slave, not the main board.')}</div>
+                  )}
                 </div>
                 <div className="p-2 rounded bg-slate-900 border border-slate-800">
                   <div className="text-slate-500">{t('flasher.app_version_label', 'App Version')}</div>
@@ -463,7 +471,7 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
                       <option value="0">{t('flasher.config_freetool_none', '[0] None installed')}</option>
                       {TOOL_PROFILES.map(tool => <option key={tool.id} value={tool.id + 1}>{tool.id} - {tool.name}</option>)}
                     </select>
-                    <button onClick={() => onSendFrame?.(CAN_ID_SET_FREE_TOOL, [parseInt(selectedFreeTool)], 'Program free tool config')} disabled={!isConnected} className="px-4 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 border border-slate-700 rounded-lg text-xs font-semibold text-slate-200 transition">{t('flasher.config_program', 'Program')}</button>
+                    <button onClick={async () => { if (await confirm('program_config')) onSendFrame?.(CAN_ID_SET_FREE_TOOL, [parseInt(selectedFreeTool)], 'Program free tool config'); }} disabled={!isConnected} className="px-4 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 border border-slate-700 rounded-lg text-xs font-semibold text-slate-200 transition">{t('flasher.config_program', 'Program')}</button>
                     <button onClick={() => queryAndSet(CAN_ID_FREE_TOOL_CONFIG_RESP, 1500, (d) => setFreeToolConfig(d[1] ?? null), 'free tool config')} disabled={!isConnected} className="px-3 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 border border-slate-700 rounded-lg text-xs text-slate-200 transition">{t('flasher.query', 'Query')}</button>
                   </div>
                   {freeToolConfig !== null && <div className="text-[11px] text-slate-400">{t('flasher.config_currently', 'Currently configured:')} {freeToolConfig === 0 || freeToolConfig > 25 ? t('flasher.config_currently_none', 'none') : TOOL_PROFILES.find(t => t.id === freeToolConfig - 1)?.name ?? `#${freeToolConfig - 1}`}</div>}
@@ -474,10 +482,15 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
                   <div className="flex items-end gap-3">
                     <div className="flex-1 space-y-1">
                       <label className="block text-xs font-semibold text-slate-300">{t('flasher.config_serial_label', 'New Serial Number:')}</label>
-                      <input type="number" min="0" max="255" value={serialNumber} onChange={(e) => setSerialNumber(e.target.value)} className="w-full px-3 py-1.5 bg-slate-950 border border-slate-700 rounded-lg text-xs font-mono text-slate-300" />
+                      <input type="number" min="0" max="255" value={serialNumber} onChange={(e) => { setSerialNumber(e.target.value); setSerialError(''); }} className="w-full px-3 py-1.5 bg-slate-950 border border-slate-700 rounded-lg text-xs font-mono text-slate-300" />
+                      {serialError && <div className="text-[11px] text-red-400">{serialError}</div>}
                     </div>
                     <button onClick={() => queryAndSet(CAN_ID_PERIPHERAL_INFO_RESP, 1500, (d) => setPeripheralInfo({ type: d[0], serial: d[1] }), 'peripheral info')} disabled={!isConnected} className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 border border-slate-700 rounded-lg text-xs text-slate-200 transition">{t('flasher.query', 'Query')}</button>
-                    <button onClick={() => onSendFrame?.(0x1a4, [parseInt(serialNumber) & 0xFF], 'Program device serial')} disabled={!isConnected} className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 border border-slate-700 rounded-lg text-xs text-slate-200 transition">{t('flasher.config_program', 'Program')}</button>
+                    <button onClick={async () => {
+                      const serial = parseSerialNumber(serialNumber);
+                      if (serial === null) { setSerialError(t('flasher.config_serial_invalid', 'The serial number must be a whole number from 0 to 255.')); return; }
+                      if (await confirm('program_config')) onSendFrame?.(CAN_ID_SET_DEVICE_SERIAL, [serial], 'Program device serial');
+                    }} disabled={!isConnected} className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 border border-slate-700 rounded-lg text-xs text-slate-200 transition">{t('flasher.config_program', 'Program')}</button>
                   </div>
                   {peripheralInfo && <div className="text-[11px] text-slate-400 mt-2">{t('flasher.config_peripheral_type_label', 'Peripheral type:')} 0x{peripheralInfo.type.toString(16).padStart(2, '0')}{peripheralInfo.type === 0x03 ? ' (URTC)' : ''} &bull; {t('flasher.config_serial_field_label', 'Serial:')} {peripheralInfo.serial}</div>}
                 </div>

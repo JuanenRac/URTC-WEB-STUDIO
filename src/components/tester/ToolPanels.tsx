@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CanFrame } from '../../types';
 import { useKeepalive } from '../../hooks/useKeepalive';
+import { useConfirmAction } from '../../hooks/useConfirmAction';
 import { Section, Field, inputCls, btnCls, btnPrimaryCls, KeepaliveCheckbox, LiveGraph, safeInt } from './shared';
 import {
   CAN_ID_MOTION_CMD,
@@ -30,6 +31,10 @@ import {
 export interface ToolCtx {
   sendFrame: (id: number, data: number[], description?: string) => Promise<void>;
   waitForFrame: (id: number, timeoutMs?: number) => Promise<CanFrame | null>;
+  /** Sends `id`/`data` and resolves with the first frame `respId` that arrives after the send (null on timeout). Never an old frame. */
+  request: (id: number, data: number[], respId: number, timeoutMs?: number, description?: string) => Promise<CanFrame | null>;
+  /** Forgets the frames kept for an id, so none of them is taken for the answer to what is sent next. */
+  flushFrames: (id?: number) => void;
   subscribe: (id: number, cb: (f: CanFrame) => void) => () => void;
   isConnected: boolean;
 }
@@ -51,14 +56,14 @@ export const SolderingIronPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   const [dir, setDir] = useState<'fwd' | 'rev'>('fwd');
   const [steps, setSteps] = useState(200);
   const [position, setPosition] = useState<number | null>(null);
+  const confirm = useConfirmAction();
   const liveTemp = useTelemetry(ctx, CAN_ID_SOLDER_TELEMETRY, (d) => d.length >= 2 ? (d[0] << 8) | d[1] : null);
 
-  useKeepalive(active, KEEPALIVE_INTERVAL_MS, () => ctx.sendFrame(CAN_ID_SOLDER_SETPOINT, [(temp >> 8) & 0xFF, temp & 0xFF], `Soldering iron setpoint ${temp}C`), () => setActive(false));
+  // Switched off whenever the keepalive ends: unchecked, panel replaced, tab changed or page closed.
+  useKeepalive(active, KEEPALIVE_INTERVAL_MS, () => ctx.sendFrame(CAN_ID_SOLDER_SETPOINT, [(temp >> 8) & 0xFF, temp & 0xFF], `Soldering iron setpoint ${temp}C`), () => setActive(false), () => ctx.sendFrame(CAN_ID_SOLDER_SETPOINT, [0, 0], 'Soldering iron off'));
 
-  const stopHeater = () => { setActive(false); ctx.sendFrame(CAN_ID_SOLDER_SETPOINT, [0, 0], 'Soldering iron off'); };
   const queryPosition = async () => {
-    await ctx.sendFrame(CAN_ID_SOLDER_FEEDER_QUERY, [], 'Query feeder position');
-    const resp = await ctx.waitForFrame(CAN_ID_SOLDER_FEEDER_QUERY, 1500);
+    const resp = await ctx.request(CAN_ID_SOLDER_FEEDER_QUERY, [], CAN_ID_SOLDER_FEEDER_QUERY, 1500, 'Query feeder position');
     if (resp && resp.data.length >= 4) {
       const raw = (resp.data[0] << 24) | (resp.data[1] << 16) | (resp.data[2] << 8) | resp.data[3];
       setPosition(raw | 0);
@@ -73,7 +78,7 @@ export const SolderingIronPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
           <Field label={t('testertool.setpoint_0_445', 'Setpoint (0-445 C)')}>
             <input type="number" min={0} max={MAX_HEATER_SETPOINT_C} value={temp} onChange={(e) => setTemp(safeInt(e.target.value, 0, 0, MAX_HEATER_SETPOINT_C))} className={inputCls} />
           </Field>
-          <KeepaliveCheckbox checked={active} onChange={(v) => { setActive(v); if (!v) stopHeater(); }} watchdogMs={250} />
+          <KeepaliveCheckbox checked={active} onChange={async (v) => { if (v && !(await confirm('heater', { value: temp }))) return; setActive(v); }} watchdogMs={250} />
         </div>
         <div className="mt-3 flex items-center justify-between">
           <span className="text-xs text-slate-400">{t('testertool.live_label', 'Live:')} <span className="text-purple-300 font-mono">{liveTemp ?? '--'} C</span></span>
@@ -92,12 +97,12 @@ export const SolderingIronPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
           <Field label={t('testertool.steps_label', 'Steps')}>
             <input type="number" min={1} max={MAX_MOTION_STEPS} value={steps} onChange={(e) => setSteps(safeInt(e.target.value, 1, 1, MAX_MOTION_STEPS))} className={inputCls} />
           </Field>
-          <button className={btnPrimaryCls} onClick={() => ctx.sendFrame(CAN_ID_MOTION_CMD, [dir === 'fwd' ? 1 : 0, ...stepsToBytes(steps)], 'Move feeder')}>{t('testertool.move', 'Move')}</button>
+          <button className={btnPrimaryCls} onClick={async () => { if (await confirm('motion')) ctx.sendFrame(CAN_ID_MOTION_CMD, [dir === 'fwd' ? 1 : 0, ...stepsToBytes(steps)], 'Move feeder'); }}>{t('testertool.move', 'Move')}</button>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-xs text-slate-400">{t('testertool.position_label', 'Position:')} <span className="font-mono text-slate-200">{position ?? '--'}</span></span>
           <button className={btnCls} onClick={queryPosition}>{t('testertool.query', 'Query')}</button>
-          <button className={btnCls} onClick={() => { if (window.confirm(t('testertool.reset_feeder_confirm', 'Reset feeder position to 0?'))) ctx.sendFrame(CAN_ID_SOLDER_FEEDER_RESET, SOLDER_FEEDER_RESET_MAGIC, 'Reset feeder position'); }}>{t('testertool.reset', 'Reset')}</button>
+          <button className={btnCls} onClick={async () => { if (await confirm('feeder_reset')) ctx.sendFrame(CAN_ID_SOLDER_FEEDER_RESET, SOLDER_FEEDER_RESET_MAGIC, 'Reset feeder position'); }}>{t('testertool.reset', 'Reset')}</button>
         </div>
       </Section>
     </div>
@@ -109,6 +114,7 @@ export const MotionPanel: React.FC<{ ctx: ToolCtx; cmdId: number; label: string 
   const { t } = useTranslation();
   const [dir, setDir] = useState<'fwd' | 'rev'>('fwd');
   const [steps, setSteps] = useState(200);
+  const confirm = useConfirmAction();
   return (
     <Section title={`${label} (0x${cmdId.toString(16)})`} subtitle={t('testertool.motion_subtitle', 'One-shot move, no telemetry, no comms watchdog.')}>
       <div className="flex items-end gap-3">
@@ -121,7 +127,7 @@ export const MotionPanel: React.FC<{ ctx: ToolCtx; cmdId: number; label: string 
         <Field label={t('testertool.steps_label', 'Steps')}>
           <input type="number" min={1} max={MAX_MOTION_STEPS} value={steps} onChange={(e) => setSteps(safeInt(e.target.value, 1, 1, MAX_MOTION_STEPS))} className={inputCls} />
         </Field>
-        <button className={btnPrimaryCls} onClick={() => ctx.sendFrame(cmdId, [dir === 'fwd' ? 1 : 0, ...stepsToBytes(steps)], `Move (${label})`)}>{t('testertool.move', 'Move')}</button>
+        <button className={btnPrimaryCls} onClick={async () => { if (await confirm('motion')) ctx.sendFrame(cmdId, [dir === 'fwd' ? 1 : 0, ...stepsToBytes(steps)], `Move (${label})`); }}>{t('testertool.move', 'Move')}</button>
         <button className={btnCls} onClick={() => ctx.sendFrame(cmdId, [dir === 'fwd' ? 1 : 0, 0, 0, 0, 0], `Stop (${label})`)}>{t('testertool.stop', 'Stop')}</button>
       </div>
     </Section>
@@ -152,8 +158,9 @@ export const DrillPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   const [speed, setSpeed] = useState(0);
   const [dir, setDir] = useState<'cw' | 'ccw'>('cw');
   const [active, setActive] = useState(false);
-  // The firmware stops the drill (and latches a fault) 250 ms after the last command, so the command is resent while Active is checked.
-  useKeepalive(active, KEEPALIVE_INTERVAL_MS, () => ctx.sendFrame(CAN_ID_DRILL_CMD, [speed, dir === 'ccw' ? 1 : 0], 'Drill command'), () => setActive(false));
+  const confirm = useConfirmAction();
+  // The firmware stops the drill (and latches a fault) 250 ms after the last command, so the command is resent while Active is checked; it is stopped explicitly when that ends.
+  useKeepalive(active, KEEPALIVE_INTERVAL_MS, () => ctx.sendFrame(CAN_ID_DRILL_CMD, [speed, dir === 'ccw' ? 1 : 0], 'Drill command'), () => setActive(false), () => ctx.sendFrame(CAN_ID_DRILL_CMD, [0, 0], 'Drill stop'));
   const telemetry = useTelemetry(ctx, CAN_ID_DRILL_TELEMETRY, (d) => d.length >= 2 ? (d[0] << 8) | d[1] : null);
   const [endstop, setEndstop] = useState<number | null>(null);
   useEffect(() => ctx.subscribe(CAN_ID_DRILL_TELEMETRY, (f) => { if (f.data.length >= 3) setEndstop(f.data[2]); }), [ctx]);
@@ -169,7 +176,7 @@ export const DrillPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
             <option value="ccw">{t('testertool.counter_clockwise', 'Counter-clockwise')}</option>
           </select>
         </Field>
-        <KeepaliveCheckbox checked={active} onChange={setActive} watchdogMs={250} />
+        <KeepaliveCheckbox checked={active} onChange={async (v) => { if (v && !(await confirm('drill'))) return; setActive(v); }} watchdogMs={250} />
         <button className={btnCls} onClick={() => { setActive(false); setSpeed(0); ctx.sendFrame(CAN_ID_DRILL_CMD, [0, 0], 'Drill stop'); }}>{t('testertool.stop', 'Stop')}</button>
       </div>
       <div className="text-xs text-slate-400">{t('testertool.rpm_label', 'RPM:')} <span className="font-mono text-slate-200">{telemetry ?? '--'}</span> &bull; {t('testertool.endstop_label', 'Endstop:')} <span className="font-mono text-slate-200">{endstop ?? '--'}</span></div>
@@ -211,8 +218,9 @@ export const LaserPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   const [power, setPower] = useState(0);
   const [interlock, setInterlock] = useState(false);
   const endstop = useTelemetry(ctx, CAN_ID_LASER_TELEMETRY, (d) => d.length >= 1 ? d[0] : null);
+  const confirm = useConfirmAction();
 
-  useKeepalive(active, KEEPALIVE_INTERVAL_MS, () => ctx.sendFrame(CAN_ID_LASER_CMD, [power, interlock ? 1 : 0], 'Laser power command'), () => setActive(false));
+  useKeepalive(active, KEEPALIVE_INTERVAL_MS, () => ctx.sendFrame(CAN_ID_LASER_CMD, [power, interlock ? 1 : 0], 'Laser power command'), () => setActive(false), () => ctx.sendFrame(CAN_ID_LASER_CMD, [0, 0], 'Laser off'));
 
   return (
     <Section title={t('testertool.laser_title', 'Laser Engraver (0x160 / telemetry 0x165)')}>
@@ -224,7 +232,7 @@ export const LaserPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
         <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
           <input type="checkbox" checked={interlock} onChange={(e) => setInterlock(e.target.checked)} className="accent-purple-500" /> {t('testertool.interlock_armed', 'Interlock Armed')}
         </label>
-        <KeepaliveCheckbox checked={active} onChange={(v) => { setActive(v); if (!v) ctx.sendFrame(CAN_ID_LASER_CMD, [0, 0], 'Laser off'); }} watchdogMs={250} />
+        <KeepaliveCheckbox checked={active} onChange={async (v) => { if (v && !(await confirm('laser'))) return; setActive(v); }} watchdogMs={250} />
       </div>
       <div className="mt-2 text-xs text-slate-400">{t('testertool.endstop_label', 'Endstop:')} <span className="font-mono text-slate-200">{endstop ?? '--'}</span></div>
     </Section>
@@ -239,6 +247,7 @@ export const Printer3DPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   const [extDir, setExtDir] = useState<'fwd' | 'retract'>('fwd');
   const [extSteps, setExtSteps] = useState(0);
   const hotendTemp = useTelemetry(ctx, CAN_ID_3DP_HOTEND_TELEMETRY, (d) => d.length >= 2 ? (d[0] << 8) | d[1] : null);
+  const confirm = useConfirmAction();
 
   // The heater setpoint travels in every frame: an "off" or a one-off extruder move must not (re)arm the heater, so it sends 0 unless the heater is switched on.
   const sendThermalMotion = (steps: number, temp: number = nozzleActive ? nozzleTemp : 0) => ctx.sendFrame(
@@ -246,12 +255,12 @@ export const Printer3DPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
     [(temp >> 8) & 0xFF, temp & 0xFF, extDir === 'fwd' ? 1 : 0, (steps >> 16) & 0xFF, (steps >> 8) & 0xFF, steps & 0xFF],
     '3D printer nozzle+extruder command'
   );
-  useKeepalive(nozzleActive, KEEPALIVE_INTERVAL_MS, () => sendThermalMotion(0, nozzleTemp), () => setNozzleActive(false));
+  useKeepalive(nozzleActive, KEEPALIVE_INTERVAL_MS, () => sendThermalMotion(0, nozzleTemp), () => setNozzleActive(false), () => sendThermalMotion(0, 0));
 
   const [layerFanActive, setLayerFanActive] = useState(false);
   const [layerFanPower, setLayerFanPower] = useState(0);
   const layerFanRpm = useTelemetry(ctx, CAN_ID_3DP_LAYERFAN_TELEMETRY, (d) => d.length >= 2 ? (d[0] << 8) | d[1] : null);
-  useKeepalive(layerFanActive, LAYERFAN_KEEPALIVE_INTERVAL_MS, () => ctx.sendFrame(CAN_ID_3DP_LAYERFAN_CMD, [layerFanPower], 'Layer fan power'), () => setLayerFanActive(false));
+  useKeepalive(layerFanActive, LAYERFAN_KEEPALIVE_INTERVAL_MS, () => ctx.sendFrame(CAN_ID_3DP_LAYERFAN_CMD, [layerFanPower], 'Layer fan power'), () => setLayerFanActive(false), () => ctx.sendFrame(CAN_ID_3DP_LAYERFAN_CMD, [0], 'Layer fan off'));
 
   const [hotendFanPower, setHotendFanPower] = useState(0);
   const hotendFanRpm = useTelemetry(ctx, CAN_ID_3DP_HOTENDFAN_TELEMETRY, (d) => d.length >= 2 ? (d[0] << 8) | d[1] : null);
@@ -263,7 +272,7 @@ export const Printer3DPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
           <Field label={t('testertool.setpoint_0_300', 'Setpoint (0-300 C)')}>
             <input type="number" min={0} max={300} value={nozzleTemp} onChange={(e) => setNozzleTemp(safeInt(e.target.value, 0, 0, 300))} className={inputCls} />
           </Field>
-          <KeepaliveCheckbox checked={nozzleActive} onChange={(v) => { setNozzleActive(v); if (!v) { setExtSteps(0); sendThermalMotion(0, 0); } }} watchdogMs={250} />
+          <KeepaliveCheckbox checked={nozzleActive} onChange={async (v) => { if (v && !(await confirm('heater', { value: nozzleTemp }))) return; setNozzleActive(v); if (!v) setExtSteps(0); }} watchdogMs={250} />
         </div>
         <div className="flex items-end gap-3">
           <Field label={t('testertool.extruder_direction_label', 'Extruder Direction')}>
@@ -275,7 +284,7 @@ export const Printer3DPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
           <Field label={t('testertool.steps_24bit_label', 'Steps (24-bit)')}>
             <input type="number" min={0} max={16777215} value={extSteps} onChange={(e) => setExtSteps(safeInt(e.target.value, 0, 0, 16777215))} className={inputCls} />
           </Field>
-          <button className={btnPrimaryCls} onClick={() => sendThermalMotion(extSteps)}>{t('testertool.move_extruder_once', 'Move Extruder Once')}</button>
+          <button className={btnPrimaryCls} onClick={async () => { if (await confirm('motion')) sendThermalMotion(extSteps); }}>{t('testertool.move_extruder_once', 'Move Extruder Once')}</button>
         </div>
         <div className="mt-2 text-xs text-slate-400">{t('testertool.hotend_label', 'Hotend:')} <span className="font-mono text-slate-200">{hotendTemp ?? '--'} C</span></div>
         <LiveGraph value={hotendTemp} yMax={300} color="#f59e0b" />
@@ -286,7 +295,7 @@ export const Printer3DPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
           <Field label={t('testertool.layer_fan_label', 'Layer fan ({{power}})', { power: layerFanPower })}>
             <input type="range" min={0} max={255} value={layerFanPower} onChange={(e) => setLayerFanPower(parseInt(e.target.value))} className="w-32" />
           </Field>
-          <KeepaliveCheckbox checked={layerFanActive} onChange={(v) => { setLayerFanActive(v); if (!v) ctx.sendFrame(CAN_ID_3DP_LAYERFAN_CMD, [0], 'Layer fan off'); }} watchdogMs={1000} />
+          <KeepaliveCheckbox checked={layerFanActive} onChange={setLayerFanActive} watchdogMs={1000} />
         </div>
         <div className="text-xs text-slate-400 mb-3">{t('testertool.rpm_label', 'RPM:')} <span className="font-mono text-slate-200">{layerFanRpm ?? '--'}</span></div>
 
@@ -339,7 +348,9 @@ export const ElectromagnetPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
 export const WeldPanel: React.FC<{ ctx: ToolCtx; cmdId: number; label: string; gated: boolean }> = ({ ctx, cmdId, label, gated }) => {
   const { t } = useTranslation();
   const [ms, setMs] = useState(200);
-  const fire = () => {
+  const confirm = useConfirmAction();
+  const fire = async () => {
+    if (!(await confirm('weld'))) return;
     const clamped = Math.max(1, Math.min(WELD_PULSE_MAX_MS, ms));
     ctx.sendFrame(cmdId, [1, (clamped >> 8) & 0xFF, clamped & 0xFF], `${label} fire ${clamped}ms`);
   };
@@ -363,8 +374,7 @@ export const FlyingProbePanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   const [result, setResult] = useState<number | null>(null);
 
   const readResult = async () => {
-    await ctx.sendFrame(CAN_ID_FLYING_PROBE_ADS_RESULT, [], 'Read ADS1115 result');
-    const resp = await ctx.waitForFrame(CAN_ID_FLYING_PROBE_ADS_RESULT, 1000);
+    const resp = await ctx.request(CAN_ID_FLYING_PROBE_ADS_RESULT, [], CAN_ID_FLYING_PROBE_ADS_RESULT, 1000, 'Read ADS1115 result');
     if (resp && resp.data.length >= 2) {
       let raw = (resp.data[0] << 8) | resp.data[1];
       if (raw & 0x8000) raw -= 0x10000;
@@ -399,14 +409,15 @@ export const UvCuringPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   const { t } = useTranslation();
   const [active, setActive] = useState(false);
   const [power, setPower] = useState(0);
-  useKeepalive(active, KEEPALIVE_INTERVAL_MS, () => ctx.sendFrame(CAN_ID_UV_CURING_CMD, [power], 'UV curing power'), () => setActive(false));
+  const confirm = useConfirmAction();
+  useKeepalive(active, KEEPALIVE_INTERVAL_MS, () => ctx.sendFrame(CAN_ID_UV_CURING_CMD, [power], 'UV curing power'), () => setActive(false), () => ctx.sendFrame(CAN_ID_UV_CURING_CMD, [0], 'UV curing off'));
   return (
     <Section title={t('testertool.uv_curing_title', 'UV Curing (0x1D0)')} subtitle={t('testertool.uv_curing_subtitle', 'Shares TIM1_CH1 with the laser - same 250ms watchdog.')}>
       <div className="flex items-end gap-3">
         <Field label={t('testertool.power_label', 'Power ({{power}})', { power })}>
           <input type="range" min={0} max={255} value={power} onChange={(e) => setPower(parseInt(e.target.value))} className="w-40" />
         </Field>
-        <KeepaliveCheckbox checked={active} onChange={(v) => { setActive(v); if (!v) ctx.sendFrame(CAN_ID_UV_CURING_CMD, [0], 'UV curing off'); }} watchdogMs={250} />
+        <KeepaliveCheckbox checked={active} onChange={async (v) => { if (v && !(await confirm('uv'))) return; setActive(v); }} watchdogMs={250} />
       </div>
     </Section>
   );
@@ -419,7 +430,8 @@ export const HotAirReworkPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   const [temp, setTemp] = useState(200);
   const [blower, setBlower] = useState(0);
   const liveTemp = useTelemetry(ctx, CAN_ID_SOLDER_TELEMETRY, (d) => d.length >= 2 ? (d[0] << 8) | d[1] : null);
-  useKeepalive(active, KEEPALIVE_INTERVAL_MS, () => ctx.sendFrame(CAN_ID_HOTAIR_CMD, [(temp >> 8) & 0xFF, temp & 0xFF, blower], 'Hot air rework command'), () => setActive(false));
+  const confirm = useConfirmAction();
+  useKeepalive(active, KEEPALIVE_INTERVAL_MS, () => ctx.sendFrame(CAN_ID_HOTAIR_CMD, [(temp >> 8) & 0xFF, temp & 0xFF, blower], 'Hot air rework command'), () => setActive(false), () => ctx.sendFrame(CAN_ID_HOTAIR_CMD, [0, 0, 0], 'Hot air rework off'));
   return (
     <Section title={t('testertool.hotair_title', 'Hot Air Rework (0x1E0, telemetry shared with 0x135)')}>
       <div className="flex items-end gap-3">
@@ -429,7 +441,7 @@ export const HotAirReworkPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
         <Field label={t('testertool.blower_label', 'Blower ({{power}})', { power: blower })}>
           <input type="range" min={0} max={255} value={blower} onChange={(e) => setBlower(parseInt(e.target.value))} className="w-32" />
         </Field>
-        <KeepaliveCheckbox checked={active} onChange={(v) => { setActive(v); if (!v) ctx.sendFrame(CAN_ID_HOTAIR_CMD, [0, 0, 0], 'Hot air rework off'); }} watchdogMs={250} />
+        <KeepaliveCheckbox checked={active} onChange={async (v) => { if (v && !(await confirm('heater', { value: temp }))) return; setActive(v); }} watchdogMs={250} />
       </div>
       <div className="mt-2 text-xs text-slate-400">{t('testertool.live_label', 'Live:')} <span className="font-mono text-slate-200">{liveTemp ?? '--'} C</span></div>
       <LiveGraph value={liveTemp} yMax={450} />
@@ -444,6 +456,7 @@ export const PasteJettingPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   const [freq, setFreq] = useState(1000);
   const [duty, setDuty] = useState(50);
   const [pulseMs, setPulseMs] = useState(50);
+  const confirm = useConfirmAction();
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <Section title={t('testertool.paste_pwm_title', 'PWM Config (0x230)')}>
@@ -457,7 +470,7 @@ export const PasteJettingPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
         <div className="flex items-end gap-3">
           <Field label={t('testertool.duty_label', 'Duty (%)')}><input type="number" min={0} max={100} value={duty} onChange={(e) => setDuty(safeInt(e.target.value, 0, 0, 100))} className={inputCls} /></Field>
           <Field label={t('testertool.duration_ms_label', 'Duration (ms)')}><input type="number" min={PASTE_PULSE_MIN_MS} max={PASTE_PULSE_MAX_MS} value={pulseMs} onChange={(e) => setPulseMs(safeInt(e.target.value, PASTE_PULSE_MIN_MS, PASTE_PULSE_MIN_MS, PASTE_PULSE_MAX_MS))} className={inputCls} /></Field>
-          <button className={btnPrimaryCls} onClick={() => ctx.sendFrame(CAN_ID_PASTE_JETTING_PULSE, [channel, duty, pulseMs], 'Paste jetting pulse')}>{t('testertool.fire_pulse', 'Fire Pulse')}</button>
+          <button className={btnPrimaryCls} onClick={async () => { if (await confirm('paste')) ctx.sendFrame(CAN_ID_PASTE_JETTING_PULSE, [channel, duty, pulseMs], 'Paste jetting pulse'); }}>{t('testertool.fire_pulse', 'Fire Pulse')}</button>
         </div>
       </Section>
     </div>
@@ -471,19 +484,22 @@ export const ThermalInspectionPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   const [pixels, setPixels] = useState<number[] | null>(null);
   const [reading, setReading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [readError, setReadError] = useState('');
 
   const checkStatus = async () => {
-    await ctx.sendFrame(CAN_ID_THERMAL_STATUS, [], 'Query thermal status');
-    const resp = await ctx.waitForFrame(CAN_ID_THERMAL_STATUS, 1000);
+    const resp = await ctx.request(CAN_ID_THERMAL_STATUS, [], CAN_ID_THERMAL_STATUS, 1000, 'Query thermal status');
     if (resp) setStatus(resp.data[0]);
   };
 
   const readImage = async () => {
     setReading(true);
     setProgress(0);
+    setReadError('');
     const out: number[] = [];
     try {
       for (let chunk = 0; chunk < THERMAL_CHUNK_COUNT; chunk++) {
+        // Frames left over from an earlier, aborted reading must not be mixed into this chunk.
+        ctx.flushFrames(CAN_ID_THERMAL_CAL_CHUNK_RESP);
         await ctx.sendFrame(CAN_ID_THERMAL_CAL_CHUNK_REQ, [chunk], `Request thermal chunk ${chunk}`);
         const bytes: number[] = [];
         for (let f = 0; f < 4; f++) {
@@ -501,6 +517,7 @@ export const ThermalInspectionPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
       setPixels(out);
     } catch (e) {
       console.error(e);
+      setReadError(t('testertool.thermal_read_failed', 'Reading the thermal image failed: {{message}}', { message: e instanceof Error ? e.message : String(e) }));
     } finally {
       setReading(false);
     }
@@ -514,6 +531,7 @@ export const ThermalInspectionPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
         <span className="text-xs font-mono text-slate-300">{status === null ? '--' : status === 0x00 ? t('testertool.status_idle', 'Idle') : status === 0x01 ? t('testertool.status_busy', 'Busy') : status === 0x02 ? t('testertool.status_ready', 'Ready') : status === 0xFF ? t('testertool.status_error', 'Error') : `0x${status.toString(16)}`}</span>
         <button className={btnPrimaryCls} onClick={readImage} disabled={reading}>{reading ? t('testertool.reading_progress', 'Reading... {{pct}}%', { pct: progress }) : t('testertool.read_thermal_image', 'Read Thermal Image')}</button>
       </div>
+      {readError && <div className="mb-2 text-xs text-red-400">{readError}</div>}
       {pixels && (
         <div className="grid gap-px bg-slate-800 border border-slate-800 rounded overflow-hidden" style={{ gridTemplateColumns: 'repeat(32, 1fr)', maxWidth: 480 }}>
           {pixels.slice(0, 768).map((temp, i) => {
