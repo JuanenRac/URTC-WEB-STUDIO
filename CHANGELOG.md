@@ -18,6 +18,7 @@ compatibility of a change.
 - **The start of an update waits for the bootloader to finish erasing:** the first status after the start (erasing) is no longer taken for a refusal; only the status that says it is receiving starts the transfer.
 - **The last frame of the image keeps its real length** instead of being padded with zeros, which made the board count bytes that are not in the image.
 - **A readback of an image whose size is not a multiple of 8 is complete:** the last frame has fewer than 8 bytes and used to make the backup fail.
+- **Portuguese (Portugal) is a language of the interface**, with the same 508 texts as the others, and the README exists in Portuguese too.
 - Tests: 41 (before 37): the rules for the last page and for the length of a readback frame.
 
 ## [0.2.4] - Bundled firmware 0.3.3, READMEs updated

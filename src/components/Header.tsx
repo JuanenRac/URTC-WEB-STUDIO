@@ -103,6 +103,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <option value="de" className="bg-slate-800">{t('config.language_de', 'Deutsch')}</option>
                 <option value="zh" className="bg-slate-800">{t('config.language_zh', '简体中文')}</option>
                 <option value="ja" className="bg-slate-800">{t('config.language_ja', '日本語')}</option>
+                <option value="pt" className="bg-slate-800">{t('config.language_pt', 'Português')}</option>
               </select>
             </div>
 

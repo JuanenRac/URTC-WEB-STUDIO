@@ -8,6 +8,7 @@ import fr from './locales/fr.json';
 import it from './locales/it.json';
 import zh from './locales/zh.json';
 import ja from './locales/ja.json';
+import pt from './locales/pt.json';
 
 const resources = {
   en: { translation: en },
@@ -16,11 +17,12 @@ const resources = {
   fr: { translation: fr },
   it: { translation: it },
   zh: { translation: zh },
-  ja: { translation: ja }
+  ja: { translation: ja },
+  pt: { translation: pt }
 };
 
 const STORAGE_KEY = 'urtc-web-studio-language';
-const SUPPORTED_LANGUAGES = ['en', 'es', 'de', 'fr', 'it', 'zh', 'ja'];
+const SUPPORTED_LANGUAGES = ['en', 'es', 'de', 'fr', 'it', 'zh', 'ja', 'pt'];
 
 const getStoredLanguage = (): string => {
   try {
