@@ -264,11 +264,7 @@ npm run preview
 
 ### 版本管理
 
-`package.json` 的 `version`（以及 `urtc.project.json` 中对应的
-`version`）会在每次真正的 `build.bat`/`build.sh` 运行时自动递增——
-`bump_manifest_version.py` 作为第 1 步，在 `npm install && npm run build`
-之前运行，直接从 `package.json` 读取当前版本，递增后写回，同步清单
-文件，并在该版本尚无 CHANGELOG 条目时补充一条简要条目。`npm run build`
+`package.json` 的 `version`（以及 `urtc.project.json` 中对应的 `version`）只会由显式步骤 `python bump.py` 递增（它运行 `bump_manifest_version.py`，从 `package.json` 读取当前版本，递增后写回，同步清单文件，并在该版本尚无 CHANGELOG 条目时补充一条简要条目）。`build.bat`/`build.sh` 只做编译，绝不触碰版本号。`npm run build`
 （`vite build`）本身刻意只做编译，绝不触碰版本号——`scripts/bump-version.mjs`
 在早期采用 `prebuild` 钩子的设计中承担过这项工作，但如今已是遗留脚本，
 仅作参考保留（见其自身文件头注释）；`npm run dev`/`lint`/`preview` 同样
@@ -396,7 +392,7 @@ npm run preview
 ├── tools/
 │   └── ci_validate.py               CI 使用的 manifest/CHANGELOG/docs 校验
 ├── bump.py                          显式的版本递增命令（编译从不递增）
-├── bump_manifest_version.py         每次构建时的真实版本递增（package.json + 清单，见“版本管理”）；也存在 `--sync` 模式用于接受一次先前的原生递增
+├── bump_manifest_version.py         仅由 `bump.py` 触发的版本递增（package.json + 清单，见“版本管理”）；也存在 `--sync` 模式用于接受一次先前的原生递增
 ├── package.json
 ├── CHANGELOG.md                     版本历史与过往工作摘要
 ├── LICENSE

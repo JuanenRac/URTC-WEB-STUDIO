@@ -297,12 +297,7 @@ El repositorio puede publicar el sitio compilado en GitHub Pages (flujo `.github
 
 ### Versionado
 
-El `version` de `package.json` (y el `version` correspondiente en
-`urtc.project.json`) sube automáticamente en cada `build.bat`/
-`build.sh` real - `bump_manifest_version.py` corre como paso 1, antes de
-`npm install && npm run build`, lee la versión actual directamente de
-`package.json`, la incrementa, la reescribe, sincroniza el manifest, y añade
-una entrada mínima al CHANGELOG si esa versión todavía no tiene una. `npm
+El `version` de `package.json` (y el `version` correspondiente en `urtc.project.json`) solo sube con el paso explícito `python bump.py` (ejecuta `bump_manifest_version.py`, que lee la versión actual de `package.json`, la incrementa, la reescribe, sincroniza el manifest y añade una entrada mínima al CHANGELOG si esa versión todavía no tiene una). `build.bat`/`build.sh` solo compilan y nunca tocan la versión. `npm
 run build` (`vite build`) por sí solo es deliberadamente solo-compilación y
 nunca toca la versión - `scripts/bump-version.mjs` hacía este trabajo en un
 diseño anterior con un hook `prebuild`, pero ese script hoy es legado, se
@@ -457,7 +452,7 @@ resumen del trabajo anterior en este proyecto.
 ├── tools/
 │   └── ci_validate.py               Validación de manifest/CHANGELOG/docs usada por la CI
 ├── bump.py                          Orden explícita de subir versión (compilar nunca la sube)
-├── bump_manifest_version.py         Subida de versión real en cada build (package.json + manifest, ver "Versionado"); el modo `--sync` también existe para aceptar un incremento nativo previo
+├── bump_manifest_version.py         Subida de versión, iniciada solo por `bump.py` (package.json + manifest, ver "Versionado"); el modo `--sync` también existe para aceptar un incremento nativo previo
 ├── package.json
 ├── CHANGELOG.md                     Historial de versiones y resumen del trabajo pasado
 ├── LICENSE

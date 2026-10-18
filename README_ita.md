@@ -300,13 +300,7 @@ Il repository può pubblicare il sito compilato su GitHub Pages (workflow `.gith
 
 ### Versionamento
 
-Il `version` di `package.json` (e il `version` corrispondente in
-`urtc.project.json`) viene incrementato automaticamente a ogni
-`build.bat`/`build.sh` reale - `bump_manifest_version.py` gira come passo 1,
-prima di `npm install && npm run build`, legge la versione attuale
-direttamente da `package.json`, la incrementa, la riscrive, sincronizza il
-manifest, e aggiunge una voce minima al CHANGELOG se quella versione non ne
-ha ancora una. `npm run build` (`vite build`) da solo è deliberatamente
+Il `version` di `package.json` (e il `version` corrispondente in `urtc.project.json`) viene incrementato solo dal passo esplicito `python bump.py` (esegue `bump_manifest_version.py`, che legge la versione attuale da `package.json`, la incrementa, la riscrive, sincronizza il manifest e aggiunge una voce minima al CHANGELOG se quella versione non ne ha ancora una). `build.bat`/`build.sh` compilano soltanto e non toccano mai la versione. `npm run build` (`vite build`) da solo è deliberatamente
 solo-compilazione e non tocca mai la versione - `scripts/bump-version.mjs`
 faceva questo lavoro in un design precedente con un hook `prebuild`, ma
 oggi quello script è legacy, mantenuto solo come riferimento (vedi il suo
@@ -459,7 +453,7 @@ progetto.
 ├── tools/
 │   └── ci_validate.py               Validazione manifest/CHANGELOG/docs usata dalla CI
 ├── bump.py                          Comando esplicito per alzare la versione (compilare non la alza mai)
-├── bump_manifest_version.py         Incremento di versione reale a ogni build (package.json + manifest, vedi "Versionamento"); esiste anche la modalità `--sync` per accettare un incremento nativo precedente
+├── bump_manifest_version.py         Incremento di versione, avviato solo da `bump.py` (package.json + manifest, vedi "Versionamento"); esiste anche la modalità `--sync` per accettare un incremento nativo precedente
 ├── package.json
 ├── CHANGELOG.md                     Cronologia delle versioni e riepilogo del lavoro passato
 ├── LICENSE

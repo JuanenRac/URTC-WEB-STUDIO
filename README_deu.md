@@ -313,13 +313,7 @@ Das Repository kann die gebaute Seite auf GitHub Pages veröffentlichen (Workflo
 
 ### Versionierung
 
-`package.json`s `version` (und der passende `version`-Wert in
-`urtc.project.json`) wird bei jedem echten `build.bat`/`build.sh`-Lauf
-automatisch erhöht - `bump_manifest_version.py` läuft als Schritt 1, vor
-`npm install && npm run build`, liest die aktuelle Version direkt aus
-`package.json`, erhöht sie, schreibt sie zurück, synchronisiert das
-Manifest und fügt einen knappen CHANGELOG-Eintrag hinzu, falls diese Version
-noch keinen hat. `npm run build` (`vite build`) allein ist bewusst rein
+`package.json`s `version` (und der passende `version`-Wert in `urtc.project.json`) wird nur vom ausdrücklichen Schritt `python bump.py` erhöht (er führt `bump_manifest_version.py` aus, das die aktuelle Version aus `package.json` liest, erhöht, zurückschreibt, das Manifest synchronisiert und einen knappen CHANGELOG-Eintrag hinzufügt, falls diese Version noch keinen hat). `build.bat`/`build.sh` kompilieren nur und rühren die Version nie an. `npm run build` (`vite build`) allein ist bewusst rein
 kompilierend und rührt die Version nie an - `scripts/bump-version.mjs`
 erledigte diese Aufgabe in einem früheren Design mit `prebuild`-Hook, ist
 heute aber legacy und wird nur noch als Referenz aufbewahrt (siehe dessen
@@ -474,7 +468,7 @@ Projekt.
 ├── tools/
 │   └── ci_validate.py               Manifest-/CHANGELOG-/Doku-Validierung, von der CI genutzt
 ├── bump.py                          Ausdrücklicher Befehl zum Erhöhen der Version (Kompilieren erhöht nie)
-├── bump_manifest_version.py         Echte Versionserhöhung bei jedem Build (package.json + Manifest, siehe "Versionierung"); der Modus `--sync` existiert ebenfalls, um eine vorherige native Erhöhung zu übernehmen
+├── bump_manifest_version.py         Versionserhöhung, nur vom ausdrücklichen `bump.py` ausgelöst (package.json + Manifest, siehe "Versionierung"); der Modus `--sync` existiert ebenfalls, um eine vorherige native Erhöhung zu übernehmen
 ├── package.json
 ├── CHANGELOG.md                     Versionshistorie und Zusammenfassung bisheriger Arbeit
 ├── LICENSE

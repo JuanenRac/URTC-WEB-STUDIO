@@ -305,12 +305,7 @@ Le dépôt peut publier le site compilé sur GitHub Pages (workflow `.github/wor
 
 ### Versionnage
 
-Le `version` de `package.json` (et le `version` correspondant dans
-`urtc.project.json`) s'incrémente automatiquement à chaque `build.bat`/
-`build.sh` réel - `bump_manifest_version.py` s'exécute comme étape 1, avant
-`npm install && npm run build`, lit la version actuelle directement depuis
-`package.json`, l'incrémente, la réécrit, synchronise le manifest, et ajoute
-une entrée minimale au CHANGELOG si cette version n'en a pas encore une.
+Le `version` de `package.json` (et le `version` correspondant dans `urtc.project.json`) n'est incrémenté que par l'étape explicite `python bump.py` (elle exécute `bump_manifest_version.py`, qui lit la version actuelle dans `package.json`, l'incrémente, la réécrit, synchronise le manifest et ajoute une entrée minimale au CHANGELOG si cette version n'en a pas encore une). `build.bat`/`build.sh` ne font que compiler et ne touchent jamais la version.
 `npm run build` (`vite build`) seul est délibérément compilation uniquement
 et ne touche jamais la version - `scripts/bump-version.mjs` faisait ce
 travail dans une conception antérieure avec un hook `prebuild`, mais ce
@@ -466,7 +461,7 @@ travail antérieur sur ce projet.
 ├── tools/
 │   └── ci_validate.py               Validation manifest/CHANGELOG/docs utilisée par la CI
 ├── bump.py                          Commande explicite pour monter la version (compiler ne la monte jamais)
-├── bump_manifest_version.py         Incrementation de version reelle a chaque build (package.json + manifest, voir "Versionnage"); le mode `--sync` existe aussi pour accepter un increment natif prealable
+├── bump_manifest_version.py         Incrementation de version, declenchee uniquement par `bump.py` (package.json + manifest, voir "Versionnage"); le mode `--sync` existe aussi pour accepter un increment natif prealable
 ├── package.json
 ├── CHANGELOG.md                     Historique des versions et resume du travail passe
 ├── LICENSE

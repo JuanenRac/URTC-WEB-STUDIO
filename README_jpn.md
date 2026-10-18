@@ -302,13 +302,7 @@ npm run preview
 
 ### バージョン管理
 
-`package.json` の `version`（および `urtc.project.json` 内の対応する
-`version`）は、実際の `build.bat`/`build.sh` の実行ごとに自動的に加算され
-ます——手順 1 として `npm install && npm run build` の前に
-`bump_manifest_version.py` が実行され、`package.json` から現在のバージョン
-を直接読み取り、加算して書き戻し、マニフェストを同期し、
-そのバージョンのエントリがまだ無ければ簡潔な CHANGELOG エントリを
-追加します。`npm run
+`package.json` の `version`（および `urtc.project.json` 内の対応する `version`）は、明示的な手順 `python bump.py` でのみ加算されます（`bump_manifest_version.py` を実行し、`package.json` から現在のバージョンを読み取り、加算して書き戻し、マニフェストを同期し、そのバージョンのエントリがまだ無ければ簡潔な CHANGELOG エントリを追加します）。`build.bat`/`build.sh` はコンパイルのみで、バージョンには一切触れません。`npm run
 build`（`vite build`）単体は意図的にコンパイルのみで、バージョンには一切
 触れません——`scripts/bump-version.mjs` は以前の `prebuild` フック方式で
 この役割を担っていましたが、現在はレガシーであり参考用にのみ残されて
@@ -463,7 +457,7 @@ build`（`vite build`）単体は意図的にコンパイルのみで、バー�
 ├── tools/
 │   └── ci_validate.py               CI が使用する manifest/CHANGELOG/docs の検証
 ├── bump.py                          明示的なバージョン加算コマンド（コンパイルでは加算されない）
-├── bump_manifest_version.py         実際のビルドごとの実のバージョン加算（package.json + マニフェスト、「バージョン管理」参照）。以前のネイティブ側の単独加算を取り込む `--sync` モードもある
+├── bump_manifest_version.py         `bump.py` の明示的な実行時のみのバージョン加算（package.json + マニフェスト、「バージョン管理」参照）。以前のネイティブ側の単独加算を取り込む `--sync` モードもある
 ├── package.json
 ├── CHANGELOG.md                     バージョン履歴と過去の作業の要約
 ├── LICENSE
