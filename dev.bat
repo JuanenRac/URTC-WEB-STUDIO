@@ -1,4 +1,9 @@
 @echo off
+cd /d "%~dp0"
+rem Keep the window open for people, never in automation (CI / HYDRA_UMC_CI).
+set "KEEP_OPEN=pause"
+if defined CI set "KEEP_OPEN=ver >nul"
+if "%HYDRA_UMC_CI%"=="1" set "KEEP_OPEN=ver >nul"
 REM =============================================================================
 REM URTC Web Studio - Development Server Start Script
 REM Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
@@ -23,4 +28,4 @@ echo ========================================
 echo  Starting URTC Web Studio (Dev Mode)
 echo ========================================
 call npm run dev
-pause
+%KEEP_OPEN%

@@ -49,4 +49,4 @@ echo ""
 echo "Build complete! The static output is in dist/ - preview it locally with:"
 echo "npm run preview"
 echo ""
-read -p "Press Enter to close this window..."
+if [ -t 0 ] && [ "${HYDRA_UMC_CI:-}" != "1" ] && [ -z "${CI:-}" ]; then read -r -p "Press Enter to close this window..." _ || true; fi
