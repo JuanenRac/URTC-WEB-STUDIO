@@ -1,5 +1,6 @@
 {
   "app": {
+    "bench_notice": "Werkbank-Werkzeug - Firmware-Images sind mit dem öffentlichen Entwicklungsschlüssel signiert, den jeder verwenden kann. Diese Seite ist keine vertrauenswürdige Firmware-Quelle für eine Maschine im Einsatz.",
     "dismiss": "Verwerfen",
     "browser_unsupported_banner": "Dieser Browser unterstuetzt die Web Serial API nicht - eine Verbindung zu echter Hardware ist hier nicht moeglich. Bitte wechseln Sie zu Chrome oder Edge.",
     "simulator_notice": "Simulator: Dieser Tab bildet eine Platine nach und sendet nichts auf den Bus. Verbinde einen USB-CAN-Adapter, um in Tester Studio und Flasher Studio mit der echten Platine zu arbeiten.",

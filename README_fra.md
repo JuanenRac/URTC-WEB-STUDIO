@@ -299,6 +299,10 @@ lint` exécute le compilateur TypeScript en mode vérification uniquement.
 
 La page construite déclare une politique de sécurité du contenu (scripts uniquement depuis la page elle-même ; connexions uniquement vers elle-même et vers GitHub) et charge chaque onglet à sa première ouverture. Elle n'a pas encore été essayée dans un vrai navigateur.
 
+### GitHub Pages (outil d'établi)
+
+Le dépôt peut publier le site compilé sur GitHub Pages (workflow `.github/workflows/pages.yml` : `npm ci`, vérification des types, tests, `npm run build` avec le chemin de base du projet, puis `upload-pages-artifact` et `deploy-pages`). Il est proposé comme **outil d'établi** : les images de firmware incluses sont signées avec la clé publique de développement, que n'importe qui peut utiliser ; la page publiée affiche donc un avis et n'est pas une source de firmware fiable pour une machine en service. Pour l'activer, le propriétaire du dépôt ouvre Settings > Pages et règle Source sur "GitHub Actions" ; d'ici là, le workflow se termine sans déployer. Web Serial exige un navigateur basé sur Chromium et https, ce que Pages fournit.
+
 ### Versionnage
 
 Le `version` de `package.json` (et le `version` correspondant dans
@@ -497,7 +501,7 @@ Cet outil est le compagnon basé sur navigateur du projet
 [URTC (Universal Robot Tool Controller)](https://github.com/JuanenRac/URTC) - voir
 le propre dépôt de ce projet pour le firmware de la carte, les conceptions
 matérielles, et la documentation complète du protocole contre lequel cet outil
-fonctionne. Le propre firmware d'URTC est GPL-3.0 et ses conceptions matérielles
+fonctionne. Le propre firmware d'URTC est GPL-3.0-or-later et ses conceptions matérielles
 sont CERN-OHL-S v2 ; la propre licence de cet outil ici ne s'étend pas à ce projet
 séparé, et vice-versa. Il existe aussi 2 alternatives natives de bureau couvrant le
 même terrain :

@@ -405,7 +405,7 @@ export default function App() {
         if (!remote.manifest) return null;
         return parseManifest(JSON.parse(await downloadAssetText(fetch, remote.manifest)));
       }
-      const res = await fetch(`/firmware/${fileName}.manifest.json`);
+      const res = await fetch(`${import.meta.env.BASE_URL}firmware/${fileName}.manifest.json`);
       if (!res.ok) return null;
       return parseManifest(await res.json());
     } catch {
@@ -417,7 +417,7 @@ export default function App() {
   const loadFirmwareBytes = async (fwFile: string, fileObj?: File | null, remote?: RemoteFirmware): Promise<Uint8Array> => {
     if (fileObj) return new Uint8Array(await fileObj.arrayBuffer());
     if (remote) return new Uint8Array(await downloadAsset(fetch, remote.asset));
-    const res = await fetch(`/firmware/${fwFile}`);
+    const res = await fetch(`${import.meta.env.BASE_URL}firmware/${fwFile}`);
     if (!res.ok) throw new Error(t('flasher.error_fetch_firmware', 'Failed to fetch firmware file'));
     return new Uint8Array(await res.arrayBuffer());
   };
@@ -662,6 +662,16 @@ export default function App() {
         onStopAll={() => { void runAllSafeOff(); }}
         portName={serialCan.portName}
       />
+
+      {/* Bench-tool notice - only in the build published on GitHub Pages (VITE_BENCH_NOTICE=1). */}
+      {import.meta.env.VITE_BENCH_NOTICE === '1' && (
+        <div className="max-w-[1400px] w-full mx-auto px-2 md:px-4 pt-3" role="note">
+          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-950/80 text-amber-300 border border-amber-800/80 text-xs font-medium">
+            <AlertTriangle className="w-4 h-4 shrink-0" />
+            <span>{t('app.bench_notice', 'Bench tool - firmware images are signed with the public development key, which anyone can use. Do not rely on this page as a source of trusted firmware for a machine in service.')}</span>
+          </div>
+        </div>
+      )}
 
       {/* Unsupported-browser banner - shown up front, before any connect
           attempt, so a Firefox/Safari visitor isn't left guessing why the

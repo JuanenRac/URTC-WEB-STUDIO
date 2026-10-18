@@ -1,5 +1,6 @@
 {
   "app": {
+    "bench_notice": "Strumento da banco - le immagini del firmware sono firmate con la chiave pubblica di sviluppo, che chiunque può usare. Non usare questa pagina come fonte di firmware affidabile per una macchina in servizio.",
     "dismiss": "Ignora",
     "browser_unsupported_banner": "Questo browser non supporta l'API Web Serial - non e possibile connettersi a hardware reale qui. Passa a Chrome o Edge.",
     "simulator_notice": "Simulatore: questa pagina modella una scheda e non invia nulla al bus. Collega un adattatore USB-CAN per lavorare con la scheda reale in Tester Studio e Flasher Studio.",

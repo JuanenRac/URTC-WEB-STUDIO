@@ -294,6 +294,10 @@ lint` esegue il compilatore TypeScript in modalità solo-controllo.
 
 La pagina compilata dichiara una content security policy (script solo dalla pagina stessa; connessioni solo verso se stessa e GitHub) e carica ogni scheda alla prima apertura. Non è ancora stata provata in un browser reale.
 
+### GitHub Pages (strumento da banco)
+
+Il repository può pubblicare il sito compilato su GitHub Pages (workflow `.github/workflows/pages.yml`: `npm ci`, controllo dei tipi, test, `npm run build` con il percorso base del progetto, poi `upload-pages-artifact` e `deploy-pages`). È offerto come **strumento da banco**: le immagini del firmware incluse sono firmate con la chiave pubblica di sviluppo, che chiunque può usare; la pagina pubblicata mostra quindi un avviso e non è una fonte di firmware affidabile per una macchina in servizio. Per attivarlo, il proprietario del repository apre Settings > Pages e imposta Source su "GitHub Actions"; fino ad allora il workflow termina senza pubblicare. Web Serial richiede un browser basato su Chromium e https, che Pages fornisce.
+
 ### Versionamento
 
 Il `version` di `package.json` (e il `version` corrispondente in
@@ -490,7 +494,7 @@ Questo strumento è il compagno basato su browser del progetto
 [URTC (Universal Robot Tool Controller)](https://github.com/JuanenRac/URTC) - vedi
 il repository proprio di quel progetto per il firmware della scheda, i design
 hardware, e la documentazione completa del protocollo contro cui lavora questo
-strumento. Il firmware proprio di URTC è GPL-3.0 e i suoi design hardware sono
+strumento. Il firmware proprio di URTC è GPL-3.0-or-later e i suoi design hardware sono
 CERN-OHL-S v2; la licenza propria di questo strumento qui non si estende a quel
 progetto separato, e viceversa. Esistono anche 2 alternative desktop native che
 coprono lo stesso terreno:

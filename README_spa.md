@@ -291,6 +291,10 @@ lint` ejecuta el compilador de TypeScript en modo de solo comprobación.
 
 La página compilada declara una política de seguridad de contenido (scripts solo de la propia página; conexiones solo a ella misma y a GitHub) y carga cada pestaña al abrirla por primera vez. Todavía no se ha probado en un navegador real.
 
+### GitHub Pages (herramienta de banco)
+
+El repositorio puede publicar el sitio compilado en GitHub Pages (flujo `.github/workflows/pages.yml`: `npm ci`, comprobación de tipos, pruebas, `npm run build` con la ruta base del proyecto, y después `upload-pages-artifact` y `deploy-pages`). Se ofrece como **herramienta de banco**: las imágenes de firmware que incluye están firmadas con la clave pública de desarrollo, que puede usar cualquiera, así que la página publicada muestra un aviso y no es una fuente de firmware de confianza para una máquina en servicio. Para activarlo, el dueño del repositorio abre Settings > Pages y pone Source en "GitHub Actions"; hasta entonces el flujo termina sin desplegar. Web Serial necesita un navegador basado en Chromium y https, que Pages proporciona.
+
 ### Versionado
 
 El `version` de `package.json` (y el `version` correspondiente en
@@ -488,7 +492,7 @@ Esta herramienta es el compañero basado en navegador del proyecto
 [URTC (Universal Robot Tool Controller)](https://github.com/JuanenRac/URTC) - ver el
 propio repositorio de ese proyecto para el firmware de la placa, los diseños de
 hardware, y la documentación completa del protocolo contra la que trabaja esta
-herramienta. El propio firmware de URTC es GPL-3.0 y sus diseños de hardware son
+herramienta. El propio firmware de URTC es GPL-3.0-or-later y sus diseños de hardware son
 CERN-OHL-S v2; la propia licencia de esta herramienta aquí no se extiende a ese
 proyecto separado, y viceversa. También existen 2 alternativas nativas de
 escritorio que cubren el mismo terreno:

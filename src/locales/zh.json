@@ -1,5 +1,6 @@
 {
   "app": {
+    "bench_notice": "台架工具 - 固件镜像使用公开的开发密钥签名，任何人都可以使用该密钥。请勿把本页面当作运行中设备的可信固件来源。",
     "dismiss": "关闭",
     "browser_unsupported_banner": "此浏览器不支持 Web Serial API，无法连接真实硬件。请切换到 Chrome 或 Edge。",
     "simulator_notice": "模拟器：此标签页仅模拟一块板子，不会向总线发送任何内容。请连接 USB-CAN 适配器，在 Tester Studio 和 Flasher Studio 中操作真实的板子。",

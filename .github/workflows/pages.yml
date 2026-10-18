@@ -1,0 +1,79 @@
+# =============================================================================
+# URTC-WEB-STUDIO - GitHub Pages deployment (bench tool)
+# Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
+# GPL-3.0-or-later - see LICENSE
+# =============================================================================
+# Builds the static site and publishes it on GitHub Pages. The page shows a
+# notice that the firmware images are signed with the public development key.
+# The repository owner enables Pages once (Settings > Pages > Source: GitHub
+# Actions); until then the deployment is skipped and the run still succeeds.
+name: URTC Web Studio on GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build the static site
+    runs-on: ubuntu-latest
+    outputs:
+      deploy: ${{ steps.pages.outcome == 'success' }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+      - name: Configure Pages
+        id: pages
+        continue-on-error: true
+        uses: actions/configure-pages@v5.0.0
+      - name: Say that Pages is not enabled
+        if: steps.pages.outcome != 'success'
+        run: echo "::notice::GitHub Pages is not enabled for this repository (Settings > Pages > Source: GitHub Actions). Nothing was deployed."
+      - name: Set up Node.js
+        if: steps.pages.outcome == 'success'
+        uses: actions/setup-node@v5
+        with:
+          node-version: "20"
+          cache: npm
+      - name: Install the locked dependencies
+        if: steps.pages.outcome == 'success'
+        run: npm ci --ignore-scripts
+      - name: Type check and tests
+        if: steps.pages.outcome == 'success'
+        run: |
+          npm run lint
+          npm test
+      - name: Build the static site with the Pages base path
+        if: steps.pages.outcome == 'success'
+        env:
+          URTC_BASE_PATH: ${{ steps.pages.outputs.base_path }}/
+          VITE_BENCH_NOTICE: "1"
+        run: npm run build
+      - name: Upload the site
+        if: steps.pages.outcome == 'success'
+        uses: actions/upload-pages-artifact@v3.0.1
+        with:
+          path: dist
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    if: needs.build.outputs.deploy == 'true'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4.0.5

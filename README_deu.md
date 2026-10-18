@@ -307,6 +307,10 @@ Prüfmodus aus.
 
 Die gebaute Seite deklariert eine Content-Security-Policy (Skripte nur von der Seite selbst; Verbindungen nur zu ihr selbst und zu GitHub) und lädt jeden Tab beim ersten Öffnen. Sie wurde noch nicht in einem echten Browser ausprobiert.
 
+### GitHub Pages (Werkbank-Werkzeug)
+
+Das Repository kann die gebaute Seite auf GitHub Pages veröffentlichen (Workflow `.github/workflows/pages.yml`: `npm ci`, Typprüfung, Tests, `npm run build` mit dem Basispfad des Projekts, danach `upload-pages-artifact` und `deploy-pages`). Es wird als **Werkbank-Werkzeug** angeboten: Die enthaltenen Firmware-Images sind mit dem öffentlichen Entwicklungsschlüssel signiert, den jeder verwenden kann; die veröffentlichte Seite zeigt deshalb einen Hinweis und ist keine vertrauenswürdige Firmware-Quelle für eine Maschine im Einsatz. Zum Aktivieren öffnet der Repository-Eigentümer Settings > Pages und stellt Source auf "GitHub Actions"; bis dahin endet der Workflow ohne Veröffentlichung. Web Serial braucht einen Chromium-basierten Browser und https, was Pages bietet.
+
 ### Versionierung
 
 `package.json`s `version` (und der passende `version`-Wert in
@@ -509,7 +513,7 @@ Dieses Tool ist der browserbasierte Begleiter des Projekts
 - siehe das eigene Repository dieses Projekts für die
 Platinen-Firmware, Hardware-Designs, und vollständige
 Protokolldokumentation, gegen die dieses Tool implementiert. Die eigene
-Firmware von URTC ist GPL-3.0 und ihre Hardware-Designs sind CERN-OHL-S
+Firmware von URTC ist GPL-3.0-or-later und ihre Hardware-Designs sind CERN-OHL-S
 v2; die eigene Lizenz dieses Tools hier erstreckt sich nicht auf dieses
 separate Projekt, und umgekehrt. Es existieren auch 2 native
 Desktop-Alternativen, die denselben Bereich abdecken:

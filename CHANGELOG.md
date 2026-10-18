@@ -12,6 +12,14 @@ build`/`vite build` on its own is deliberately compilation-only) bumps the
 version automatically, so the number reflects build count, not the size or
 compatibility of a change.
 
+## [0.3.1] - GitHub Pages deployment as a bench tool
+
+- New workflow .github/workflows/pages.yml builds the static site (type check, tests, build) and deploys it with actions/upload-pages-artifact and actions/deploy-pages; it skips the deployment, without failing, until Pages is enabled for the repository.
+- The build takes its base path from URTC_BASE_PATH and the bundled firmware is fetched relative to the base, so the site works under /URTC-WEB-STUDIO/.
+- The page published on GitHub Pages shows a notice, in eight languages, that it is a bench tool and that firmware images are signed with the public development key.
+- The generated protocol module is synchronised with URTC-COMMON 0.0.3 (it adds the designed multinode frames; the app does not use them).
+- README in eight languages and docs/BUILD_AND_RUN.md explain how the repository owner enables Pages.
+
 ## [0.3.0] - Release signatures and shared protocol constants
 
 - scripts/sync-firmware.mjs checks the release signature (<file>.sig, Ed25519, public key pinned in the script) of every file it takes from a release or a local folder: a wrong signature is always refused, a missing one only with --allow-unsigned (a bench pre-release or a local build). Signatures that are there are copied with the files.

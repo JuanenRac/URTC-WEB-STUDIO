@@ -1,5 +1,6 @@
 {
   "app": {
+    "bench_notice": "Ferramenta de bancada - as imagens de firmware são assinadas com a chave pública de desenvolvimento, que qualquer pessoa pode usar. Não use esta página como fonte de firmware de confiança para uma máquina em serviço.",
     "dismiss": "Dispensar",
     "browser_unsupported_banner": "Este navegador não suporta a API Web Serial - não é possível ligar a hardware real aqui. Mude para Chrome ou Edge.",
     "simulator_notice": "Simulador: este separador simula uma placa e não envia nada para o barramento. Ligue um adaptador USB-CAN para trabalhar com a placa real no Tester Studio e no Flasher Studio.",

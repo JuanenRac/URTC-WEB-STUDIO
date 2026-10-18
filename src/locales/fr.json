@@ -1,5 +1,6 @@
 {
   "app": {
+    "bench_notice": "Outil d'établi - les images de firmware sont signées avec la clé publique de développement, que n'importe qui peut utiliser. Ne considérez pas cette page comme une source de firmware fiable pour une machine en service.",
     "dismiss": "Ignorer",
     "browser_unsupported_banner": "Ce navigateur ne prend pas en charge l'API Web Serial - il n'est pas possible de se connecter a du materiel reel ici. Veuillez passer a Chrome ou Edge.",
     "simulator_notice": "Simulateur : cet onglet modélise une carte et n'envoie rien sur le bus. Branchez un adaptateur USB-CAN pour travailler avec la vraie carte dans Tester Studio et Flasher Studio.",

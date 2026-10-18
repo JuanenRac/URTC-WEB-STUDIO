@@ -1,5 +1,6 @@
 {
   "app": {
+    "bench_notice": "Bench tool - firmware images are signed with the public development key, which anyone can use. Do not rely on this page as a source of trusted firmware for a machine in service.",
     "dismiss": "Dismiss",
     "browser_unsupported_banner": "This browser does not support the Web Serial API - connecting to real hardware is not possible here. Please switch to Chrome or Edge.",
     "simulator_notice": "Simulator: this tab models a board and sends nothing to the bus. Connect a USB-CAN adapter to work with the real board in Tester Studio and Flasher Studio.",

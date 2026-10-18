@@ -258,6 +258,10 @@ npm run preview
 
 构建出的页面声明了内容安全策略（脚本只来自页面本身；连接只指向页面本身和 GitHub），并在首次打开每个标签页时才加载它。尚未在真实浏览器中试用过。
 
+### GitHub Pages（台架工具）
+
+本仓库可以把构建好的站点发布到 GitHub Pages（工作流 `.github/workflows/pages.yml`：`npm ci`、类型检查、测试、使用项目基础路径的 `npm run build`，然后是 `upload-pages-artifact` 和 `deploy-pages`）。它作为**台架工具**提供：其中包含的固件镜像使用公开的开发密钥签名，任何人都可以使用该密钥，因此发布的页面会显示相应提示，不能作为运行中设备的可信固件来源。要启用它，仓库所有者打开 Settings > Pages，把 Source 设为 "GitHub Actions"；在此之前，工作流会结束而不部署。Web Serial 需要基于 Chromium 的浏览器和 https，Pages 提供 https。
+
 ### 版本管理
 
 `package.json` 的 `version`（以及 `urtc.project.json` 中对应的
@@ -423,7 +427,7 @@ URTC Web Studio 版权所有 (c) 2026 JuanenRac（Electro Hobby 3D）。分发�
 
 本工具是 [URTC（Universal Robot Tool Controller）](https://github.com/JuanenRac/URTC)
 项目的浏览器端配套工具——本工具所对接的板卡固件、硬件设计和完整协议
-文档见该项目自身的仓库。URTC 自身的固件为 GPL-3.0,其硬件设计为
+文档见该项目自身的仓库。URTC 自身的固件为 GPL-3.0-or-later,其硬件设计为
 CERN-OHL-S v2;本工具自身的许可证并不延伸至那个独立的项目,反之亦然。
 两款覆盖相同功能范围的桌面原生替代方案也存在：
 [URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER) 和

@@ -16,3 +16,9 @@ build that follows fails.
 
 Do not put OTA signing material in browser configuration. `.env.example` is a
 template only; deployment secrets stay outside Git.
+
+## GitHub Pages (bench tool)
+
+`.github/workflows/pages.yml` builds the static site and deploys it with `actions/upload-pages-artifact` and `actions/deploy-pages`. The build reads the project base path from `URTC_BASE_PATH` (`vite.config.ts`; the workflow takes it from `actions/configure-pages`, for example `/URTC-WEB-STUDIO/`) and sets `VITE_BENCH_NOTICE=1`, which makes the app show a notice that the firmware images are signed with the public development key. Bundled firmware is fetched relative to `import.meta.env.BASE_URL`, so the page works under that path.
+
+To enable it, the repository owner opens Settings > Pages and sets Source to "GitHub Actions". Until then the workflow reports a notice and finishes without deploying. To check the Pages build locally: `URTC_BASE_PATH=/URTC-WEB-STUDIO/ VITE_BENCH_NOTICE=1 npm run build`, then `npm run preview`.

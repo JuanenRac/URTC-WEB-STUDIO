@@ -287,6 +287,10 @@ runs the TypeScript compiler in check-only mode.
 
 The built page declares a content security policy (scripts only from the page itself; connections only to itself and to GitHub) and loads each tab when it is first opened. It has not been tried in a real browser yet.
 
+### GitHub Pages (bench tool)
+
+The repository can publish the built site on GitHub Pages (workflow `.github/workflows/pages.yml`: `npm ci`, type check, tests, `npm run build` with the project base path, then `upload-pages-artifact` and `deploy-pages`). It is offered as a **bench tool**: the firmware images it bundles are signed with the public development key, which anyone can use, so the published page shows a notice saying so and is not a source of trusted firmware for a machine in service. To enable it, the repository owner opens Settings > Pages and sets Source to "GitHub Actions"; until then the workflow finishes without deploying. Web Serial needs a Chromium-based browser and https, which Pages provides.
+
 ### Versioning
 
 `package.json`'s `version` (and the matching `version` in
@@ -461,7 +465,7 @@ This tool is the browser-based companion to the
 [URTC (Universal Robot Tool Controller)](https://github.com/JuanenRac/URTC)
 project - see that project's own repository for the board firmware,
 hardware designs, and full protocol documentation this tool implements
-against. URTC's own firmware is GPL-3.0 and its hardware designs are
+against. URTC's own firmware is GPL-3.0-or-later and its hardware designs are
 CERN-OHL-S v2; this tool's own license here doesn't extend to that separate
 project, and vice versa. Two desktop-native alternatives covering the same
 ground also exist: [URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER)

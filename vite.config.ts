@@ -29,6 +29,8 @@ function contentSecurityPolicy(): Plugin {
 }
 
 export default defineConfig({
+  // GitHub Pages serves a project site under /<repository>/; the workflow passes that path.
+  base: process.env.URTC_BASE_PATH || '/',
   plugins: [react(), tailwindcss(), contentSecurityPolicy()],
   server: {
     // Web Serial only works on https or on localhost, so the development

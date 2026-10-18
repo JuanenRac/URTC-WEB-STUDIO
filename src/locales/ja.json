@@ -1,5 +1,6 @@
 {
   "app": {
+    "bench_notice": "ベンチ用ツール - ファームウェアイメージは公開の開発用鍵で署名されており、誰でもこの鍵を使えます。稼働中の機械向けの信頼できるファームウェアの入手元として、このページに頼らないでください。",
     "dismiss": "閉じる",
     "browser_unsupported_banner": "このブラウザは Web Serial API に対応していないため、実機への接続はできません。Chrome または Edge に切り替えてください。",
     "simulator_notice": "シミュレーター：このタブはボードを模擬するだけで、バスには何も送信しません。実際のボードを扱うには、USB-CAN アダプターを接続して Tester Studio と Flasher Studio を使用してください。",

@@ -296,6 +296,10 @@ npm run preview
 
 ビルドされたページはコンテンツセキュリティポリシー（スクリプトはページ自身からのみ、接続はページ自身と GitHub のみ）を宣言し、各タブを初めて開いたときに読み込みます。実際のブラウザではまだ試していません。
 
+### GitHub Pages（ベンチ用ツール）
+
+このリポジトリは、ビルドしたサイトをGitHub Pagesに公開できます（ワークフロー `.github/workflows/pages.yml`：`npm ci`、型チェック、テスト、プロジェクトのベースパスを指定した `npm run build`、続いて `upload-pages-artifact` と `deploy-pages`）。**ベンチ用ツール**として提供されます。同梱のファームウェアイメージは公開の開発用鍵で署名されており、誰でもこの鍵を使えるため、公開ページにはその旨の通知が表示され、稼働中の機械向けの信頼できるファームウェアの入手元ではありません。有効にするには、リポジトリの所有者が Settings > Pages を開き、Source を "GitHub Actions" に設定します。それまでワークフローは公開せずに終了します。Web SerialにはChromium系ブラウザとhttpsが必要で、Pagesはhttpsを提供します。
+
 ### バージョン管理
 
 `package.json` の `version`（および `urtc.project.json` 内の対応する
@@ -481,7 +485,7 @@ URTC Web Studio の著作権は (c) 2026 JuanenRac（Electro Hobby 3D）に帰�
 
 2. ドキュメント（本 README およびその自身の翻訳版——`README_spa.md`、`README_ita.md`、`README_fra.md`、`README_deu.md`、`README_zho.md`、`README_jpn.md`）は、**クリエイティブ・コモンズ 表示-継承 4.0 国際（CC BY-SA 4.0）** の下で提供されます。全文は https://creativecommons.org/licenses/by-sa/4.0/ を参照してください。
 
-本ツールは [URTC（Universal Robot Tool Controller）](https://github.com/JuanenRac/URTC) プロジェクトのブラウザベースのコンパニオンです——本ツールが対応対象としているボードファームウェア、ハードウェア設計、完全なプロトコルドキュメントは、同プロジェクト自身のリポジトリを参照してください。URTC 自身のファームウェアは GPL-3.0 であり、そのハードウェア設計は CERN-OHL-S v2 です。本ツール自身のここでのライセンスはその独立したプロジェクトには及ばず、その逆も同様です。同じ範囲をカバーする 2 つのデスクトップネイティブの代替案も存在します：[URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER) と [URTC Tester](https://github.com/JuanenRac/URTC-TESTER)。
+本ツールは [URTC（Universal Robot Tool Controller）](https://github.com/JuanenRac/URTC) プロジェクトのブラウザベースのコンパニオンです——本ツールが対応対象としているボードファームウェア、ハードウェア設計、完全なプロトコルドキュメントは、同プロジェクト自身のリポジトリを参照してください。URTC 自身のファームウェアは GPL-3.0-or-later であり、そのハードウェア設計は CERN-OHL-S v2 です。本ツール自身のここでのライセンスはその独立したプロジェクトには及ばず、その逆も同様です。同じ範囲をカバーする 2 つのデスクトップネイティブの代替案も存在します：[URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER) と [URTC Tester](https://github.com/JuanenRac/URTC-TESTER)。
 
 本プロジェクトを基に開発を行う際は、このライセンス区分を念頭に置いてください：コードの変更は GPL-3.0-or-later を維持し、ドキュメントの派生物は CC BY-SA を維持してください——いずれも本プロジェクトおよびその作者への帰属表示を伴う必要があります。
 

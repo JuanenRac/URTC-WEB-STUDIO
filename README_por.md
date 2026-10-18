@@ -292,6 +292,10 @@ executa o compilador de TypeScript em modo de apenas verificação.
 
 A página compilada declara uma política de segurança de conteúdo (scripts só da própria página; ligações só a si mesma e ao GitHub) e carrega cada separador quando é aberto pela primeira vez. Ainda não foi experimentada num navegador real.
 
+### GitHub Pages (ferramenta de bancada)
+
+O repositório pode publicar o site compilado no GitHub Pages (fluxo `.github/workflows/pages.yml`: `npm ci`, verificação de tipos, testes, `npm run build` com o caminho base do projeto, e depois `upload-pages-artifact` e `deploy-pages`). É oferecido como **ferramenta de bancada**: as imagens de firmware incluídas são assinadas com a chave pública de desenvolvimento, que qualquer pessoa pode usar; por isso a página publicada mostra um aviso e não é uma fonte de firmware de confiança para uma máquina em serviço. Para o ativar, o proprietário do repositório abre Settings > Pages e define Source como "GitHub Actions"; até lá o fluxo termina sem publicar. O Web Serial precisa de um navegador baseado em Chromium e de https, que o Pages fornece.
+
 ### Versionamento
 
 A `version` do `package.json` (e a `version` correspondente em
@@ -465,7 +469,7 @@ Esta ferramenta é o companheiro baseado no navegador do projeto
 [URTC (Universal Robot Tool Controller)](https://github.com/JuanenRac/URTC)
 - consulte o repositório próprio desse projeto para o firmware da placa, os desenhos
 de hardware e a documentação completa do protocolo contra o qual esta ferramenta
-foi implementada. O firmware do próprio URTC é GPL-3.0 e os seus desenhos de hardware são
+foi implementada. O firmware do próprio URTC é GPL-3.0-or-later e os seus desenhos de hardware são
 CERN-OHL-S v2; a licença desta ferramenta aqui não se estende a esse projeto
 separado, e vice-versa. Existem também duas alternativas nativas de ambiente de trabalho
 que cobrem o mesmo terreno: [URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER)
