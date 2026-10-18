@@ -17,7 +17,7 @@ import {
   minorField, formatVersion
 } from '../lib/flasher';
 import { queryMainVersion, querySlaveVersion, BoardVersionInfo, SlaveVersionInfo } from '../lib/boardVersion';
-import { CAN_ID_ERASE_FRAM, CAN_ID_FRAM_STATE_RESP, ERASE_FRAM_MAGIC, VERIFY_FAIL_REASONS } from '../lib/canIds';
+import { CAN_ID_ERASE_FRAM, CAN_ID_FRAM_STATE_RESP, ERASE_FRAM_MAGIC, VERIFY_FAIL_CODES } from '../lib/canIds';
 
 export interface FlashOptions {
   triggerBootloader: boolean;
@@ -45,6 +45,13 @@ const initialState: FlasherState = {
 
 export function useFlasher(serialCan: SerialCanBus) {
   const { t } = useTranslation();
+  /** The bootloader's reason byte after a failed verification, in the language of the page. */
+  const verifyFailText = (code: number | undefined): string => {
+    if (code === undefined) return t('flasher.verify_fail_unknown', 'unknown reason');
+    return VERIFY_FAIL_CODES.includes(code)
+      ? t(`flasher.verify_fail_${code}`)
+      : t('flasher.verify_fail_unknown_code', 'unknown reason 0x{{code}}', { code: code.toString(16) });
+  };
   const [flasherState, setFlasherState] = useState<FlasherState>(initialState);
   const [errorCounters, setErrorCounters] = useState<{ tec: number; rec: number } | null>(null);
   const stopRequestedRef = useRef(false);
@@ -266,7 +273,7 @@ export function useFlasher(serialCan: SerialCanBus) {
       return;
     }
     if (finalStatus === 0x05) {
-      const reasonText = failReason !== undefined ? (VERIFY_FAIL_REASONS[failReason] || `unknown (0x${failReason.toString(16)})`) : 'unknown';
+      const reasonText = verifyFailText(failReason);
       throw new FlashError(t('flasher.err_verification_failed', 'Update verification FAILED: {{reason}}', { reason: reasonText }));
     }
     if (finalStatus === 0xFF) {
@@ -383,7 +390,7 @@ export function useFlasher(serialCan: SerialCanBus) {
     }
     if (finalStatus === 0x05) {
       const reasonFrame = await serialCan.request(CAN_ID_SLAVE_VERIFY_FAIL_REASON, [], CAN_ID_SLAVE_VERIFY_FAIL_REASON, 1000, 'Slave: query verify-fail reason');
-      const reason = reasonFrame ? (VERIFY_FAIL_REASONS[reasonFrame.data[0]] || `unknown (0x${reasonFrame.data[0].toString(16)})`) : 'unknown';
+      const reason = verifyFailText(reasonFrame ? reasonFrame.data[0] : undefined);
       throw new FlashError(t('flasher.err_slave_verification_failed', 'Slave update verification FAILED: {{reason}}', { reason }));
     }
     if (finalStatus === 0xFF) throw new FlashError(t('flasher.err_slave_generic', 'Slave bootloader reported a generic error'));

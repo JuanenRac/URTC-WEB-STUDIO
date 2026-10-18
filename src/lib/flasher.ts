@@ -1,5 +1,6 @@
 import CRC32 from 'crc-32';
 import { CanFrame } from '../types';
+import * as generated from './generated/urtcCanIds';
 
 // No signing key lives in this app any more. The bootloaders authenticate an
 // image with HMAC-SHA256, and whoever computes that HMAC must hold the key -
@@ -9,51 +10,51 @@ import { CanFrame } from '../types';
 // The only time it signs anything itself is a self-built image for a bench
 // board, with a key the user types in at run time and that is never stored.
 // See URTC docs/FIRMWARE_SIGNING.TXT.
-export const THIS_HARDWARE_ID = 0x0303CC01;
-export const FLASH_PAGE_SIZE = 2048;
+export const THIS_HARDWARE_ID = generated.HARDWARE_ID_MAIN;
+export const FLASH_PAGE_SIZE = generated.FLASH_PAGE_SIZE;
 
-export const CAN_ID_ENTER_BOOTLOADER = 0x7F0;
-export const CAN_ID_START_UPDATE = 0x7F1;
-export const CAN_ID_DATA = 0x7F2;
-export const CAN_ID_PAGE_ACK = 0x7F3;
-export const CAN_ID_END_UPDATE = 0x7F4;
-export const CAN_ID_STATUS = 0x7F5;
-export const CAN_ID_HEARTBEAT = 0x7F6;
-export const CAN_ID_HMAC_CHUNK = 0x7F7;
-export const CAN_ID_QUERY_VERSION = 0x7F8;
-export const CAN_ID_VERSION_RESPONSE = 0x7F9;
-export const CAN_ID_BOOTLOADER_VERSION_RESPONSE = 0x7FA;
-export const CAN_ID_VERSION_PATCH_RESPONSE = 0x7E9; // DLC 3: side, application patch (0xFF = unknown), flags
-export const CAN_ID_QUERY_ERROR_COUNTERS = 0x7FB;
-export const CAN_ID_ERROR_COUNTERS_RESPONSE = 0x7FC;
-export const CAN_ID_AUTHORIZE_DOWNGRADE = 0x7FD;
-export const CAN_ID_READBACK = 0x7FE; // DLC=4 (size reply) or DLC=8 (data chunk), disambiguated by DLC
-export const CAN_ID_READBACK_PAGE_ACK = 0x7FF;
-export const AUTHORIZE_DOWNGRADE_MAGIC = [0xD0, 0x9E, 0x12, 0xAD];
-export const ENTER_BOOTLOADER_MAGIC = [0xB0, 0x07, 0x1D, 0x5A];
+export const CAN_ID_ENTER_BOOTLOADER = generated.CAN_ID_ENTER_BOOTLOADER;
+export const CAN_ID_START_UPDATE = generated.CAN_ID_START_UPDATE;
+export const CAN_ID_DATA = generated.CAN_ID_DATA;
+export const CAN_ID_PAGE_ACK = generated.CAN_ID_PAGE_ACK;
+export const CAN_ID_END_UPDATE = generated.CAN_ID_END_UPDATE;
+export const CAN_ID_STATUS = generated.CAN_ID_STATUS;
+export const CAN_ID_HEARTBEAT = generated.CAN_ID_HEARTBEAT;
+export const CAN_ID_HMAC_CHUNK = generated.CAN_ID_HMAC_CHUNK;
+export const CAN_ID_QUERY_VERSION = generated.CAN_ID_QUERY_VERSION;
+export const CAN_ID_VERSION_RESPONSE = generated.CAN_ID_VERSION_RESPONSE;
+export const CAN_ID_BOOTLOADER_VERSION_RESPONSE = generated.CAN_ID_BOOTLOADER_VERSION_RESPONSE;
+export const CAN_ID_VERSION_PATCH_RESPONSE = generated.CAN_ID_VERSION_PATCH_RESPONSE; // DLC 3: side, application patch (0xFF = unknown), flags
+export const CAN_ID_QUERY_ERROR_COUNTERS = generated.CAN_ID_QUERY_ERROR_COUNTERS;
+export const CAN_ID_ERROR_COUNTERS_RESPONSE = generated.CAN_ID_ERROR_COUNTERS_RESPONSE;
+export const CAN_ID_AUTHORIZE_DOWNGRADE = generated.CAN_ID_AUTHORIZE_DOWNGRADE;
+export const CAN_ID_READBACK = generated.CAN_ID_READBACK; // DLC=4 (size reply) or DLC=8 (data chunk), disambiguated by DLC
+export const CAN_ID_READBACK_PAGE_ACK = generated.CAN_ID_READBACK_PAGE_ACK;
+export const AUTHORIZE_DOWNGRADE_MAGIC = [...generated.MAGIC_AUTHORIZE_DOWNGRADE];
+export const ENTER_BOOTLOADER_MAGIC = [...generated.MAGIC_ENTER_BOOTLOADER];
 
 // --- Expansion slave (STM32F303CBT6) OTA - relayed through the main board's
 // own bit-banged I2C bridge, since the slave has no CAN peripheral of its
 // own. No page-ACK or heartbeat equivalent exists on this path - progress is
 // polled explicitly (0x216) rather than pushed. See CANBUS.TXT / the URTC
 // Flasher's flasher_config.py for the authoritative reference. ---
-export const CAN_ID_SLAVE_ENTER_BOOTLOADER = 0x210;
-export const CAN_ID_SLAVE_START_UPDATE = 0x211;
-export const CAN_ID_SLAVE_HMAC_CHUNK = 0x212;
-export const CAN_ID_SLAVE_DATA = 0x213;
-export const CAN_ID_SLAVE_END_UPDATE = 0x214;
-export const CAN_ID_SLAVE_STATUS = 0x215; // empty payload = query, same ID answers
-export const CAN_ID_SLAVE_PROGRESS = 0x216; // empty payload = query, same ID answers
-export const CAN_ID_SLAVE_VERSION_RESP_1 = 0x217;
-export const CAN_ID_SLAVE_VERSION_RESP_2 = 0x218;
-export const CAN_ID_SLAVE_VERIFY_FAIL_REASON = 0x219; // empty payload = query, same ID answers
+export const CAN_ID_SLAVE_ENTER_BOOTLOADER = generated.CAN_ID_SLAVE_ENTER_BOOTLOADER;
+export const CAN_ID_SLAVE_START_UPDATE = generated.CAN_ID_SLAVE_START_UPDATE;
+export const CAN_ID_SLAVE_HMAC_CHUNK = generated.CAN_ID_SLAVE_HMAC_CHUNK;
+export const CAN_ID_SLAVE_DATA = generated.CAN_ID_SLAVE_DATA;
+export const CAN_ID_SLAVE_END_UPDATE = generated.CAN_ID_SLAVE_END_UPDATE;
+export const CAN_ID_SLAVE_STATUS = generated.CAN_ID_SLAVE_STATUS; // empty payload = query, same ID answers
+export const CAN_ID_SLAVE_PROGRESS = generated.CAN_ID_SLAVE_PROGRESS; // empty payload = query, same ID answers
+export const CAN_ID_SLAVE_VERSION_RESP_1 = generated.CAN_ID_SLAVE_VERSION_RESP_1;
+export const CAN_ID_SLAVE_VERSION_RESP_2 = generated.CAN_ID_SLAVE_VERSION_RESP_2;
+export const CAN_ID_SLAVE_VERIFY_FAIL_REASON = generated.CAN_ID_SLAVE_VERIFY_FAIL_REASON; // empty payload = query, same ID answers
 
-export const PATCH_UNKNOWN = 0xFF;
-export const PATCH_FLAG = 0x80; // in the high byte of the minor field of END_UPDATE: 0x80 | PATCH
-export const PATCH_FLAG_ACCEPTS_IN_END_UPDATE = 0x01; // bit 0 of the flags of 0x7E9
-export const PATCH_GRACE_MS = 300;
+export const PATCH_UNKNOWN = generated.PATCH_UNKNOWN;
+export const PATCH_FLAG = generated.PATCH_FLAG; // in the high byte of the minor field of END_UPDATE: 0x80 | PATCH
+export const PATCH_FLAG_ACCEPTS_IN_END_UPDATE = generated.PATCH_FLAG_ACCEPTS_IN_END_UPDATE; // bit 0 of the flags of 0x7E9
+export const PATCH_GRACE_MS = generated.VERSION_PATCH_GRACE_MS;
 
-export const SLAVE_HARDWARE_ID = 0x0303CB01;
+export const SLAVE_HARDWARE_ID = generated.HARDWARE_ID_SLAVE;
 export const SLAVE_APP_MAX_SIZE = 54 * 1024;
 export const SLAVE_DATA_PACING_MS = 4; // I2C bit-banging is slower per-byte than the main board's direct flash write
 

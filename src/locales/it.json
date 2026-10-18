@@ -3,7 +3,8 @@
     "dismiss": "Ignora",
     "browser_unsupported_banner": "Questo browser non supporta l'API Web Serial - non e possibile connettersi a hardware reale qui. Passa a Chrome o Edge.",
     "simulator_notice": "Simulatore: questa pagina modella una scheda e non invia nulla al bus. Collega un adattatore USB-CAN per lavorare con la scheda reale in Tester Studio e Flasher Studio.",
-    "simulator_notice_connected": "Simulatore: questa pagina modella una scheda e non invia nulla al bus. Ciò che mostra non è ciò che segnala la scheda collegata; usa Tester Studio e Flasher Studio per la scheda reale."
+    "simulator_notice_connected": "Simulatore: questa pagina modella una scheda e non invia nulla al bus. Ciò che mostra non è ciò che segnala la scheda collegata; usa Tester Studio e Flasher Studio per la scheda reale.",
+    "loading": "Caricamento..."
   },
   "config": {
     "language_en": "English",
@@ -30,7 +31,9 @@
     "connected_fallback": "Connesso",
     "connect_title": "Connetti l'adattatore USB-CAN via Web Serial",
     "connect_button": "Connetti Hardware",
-    "fault_badge": "GUASTO"
+    "fault_badge": "GUASTO",
+    "stop_all": "FERMA TUTTO",
+    "stop_all_title": "Spegne ogni attuatore mantenuto attivo da questa pagina. Un comando software, non un arresto di emergenza."
   },
   "sidebar": {
     "nav_control": "Matrice Utensili & Controllo",
@@ -322,7 +325,15 @@
     "log_dev_key_warning": "NOTA: firmata con la chiave di sviluppo PUBBLICA - la accettano solo le schede il cui bootloader è stato compilato con la stessa chiave.",
     "log_signature_runtime_key": "Firmata localmente con la chiave inserita per questo flash.",
     "hardware_id_is_slave": "È lo slave di espansione, non la scheda principale.",
-    "config_serial_invalid": "Il numero di serie deve essere un numero intero da 0 a 255."
+    "config_serial_invalid": "Il numero di serie deve essere un numero intero da 0 a 255.",
+    "verify_fail_1": "trasferimento incompleto (la dimensione dichiarata o i 4 blocchi HMAC non sono arrivati tutti)",
+    "verify_fail_2": "CRC32 diverso (corruzione durante il trasferimento)",
+    "verify_fail_3": "firma HMAC diversa (non firmata con la chiave di questa scheda)",
+    "verify_fail_4": "HardwareID diverso (immagine costruita per un altro hardware)",
+    "verify_fail_5": "rollback rifiutato (più vecchia di quella già installata)",
+    "verify_fail_unknown_code": "motivo sconosciuto 0x{{code}}",
+    "verify_fail_unknown": "motivo sconosciuto",
+    "log_dev_key_declined": "Annullato: l'immagine è firmata con la chiave di sviluppo pubblica e la conferma è stata rifiutata."
   },
   "thermal": {
     "title": "Termocamera Infrarossa MLX90640 32x24",
@@ -415,7 +426,13 @@
     "tool_waiting_for_board": "In attesa che la scheda indichi quale utensile ha. Usa il pulsante di rilevamento; nessun pannello utensile viene mostrato finché la scheda non ha risposto.",
     "tool_invalid": "La scheda segnala l'utensile numero {{id}}, che non è valido. Controlla i jumper ID e la configurazione dell'utensile libero.",
     "detect_no_answer": "Nessuna scheda ha risposto. Controlla il cablaggio, l'alimentazione e che l'adattatore sia collegato.",
-    "selftest_needs_tool": "L'autotest richiede che la scheda segnali prima il proprio utensile. Usa il pulsante di rilevamento."
+    "selftest_needs_tool": "L'autotest richiede che la scheda segnali prima il proprio utensile. Usa il pulsante di rilevamento.",
+    "thermal_runaway": "FUGA TERMICA",
+    "thermal_fault_1": "MAXTEMP - temperatura misurata oltre il limite assoluto",
+    "thermal_fault_2": "NESSUNA SALITA - riscaldatore acceso ma la temperatura non sale (sensore/punta allentata?)",
+    "thermal_fault_3": "CALO AL SETPOINT - la temperatura è scesa con il riscaldatore acceso (sensore uscito?)",
+    "thermal_fault_unknown": "codice {{code}}",
+    "critical_error_hint": "L'errore resta finché la scheda non viene riavviata. Non esiste un comando di reset via CAN: spegni e riaccendi la scheda."
   },
   "testerglobal": {
     "global_title": "Controlli Globali (0x100)",
@@ -601,6 +618,7 @@
     "raw_memory": "L'identificatore 0x{{id}} scrive nella memoria non volatile della scheda e resta dopo un riavvio.",
     "raw_bootloader": "L'identificatore 0x{{id}} è un comando del bootloader; può lasciare la scheda in modalità aggiornamento finché non viene aggiornata o spenta e riaccesa.",
     "raw_actuator": "L'identificatore 0x{{id}} comanda un attuatore; può muovere, scaldare o attivare.",
-    "raw_blocked": "L'identificatore 0x{{id}} viene inviato solo dalla scheda stessa; inviarlo da qui andrebbe in collisione con la scheda e fornirebbe dati falsi agli altri dispositivi del bus."
+    "raw_blocked": "L'identificatore 0x{{id}} viene inviato solo dalla scheda stessa; inviarlo da qui andrebbe in collisione con la scheda e fornirebbe dati falsi agli altri dispositivi del bus.",
+    "msg_dev_key": "Questa immagine è firmata con la chiave di sviluppo PUBBLICA. Quella chiave non prova nulla su chi ha creato l'immagine: chiunque può firmare con essa, e solo le schede il cui bootloader è stato compilato con la stessa chiave la accettano. Continuare?"
   }
 }

@@ -17,6 +17,18 @@ compatibility of a change.
 - scripts/sync-firmware.mjs checks the release signature (<file>.sig, Ed25519, public key pinned in the script) of every file it takes from a release or a local folder: a wrong signature is always refused, a missing one only with --allow-unsigned (a bench pre-release or a local build). Signatures that are there are copied with the files.
 - src/lib/canIds.ts takes its identifiers and magic payloads from the generated module (src/lib/generated/urtcCanIds.ts, a copy of URTC-COMMON kept honest by a lock file); new tests fail when a copy is edited by hand or falls behind, and the shared conformance vectors are refreshed.
 - The build and run scripts read URTC_CI as their non-interactive switch.
+- The configuration field of the ADS1115 in the flying probe panel takes 1 to 4 hexadecimal digits (0x prefix allowed); anything else marks the field and disables Send instead of sending the configuration 0x0000.
+- The reason the bootloader gives for a failed verification is worded in the language of the page (the eight languages) instead of in English only, for the main board and for the expansion slave; the unused English status table was removed.
+- The bootloader identifiers, the magic payloads, the hardware ids and the page size of src/lib/flasher.ts are taken from the generated module like the rest of the identifiers.
+- A STOP ALL button in the header (shown while connected) switches off every actuator the page keeps alive; closing the page and disconnecting already did the same. It is a software command, not an emergency stop.
+- Flashing an image whose manifest says it is signed with the public development key asks for confirmation first, in the eight languages; declining leaves the board untouched.
+- The critical error banner of Tester Studio names the reason of the thermal runaway guard when the board reports one (three reasons, eight languages).
+- Tabs that are not on screen at start (analyzer, flasher, thermal, specs, tester) are loaded the first time they are opened, which makes the first download smaller.
+- The built page declares a content security policy (scripts only from the page, connections only to itself and to GitHub); the development and preview servers listen on localhost only, since Web Serial needs https or localhost anyway. A test keeps the policy and the GitHub host the app reads from in agreement. It has not been tried in a real browser.
+- The CI workflow builds the static site and no longer carries steps for stacks this repository does not have.
+- .gitattributes normalizes text like the other repositories and keeps firmware images (.bin, .elf) binary and Intel HEX files byte for byte.
+- LICENSE holds the full text of the GNU General Public License v3.0; the copyright notice and the license of the documentation moved to a new NOTICE file. The license is GPL-3.0-or-later everywhere: LICENSE.md, source headers, script banners, About texts and READMEs (eight languages). package.json declares the license.
+- The critical error banner says, in the eight languages, that the error stays until the board is reset and that there is no reset command over CAN.
 
 ## [0.2.9] - Claims aligned with what has been tested
 

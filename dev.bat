@@ -7,7 +7,7 @@ if "%URTC_CI%"=="1" set "KEEP_OPEN=ver >nul"
 REM =============================================================================
 REM URTC Web Studio - Development Server Start Script
 REM Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
-REM GPL-3.0 - see LICENSE
+REM GPL-3.0-or-later - see LICENSE
 REM =============================================================================
 
 echo ========================================

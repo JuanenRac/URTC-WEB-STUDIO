@@ -3,7 +3,8 @@
     "dismiss": "Dispensar",
     "browser_unsupported_banner": "Este navegador não suporta a API Web Serial - não é possível ligar a hardware real aqui. Mude para Chrome ou Edge.",
     "simulator_notice": "Simulador: este separador simula uma placa e não envia nada para o barramento. Ligue um adaptador USB-CAN para trabalhar com a placa real no Tester Studio e no Flasher Studio.",
-    "simulator_notice_connected": "Simulador: este separador simula uma placa e não envia nada para o barramento. O que mostra não é o que a placa ligada comunica; use o Tester Studio e o Flasher Studio para a placa real."
+    "simulator_notice_connected": "Simulador: este separador simula uma placa e não envia nada para o barramento. O que mostra não é o que a placa ligada comunica; use o Tester Studio e o Flasher Studio para a placa real.",
+    "loading": "A carregar..."
   },
   "config": {
     "language_en": "English",
@@ -30,7 +31,9 @@
     "connected_fallback": "Ligado",
     "connect_title": "Ligar adaptador USB-CAN via Web Serial",
     "connect_button": "Ligar Hardware",
-    "fault_badge": "FALHA"
+    "fault_badge": "FALHA",
+    "stop_all": "PARAR TUDO",
+    "stop_all_title": "Desliga todos os atuadores que esta página mantém ativos. Um comando de software, não uma paragem de emergência."
   },
   "sidebar": {
     "nav_control": "Matriz de Ferramentas e Controlo",
@@ -322,7 +325,15 @@
     "err_manifest_wrong_target": "O manifesto é de outra placa: declara {{got}} e esta atualização precisa de {{want}}.",
     "err_version_unknown": "A versão desta imagem é desconhecida: adicione um manifesto com versão, ou mantenha a versão no nome do ficheiro (por exemplo _v0.3.3.bin).",
     "hardware_id_is_slave": "Este é o escravo de expansão, não a placa principal.",
-    "config_serial_invalid": "O número de série tem de ser um número inteiro de 0 a 255."
+    "config_serial_invalid": "O número de série tem de ser um número inteiro de 0 a 255.",
+    "verify_fail_1": "transferência incompleta (o tamanho declarado ou os 4 blocos HMAC não chegaram todos)",
+    "verify_fail_2": "CRC32 diferente (corrupção durante a transferência)",
+    "verify_fail_3": "assinatura HMAC diferente (não está assinada com a chave desta placa)",
+    "verify_fail_4": "HardwareID diferente (imagem compilada para outro hardware)",
+    "verify_fail_5": "retrocesso recusado (mais antiga do que a já instalada)",
+    "verify_fail_unknown_code": "motivo desconhecido 0x{{code}}",
+    "verify_fail_unknown": "motivo desconhecido",
+    "log_dev_key_declined": "Cancelado: a imagem está assinada com a chave de desenvolvimento pública e a confirmação foi recusada."
   },
   "thermal": {
     "title": "Câmara Térmica Infravermelha MLX90640 de 32x24",
@@ -415,7 +426,13 @@
     "tool_waiting_for_board": "A aguardar que a placa indique que ferramenta tem. Use o botão de deteção; não é mostrado nenhum painel de ferramenta até a placa responder.",
     "tool_invalid": "A placa comunica a ferramenta número {{id}}, que não é válida. Verifique os jumpers de ID e a configuração de ferramenta livre.",
     "detect_no_answer": "Nenhuma placa respondeu. Verifique a cablagem, a alimentação e se o adaptador está ligado.",
-    "selftest_needs_tool": "O autoteste precisa que a placa comunique primeiro a sua ferramenta. Use o botão de deteção."
+    "selftest_needs_tool": "O autoteste precisa que a placa comunique primeiro a sua ferramenta. Use o botão de deteção.",
+    "thermal_runaway": "FUGA TÉRMICA",
+    "thermal_fault_1": "MAXTEMP - temperatura medida acima do limite absoluto",
+    "thermal_fault_2": "SEM SUBIDA - aquecedor ligado mas a temperatura não sobe (sensor/ponta solta?)",
+    "thermal_fault_3": "QUEDA NO ALVO - a temperatura desceu com o aquecedor ligado (sensor caiu?)",
+    "thermal_fault_unknown": "código {{code}}",
+    "critical_error_hint": "O erro mantém-se até a placa ser reiniciada. Não existe nenhum comando de reinício por CAN: desligue e volte a ligar a placa."
   },
   "testerglobal": {
     "global_title": "Controlos Globais (0x100)",
@@ -601,6 +618,7 @@
     "raw_memory": "O identificador 0x{{id}} escreve na memória não volátil da placa e mantém-se após reiniciar.",
     "raw_bootloader": "O identificador 0x{{id}} é um comando do bootloader; pode deixar a placa em modo de atualização até ser atualizada ou desligada e ligada.",
     "raw_actuator": "O identificador 0x{{id}} comanda um atuador; pode mover, aquecer ou disparar.",
-    "raw_blocked": "O identificador 0x{{id}} só é enviado pela própria placa; enviá-lo daqui colidiria com a placa e daria dados falsos aos outros dispositivos do barramento."
+    "raw_blocked": "O identificador 0x{{id}} só é enviado pela própria placa; enviá-lo daqui colidiria com a placa e daria dados falsos aos outros dispositivos do barramento.",
+    "msg_dev_key": "Esta imagem está assinada com a chave de desenvolvimento PÚBLICA. Essa chave não prova quem fez a imagem: qualquer pessoa pode assinar com ela, e só as placas cujo bootloader foi compilado com a mesma chave a aceitam. Continuar?"
   }
 }

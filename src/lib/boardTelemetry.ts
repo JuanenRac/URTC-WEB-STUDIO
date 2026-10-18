@@ -11,9 +11,11 @@ export interface BoardStatus {
   toolId: number | null;
   systemError: boolean;
   errorMessage: string;
+  /** Why the thermal runaway guard cut the heater (1 to 3), or null when the board does not say. */
+  thermalFault: number | null;
 }
 
-export const NO_BOARD_STATUS: BoardStatus = { toolId: null, systemError: false, errorMessage: '' };
+export const NO_BOARD_STATUS: BoardStatus = { toolId: null, systemError: false, errorMessage: '', thermalFault: null };
 
 export interface BoardFacts {
   status?: BoardStatus;
@@ -30,7 +32,7 @@ export function summarizeBoardFrames(frames: Array<Pick<CanFrame, 'id' | 'data' 
     if (!isFromBoard(f)) continue;
     if (f.id === CAN_ID_ACTIVE_TOOL_RESP && f.data.length >= 4) {
       const quick = decodeQuickState(f.data);
-      facts.status = { toolId: f.data[0] & 0x1f, systemError: quick.systemError, errorMessage: quick.errorMessage };
+      facts.status = { toolId: f.data[0] & 0x1f, systemError: quick.systemError, errorMessage: quick.errorMessage, thermalFault: quick.thermalFault || null };
     } else if (f.id === CAN_ID_SOLDER_TELEMETRY && f.data.length >= 2) {
       facts.heaterTemp = (f.data[0] << 8) | f.data[1];
     }

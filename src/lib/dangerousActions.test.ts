@@ -11,6 +11,9 @@ describe("which actions are confirmed", () => {
   it("asks before writing to the board", () => {
     for (const kind of ["program_config", "erase_fram", "raw_frame"] as const) expect(confirmationRisk(kind)).toBe("danger");
   });
+  it("asks before flashing an image signed with the public development key", () => {
+    expect(confirmationRisk("dev_key")).toBe("caution");
+  });
   it("asks for a heater only when it is going to heat", () => {
     expect(confirmationRisk("heater", 0)).toBeNull();
     expect(confirmationRisk("heater")).toBeNull();

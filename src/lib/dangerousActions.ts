@@ -9,13 +9,15 @@ export type ActionKind =
   | 'laser' | 'drill' | 'uv' | 'weld'       // can hurt a person: danger
   | 'heater'                                // hot: caution, only when a setpoint above 0 is going to be sent
   | 'motion' | 'paste' | 'feeder_reset'     // moves or dispenses: caution
-  | 'program_config' | 'erase_fram' | 'raw_frame'; // writes to the board or can change its mode: danger
+  | 'program_config' | 'erase_fram' | 'raw_frame' // writes to the board or can change its mode: danger
+  | 'dev_key';                              // an image signed with the public development key: caution
 
 const RISK: Record<ActionKind, Risk> = {
   laser: 'danger', drill: 'danger', uv: 'danger', weld: 'danger',
   heater: 'caution',
   motion: 'caution', paste: 'caution', feeder_reset: 'caution',
   program_config: 'danger', erase_fram: 'danger', raw_frame: 'danger',
+  dev_key: 'caution',
 };
 
 /** The risk level of an action, or null when nothing needs to be confirmed. `value` is the setpoint for a heater. */

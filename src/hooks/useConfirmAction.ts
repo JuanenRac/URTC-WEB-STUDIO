@@ -15,6 +15,7 @@ const FALLBACK: Record<string, string> = {
   msg_program_config: 'This is written to the non-volatile memory of the board and stays after a restart.',
   msg_erase_fram: "The saved state of the board (its persisted tool setpoints) will be erased.",
   msg_raw_frame: 'This frame is sent to the board as typed.',
+  msg_dev_key: 'This image is signed with the PUBLIC development key. That key proves nothing about who made the image: anyone can sign with it, and only boards whose bootloader was built with the same key accept it. Continue?',
   title_caution: 'Please confirm',
   title_danger: 'Dangerous action',
 };

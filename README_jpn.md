@@ -17,7 +17,7 @@
 
 
 <p align="center">
-  <img src="https://img.shields.io/badge/License-GPL%203.0-blue.svg" alt="GPL 3.0">
+  <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
@@ -44,7 +44,7 @@ React/Vite シングルページアプリで、2 つのデスクトップコン�
 
 | | |
 |---|---|
-| バージョン | `0.2.9` |
+| バージョン | `0.3.0` |
 | 成熟度 | 機能する |
 | 技術 | Web Serial API / TypeScript |
 | 対象 | 利用者の PC 上の Web ブラウザー |
@@ -216,6 +216,9 @@ SWD/JTAG デバッグプローブを駆動できる Web API は存在しませ�
 - サンドボックスタブ（Control、OLED、Thermal IR）は何も送信しません。そのフレームには SIM の印が付き、ボードが接続されている間はシミュレートされた応答を生成しません。プロトコルアナライザーの定義済みメッセージのうち、接続中のボードに送られるのは単純な問い合わせだけで、残りはシミュレーションのままです。
 - Tester Studio は、ボード自身が報告した（`0x111`）ツールのパネルだけを表示し、ボードが応答するまでは何も表示しません。
 - レーザー、ドリル、UV 硬化、溶接、ヒーター、動作、ペースト噴射、ボードのメモリへの書き込み、危険を伴う手入力フレームは、事前に確認を求めます。
+- ヘッダーの **すべて停止**（接続中に表示）は、このページが動作を維持しているすべてのアクチュエーターをオフにします。ページを閉じる、接続を切るときも同じ処理が行われます。これはソフトウェアのコマンドであり、非常停止ではありません。
+- 公開されている開発用の鍵で署名されたイメージを書き込む前には確認が求められます。その鍵は誰がイメージを作ったかを何も証明しないためです。
+- ボードが重大なエラーを通知した場合、ボードが報告していれば、バナーに熱暴走保護の理由も表示されます。
 
 ### 未対応の項目
 
@@ -272,6 +275,8 @@ Vite の開発サーバーでライブリロード付きでアプリを実行し
 
 その後、Chrome または Edge で `http://localhost:3000` を開いてください。
 
+開発サーバーは `localhost` でのみ待ち受けます。Web Serial は https または localhost で動作するため、ネットワークに公開しても意味がありません。
+
 ### 静的ビルド
 
 `dist/` 内に静的な、最適化されたバンドルへコンパイルします：
@@ -288,6 +293,8 @@ npm run preview
 
 または、お好みの静的ファイルホストで `dist/` を配信してください。
 `npm run lint` は TypeScript コンパイラをチェックのみモードで実行します。
+
+ビルドされたページはコンテンツセキュリティポリシー（スクリプトはページ自身からのみ、接続はページ自身と GitHub のみ）を宣言し、各タブを初めて開いたときに読み込みます。実際のブラウザではまだ試していません。
 
 ### バージョン管理
 
@@ -455,6 +462,7 @@ build`（`vite build`）単体は意図的にコンパイルのみで、バー�
 ├── package.json
 ├── CHANGELOG.md                     バージョン履歴と過去の作業の要約
 ├── LICENSE
+├── NOTICE                      著作権表示とドキュメントのライセンス
 ├── README.md                        本ファイル
 ├── docs/
 │   ├── ARCHITECTURE.md
@@ -469,13 +477,13 @@ URTC Web Studio の著作権は (c) 2026 JuanenRac（Electro Hobby 3D）に帰�
 
 本プロジェクトはソースコードとそれ自身のドキュメントで構成されており、それぞれ実際にカバーする内容に適した異なるライセンスの下で提供されています：
 
-1. ソースコード（`src/` 下のすべて、それをビルドする Vite/TypeScript 設定を含む）は、**GNU General Public License v3.0（GPL-3.0）** の下で提供されます。全文は https://www.gnu.org/licenses/gpl-3.0.html を参照してください。
+1. ソースコード（`src/` 下のすべて、それをビルドする Vite/TypeScript 設定を含む）は、**GNU General Public License v3.0（GPL-3.0-or-later）** の下で提供されます。全文は https://www.gnu.org/licenses/gpl-3.0.html を参照してください。
 
 2. ドキュメント（本 README およびその自身の翻訳版——`README_spa.md`、`README_ita.md`、`README_fra.md`、`README_deu.md`、`README_zho.md`、`README_jpn.md`）は、**クリエイティブ・コモンズ 表示-継承 4.0 国際（CC BY-SA 4.0）** の下で提供されます。全文は https://creativecommons.org/licenses/by-sa/4.0/ を参照してください。
 
 本ツールは [URTC（Universal Robot Tool Controller）](https://github.com/JuanenRac/URTC) プロジェクトのブラウザベースのコンパニオンです——本ツールが対応対象としているボードファームウェア、ハードウェア設計、完全なプロトコルドキュメントは、同プロジェクト自身のリポジトリを参照してください。URTC 自身のファームウェアは GPL-3.0 であり、そのハードウェア設計は CERN-OHL-S v2 です。本ツール自身のここでのライセンスはその独立したプロジェクトには及ばず、その逆も同様です。同じ範囲をカバーする 2 つのデスクトップネイティブの代替案も存在します：[URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER) と [URTC Tester](https://github.com/JuanenRac/URTC-TESTER)。
 
-本プロジェクトを基に開発を行う際は、このライセンス区分を念頭に置いてください：コードの変更は GPL-3.0 を維持し、ドキュメントの派生物は CC BY-SA を維持してください——いずれも本プロジェクトおよびその作者への帰属表示を伴う必要があります。
+本プロジェクトを基に開発を行う際は、このライセンス区分を念頭に置いてください：コードの変更は GPL-3.0-or-later を維持し、ドキュメントの派生物は CC BY-SA を維持してください——いずれも本プロジェクトおよびその作者への帰属表示を伴う必要があります。
 
 ## 🔗 関連プロジェクト
 
@@ -562,6 +570,7 @@ URTC Web Studio の著作権は (c) 2026 JuanenRac（Electro Hobby 3D）に帰�
 - **[HYDRA-UMC-WATCH](https://github.com/JuanenRac/HYDRA-UMC-WATCH)** — 触覚アラートのパターンとペアリング済みスマートフォンへの音声リレーを備えた WearOS コンパニオンアプリ(物理的なウォッチではまだ実行していない)。
 - **[URTC-SMART-RACK](https://github.com/JuanenRac/URTC-SMART-RACK)** — 実際の工具 ID デコードと Smart Idle 予熱ロジックを備えた、基板搭載ラック用ファームウェア。
 - **[URTC-VISION-TOOL](https://github.com/JuanenRac/URTC-VISION-TOOL)** — サーマル/RGB 検査ツールヘッド向けの、ファームウェアと実際の Python ビジョンコンパニオン。
+- **[URTC-UPDATER](https://github.com/JuanenRac/URTC-UPDATER)** — URTC ファミリーのリポジトリを検出・インストール・更新するデスクトップツール。操作は一つずつ明示的に行います。
 - **[HYDRA-UMC-UPDATER](https://github.com/JuanenRac/HYDRA-UMC-UPDATER)** — このエコシステム内のすべてのリポジトリを検出・クローン・更新する、管理用デスクトップツール。
 - **[HYDRA-UMC-OS-REBUILDER](https://github.com/JuanenRac/HYDRA-UMC-OS-REBUILDER)** — エコシステムの最新バージョンをプリロードした、書き込み可能なCM5イメージを構築するWindows/Linuxデスクトップツール。Raspberry Pi Imager方式の初回起動Wi-Fi/ユーザー/SSH設定を備える。
 - **[HYDRA-UMC-OPS-AGENT](https://github.com/JuanenRac/HYDRA-UMC-OPS-AGENT)** — 保守インシデントコーディネーター: 低権限のエッジ役割がサニタイズされたインベントリ/ヘルスのスナップショットを収集し、コントロールプレーン役割がそれを読み取り専用でレンダリングして AI プロバイダーに診断の提案を依頼します - パッチを適用することも、何かをデプロイすることも決してありません。

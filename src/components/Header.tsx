@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Zap, AlertTriangle, Usb, Globe } from 'lucide-react';
+import { Zap, AlertTriangle, Usb, Globe, Power } from 'lucide-react';
 import { HardwareState } from '../types';
 import urtcLogoTester from '../../images/urtc_custom_icon.svg';
 
@@ -14,6 +14,8 @@ interface HeaderProps {
   isConnected: boolean;
   onConnect: () => void;
   onDisconnect: () => void;
+  /** Switches off every actuator the page keeps alive; shown while connected. */
+  onStopAll?: () => void;
   portName?: string;
 }
 
@@ -25,6 +27,7 @@ export const Header: React.FC<HeaderProps> = ({
   isConnected,
   onConnect,
   onDisconnect,
+  onStopAll,
   portName
 }) => {
   const { t, i18n } = useTranslation();
@@ -129,6 +132,18 @@ export const Header: React.FC<HeaderProps> = ({
               />
               <span className="text-slate-300 font-medium">{ledText}</span>
             </div>
+
+            {/* Stop all: a software command that switches off what this page keeps alive, not an emergency stop */}
+            {isConnected && onStopAll && (
+              <button
+                onClick={onStopAll}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-950/50 text-red-300 border border-red-800/80 hover:bg-red-900/50 transition-colors font-semibold"
+                title={t('header.stop_all_title', 'Switch off every actuator that is being kept alive from this page. A software command, not an emergency stop.')}
+              >
+                <Power className="w-3.5 h-3.5" />
+                {t('header.stop_all', 'STOP ALL')}
+              </button>
+            )}
 
             {/* Connect Button */}
             {isConnected ? (

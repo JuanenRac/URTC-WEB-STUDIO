@@ -156,24 +156,9 @@ export const MOTION_TOOL_IDS = new Set([1, 2, 3, 6, 7, 12, 16]);
 // No CAN handler at all - actuator/sensor lives on the robot mainboard, not this board.
 export const NO_HANDLER_TOOL_IDS = new Set([15, 20]);
 
-// --- Bootloader/OTA status + verify-fail-reason tables (shared display use) ---
-export const STATUS_NAMES: Record<number, string> = {
-  0x01: 'Listening',
-  0x02: 'Erasing backup slot',
-  0x03: 'Receiving firmware data',
-  0x04: 'Verify OK - jumping to new firmware',
-  0x05: 'Verify FAILED',
-  0x06: 'Verifying (size/CRC32/HMAC/HardwareID)',
-  0x07: 'Copying backup into main slot',
-  0xff: 'Error',
-};
-export const VERIFY_FAIL_REASONS: Record<number, string> = {
-  0x01: 'Incomplete transfer',
-  0x02: 'CRC32 mismatch',
-  0x03: 'HMAC signature mismatch',
-  0x04: 'HardwareID mismatch',
-  0x05: 'Rollback rejected (anti-rollback)',
-};
+// --- Bootloader verify-fail reason codes (second byte of a 0x7F5 verify-fail frame) ---
+// The wording lives in the locales as flasher.verify_fail_<code>.
+export const VERIFY_FAIL_CODES: readonly number[] = [0x01, 0x02, 0x03, 0x04, 0x05];
 
 // --- Keepalive resend intervals ---
 // A real master has to satisfy the firmware's own communication watchdogs by

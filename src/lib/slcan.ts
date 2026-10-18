@@ -1,7 +1,7 @@
 // =============================================================================
 // URTC Web Studio - SLCAN line parsing: src/lib/slcan.ts
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
-// GPL-3.0 - see LICENSE
+// GPL-3.0-or-later - see LICENSE
 //
 // Extracted from useSerialCanBus.ts's own processBuffer() so the parsing
 // logic itself - the part that decides whether a line of bytes off the

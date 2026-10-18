@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MAX_HEATER_SETPOINT_C, MAX_MOTION_STEPS, clampInt, stepsToBytes } from "./toolLimits";
+import { MAX_HEATER_SETPOINT_C, MAX_MOTION_STEPS, clampInt, configWordToBytes, isConfigWord, stepsToBytes } from "./toolLimits";
 import { TOOL_PROFILES } from "../data/toolsData";
 
 describe("limits of the tool panels", () => {
@@ -23,5 +23,20 @@ describe("limits of the tool panels", () => {
         expect(tool.maxVal).toBeLessThanOrEqual(MAX_HEATER_SETPOINT_C);
       }
     }
+  });
+});
+
+describe("the ADS1115 configuration word", () => {
+  it("is two big-endian bytes from 1 to 4 hexadecimal digits, with or without 0x", () => {
+    expect(configWordToBytes("8583")).toEqual([0x85, 0x83]);
+    expect(configWordToBytes(" 0x85 ")).toEqual([0x00, 0x85]);
+    expect(configWordToBytes("F")).toEqual([0x00, 0x0F]);
+  });
+  it("refuses an empty, too long or non-hexadecimal text instead of sending 0x0000", () => {
+    for (const text of ["", "  ", "0x", "12345", "zz", "85 83", "-1"]) {
+      expect(() => configWordToBytes(text), text).toThrow(RangeError);
+      expect(isConfigWord(text), text).toBe(false);
+    }
+    expect(isConfigWord("8583")).toBe(true);
   });
 });

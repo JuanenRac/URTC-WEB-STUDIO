@@ -3,7 +3,8 @@
     "dismiss": "Dismiss",
     "browser_unsupported_banner": "This browser does not support the Web Serial API - connecting to real hardware is not possible here. Please switch to Chrome or Edge.",
     "simulator_notice": "Simulator: this tab models a board and sends nothing to the bus. Connect a USB-CAN adapter to work with the real board in Tester Studio and Flasher Studio.",
-    "simulator_notice_connected": "Simulator: this tab models a board and sends nothing to the bus. What it shows is not what the connected board reports; use Tester Studio and Flasher Studio for the real board."
+    "simulator_notice_connected": "Simulator: this tab models a board and sends nothing to the bus. What it shows is not what the connected board reports; use Tester Studio and Flasher Studio for the real board.",
+    "loading": "Loading..."
   },
   "config": {
     "language_en": "English",
@@ -30,7 +31,9 @@
     "connected_fallback": "Connected",
     "connect_title": "Connect USB CAN adapter via Web Serial",
     "connect_button": "Connect Hardware",
-    "fault_badge": "FAULT"
+    "fault_badge": "FAULT",
+    "stop_all": "STOP ALL",
+    "stop_all_title": "Switch off every actuator that is being kept alive from this page. A software command, not an emergency stop."
   },
   "sidebar": {
     "nav_control": "Tool Matrix & Control",
@@ -322,7 +325,15 @@
     "err_manifest_wrong_target": "The manifest is for another board: it declares {{got}} and this update needs {{want}}.",
     "err_version_unknown": "The version of this image is unknown: add a manifest with a version, or keep the version in the file name (for example _v0.3.3.bin).",
     "hardware_id_is_slave": "This is the expansion slave, not the main board.",
-    "config_serial_invalid": "The serial number must be a whole number from 0 to 255."
+    "config_serial_invalid": "The serial number must be a whole number from 0 to 255.",
+    "verify_fail_1": "incomplete transfer (the declared size or the 4 HMAC chunks did not all arrive)",
+    "verify_fail_2": "CRC32 mismatch (transfer corruption)",
+    "verify_fail_3": "HMAC signature mismatch (not signed with the key of this board)",
+    "verify_fail_4": "HardwareID mismatch (image built for different hardware)",
+    "verify_fail_5": "rollback rejected (older than what is already installed)",
+    "verify_fail_unknown_code": "unknown reason 0x{{code}}",
+    "verify_fail_unknown": "unknown reason",
+    "log_dev_key_declined": "Cancelled: the image is signed with the public development key and the confirmation was declined."
   },
   "thermal": {
     "title": "MLX90640 32x24 Thermal Infrared Camera Array",
@@ -415,7 +426,13 @@
     "tool_waiting_for_board": "Waiting for the board to say which tool it has. Use the Detect button; no tool panel is shown until the board has answered.",
     "tool_invalid": "The board reports tool number {{id}}, which is not a valid tool. Check the ID jumpers and the free tool configuration.",
     "detect_no_answer": "No board answered. Check the wiring, the power and that the adapter is connected.",
-    "selftest_needs_tool": "The self-test needs the board to report its tool first. Use the Detect button."
+    "selftest_needs_tool": "The self-test needs the board to report its tool first. Use the Detect button.",
+    "thermal_runaway": "THERMAL RUNAWAY",
+    "thermal_fault_1": "MAXTEMP - measured temperature above the hard ceiling",
+    "thermal_fault_2": "HEATING NO RISE - heater on but temperature not rising (loose sensor/tip?)",
+    "thermal_fault_3": "DROPPED AT TARGET - temperature sagged with the heater on (sensor fell out?)",
+    "thermal_fault_unknown": "code {{code}}",
+    "critical_error_hint": "The error stays until the board is reset. There is no reset command over CAN: switch the board off and on."
   },
   "testerglobal": {
     "global_title": "Global Controls (0x100)",
@@ -601,6 +618,7 @@
     "raw_memory": "Identifier 0x{{id}} writes to the non-volatile memory of the board and stays after a restart.",
     "raw_bootloader": "Identifier 0x{{id}} is a bootloader command; it can leave the board in update mode until it is updated or powered off and on.",
     "raw_actuator": "Identifier 0x{{id}} commands an actuator; it can move, heat or fire.",
-    "raw_blocked": "Identifier 0x{{id}} is only ever sent by the board; sending it from here would collide with the board and feed false data to the other devices on the bus."
+    "raw_blocked": "Identifier 0x{{id}} is only ever sent by the board; sending it from here would collide with the board and feed false data to the other devices on the bus.",
+    "msg_dev_key": "This image is signed with the PUBLIC development key. That key proves nothing about who made the image: anyone can sign with it, and only boards whose bootloader was built with the same key accept it. Continue?"
   }
 }

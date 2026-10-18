@@ -3,7 +3,8 @@
     "dismiss": "Ignorer",
     "browser_unsupported_banner": "Ce navigateur ne prend pas en charge l'API Web Serial - il n'est pas possible de se connecter a du materiel reel ici. Veuillez passer a Chrome ou Edge.",
     "simulator_notice": "Simulateur : cet onglet modélise une carte et n'envoie rien sur le bus. Branchez un adaptateur USB-CAN pour travailler avec la vraie carte dans Tester Studio et Flasher Studio.",
-    "simulator_notice_connected": "Simulateur : cet onglet modélise une carte et n'envoie rien sur le bus. Ce qu'il affiche n'est pas ce que la carte connectée signale ; utilisez Tester Studio et Flasher Studio pour la vraie carte."
+    "simulator_notice_connected": "Simulateur : cet onglet modélise une carte et n'envoie rien sur le bus. Ce qu'il affiche n'est pas ce que la carte connectée signale ; utilisez Tester Studio et Flasher Studio pour la vraie carte.",
+    "loading": "Chargement..."
   },
   "config": {
     "language_en": "English",
@@ -30,7 +31,9 @@
     "connected_fallback": "Connecté",
     "connect_title": "Connecter l'adaptateur USB-CAN via Web Serial",
     "connect_button": "Connecter le Matériel",
-    "fault_badge": "DÉFAUT"
+    "fault_badge": "DÉFAUT",
+    "stop_all": "TOUT ARRÊTER",
+    "stop_all_title": "Éteint chaque actionneur maintenu actif depuis cette page. Une commande logicielle, pas un arrêt d'urgence."
   },
   "sidebar": {
     "nav_control": "Matrice d'Outils & Contrôle",
@@ -322,7 +325,15 @@
     "log_dev_key_warning": "NOTE : signée avec la clé de développement PUBLIQUE - seules les cartes dont le bootloader a été compilé avec cette même clé l'acceptent.",
     "log_signature_runtime_key": "Signée localement avec la clé saisie pour ce flashage.",
     "hardware_id_is_slave": "Il s'agit de l'esclave d'extension, pas de la carte principale.",
-    "config_serial_invalid": "Le numéro de série doit être un entier de 0 à 255."
+    "config_serial_invalid": "Le numéro de série doit être un entier de 0 à 255.",
+    "verify_fail_1": "transfert incomplet (la taille déclarée ou les 4 blocs HMAC ne sont pas tous arrivés)",
+    "verify_fail_2": "CRC32 différent (corruption pendant le transfert)",
+    "verify_fail_3": "signature HMAC différente (non signée avec la clé de cette carte)",
+    "verify_fail_4": "HardwareID différent (image construite pour un autre matériel)",
+    "verify_fail_5": "retour en arrière refusé (plus ancienne que la version déjà installée)",
+    "verify_fail_unknown_code": "raison inconnue 0x{{code}}",
+    "verify_fail_unknown": "raison inconnue",
+    "log_dev_key_declined": "Annulé : l'image est signée avec la clé de développement publique et la confirmation a été refusée."
   },
   "thermal": {
     "title": "Caméra Thermique Infrarouge MLX90640 32x24",
@@ -415,7 +426,13 @@
     "tool_waiting_for_board": "En attente que la carte indique quel outil elle porte. Utilisez le bouton de détection ; aucun panneau d'outil n'est affiché tant que la carte n'a pas répondu.",
     "tool_invalid": "La carte signale l'outil numéro {{id}}, qui n'est pas valide. Vérifiez les cavaliers d'ID et la configuration d'outil libre.",
     "detect_no_answer": "Aucune carte n'a répondu. Vérifiez le câblage, l'alimentation et que l'adaptateur est connecté.",
-    "selftest_needs_tool": "L'auto-test exige que la carte indique d'abord son outil. Utilisez le bouton de détection."
+    "selftest_needs_tool": "L'auto-test exige que la carte indique d'abord son outil. Utilisez le bouton de détection.",
+    "thermal_runaway": "EMBALLEMENT THERMIQUE",
+    "thermal_fault_1": "MAXTEMP - température mesurée au-dessus du plafond absolu",
+    "thermal_fault_2": "PAS DE MONTÉE - chauffage allumé mais la température n'augmente pas (capteur/panne desserré ?)",
+    "thermal_fault_3": "CHUTE À LA CONSIGNE - la température a baissé chauffage allumé (capteur tombé ?)",
+    "thermal_fault_unknown": "code {{code}}",
+    "critical_error_hint": "L'erreur persiste jusqu'au redémarrage de la carte. Il n'existe pas de commande de réinitialisation par CAN : éteignez puis rallumez la carte."
   },
   "testerglobal": {
     "global_title": "Contrôles Globaux (0x100)",
@@ -601,6 +618,7 @@
     "raw_memory": "L'identifiant 0x{{id}} écrit dans la mémoire non volatile de la carte et persiste après un redémarrage.",
     "raw_bootloader": "L'identifiant 0x{{id}} est une commande du bootloader ; il peut laisser la carte en mode mise à jour jusqu'à ce qu'elle soit mise à jour ou éteinte puis rallumée.",
     "raw_actuator": "L'identifiant 0x{{id}} commande un actionneur ; il peut déplacer, chauffer ou déclencher.",
-    "raw_blocked": "L'identifiant 0x{{id}} n'est émis que par la carte elle-même ; l'envoyer d'ici entrerait en collision avec la carte et fournirait de fausses données aux autres appareils du bus."
+    "raw_blocked": "L'identifiant 0x{{id}} n'est émis que par la carte elle-même ; l'envoyer d'ici entrerait en collision avec la carte et fournirait de fausses données aux autres appareils du bus.",
+    "msg_dev_key": "Cette image est signée avec la clé de développement PUBLIQUE. Cette clé ne prouve rien sur l'auteur de l'image : n'importe qui peut signer avec elle, et seules les cartes dont le bootloader a été compilé avec la même clé l'acceptent. Continuer ?"
   }
 }

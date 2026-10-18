@@ -6,10 +6,16 @@ const rx = (id: number, data: number[], extra: object = {}) => ({ id, data, dire
 describe("what the real board has said", () => {
   it("takes the active tool and the fault from a real 0x111 answer", () => {
     const facts = summarizeBoardFrames([rx(0x111, [10, 0, 0, 0])]);
-    expect(facts.status).toEqual({ toolId: 10, systemError: false, errorMessage: "" });
+    expect(facts.status).toEqual({ toolId: 10, systemError: false, errorMessage: "", thermalFault: null });
     const faulty = summarizeBoardFrames([rx(0x111, [5, 1, 0, 0])]);
     expect(faulty.status?.systemError).toBe(true);
     expect(faulty.status?.errorMessage).toContain("CRITICAL ERROR");
+  });
+
+  it("carries the reason the thermal guard cut the heater, when the board says it", () => {
+    expect(summarizeBoardFrames([rx(0x111, [0, 1, 0, 0, 2, 0])]).status?.thermalFault).toBe(2);
+    expect(summarizeBoardFrames([rx(0x111, [0, 1, 0, 0, 0, 0])]).status?.thermalFault).toBeNull();
+    expect(summarizeBoardFrames([rx(0x111, [0, 1, 0, 0])]).status?.thermalFault).toBeNull();
   });
 
   it("keeps the last answer of a batch", () => {

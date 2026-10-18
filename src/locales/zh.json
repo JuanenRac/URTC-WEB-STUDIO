@@ -3,7 +3,8 @@
     "dismiss": "关闭",
     "browser_unsupported_banner": "此浏览器不支持 Web Serial API，无法连接真实硬件。请切换到 Chrome 或 Edge。",
     "simulator_notice": "模拟器：此标签页仅模拟一块板子，不会向总线发送任何内容。请连接 USB-CAN 适配器，在 Tester Studio 和 Flasher Studio 中操作真实的板子。",
-    "simulator_notice_connected": "模拟器：此标签页仅模拟一块板子，不会向总线发送任何内容。这里显示的并非已连接板子上报的内容；请使用 Tester Studio 和 Flasher Studio 操作真实的板子。"
+    "simulator_notice_connected": "模拟器：此标签页仅模拟一块板子，不会向总线发送任何内容。这里显示的并非已连接板子上报的内容；请使用 Tester Studio 和 Flasher Studio 操作真实的板子。",
+    "loading": "正在加载..."
   },
   "config": {
     "language_en": "English",
@@ -30,7 +31,9 @@
     "connected_fallback": "已连接",
     "connect_title": "通过 Web Serial 连接 USB CAN 适配器",
     "connect_button": "连接硬件",
-    "fault_badge": "故障"
+    "fault_badge": "故障",
+    "stop_all": "全部停止",
+    "stop_all_title": "关闭此页面正在保持运行的所有执行器。这是软件命令，不是紧急停止。"
   },
   "sidebar": {
     "nav_control": "工具矩阵与控制",
@@ -322,7 +325,15 @@
     "log_dev_key_warning": "注意：使用公开的开发密钥签名——只有引导程序用同一密钥构建的板子才会接受。",
     "log_signature_runtime_key": "已使用本次烧录输入的密钥在本地签名。",
     "hardware_id_is_slave": "这是扩展从机，不是主板。",
-    "config_serial_invalid": "序列号必须是 0 到 255 之间的整数。"
+    "config_serial_invalid": "序列号必须是 0 到 255 之间的整数。",
+    "verify_fail_1": "传输不完整（声明的大小或 4 个 HMAC 数据块没有全部到达）",
+    "verify_fail_2": "CRC32 不匹配（传输中数据损坏）",
+    "verify_fail_3": "HMAC 签名不匹配（未使用本板的密钥签名）",
+    "verify_fail_4": "HardwareID 不匹配（镜像是为其他硬件构建的）",
+    "verify_fail_5": "回滚被拒绝（比已安装的版本更旧）",
+    "verify_fail_unknown_code": "未知原因 0x{{code}}",
+    "verify_fail_unknown": "未知原因",
+    "log_dev_key_declined": "已取消：镜像使用公开的开发密钥签名，且确认被拒绝。"
   },
   "thermal": {
     "title": "MLX90640 32x24 热成像红外相机阵列",
@@ -415,7 +426,13 @@
     "tool_waiting_for_board": "正在等待板子报告其所用工具。请使用检测按钮；在板子应答之前不会显示工具面板。",
     "tool_invalid": "板子报告的工具编号为 {{id}}，这不是有效的工具。请检查 ID 跳线和自由工具配置。",
     "detect_no_answer": "没有板子应答。请检查接线、供电以及适配器是否已连接。",
-    "selftest_needs_tool": "自检需要板子先报告其工具。请使用检测按钮。"
+    "selftest_needs_tool": "自检需要板子先报告其工具。请使用检测按钮。",
+    "thermal_runaway": "热失控",
+    "thermal_fault_1": "MAXTEMP - 测得温度超过硬性上限",
+    "thermal_fault_2": "不升温 - 加热器已开启但温度不上升（传感器/烙铁头松动？）",
+    "thermal_fault_3": "在目标处下降 - 加热器开启时温度下降（传感器脱落？）",
+    "thermal_fault_unknown": "代码 {{code}}",
+    "critical_error_hint": "该错误会一直保留到电路板复位。没有通过 CAN 的复位命令：请给电路板断电后重新上电。"
   },
   "testerglobal": {
     "global_title": "全局控制（0x100）",
@@ -601,6 +618,7 @@
     "raw_memory": "标识符 0x{{id}} 会写入板子的非易失存储器，重启后仍然保留。",
     "raw_bootloader": "标识符 0x{{id}} 是引导程序命令；它可能使板子停留在更新模式，直到完成更新或重新上电。",
     "raw_actuator": "标识符 0x{{id}} 控制执行器；它可能造成运动、加热或触发动作。",
-    "raw_blocked": "标识符 0x{{id}} 只应由板子自己发送；从这里发送会与板子冲突，并向总线上的其他设备提供错误数据。"
+    "raw_blocked": "标识符 0x{{id}} 只应由板子自己发送；从这里发送会与板子冲突，并向总线上的其他设备提供错误数据。",
+    "msg_dev_key": "此镜像使用公开的开发密钥签名。该密钥无法证明镜像由谁制作：任何人都可以用它签名，只有引导程序使用同一密钥构建的电路板才会接受它。是否继续？"
   }
 }

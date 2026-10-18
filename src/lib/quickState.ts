@@ -1,5 +1,5 @@
 // Decodes the URTC 0x111 "active tool + quick state" answer (URTC
-// docs/CANBUS.TXT). Firmware before 0.3.1 answers 4 bytes; 0.3.2+ adds
+// docs/CANBUS.TXT). Firmware before 0.3.2 answers 4 bytes; 0.3.2 and newer add
 // byte 4 (why the thermal runaway guard cut the heater) and byte 5 (RCC
 // reset cause latched at boot). Missing bytes mean "not reported".
 

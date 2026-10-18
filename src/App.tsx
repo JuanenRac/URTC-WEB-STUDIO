@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { AlertTriangle, X } from 'lucide-react';
 import { Header } from './components/Header';
@@ -6,11 +6,12 @@ import { Sidebar } from './components/Sidebar';
 import { ToolCatalog } from './components/ToolCatalog';
 import { OledDisplay } from './components/OledDisplay';
 import { HardwarePanel } from './components/HardwarePanel';
-import { CanBusAnalyzer } from './components/CanBusAnalyzer';
-import { FlasherStudio } from './components/FlasherStudio';
-import { ThermalCameraViewer } from './components/ThermalCameraViewer';
-import { SpecsAndBomViewer } from './components/SpecsAndBomViewer';
-import { TesterStudio } from './components/TesterStudio';
+// The tabs that are not on screen at start are loaded when first opened, which keeps the first download small.
+const CanBusAnalyzer = lazy(() => import('./components/CanBusAnalyzer').then(m => ({ default: m.CanBusAnalyzer })));
+const FlasherStudio = lazy(() => import('./components/FlasherStudio').then(m => ({ default: m.FlasherStudio })));
+const ThermalCameraViewer = lazy(() => import('./components/ThermalCameraViewer').then(m => ({ default: m.ThermalCameraViewer })));
+const SpecsAndBomViewer = lazy(() => import('./components/SpecsAndBomViewer').then(m => ({ default: m.SpecsAndBomViewer })));
+const TesterStudio = lazy(() => import('./components/TesterStudio').then(m => ({ default: m.TesterStudio })));
 import { ConfirmDialog } from './components/ConfirmDialog';
 import { TOOL_PROFILES } from './data/toolsData';
 import { HardwareState, CanFrame, ExpansionBoardType } from './types';
@@ -315,6 +316,7 @@ export default function App() {
   // way as its twin, tester/GlobalPanels.tsx's CustomFramePanel: an invalid
   // identifier or byte is refused with a message, never masked or dropped.
   const confirm = useConfirmAction();
+  const tabFallback = <div className="p-4 text-xs text-slate-400" role="status">{t('app.loading', 'Loading...')}</div>;
   const handleSendCustomFrame = async (idHex: string, dataHex: string, desc: string) => {
     const parsed = parseCustomFrame(idHex, dataHex);
     if (parsed.ok === false) {
@@ -543,7 +545,13 @@ export default function App() {
       signature = resolved.signature;
       if (resolved.source === 'manifest') {
         flasher.appendLog(t('flasher.log_signature_from_manifest', 'Using the signature published in the manifest (key: {{kind}}).', { kind: resolved.keyKind ?? 'unknown' }));
-        if (resolved.keyKind === 'dev') flasher.appendLog(t('flasher.log_dev_key_warning', 'NOTE: signed with the PUBLIC development key - only boards whose bootloader was built with that same key accept it.'));
+        if (resolved.keyKind === 'dev') {
+          flasher.appendLog(t('flasher.log_dev_key_warning', 'NOTE: signed with the PUBLIC development key - only boards whose bootloader was built with that same key accept it.'));
+          if (!(await confirm('dev_key'))) {
+            flasher.setFlasherState(prev => ({ ...prev, mode: 'idle', statusText: t('flasher.status_update_failed', 'Update failed'), log: [...prev.log, t('flasher.log_dev_key_declined', 'Cancelled: the image is signed with the public development key and the confirmation was declined.')] }));
+            return;
+          }
+        }
       } else {
         flasher.appendLog(t('flasher.log_signature_runtime_key', 'Signed locally with the key entered for this flash.'));
       }
@@ -651,6 +659,7 @@ export default function App() {
         isConnected={serialCan.isConnected}
         onConnect={serialCan.connect}
         onDisconnect={handleDisconnect}
+        onStopAll={() => { void runAllSafeOff(); }}
         portName={serialCan.portName}
       />
 
@@ -801,6 +810,7 @@ export default function App() {
 
         {/* TAB 3: CAN Bus Protocol Analyzer */}
         {activeTab === 'can' && (
+          <Suspense fallback={tabFallback}>
           <CanBusAnalyzer
             canFrames={canFrames}
             isConnected={serialCan.isConnected}
@@ -808,10 +818,12 @@ export default function App() {
             onClearLog={() => setCanFrames([])}
             onTriggerPreset={handleTriggerPreset}
           />
+          </Suspense>
         )}
 
         {/* TAB 4: Firmware OTA / Flasher Studio */}
         {activeTab === 'flasher' && (
+          <Suspense fallback={tabFallback}>
           <FlasherStudio
             onStartCanOta={handleStartCanOta}
             onStartSwdFlash={handleStartSwdFlash}
@@ -828,20 +840,22 @@ export default function App() {
             onSendFrame={serialCan.sendFrame}
             onRequest={serialCan.request}
           />
+          </Suspense>
         )}
 
         {/* TAB 5: Thermal IR Inspection */}
         {activeTab === 'thermal' && (
-          <ThermalCameraViewer />
+          <Suspense fallback={tabFallback}><ThermalCameraViewer /></Suspense>
         )}
 
         {/* TAB 6: BOM & Hardware Pinouts */}
         {activeTab === 'specs' && (
-          <SpecsAndBomViewer />
+          <Suspense fallback={tabFallback}><SpecsAndBomViewer /></Suspense>
         )}
 
         {/* TAB 7: Tester Studio */}
         {activeTab === 'tester' && (
+          <Suspense fallback={tabFallback}>
           <TesterStudio
             boardStatus={boardStatus}
             canFrames={canFrames}
@@ -853,6 +867,7 @@ export default function App() {
             subscribe={serialCan.subscribe}
             subscribeAll={serialCan.subscribeAll}
           />
+          </Suspense>
         )}
       </main>
       </div>

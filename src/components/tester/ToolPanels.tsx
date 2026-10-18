@@ -25,7 +25,7 @@ import {
   KEEPALIVE_INTERVAL_MS, LAYERFAN_KEEPALIVE_INTERVAL_MS
 } from '../../lib/canIds';
 import {
-  MAX_HEATER_SETPOINT_C, MAX_MOTION_STEPS, AOI_STROBE_MIN_MS, AOI_STROBE_MAX_MS, PASTE_PULSE_MIN_MS, PASTE_PULSE_MAX_MS, stepsToBytes
+  MAX_HEATER_SETPOINT_C, MAX_MOTION_STEPS, AOI_STROBE_MIN_MS, AOI_STROBE_MAX_MS, PASTE_PULSE_MIN_MS, PASTE_PULSE_MAX_MS, stepsToBytes, configWordToBytes, isConfigWord
 } from '../../lib/toolLimits';
 
 export interface ToolCtx {
@@ -390,9 +390,9 @@ export const FlyingProbePanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
       <Section title={t('testertool.flying_probe_advanced_title', 'Advanced (ADS1115, 0x240/0x241/0x242)')}>
         <div className="flex items-end gap-2 mb-2">
           <Field label={t('testertool.config_register_label', 'Config register (hex)')}>
-            <input value={configHex} onChange={(e) => setConfigHex(e.target.value)} className={inputCls} />
+            <input value={configHex} onChange={(e) => setConfigHex(e.target.value)} className={`${inputCls} ${isConfigWord(configHex) ? '' : 'border-red-500'}`} aria-invalid={!isConfigWord(configHex)} />
           </Field>
-          <button className={btnCls} onClick={() => ctx.sendFrame(CAN_ID_FLYING_PROBE_ADS_CONFIG, [(parseInt(configHex, 16) >> 8) & 0xFF, parseInt(configHex, 16) & 0xFF], 'ADS1115 config')}>{t('testertool.send', 'Send')}</button>
+          <button className={btnCls} disabled={!isConfigWord(configHex)} onClick={() => ctx.sendFrame(CAN_ID_FLYING_PROBE_ADS_CONFIG, configWordToBytes(configHex), 'ADS1115 config')}>{t('testertool.send', 'Send')}</button>
         </div>
         <div className="flex items-center gap-2">
           <button className={btnCls} onClick={() => ctx.sendFrame(CAN_ID_FLYING_PROBE_ADS_TRIGGER, [], 'Trigger conversion')}>{t('testertool.trigger_conversion', 'Trigger Conversion')}</button>

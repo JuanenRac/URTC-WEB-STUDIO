@@ -17,7 +17,7 @@
 
 
 <p align="center">
-  <img src="https://img.shields.io/badge/License-GPL%203.0-blue.svg" alt="GPL 3.0">
+  <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
@@ -43,7 +43,7 @@ CAN 协议。目标是把这两款工具的主要工作流集中到单个浏览�
 
 | | |
 |---|---|
-| 版本 | `0.2.9` |
+| 版本 | `0.3.0` |
 | 成熟度 | 可用 |
 | 技术栈 | Web Serial API / TypeScript |
 | 目标 | 使用者电脑上的网页浏览器 |
@@ -183,6 +183,9 @@ SWD/JTAG 选项卡说明了桌面版 `URTC Flasher` 工具在本地会运行的�
 - 沙盒选项卡（Control、OLED、Thermal IR）不会发送任何内容。它们的帧带有 SIM 标记，并且在已连接板子时不会产生模拟应答。协议分析器的预定义消息中，只有简单查询会发送给已连接的板子；其余仍为模拟。
 - Tester Studio 仅为板子自己上报（`0x111`）的工具显示工具面板，在板子应答之前不显示任何面板。
 - 激光器、钻头、UV 固化、焊接、加热器、运动、焊膏喷射、写入板子存储器以及有风险的手动输入帧，都会先要求确认。
+- 页眉中的 **全部停止**（连接时显示）会关闭此页面正在保持运行的所有执行器；关闭页面和断开连接时也会执行同样的操作。它是软件命令，不是紧急停止。
+- 烧录使用公开开发密钥签名的镜像之前会先要求确认，因为该密钥无法证明镜像由谁制作。
+- 当电路板报告严重错误时，如果电路板给出了原因，横幅还会显示热失控保护的原因。
 
 ### 尚未覆盖
 
@@ -235,6 +238,8 @@ npm install
 
 然后在 Chrome 或 Edge 中打开 `http://localhost:3000`。
 
+开发服务器只监听 `localhost`：Web Serial 只能在 https 或 localhost 下工作，向网络开放没有任何好处。
+
 ### 静态构建
 
 编译为 `dist/` 中一个静态的、经过优化的构建包：
@@ -250,6 +255,8 @@ npm run preview
 
 或使用你选择的任何静态文件托管服务提供 `dist/`。`npm run lint` 以仅检查
 模式运行 TypeScript 编译器。
+
+构建出的页面声明了内容安全策略（脚本只来自页面本身；连接只指向页面本身和 GitHub），并在首次打开每个标签页时才加载它。尚未在真实浏览器中试用过。
 
 ### 版本管理
 
@@ -388,6 +395,7 @@ npm run preview
 ├── package.json
 ├── CHANGELOG.md                     版本历史与过往工作摘要
 ├── LICENSE
+├── NOTICE                      版权声明和文档许可证
 ├── README.md                        本文件
 ├── docs/
 │   ├── ARCHITECTURE.md
@@ -405,7 +413,7 @@ URTC Web Studio 版权所有 (c) 2026 JuanenRac（Electro Hobby 3D）。分发�
 其实际所涵盖的内容：
 
 1. 源代码（`src/` 下的一切,加上构建它的 Vite/TypeScript 配置）依据
-   **GNU 通用公共许可证 v3.0（GPL-3.0）** 提供。完整文本见
+   **GNU 通用公共许可证 v3.0（GPL-3.0-or-later）** 提供。完整文本见
    https://www.gnu.org/licenses/gpl-3.0.html。
 
 2. 文档（本 README 及其自身的翻译版本——`README_spa.md`、`README_ita.md`、
@@ -422,7 +430,7 @@ CERN-OHL-S v2;本工具自身的许可证并不延伸至那个独立的项目,�
 [URTC Tester](https://github.com/JuanenRac/URTC-TESTER)。
 
 如果你基于本项目进行开发,请留意这种许可证划分：代码更改应保持
-GPL-3.0,文档衍生品应保持 CC BY-SA——每一项都需附带指向本项目及其
+GPL-3.0-or-later,文档衍生品应保持 CC BY-SA——每一项都需附带指向本项目及其
 作者的署名。
 
 ## 🔗 相关项目
@@ -510,6 +518,7 @@ GPL-3.0,文档衍生品应保持 CC BY-SA——每一项都需附带指向本项
 - **[HYDRA-UMC-WATCH](https://github.com/JuanenRac/HYDRA-UMC-WATCH)** — 带有触觉提醒模式与配对手机语音中继的 WearOS 伴侣应用(尚未在实体手表上运行)。
 - **[URTC-SMART-RACK](https://github.com/JuanenRac/URTC-SMART-RACK)** — 面向板卡安装机架的固件，具备真实的工具 ID 解码与 Smart Idle 预热逻辑。
 - **[URTC-VISION-TOOL](https://github.com/JuanenRac/URTC-VISION-TOOL)** — 面向热成像/RGB 检测工具头的固件及真实 Python 视觉伴侣程序。
+- **[URTC-UPDATER](https://github.com/JuanenRac/URTC-UPDATER)** — 桌面工具，用于检测、安装和更新 URTC 系列的仓库，每次只执行一项明确的操作。
 - **[HYDRA-UMC-UPDATER](https://github.com/JuanenRac/HYDRA-UMC-UPDATER)** — 发现、克隆并更新本生态系统中每个仓库的管理类桌面工具。
 - **[HYDRA-UMC-OS-REBUILDER](https://github.com/JuanenRac/HYDRA-UMC-OS-REBUILDER)** —— 构建即刻可烧录、预装生态系统最新版本的 CM5 镜像的 Windows/Linux 桌面工具,具备类似 Raspberry Pi Imager 风格的首次启动 Wi-Fi/用户/SSH 配置。
 - **[HYDRA-UMC-OPS-AGENT](https://github.com/JuanenRac/HYDRA-UMC-OPS-AGENT)** — 维护事件协调器：一个低权限的边缘角色采集经过脱敏的库存/健康快照，一个控制面角色以只读方式渲染它，并请求某个 AI 提供方给出诊断建议——从不应用补丁，也从不部署任何内容。

@@ -22,3 +22,16 @@ export function stepsToBytes(steps: number): number[] {
   if (!Number.isInteger(steps) || steps < 1 || steps > MAX_MOTION_STEPS) throw new RangeError('steps must be an integer from 1 to 4294967295');
   return [(steps >>> 24) & 0xFF, (steps >>> 16) & 0xFF, (steps >>> 8) & 0xFF, steps & 0xFF];
 }
+
+/** Two-byte big-endian configuration word from a hexadecimal field (0x prefix allowed); rejects an empty, longer or non-hexadecimal text instead of turning it into 0x0000. */
+export function configWordToBytes(text: string): number[] {
+  const digits = text.trim().replace(/^0x/i, '');
+  if (!/^[0-9a-fA-F]{1,4}$/.test(digits)) throw new RangeError('the configuration word must be 1 to 4 hexadecimal digits');
+  const value = parseInt(digits, 16);
+  return [(value >> 8) & 0xFF, value & 0xFF];
+}
+
+/** True when `configWordToBytes` accepts the text. */
+export function isConfigWord(text: string): boolean {
+  try { configWordToBytes(text); return true; } catch { return false; }
+}

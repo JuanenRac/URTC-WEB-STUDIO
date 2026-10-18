@@ -17,7 +17,7 @@
 
 
 <p align="center">
-  <img src="https://img.shields.io/badge/License-GPL%203.0-blue.svg" alt="GPL 3.0">
+  <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
@@ -43,7 +43,7 @@ real CAN frames described in `docs/CANBUS.TXT` of the
 
 | | |
 |---|---|
-| Version | `0.2.9` |
+| Version | `0.3.0` |
 | Maturity | Functional |
 | Stack | Web Serial API / TypeScript |
 | Target | A web browser on the user's PC |
@@ -207,6 +207,9 @@ Ported from `URTC-TESTER`'s own `tester_tool_panels.py` /
 - The sandbox tabs (Control, OLED, Thermal IR) transmit nothing. Their frames are marked SIM, and while a board is connected they produce no simulated answer. Of the protocol analyzer's predefined messages only plain queries are sent to a connected board; the rest stay simulated.
 - Tester Studio shows a tool panel only for the tool the board itself reported (`0x111`), and none before the board has answered.
 - Laser, drill, UV curing, welding, heaters, motion, paste jetting, writes to the board memory and risky hand-typed frames ask for confirmation first.
+- **STOP ALL** in the header (shown while connected) switches off every actuator that this page keeps alive; closing the page and disconnecting do the same. It is a software command, not an emergency stop.
+- Flashing an image signed with the public development key asks for confirmation first, because that key proves nothing about who made the image.
+- When the board declares a critical error, the banner also gives the reason of the thermal runaway guard if the board reports one.
 
 ### Not covered yet
 
@@ -263,6 +266,8 @@ Runs the app with Vite's dev server and live-reloading:
 
 Then open `http://localhost:3000` in Chrome or Edge.
 
+The development server listens on `localhost` only: Web Serial works on https or on localhost, so opening it to the network would gain nothing.
+
 ### Static Build
 
 Compiles into a static, optimized bundle in `dist/`:
@@ -279,6 +284,8 @@ npm run preview
 
 or serve `dist/` with any static file host of your choice. `npm run lint`
 runs the TypeScript compiler in check-only mode.
+
+The built page declares a content security policy (scripts only from the page itself; connections only to itself and to GitHub) and loads each tab when it is first opened. It has not been tried in a real browser yet.
 
 ### Versioning
 
@@ -420,6 +427,7 @@ project.
 ├── package.json
 ├── CHANGELOG.md                     Version history and a summary of past work
 ├── LICENSE
+├── NOTICE                      Copyright notice and the license of the documentation
 ├── README.md                        This file
 ├── docs/
 │   ├── ARCHITECTURE.md
@@ -439,7 +447,7 @@ covers:
 
 1. The source code (everything under `src/`, plus the Vite/TypeScript
    config that builds it) is available under the **GNU General Public
-   License v3.0 (GPL-3.0)**. Full text at
+   License v3.0 (GPL-3.0-or-later)**. Full text at
    https://www.gnu.org/licenses/gpl-3.0.html.
 
 2. The documentation (this README and its own translations -
@@ -460,7 +468,7 @@ ground also exist: [URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER)
 and [URTC Tester](https://github.com/JuanenRac/URTC-TESTER).
 
 If you build on this project, keep the licensing split in mind: code
-changes should stay GPL-3.0, documentation derivatives should stay CC
+changes should stay GPL-3.0-or-later, documentation derivatives should stay CC
 BY-SA - each with attribution back to this project and its author.
 
 ## 🔗 Related Projects
@@ -548,6 +556,7 @@ This project is part of the HYDRA-UMC robotics ecosystem by the same author (Jua
 - **[HYDRA-UMC-WATCH](https://github.com/JuanenRac/HYDRA-UMC-WATCH)** — WearOS companion app with haptic alert patterns and a paired-phone voice relay (not yet run on a physical watch).
 - **[URTC-SMART-RACK](https://github.com/JuanenRac/URTC-SMART-RACK)** — firmware for a board-mounting rack with real tool-ID decoding and Smart Idle pre-heating logic.
 - **[URTC-VISION-TOOL](https://github.com/JuanenRac/URTC-VISION-TOOL)** — firmware plus a real Python vision companion for a thermal/RGB inspection tool head.
+- **[URTC-UPDATER](https://github.com/JuanenRac/URTC-UPDATER)** — desktop tool that detects, installs and updates the repositories of the URTC family, one explicit action at a time.
 - **[HYDRA-UMC-UPDATER](https://github.com/JuanenRac/HYDRA-UMC-UPDATER)** — administrative desktop tool that discovers, clones and updates every repo in this ecosystem.
 - **[HYDRA-UMC-OS-REBUILDER](https://github.com/JuanenRac/HYDRA-UMC-OS-REBUILDER)** — Windows/Linux desktop tool that builds a ready-to-flash CM5 image pre-loaded with the ecosystem's most current versions, with Raspberry-Pi-Imager-style first-boot Wi-Fi/user/SSH configuration.
 - **[HYDRA-UMC-OPS-AGENT](https://github.com/JuanenRac/HYDRA-UMC-OPS-AGENT)** — maintenance-incident coordinator: a low-privilege edge role collects a sanitized inventory/health snapshot, a control-plane role renders it read-only and asks an AI provider to suggest a diagnosis - never applies a patch or deploys anything.

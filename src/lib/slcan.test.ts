@@ -1,7 +1,7 @@
 // =============================================================================
 // URTC Web Studio - src/lib/slcan.test.ts
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
-// GPL-3.0 - see LICENSE
+// GPL-3.0-or-later - see LICENSE
 //
 // Real gap this closes: this project's own README "Honesty check" states
 // there is no automated test suite - useSerialCanBus.ts's SLCAN parsing

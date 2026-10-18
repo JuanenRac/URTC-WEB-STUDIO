@@ -3,7 +3,8 @@
     "dismiss": "Verwerfen",
     "browser_unsupported_banner": "Dieser Browser unterstuetzt die Web Serial API nicht - eine Verbindung zu echter Hardware ist hier nicht moeglich. Bitte wechseln Sie zu Chrome oder Edge.",
     "simulator_notice": "Simulator: Dieser Tab bildet eine Platine nach und sendet nichts auf den Bus. Verbinde einen USB-CAN-Adapter, um in Tester Studio und Flasher Studio mit der echten Platine zu arbeiten.",
-    "simulator_notice_connected": "Simulator: Dieser Tab bildet eine Platine nach und sendet nichts auf den Bus. Was er zeigt, ist nicht das, was die angeschlossene Platine meldet; nutze Tester Studio und Flasher Studio für die echte Platine."
+    "simulator_notice_connected": "Simulator: Dieser Tab bildet eine Platine nach und sendet nichts auf den Bus. Was er zeigt, ist nicht das, was die angeschlossene Platine meldet; nutze Tester Studio und Flasher Studio für die echte Platine.",
+    "loading": "Wird geladen..."
   },
   "config": {
     "language_en": "English",
@@ -30,7 +31,9 @@
     "connected_fallback": "Verbunden",
     "connect_title": "USB-CAN-Adapter über Web Serial verbinden",
     "connect_button": "Hardware verbinden",
-    "fault_badge": "FEHLER"
+    "fault_badge": "FEHLER",
+    "stop_all": "ALLES STOPPEN",
+    "stop_all_title": "Schaltet jeden Aktor ab, der von dieser Seite aus am Leben gehalten wird. Ein Software-Befehl, kein Not-Halt."
   },
   "sidebar": {
     "nav_control": "Werkzeugmatrix & Steuerung",
@@ -322,7 +325,15 @@
     "log_dev_key_warning": "HINWEIS: Mit dem ÖFFENTLICHEN Entwicklungsschlüssel signiert - nur Platinen, deren Bootloader mit demselben Schlüssel gebaut wurde, akzeptieren es.",
     "log_signature_runtime_key": "Lokal mit dem für dieses Flashen eingegebenen Schlüssel signiert.",
     "hardware_id_is_slave": "Das ist der Erweiterungs-Slave, nicht die Hauptplatine.",
-    "config_serial_invalid": "Die Seriennummer muss eine ganze Zahl von 0 bis 255 sein."
+    "config_serial_invalid": "Die Seriennummer muss eine ganze Zahl von 0 bis 255 sein.",
+    "verify_fail_1": "unvollständige Übertragung (die angegebene Größe oder die 4 HMAC-Blöcke kamen nicht vollständig an)",
+    "verify_fail_2": "CRC32 stimmt nicht überein (Übertragungsfehler)",
+    "verify_fail_3": "HMAC-Signatur stimmt nicht überein (nicht mit dem Schlüssel dieser Platine signiert)",
+    "verify_fail_4": "HardwareID stimmt nicht überein (Image für andere Hardware gebaut)",
+    "verify_fail_5": "Rollback abgelehnt (älter als das bereits installierte Image)",
+    "verify_fail_unknown_code": "unbekannter Grund 0x{{code}}",
+    "verify_fail_unknown": "unbekannter Grund",
+    "log_dev_key_declined": "Abgebrochen: Das Image ist mit dem öffentlichen Entwicklungsschlüssel signiert und die Bestätigung wurde abgelehnt."
   },
   "thermal": {
     "title": "MLX90640-Wärmebildkamera 32x24",
@@ -415,7 +426,13 @@
     "tool_waiting_for_board": "Warte darauf, dass die Platine meldet, welches Werkzeug sie hat. Nutze die Erkennen-Schaltfläche; bis die Platine geantwortet hat, wird kein Werkzeugpanel angezeigt.",
     "tool_invalid": "Die Platine meldet Werkzeugnummer {{id}}, die ungültig ist. Prüfe die ID-Jumper und die Konfiguration des freien Werkzeugs.",
     "detect_no_answer": "Keine Platine hat geantwortet. Prüfe Verkabelung, Stromversorgung und ob der Adapter verbunden ist.",
-    "selftest_needs_tool": "Der Selbsttest braucht zuerst die Werkzeugmeldung der Platine. Nutze die Erkennen-Schaltfläche."
+    "selftest_needs_tool": "Der Selbsttest braucht zuerst die Werkzeugmeldung der Platine. Nutze die Erkennen-Schaltfläche.",
+    "thermal_runaway": "THERMISCHES DURCHGEHEN",
+    "thermal_fault_1": "MAXTEMP - gemessene Temperatur über der harten Obergrenze",
+    "thermal_fault_2": "KEIN ANSTIEG - Heizung an, aber die Temperatur steigt nicht (Sensor/Spitze locker?)",
+    "thermal_fault_3": "ABFALL AM SOLLWERT - Temperatur fiel bei eingeschalteter Heizung (Sensor herausgefallen?)",
+    "thermal_fault_unknown": "Code {{code}}",
+    "critical_error_hint": "Der Fehler bleibt bestehen, bis die Platine zurückgesetzt wird. Es gibt keinen Reset-Befehl über CAN: Schalten Sie die Platine aus und wieder ein."
   },
   "testerglobal": {
     "global_title": "Globale Steuerungen (0x100)",
@@ -601,6 +618,7 @@
     "raw_memory": "Der Identifier 0x{{id}} schreibt in den nichtflüchtigen Speicher der Platine und bleibt nach einem Neustart erhalten.",
     "raw_bootloader": "Der Identifier 0x{{id}} ist ein Bootloader-Befehl; er kann die Platine im Update-Modus lassen, bis sie aktualisiert oder aus- und wieder eingeschaltet wird.",
     "raw_actuator": "Der Identifier 0x{{id}} steuert einen Aktor an; er kann bewegen, heizen oder auslösen.",
-    "raw_blocked": "Der Identifier 0x{{id}} wird nur von der Platine selbst gesendet; ihn von hier zu senden würde mit der Platine kollidieren und den anderen Geräten am Bus falsche Daten liefern."
+    "raw_blocked": "Der Identifier 0x{{id}} wird nur von der Platine selbst gesendet; ihn von hier zu senden würde mit der Platine kollidieren und den anderen Geräten am Bus falsche Daten liefern.",
+    "msg_dev_key": "Dieses Image ist mit dem ÖFFENTLICHEN Entwicklungsschlüssel signiert. Dieser Schlüssel sagt nichts darüber aus, wer das Image erstellt hat: Jeder kann damit signieren, und nur Platinen, deren Bootloader mit demselben Schlüssel gebaut wurde, akzeptieren es. Fortfahren?"
   }
 }

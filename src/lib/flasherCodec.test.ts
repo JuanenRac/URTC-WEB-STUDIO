@@ -1,7 +1,7 @@
 // =============================================================================
 // URTC Web Studio - src/lib/flasherCodec.test.ts
 // Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
-// GPL-3.0 - see LICENSE
+// GPL-3.0-or-later - see LICENSE
 //
 // The byte helpers every bootloader frame is built from (big-endian packing,
 // CRC32, SHA-256 and HMAC-SHA256) against published reference values, and the

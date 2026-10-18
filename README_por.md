@@ -17,7 +17,7 @@
 
 
 <p align="center">
-  <img src="https://img.shields.io/badge/License-GPL%203.0-blue.svg" alt="GPL 3.0">
+  <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
@@ -43,7 +43,7 @@ recebem as tramas CAN reais descritas em `docs/CANBUS.TXT` do
 
 | | |
 |---|---|
-| Versão | `0.2.9` |
+| Versão | `0.3.0` |
 | Maturidade | Funcional |
 | Tecnologia | Web Serial API / TypeScript |
 | Destino | Um navegador web no PC do utilizador |
@@ -210,6 +210,9 @@ Portado a partir dos próprios `tester_tool_panels.py` /
 - Os separadores de sandbox (Control, OLED, Thermal IR) não transmitem nada. As suas tramas levam a marca SIM e, enquanto há uma placa ligada, não produzem nenhuma resposta simulada. Das mensagens predefinidas do analisador de protocolo só são enviadas a uma placa ligada as consultas simples; as restantes continuam simuladas.
 - O Tester Studio mostra um painel de ferramenta apenas para a ferramenta que a própria placa comunicou (`0x111`), e nenhum antes de a placa responder.
 - Laser, berbequim, cura UV, soldadura, aquecedores, movimento, projeção de pasta, escritas na memória da placa e tramas escritas à mão que envolvam risco pedem confirmação antes.
+- **PARAR TUDO** no cabeçalho (visível com a ligação ativa) desliga todos os atuadores que esta página mantém ativos; fechar a página e desligar fazem o mesmo. É um comando de software, não uma paragem de emergência.
+- Gravar uma imagem assinada com a chave de desenvolvimento pública pede antes uma confirmação, porque essa chave não prova quem fez a imagem.
+- Quando a placa declara um erro crítico, o aviso indica também o motivo da proteção contra fuga térmica, se a placa o comunicar.
 
 ### Ainda não coberto
 
@@ -268,6 +271,8 @@ Executa a aplicação com o servidor de desenvolvimento do Vite e recarregamento
 
 Depois abra `http://localhost:3000` no Chrome ou no Edge.
 
+O servidor de desenvolvimento escuta apenas em `localhost`: o Web Serial funciona com https ou em localhost, por isso abri-lo à rede não traria nada.
+
 ### Build estático
 
 Compila para um bundle estático e otimizado em `dist/`:
@@ -284,6 +289,8 @@ npm run preview
 
 ou sirva o `dist/` com qualquer alojamento de ficheiros estáticos à sua escolha. O `npm run lint`
 executa o compilador de TypeScript em modo de apenas verificação.
+
+A página compilada declara uma política de segurança de conteúdo (scripts só da própria página; ligações só a si mesma e ao GitHub) e carrega cada separador quando é aberto pela primeira vez. Ainda não foi experimentada num navegador real.
 
 ### Versionamento
 
@@ -425,6 +432,7 @@ projeto.
 ├── package.json
 ├── CHANGELOG.md                     Histórico de versões e um resumo do trabalho passado
 ├── LICENSE
+├── NOTICE                      Aviso de direitos de autor e licença da documentação
 ├── README.md                        Este ficheiro
 ├── docs/
 │   ├── ARCHITECTURE.md
@@ -443,7 +451,7 @@ sob licenças diferentes - cada uma adequada ao que realmente cobre:
 
 1. O código-fonte (tudo o que está em `src/`, mais a configuração de
    Vite/TypeScript que o compila) está disponível sob a **GNU General Public
-   License v3.0 (GPL-3.0)**. Texto completo em
+   License v3.0 (GPL-3.0-or-later)**. Texto completo em
    https://www.gnu.org/licenses/gpl-3.0.html.
 
 2. A documentação (este README e as suas próprias traduções -
@@ -464,7 +472,7 @@ que cobrem o mesmo terreno: [URTC Flasher](https://github.com/JuanenRac/URTC-FLA
 e [URTC Tester](https://github.com/JuanenRac/URTC-TESTER).
 
 Se construir sobre este projeto, tenha em conta a divisão de licenças: as alterações
-de código devem manter-se GPL-3.0, os derivados da documentação devem manter-se CC
+de código devem manter-se GPL-3.0-or-later, os derivados da documentação devem manter-se CC
 BY-SA - cada um com atribuição a este projeto e ao seu autor.
 
 ## 🔗 Projetos Relacionados
@@ -552,6 +560,7 @@ Este projeto faz parte do ecossistema de robótica HYDRA-UMC do mesmo autor (Jua
 - **[HYDRA-UMC-WATCH](https://github.com/JuanenRac/HYDRA-UMC-WATCH)** — aplicação companheira WearOS com padrões de alerta tátil e um relé de voz para o telemóvel emparelhado (ainda não executada num relógio físico).
 - **[URTC-SMART-RACK](https://github.com/JuanenRac/URTC-SMART-RACK)** — firmware para um rack de montagem de placas com descodificação real do ID de ferramenta e lógica de pré-aquecimento Smart Idle.
 - **[URTC-VISION-TOOL](https://github.com/JuanenRac/URTC-VISION-TOOL)** — firmware mais um companheiro de visão real em Python para um cabeçote de ferramenta de inspeção térmica/RGB.
+- **[URTC-UPDATER](https://github.com/JuanenRac/URTC-UPDATER)** — ferramenta de ambiente de trabalho que deteta, instala e atualiza os repositórios da família URTC, uma ação explícita de cada vez.
 - **[HYDRA-UMC-UPDATER](https://github.com/JuanenRac/HYDRA-UMC-UPDATER)** — ferramenta administrativa para ambiente de trabalho que descobre, clona e atualiza todos os repositórios deste ecossistema.
 - **[HYDRA-UMC-OS-REBUILDER](https://github.com/JuanenRac/HYDRA-UMC-OS-REBUILDER)** — ferramenta de ambiente de trabalho Windows/Linux que constrói uma imagem do CM5 pronta a gravar, pré-carregada com as versões mais atuais do ecossistema, com configuração de Wi-Fi/utilizador/SSH no primeiro arranque ao estilo do Raspberry Pi Imager.
 - **[HYDRA-UMC-OPS-AGENT](https://github.com/JuanenRac/HYDRA-UMC-OPS-AGENT)** — coordenador de incidentes de manutenção: um papel edge de baixo privilégio recolhe um snapshot de inventário/saúde higienizado, um papel control-plane apresenta-o só de leitura e pede a um fornecedor de IA que sugira um diagnóstico - nunca aplica um patch nem implanta nada.

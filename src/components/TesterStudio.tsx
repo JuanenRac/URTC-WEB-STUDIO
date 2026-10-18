@@ -130,8 +130,15 @@ export const TesterStudio: React.FC<TesterStudioProps> = ({
           </div>
           <div className="flex items-center gap-3">
             {boardStatus.systemError && (
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-950/80 text-red-400 border border-red-800/80 font-semibold text-xs animate-pulse">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-950/80 text-red-400 border border-red-800/80 font-semibold text-xs animate-pulse" title={t('tester.critical_error_hint', 'The error stays until the board is reset. There is no reset command over CAN: switch the board off and on.')}>
                 <AlertTriangle className="w-4 h-4" /> {t('tester.critical_error', 'CRITICAL ERROR DECLARED')}
+                {boardStatus.thermalFault !== null && (
+                  <span className="font-normal">
+                    - {t('tester.thermal_runaway', 'THERMAL RUNAWAY')}: {[1, 2, 3].includes(boardStatus.thermalFault)
+                      ? t(`tester.thermal_fault_${boardStatus.thermalFault}`)
+                      : t('tester.thermal_fault_unknown', 'code {{code}}', { code: boardStatus.thermalFault })}
+                  </span>
+                )}
               </div>
             )}
             <button onClick={handleDetectHardware} disabled={!isConnected} className="px-5 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200 font-bold text-xs rounded-lg transition border border-slate-700 flex items-center gap-2">
