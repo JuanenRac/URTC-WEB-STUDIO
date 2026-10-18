@@ -37,6 +37,16 @@ real CAN frames described in `docs/CANBUS.TXT` of the
 
 ---
 
+## 📋 At a glance
+
+| | |
+|---|---|
+| Version | `0.2.8` |
+| Maturity | Established |
+| Stack | Web Serial API / TypeScript |
+| Target | A web browser on the user's PC |
+| On real hardware | Simulated only: tested against emulators, fakes or simulators; no run on real hardware is recorded for this version |
+
 ## 🧭 What's real vs. what's a sandbox
 
 This app has two kinds of tabs:

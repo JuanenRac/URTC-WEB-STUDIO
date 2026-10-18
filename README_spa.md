@@ -36,6 +36,16 @@ reciben las tramas CAN reales descritas en `docs/CANBUS.TXT` del
 
 ---
 
+## 📋 De un vistazo
+
+| | |
+|---|---|
+| Versión | `0.2.8` |
+| Madurez | Establecido |
+| Tecnología | Web Serial API / TypeScript |
+| Destino | Un navegador web en el PC del usuario |
+| En hardware real | Solo simulado: probado con emuladores, dobles de prueba o simuladores; no consta ninguna ejecución en hardware real para esta versión |
+
 ## 🧭 Qué es real y qué es una sandbox
 
 Esta app tiene dos tipos de pestañas:

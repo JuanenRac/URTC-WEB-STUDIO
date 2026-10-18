@@ -37,6 +37,16 @@ recebem as tramas CAN reais descritas em `docs/CANBUS.TXT` do
 
 ---
 
+## 📋 Num relance
+
+| | |
+|---|---|
+| Versão | `0.2.8` |
+| Maturidade | Estabelecido |
+| Tecnologia | Web Serial API / TypeScript |
+| Destino | Um navegador web no PC do utilizador |
+| Em hardware real | Só simulado: testado com emuladores, dublês de teste ou simuladores; não há registo de execução em hardware real para esta versão |
+
 ## 🧭 O que é real e o que é uma sandbox
 
 Esta aplicação tem dois tipos de separadores:

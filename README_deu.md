@@ -36,6 +36,16 @@ und empfangen die echten CAN-Frames, die in `docs/CANBUS.TXT` des
 
 ---
 
+## 📋 Auf einen Blick
+
+| | |
+|---|---|
+| Version | `0.2.8` |
+| Reifegrad | Etabliert |
+| Technik | Web Serial API / TypeScript |
+| Ziel | Ein Webbrowser auf dem PC des Benutzers |
+| Auf echter Hardware | Nur simuliert: gegen Emulatoren, Attrappen oder Simulatoren getestet; für diese Version ist kein Lauf auf echter Hardware vermerkt |
+
 ## 🧭 Was echt ist vs. was eine Sandbox ist
 
 Diese App hat zwei Arten von Tabs:

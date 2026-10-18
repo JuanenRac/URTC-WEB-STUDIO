@@ -36,6 +36,16 @@ reçoivent les vraies trames CAN décrites dans `docs/CANBUS.TXT` du
 
 ---
 
+## 📋 En un coup d'œil
+
+| | |
+|---|---|
+| Version | `0.2.8` |
+| Maturité | Établi |
+| Technologie | Web Serial API / TypeScript |
+| Cible | Un navigateur web sur le PC de l'utilisateur |
+| Sur matériel réel | Simulé seulement : testé avec des émulateurs, des doubles de test ou des simulateurs ; aucune exécution sur du matériel réel n'est consignée pour cette version |
+
 ## 🧭 Ce qui est réel vs. ce qui est un bac à sable
 
 Cette app a deux types d'onglets :

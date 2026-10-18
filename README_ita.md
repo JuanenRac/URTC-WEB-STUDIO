@@ -36,6 +36,16 @@ ricevono le trame CAN reali descritte in `docs/CANBUS.TXT` del
 
 ---
 
+## 📋 In breve
+
+| | |
+|---|---|
+| Versione | `0.2.8` |
+| Maturità | Consolidato |
+| Tecnologia | Web Serial API / TypeScript |
+| Destinazione | Un browser web sul PC dell'utente |
+| Su hardware reale | Solo simulato: provato con emulatori, test double o simulatori; per questa versione non risulta alcuna esecuzione su hardware reale |
+
 ## 🧭 Cosa è reale e cosa è una sandbox
 
 Questa app ha due tipi di schede:
