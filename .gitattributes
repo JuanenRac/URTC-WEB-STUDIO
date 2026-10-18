@@ -11,3 +11,9 @@
 *.sh text eol=lf
 *.bat text eol=crlf
 *.cmd text eol=crlf
+
+# Signed release companions keep their exact bytes (a signature covers them).
+public/firmware/*.sig -text
+public/firmware/*.sha256 -text
+public/firmware/*.manifest.json -text
+public/firmware/firmware_manifest.json -text
