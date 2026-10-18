@@ -243,6 +243,8 @@ build de banco). En ambos casos comprueba cada resumen y los campos de firma
 antes de tocar `public/firmware/`, y regenera `src/lib/bundledFirmware.ts`; un
 test verifica el paquete contra sus manifiestos.
 
+Cada archivo de una release oficial tiene una firma de release (`<archivo>.sig`, Ed25519): la sincronización la verifica cuando existe y rechaza una incorrecta; un conjunto sin firmas (una pre-release de banco o una compilación local) necesita `--allow-unsigned`.
+
 ## 🚀 Primeros pasos
 
 ### Requisitos previos

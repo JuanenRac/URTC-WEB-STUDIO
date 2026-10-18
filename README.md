@@ -239,6 +239,8 @@ bench build). Either way it checks every digest and the signature fields before
 touching `public/firmware/`, and regenerates `src/lib/bundledFirmware.ts`; a
 test verifies the bundle against its manifests.
 
+Each file of an official release has a release signature (`<file>.sig`, Ed25519): the sync verifies it when it is there and refuses a wrong one; a set without signatures (a bench pre-release or a local build) needs `--allow-unsigned`.
+
 ## 🚀 Getting Started
 
 ### Prerequisites

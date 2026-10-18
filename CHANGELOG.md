@@ -12,6 +12,12 @@ build`/`vite build` on its own is deliberately compilation-only) bumps the
 version automatically, so the number reflects build count, not the size or
 compatibility of a change.
 
+## [0.3.0] - Release signatures and shared protocol constants
+
+- scripts/sync-firmware.mjs checks the release signature (<file>.sig, Ed25519, public key pinned in the script) of every file it takes from a release or a local folder: a wrong signature is always refused, a missing one only with --allow-unsigned (a bench pre-release or a local build). Signatures that are there are copied with the files.
+- src/lib/canIds.ts takes its identifiers and magic payloads from the generated module (src/lib/generated/urtcCanIds.ts, a copy of URTC-COMMON kept honest by a lock file); new tests fail when a copy is edited by hand or falls behind, and the shared conformance vectors are refreshed.
+- The build and run scripts read URTC_CI as their non-interactive switch.
+
 ## [0.2.9] - Claims aligned with what has been tested
 
 - Maturity is functional: nothing here has been verified on real hardware yet.

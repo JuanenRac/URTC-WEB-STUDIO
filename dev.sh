@@ -24,4 +24,4 @@ echo " Starting URTC Web Studio (Dev Mode) "
 echo "========================================"
 npm run dev
 echo ""
-if [ -t 0 ] && [ "${HYDRA_UMC_CI:-}" != "1" ] && [ -z "${CI:-}" ]; then read -r -p "Press Enter to close this window..." _ || true; fi
+if [ -t 0 ] && [ "${URTC_CI:-}" != "1" ] && [ -z "${CI:-}" ]; then read -r -p "Press Enter to close this window..." _ || true; fi

@@ -257,6 +257,8 @@ Signaturfelder, bevor es `public/firmware/` anfasst, und erzeugt
 `src/lib/bundledFirmware.ts` neu; ein Test prüft das Paket gegen seine
 Manifeste.
 
+Jede Datei eines offiziellen Releases hat eine Release-Signatur (`<Datei>.sig`, Ed25519): Die Synchronisierung prüft sie, wenn sie vorhanden ist, und lehnt eine falsche ab; ein Satz ohne Signaturen (eine Bench-Vorabversion oder ein lokaler Build) braucht `--allow-unsigned`.
+
 ## 🚀 Erste Schritte
 
 ### Voraussetzungen

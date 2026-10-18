@@ -32,7 +32,7 @@ function fakeRelease(folder: string, tag = "v9.9.9", dropAsset?: string) {
 
 describe("sync-firmware from a local folder", () => {
   it("accepts the bundled folder and copies exactly its files", () => {
-    const checked = sync.checkFolder(bundled);
+    const checked = sync.checkFolder(bundled, { allowUnsigned: true });
     expect(checked.files).toEqual(BUNDLED_FIRMWARE);
     const dst = temp();
     checked.copy(join(dst, "out"));
@@ -69,7 +69,7 @@ describe("sync-firmware from a local folder", () => {
     cpSync(bundled, src, { recursive: true });
     for (const n of readdirSync(src)) if (/\.(hex|elf)$/.test(n)) rmSync(join(src, n));
     const dst = temp();
-    sync.checkFolder(src).copy(join(dst, "out"));
+    sync.checkFolder(src, { allowUnsigned: true }).copy(join(dst, "out"));
     expect(readdirSync(join(dst, "out")).some(n => /\.(hex|elf)$/.test(n))).toBe(false);
     expect(existsSync(join(dst, "out", BUNDLED_FIRMWARE.mainApplication))).toBe(true);
   });
@@ -82,7 +82,7 @@ describe("sync-firmware from the release assets", () => {
     const tag = await sync.downloadRelease({ fetchFn: fn, outDir: out, env: {} });
     expect(tag).toBe("v9.9.9");
     expect(urls[0]).toBe("https://api.github.com/repos/JuanenRac/URTC/releases/latest");
-    expect(sync.checkFolder(out).files).toEqual(BUNDLED_FIRMWARE);
+    expect(sync.checkFolder(out, { allowUnsigned: true }).files).toEqual(BUNDLED_FIRMWARE);
     expect(readFileSync(join(out, BUNDLED_FIRMWARE.mainApplication))).toEqual(readFileSync(join(bundled, BUNDLED_FIRMWARE.mainApplication)));
   });
 
@@ -111,9 +111,9 @@ describe("sync-firmware from the release assets", () => {
 
 describe("sync-firmware arguments", () => {
   it("takes a folder, a tag, or nothing (the newest release)", () => {
-    expect(sync.parseArgs([])).toEqual({ dir: undefined, tag: undefined });
-    expect(sync.parseArgs(["../URTC/firmware"])).toEqual({ dir: "../URTC/firmware", tag: undefined });
-    expect(sync.parseArgs(["--tag", "v0.3.5"])).toEqual({ dir: undefined, tag: "v0.3.5" });
+    expect(sync.parseArgs([])).toEqual({ dir: undefined, tag: undefined, allowUnsigned: false });
+    expect(sync.parseArgs(["../URTC/firmware"])).toEqual({ dir: "../URTC/firmware", tag: undefined, allowUnsigned: false });
+    expect(sync.parseArgs(["--tag", "v0.3.5"])).toEqual({ dir: undefined, tag: "v0.3.5", allowUnsigned: false });
     expect(sync.parseArgs(["--tag=v0.3.5"]).tag).toBe("v0.3.5");
   });
   it("refuses a folder together with a tag, an empty tag and unknown options", () => {

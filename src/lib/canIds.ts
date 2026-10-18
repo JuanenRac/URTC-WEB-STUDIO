@@ -7,29 +7,31 @@
 // URTC firmware repo for the authoritative wire-level reference.
 // =============================================================================
 
+import * as generated from './generated/urtcCanIds';
+
 // --- Global / cross-tool commands ---
-export const CAN_ID_STATUS_LED_CMD = 0x100; // status LED + ring LED + OLED mode, one 8-byte frame
-export const CAN_ID_QUERY_ACTIVE_TOOL = 0x110;
-export const CAN_ID_ACTIVE_TOOL_RESP = 0x111;
+export const CAN_ID_STATUS_LED_CMD = generated.CAN_ID_GLOBAL_STATUS; // status LED + ring LED + OLED mode, one 8-byte frame
+export const CAN_ID_QUERY_ACTIVE_TOOL = generated.CAN_ID_QUERY_ACTIVE_TOOL;
+export const CAN_ID_ACTIVE_TOOL_RESP = generated.CAN_ID_ACTIVE_TOOL_RESP;
 
-export const CAN_ID_FRAM_QUERY = 0x190;
-export const CAN_ID_FRAM_STATE_RESP = 0x191;
-export const CAN_ID_ERASE_FRAM = 0x192;
-export const ERASE_FRAM_MAGIC = [0xE3, 0xA5, 0xE0, 0xff];
+export const CAN_ID_FRAM_QUERY = generated.CAN_ID_FRAM_QUERY;
+export const CAN_ID_FRAM_STATE_RESP = generated.CAN_ID_FRAM_STATE_RESP;
+export const CAN_ID_ERASE_FRAM = generated.CAN_ID_ERASE_FRAM;
+export const ERASE_FRAM_MAGIC = [...generated.MAGIC_ERASE_FRAM];
 
-export const CAN_ID_EXPANSION_SPI_REQ = 0x180;
-export const CAN_ID_EXPANSION_SPI_RESP = 0x181;
-export const CAN_ID_EXPANSION_DIAG0_REQ = 0x182;
-export const CAN_ID_EXPANSION_DIAG0_RESP = 0x183;
+export const CAN_ID_EXPANSION_SPI_REQ = generated.CAN_ID_EXPANSION_SPI_REQ;
+export const CAN_ID_EXPANSION_SPI_RESP = generated.CAN_ID_EXPANSION_SPI_RESP;
+export const CAN_ID_EXPANSION_DIAG0_REQ = generated.CAN_ID_EXPANSION_DIAG0_REQ;
+export const CAN_ID_EXPANSION_DIAG0_RESP = generated.CAN_ID_EXPANSION_DIAG0_RESP;
 
-export const CAN_ID_SET_EXPANSION_TYPE = 0x1a0;
-export const CAN_ID_EXPANSION_TYPE_RESP = 0x1a1; // empty payload = query, same ID answers
-export const CAN_ID_SET_FREE_TOOL = 0x1a2;
-export const CAN_ID_FREE_TOOL_CONFIG_RESP = 0x1a3; // empty payload = query, same ID answers
-export const CAN_ID_SET_DEVICE_SERIAL = 0x1a4;
-export const CAN_ID_PERIPHERAL_INFO_RESP = 0x1a5; // empty payload = query, same ID answers
-export const CAN_ID_SET_MLX_VARIANT = 0x1a6;
-export const CAN_ID_MLX_VARIANT_RESP = 0x1a7; // empty payload = query, same ID answers
+export const CAN_ID_SET_EXPANSION_TYPE = generated.CAN_ID_SET_EXPANSION_TYPE;
+export const CAN_ID_EXPANSION_TYPE_RESP = generated.CAN_ID_EXPANSION_TYPE_RESP; // empty payload = query, same ID answers
+export const CAN_ID_SET_FREE_TOOL = generated.CAN_ID_SET_FREE_TOOL;
+export const CAN_ID_FREE_TOOL_CONFIG_RESP = generated.CAN_ID_FREE_TOOL_CONFIG_RESP; // empty payload = query, same ID answers
+export const CAN_ID_SET_DEVICE_SERIAL = generated.CAN_ID_SET_DEVICE_SERIAL;
+export const CAN_ID_PERIPHERAL_INFO_RESP = generated.CAN_ID_PERIPHERAL_INFO_RESP; // empty payload = query, same ID answers
+export const CAN_ID_SET_MLX_VARIANT = generated.CAN_ID_SET_MLX_VARIANT;
+export const CAN_ID_MLX_VARIANT_RESP = generated.CAN_ID_MLX_VARIANT_RESP; // empty payload = query, same ID answers
 
 export const EXPANSION_BOARD_TYPES = [
   'None',
@@ -49,75 +51,75 @@ export const MLX_SENSOR_VARIANTS = [
 ];
 
 // --- Impact / scan probe event ---
-export const CAN_ID_IMPACT_EVENT = 0x095;
+export const CAN_ID_IMPACT_EVENT = generated.CAN_ID_IMPACT_EVENT;
 
 // --- Shared plain-stepper motion (tools 1,2,3,6,7,12,16 + soldering iron's own feeder) ---
-export const CAN_ID_MOTION_CMD = 0x120;
+export const CAN_ID_MOTION_CMD = generated.CAN_ID_MOTION_CMD;
 
 // --- Tool 0: Soldering Iron ---
-export const CAN_ID_SOLDER_SETPOINT = 0x130;
-export const CAN_ID_SOLDER_FEEDER_RESET = 0x131;
-export const CAN_ID_SOLDER_FEEDER_QUERY = 0x132; // empty payload = query, same ID answers
-export const CAN_ID_SOLDER_TELEMETRY = 0x135; // shared with Hot Air Rework
-export const SOLDER_FEEDER_RESET_MAGIC = [0x52, 0x53, 0x50, 0x30]; // "RSP0"
+export const CAN_ID_SOLDER_SETPOINT = generated.CAN_ID_SOLDER_SETPOINT;
+export const CAN_ID_SOLDER_FEEDER_RESET = generated.CAN_ID_SOLDER_FEEDER_RESET;
+export const CAN_ID_SOLDER_FEEDER_QUERY = generated.CAN_ID_SOLDER_FEEDER_POS; // empty payload = query, same ID answers
+export const CAN_ID_SOLDER_TELEMETRY = generated.CAN_ID_SOLDER_TELEMETRY; // shared with Hot Air Rework
+export const SOLDER_FEEDER_RESET_MAGIC = [...generated.MAGIC_SOLDER_FEEDER_RESET]; // "RSP0"
 
 // --- Tool 4: Vacuum Pickup (telemetry only, no command) ---
-export const CAN_ID_VACUUM_TELEMETRY = 0x145;
+export const CAN_ID_VACUUM_TELEMETRY = generated.CAN_ID_VACUUM_TELEMETRY;
 
 // --- Tool 5: Drill ---
-export const CAN_ID_DRILL_CMD = 0x140;
-export const CAN_ID_DRILL_TELEMETRY = 0x147;
+export const CAN_ID_DRILL_CMD = generated.CAN_ID_DRILL_CMD;
+export const CAN_ID_DRILL_TELEMETRY = generated.CAN_ID_DRILL_TELEMETRY;
 
 // --- Tool 8: AOI Inspection ---
-export const CAN_ID_AOI_CMD = 0x150;
-export const CAN_ID_AOI_TELEMETRY = 0x155;
+export const CAN_ID_AOI_CMD = generated.CAN_ID_AOI_CMD;
+export const CAN_ID_AOI_TELEMETRY = generated.CAN_ID_AOI_TELEMETRY;
 
 // --- Tool 9: Laser Engraver ---
-export const CAN_ID_LASER_CMD = 0x160;
-export const CAN_ID_LASER_TELEMETRY = 0x165;
+export const CAN_ID_LASER_CMD = generated.CAN_ID_LASER_CMD;
+export const CAN_ID_LASER_TELEMETRY = generated.CAN_ID_LASER_TELEMETRY;
 
 // --- Tool 10: 3D Printer ---
-export const CAN_ID_3DP_THERMAL_MOTION = 0x170; // nozzle heater + extruder motion, combined
-export const CAN_ID_3DP_LAYERFAN_CMD = 0x173;
-export const CAN_ID_3DP_HOTEND_TELEMETRY = 0x175;
-export const CAN_ID_3DP_LAYERFAN_TELEMETRY = 0x177;
-export const CAN_ID_3DP_HOTENDFAN_CMD = 0x178;
-export const CAN_ID_3DP_HOTENDFAN_TELEMETRY = 0x179;
+export const CAN_ID_3DP_THERMAL_MOTION = generated.CAN_ID_PRINTER_THERMAL_MOTION; // nozzle heater + extruder motion, combined
+export const CAN_ID_3DP_LAYERFAN_CMD = generated.CAN_ID_PRINTER_LAYERFAN_CMD;
+export const CAN_ID_3DP_HOTEND_TELEMETRY = generated.CAN_ID_PRINTER_HOTEND_TELEMETRY;
+export const CAN_ID_3DP_LAYERFAN_TELEMETRY = generated.CAN_ID_PRINTER_LAYERFAN_RPM;
+export const CAN_ID_3DP_HOTENDFAN_CMD = generated.CAN_ID_PRINTER_HOTENDFAN_CMD;
+export const CAN_ID_3DP_HOTENDFAN_TELEMETRY = generated.CAN_ID_PRINTER_HOTENDFAN_RPM;
 
 // --- Tool 13: Electromagnet ---
-export const CAN_ID_ELECTROMAGNET_CMD = 0x1b0;
+export const CAN_ID_ELECTROMAGNET_CMD = generated.CAN_ID_ELECTROMAGNET_CMD;
 
 // --- Tool 14 / 24: Spot Welder / Ultrasonic Welder (shared payload shape) ---
-export const CAN_ID_WELD_SPOT_CMD = 0x1c0;
-export const CAN_ID_WELD_ULTRASONIC_CMD = 0x200;
+export const CAN_ID_WELD_SPOT_CMD = generated.CAN_ID_SPOT_WELD_CMD;
+export const CAN_ID_WELD_ULTRASONIC_CMD = generated.CAN_ID_ULTRASONIC_WELD_CMD;
 export const WELD_PULSE_MAX_MS = 2000;
 
 // --- Tool 18: UV Curing ---
-export const CAN_ID_UV_CURING_CMD = 0x1d0;
+export const CAN_ID_UV_CURING_CMD = generated.CAN_ID_UV_CURING_CMD;
 
 // --- Tool 19: Hot Air Rework (telemetry shared with soldering iron's 0x135) ---
-export const CAN_ID_HOTAIR_CMD = 0x1e0;
+export const CAN_ID_HOTAIR_CMD = generated.CAN_ID_HOTAIR_CMD;
 
 // --- Tool 21: Crimping Actuator (same payload shape as 0x120, routed to expansion driver) ---
-export const CAN_ID_CRIMPING_CMD = 0x1f0;
+export const CAN_ID_CRIMPING_CMD = generated.CAN_ID_CRIMPING_CMD;
 
 // --- Tool 23: Paste Jetting ---
-export const CAN_ID_PASTE_JETTING_CONFIG = 0x230;
-export const CAN_ID_PASTE_JETTING_PULSE = 0x231;
+export const CAN_ID_PASTE_JETTING_CONFIG = generated.CAN_ID_PASTE_JETTING_CONFIG;
+export const CAN_ID_PASTE_JETTING_PULSE = generated.CAN_ID_PASTE_JETTING_PULSE;
 
 // --- Tool 17: Flying Probe ---
-export const CAN_ID_FLYING_PROBE_BASIC = 0x243; // passive telemetry, onboard ADC
-export const CAN_ID_FLYING_PROBE_ADS_CONFIG = 0x240;
-export const CAN_ID_FLYING_PROBE_ADS_TRIGGER = 0x241;
-export const CAN_ID_FLYING_PROBE_ADS_RESULT = 0x242; // empty payload = query, same ID answers
+export const CAN_ID_FLYING_PROBE_BASIC = generated.CAN_ID_FLYING_PROBE_BASIC; // passive telemetry, onboard ADC
+export const CAN_ID_FLYING_PROBE_ADS_CONFIG = generated.CAN_ID_ADS1115_CONFIG;
+export const CAN_ID_FLYING_PROBE_ADS_TRIGGER = generated.CAN_ID_ADS1115_TRIGGER;
+export const CAN_ID_FLYING_PROBE_ADS_RESULT = generated.CAN_ID_ADS1115_RESULT; // empty payload = query, same ID answers
 
 // --- Tool 22: Thermal Inspection ---
-export const CAN_ID_THERMAL_TRIGGER = 0x250;
-export const CAN_ID_THERMAL_STATUS = 0x251; // empty payload = query, same ID answers
-export const CAN_ID_THERMAL_RAW_CHUNK_REQ = 0x252;
-export const CAN_ID_THERMAL_RAW_CHUNK_RESP = 0x253;
-export const CAN_ID_THERMAL_CAL_CHUNK_REQ = 0x254;
-export const CAN_ID_THERMAL_CAL_CHUNK_RESP = 0x255;
+export const CAN_ID_THERMAL_TRIGGER = generated.CAN_ID_THERMAL_TRIGGER;
+export const CAN_ID_THERMAL_STATUS = generated.CAN_ID_THERMAL_STATUS; // empty payload = query, same ID answers
+export const CAN_ID_THERMAL_RAW_CHUNK_REQ = generated.CAN_ID_THERMAL_RAW_CHUNK_REQ;
+export const CAN_ID_THERMAL_RAW_CHUNK_RESP = generated.CAN_ID_THERMAL_RAW_CHUNK;
+export const CAN_ID_THERMAL_CAL_CHUNK_REQ = generated.CAN_ID_THERMAL_CAL_CHUNK_REQ;
+export const CAN_ID_THERMAL_CAL_CHUNK_RESP = generated.CAN_ID_THERMAL_CAL_CHUNK;
 export const THERMAL_CHUNK_COUNT = 48; // 48 chunks x 16 px = 768px = 32x24
 
 // --- Tool catalog ---

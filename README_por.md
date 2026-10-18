@@ -244,6 +244,8 @@ assinatura antes de tocar em `public/firmware/`, e regenera
 `src/lib/bundledFirmware.ts`; um teste verifica o pacote contra os seus
 manifestos.
 
+Cada ficheiro de uma release oficial tem uma assinatura de release (`<ficheiro>.sig`, Ed25519): a sincronização verifica-a quando existe e recusa uma errada; um conjunto sem assinaturas (uma pré-release de bancada ou uma compilação local) precisa de `--allow-unsigned`.
+
 ## 🚀 Primeiros passos
 
 ### Pré-requisitos
