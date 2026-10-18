@@ -294,13 +294,12 @@ The repository can publish the built site on GitHub Pages (workflow `.github/wor
 ### Versioning
 
 `package.json`'s `version` (and the matching `version` in
-`urtc.project.json`) bumps automatically on every real `build.bat`/
-`build.sh` run - `bump_manifest_version.py` runs as step 1, before `npm
-install && npm run build`, reads the current version straight out of
+`urtc.project.json`) is raised only by the explicit `python bump.py` step
+(it runs `bump_manifest_version.py`, which reads the current version straight out of
 `package.json`, increments it, writes it back, syncs the manifest, and adds
-a bare CHANGELOG entry if that version doesn't already have one. `npm run
-build` (`vite build`) on its own is deliberately compilation-only and never
-touches the version - `scripts/bump-version.mjs` did this job in an earlier
+a bare CHANGELOG entry if that version doesn't already have one). `build.bat`/`build.sh`
+and `npm run build` (`vite build`) are compilation-only and never
+touch the version - `scripts/bump-version.mjs` did this job in an earlier
 `prebuild`-hook design, but that script is legacy today, kept only for
 reference (see its own header comment); `npm run dev`/`lint`/`preview` never
 touch the version either way. This is not Semantic Versioning: it's a
@@ -427,6 +426,7 @@ project.
 ├── build.bat / build.sh             Install deps + produce the static dist/ build
 ├── tools/
 │   └── ci_validate.py               Manifest/CHANGELOG/docs validation used by CI
+├── bump.py                          Explicit version bump command (building never bumps)
 ├── bump_manifest_version.py         Real build-time version bump (package.json + manifest, see "Versioning"); `--sync` mode also exists for accepting one prior native-only bump
 ├── package.json
 ├── CHANGELOG.md                     Version history and a summary of past work

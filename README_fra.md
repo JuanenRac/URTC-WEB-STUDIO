@@ -465,6 +465,7 @@ travail antérieur sur ce projet.
 │                                     build statique de dist/
 ├── tools/
 │   └── ci_validate.py               Validation manifest/CHANGELOG/docs utilisée par la CI
+├── bump.py                          Commande explicite pour monter la version (compiler ne la monte jamais)
 ├── bump_manifest_version.py         Incrementation de version reelle a chaque build (package.json + manifest, voir "Versionnage"); le mode `--sync` existe aussi pour accepter un increment natif prealable
 ├── package.json
 ├── CHANGELOG.md                     Historique des versions et resume du travail passe

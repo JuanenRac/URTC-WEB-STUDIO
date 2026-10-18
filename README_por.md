@@ -432,6 +432,7 @@ projeto.
 ├── build.bat / build.sh             Instala dependencias + produz a build estatica de dist/
 ├── tools/
 │   └── ci_validate.py               Validacao de manifesto/CHANGELOG/docs usada pela CI
+├── bump.py                          Comando explícito para subir a versão (compilar nunca a sobe)
 ├── bump_manifest_version.py         Subida de versao real em tempo de build (package.json + manifesto, ver "Versionamento"); o modo `--sync` também existe para aceitar uma subida nativa anterior
 ├── package.json
 ├── CHANGELOG.md                     Histórico de versões e um resumo do trabalho passado

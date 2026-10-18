@@ -12,6 +12,11 @@ build`/`vite build` on its own is deliberately compilation-only) bumps the
 version automatically, so the number reflects build count, not the size or
 compatibility of a change.
 
+## [0.3.2] - An explicit bump command: building never changes the version
+
+- Building no longer changes the version: build.sh and build.bat only compile, and raising the version is the explicit `python bump.py` step. A test fails if a build script runs a bump.
+- Every licence statement and source header says GPL-3.0-or-later.
+
 ## [0.3.1] - GitHub Pages deployment as a bench tool
 
 - New workflow .github/workflows/pages.yml builds the static site (type check, tests, build) and deploys it with actions/upload-pages-artifact and actions/deploy-pages; it skips the deployment, without failing, until Pages is enabled for the repository.

@@ -473,6 +473,7 @@ Projekt.
 │                                     den statischen dist/-Build
 ├── tools/
 │   └── ci_validate.py               Manifest-/CHANGELOG-/Doku-Validierung, von der CI genutzt
+├── bump.py                          Ausdrücklicher Befehl zum Erhöhen der Version (Kompilieren erhöht nie)
 ├── bump_manifest_version.py         Echte Versionserhöhung bei jedem Build (package.json + Manifest, siehe "Versionierung"); der Modus `--sync` existiert ebenfalls, um eine vorherige native Erhöhung zu übernehmen
 ├── package.json
 ├── CHANGELOG.md                     Versionshistorie und Zusammenfassung bisheriger Arbeit

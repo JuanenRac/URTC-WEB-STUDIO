@@ -462,6 +462,7 @@ build`（`vite build`）単体は意図的にコンパイルのみで、バー�
 │                                     dist/ ビルドの生成
 ├── tools/
 │   └── ci_validate.py               CI が使用する manifest/CHANGELOG/docs の検証
+├── bump.py                          明示的なバージョン加算コマンド（コンパイルでは加算されない）
 ├── bump_manifest_version.py         実際のビルドごとの実のバージョン加算（package.json + マニフェスト、「バージョン管理」参照）。以前のネイティブ側の単独加算を取り込む `--sync` モードもある
 ├── package.json
 ├── CHANGELOG.md                     バージョン履歴と過去の作業の要約

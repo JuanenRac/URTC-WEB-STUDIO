@@ -395,6 +395,7 @@ npm run preview
 ├── build.bat / build.sh             安装依赖 + 生成静态 dist/ 构建
 ├── tools/
 │   └── ci_validate.py               CI 使用的 manifest/CHANGELOG/docs 校验
+├── bump.py                          显式的版本递增命令（编译从不递增）
 ├── bump_manifest_version.py         每次构建时的真实版本递增（package.json + 清单，见“版本管理”）；也存在 `--sync` 模式用于接受一次先前的原生递增
 ├── package.json
 ├── CHANGELOG.md                     版本历史与过往工作摘要
