@@ -26,7 +26,7 @@
 
 **Universal Robot Tool Controller（URTC）** のブラウザベースのコンパニオン
 ——[Web Serial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API)
-経由で USB-CAN アダプター越しに実際の URTC ハードウェアと通信する
+経由で USB-CAN アダプター越しに実際の URTC ハードウェアと通信することを目指した（実機で動かしたことはありません）
 React/Vite シングルページアプリで、2 つのデスクトップコンパニオンツール、
 [URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER) と
 [URTC Tester](https://github.com/JuanenRac/URTC-TESTER) と同じ SLCAN
@@ -38,12 +38,14 @@ React/Vite シングルページアプリで、2 つのデスクトップコン�
 
 ---
 
+> **安全性とセキュリティの現状:** このエコシステムは認証された安全システムではなく、実装済みの URTC 基板もまだ存在しません。ブートローダーはファームウェアイメージを CRC32 と共有鍵の HMAC-SHA256 で検査しており、非対称署名ではありません(予定)。公開されているアプリケーションイメージは公開の開発用鍵(`signing_key_kind: dev`)で署名されているため、誰でもブートローダーが受け入れるイメージを作れます。実際の基板には何も送信されていません。ここに書かれた内容を人の安全のために頼る前に、[セキュリティベースライン](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md)と[脅威モデル](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md)をお読みください。
+
 ## 📋 ひと目で
 
 | | |
 |---|---|
-| バージョン | `0.2.8` |
-| 成熟度 | 確立 |
+| バージョン | `0.2.9` |
+| 成熟度 | 機能する |
 | 技術 | Web Serial API / TypeScript |
 | 対象 | 利用者の PC 上の Web ブラウザー |
 | 実機での確認 | シミュレーションのみ：エミュレーター、模擬部品、シミュレーターで試験済み。このバージョンについて実機での動作記録はありません |
@@ -55,7 +57,7 @@ React/Vite シングルページアプリで、2 つのデスクトップコン�
 - **実際のハードウェア駆動タブ** —— Flasher Studio、Tester Studio、そして
   CAN Bus Protocol Analyzer。これらは、実際の USB-CAN アダプターを接続
   （右上のヘッダーボタン）した時点で初めて何かを行います。送信するすべて
-  のコマンドと表示するすべての読み取り値は、実際の CAN バスから来ます。
+  のコマンドと表示するすべての読み取り値は、CAN バスから来ます（この経路を実際のアダプターやボードで動かしたことはありません）。
   これには実際の**サーマルカメラの読み取り**も含まれます——Tester Studio
   の「Thermal Inspection」パネル（`0x250`/`0x251`/`0x254`/`0x255`）が、
   ツールヘッドの実際の MLX90640 赤外線アレイを CAN 経由で照会します。
@@ -114,7 +116,7 @@ SLCAN リンクは両方向とも、UI や回線に届く前に検証されま�
 に対して動作します：
 
 - **メインボードの CAN-OTA 更新**（`0x7F0`-`0x7F7`）：ブートローダー起動
-  トリガー、HMAC-SHA256 署名、ページ ACK フロー制御とリトライ/バック
+  トリガー、共有鍵の HMAC-SHA256（シミュレーターに対してのみテスト済み）、ページ ACK フロー制御とリトライ/バック
   オフを伴うページ単位の転送、CRC32 + 宣言バージョンの END_UPDATE、
   そして終端状態処理（デスクトップツールと同じ方法で、失われた確認
   フレームからの復旧を含む——誤った失敗を報告するのではなく、バージョン
@@ -138,7 +140,7 @@ SLCAN リンクは両方向とも、UI や回線に届く前に検証されま�
   HardwareID、バージョンを表示します。
 - **公開された署名とダイジェスト**——URTC のビルドが出力する各イメージには
   `<file>.manifest.json`（バージョン、`sha256`、ブートローダーが期待する
-  `hmac_sha256` 署名）と `<file>.sha256` が付属します。アプリはその公開署名を
+  `hmac_sha256` の値。共有鍵の HMAC-SHA256 であり非対称署名ではありません）と `<file>.sha256` が付属します。アプリはその公開署名を
   送信し、マニフェストの `sha256` がファイルと一致しない場合は書き込みを
   **ブロック**し、マニフェストのバージョンをブートローダーに報告します。
   ディスクから選んだファイルにはマニフェストがないため、その 1 回の書き込み
@@ -209,7 +211,7 @@ SWD/JTAG デバッグプローブを駆動できる Web API は存在しませ�
   バージョン（`0x7F8`/`0x7F9`）を照会し、宣言された重大エラー（`0x111`
   バイト 1）はライブの障害バナーとして表示されます。
 
-### 安全性とシミュレーター
+### シミュレーターの分離と確認ダイアログ（ソフトウェアによるチェックであり、安全機能ではありません）
 
 - サンドボックスタブ（Control、OLED、Thermal IR）は何も送信しません。そのフレームには SIM の印が付き、ボードが接続されている間はシミュレートされた応答を生成しません。プロトコルアナライザーの定義済みメッセージのうち、接続中のボードに送られるのは単純な問い合わせだけで、残りはシミュレーションのままです。
 - Tester Studio は、ボード自身が報告した（`0x111`）ツールのパネルだけを表示し、ボードが応答するまでは何も表示しません。
@@ -225,8 +227,7 @@ SWD/JTAG デバッグプローブを駆動できる Web API は存在しませ�
 ## 🔐 セキュリティに関する注記：このアプリに署名鍵はありません
 
 0.2.3 以降、このアプリは HMAC-SHA256 署名鍵を**一切**含みません。URTC の
-ビルドが各アプリケーションイメージを自ら署名し（リリースビルドでは非公開鍵
-を使用）、署名をイメージの隣に公開します。Flasher Studio はその署名を運ぶ
+ビルドが各アプリケーションイメージを自ら署名し（リリースビルドでのみ非公開鍵を使用。公開イメージは公開の開発用鍵を使用）、署名をイメージの隣に公開します。Flasher Studio はその署名を運ぶ
 だけで、デスクトップ版 `URTC Flasher` と同じ方式です。JS バンドルに秘密は
 含まれないため、ページを公開ホストしても問題ありません。
 
@@ -269,7 +270,7 @@ Vite の開発サーバーでライブリロード付きでアプリを実行し
 
 その後、Chrome または Edge で `http://localhost:3000` を開いてください。
 
-### プロダクションビルド
+### 静的ビルド
 
 `dist/` 内に静的な、最適化されたバンドルへコンパイルします：
 - **Windows：** `build.bat` をダブルクリックするか、`npm run build` を実行
@@ -491,9 +492,9 @@ URTC Web Studio の著作権は (c) 2026 JuanenRac（Electro Hobby 3D）に帰�
 **エコシステムの他のプロジェクト**
 
 *コアハードウェア&プラットフォーム*
-- **[HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC)** — 実際のロボットアームのマザーボード——CM5 ホスト + デュアルコア STM32H745、CAN-OTA/SPI-OTA 経由で最大 8 本のツールアームを統括。
+- **[HYDRA-UMC](https://github.com/JuanenRac/HYDRA-UMC)** — ロボットアームのマザーボードの設計——CM5 ホスト + デュアルコア STM32H745、CAN-OTA/SPI-OTA 経由で最大 8 本のツールアームを統括することを目指す(ファームウェアは初期段階で、実装済みの基板はまだない)。
 - **[HYDRA-UMC-OS](https://github.com/JuanenRac/HYDRA-UMC-OS)** — CM5 向けの再現可能な Raspberry Pi OS プロダクト層——読み取り専用エージェント、検証済み設定/プロファイル、WiFi 初回接続プロビジョニング。
-- **[HYDRA-UMC-SDK](https://github.com/JuanenRac/HYDRA-UMC-SDK)** — すべてのブリッジが自身のコマンドを検証する共有 JSON-Schema 契約と安全ゲートの境界。
+- **[HYDRA-UMC-SDK](https://github.com/JuanenRac/HYDRA-UMC-SDK)** — すべてのブリッジが自身のコマンドを検証する共有 JSON-Schema 契約とソフトウェアのジョブゲート境界(認証済みの安全機能ではない)。
 - **[HYDRA-UMC-CONNECTOR-HUB](https://github.com/JuanenRac/HYDRA-UMC-CONNECTOR-HUB)** — 外部マシン用コネクタのための宣言的アダプターマニフェストのレジストリとバリデーター。SDK 自身の契約という発想を外部マシンにまで拡張し、産業用ゲートウェイ系のプロジェクトを置き換えることはありません。
 
 *コアバックエンド&クライアント*
@@ -505,21 +506,21 @@ URTC Web Studio の著作権は (c) 2026 JuanenRac（Electro Hobby 3D）に帰�
 - **[HYDRA-UMC-DSI](https://github.com/JuanenRac/HYDRA-UMC-DSI)** — 本体搭載の 7 インチ DSI タッチスクリーン向けネイティブタッチ UI、CM5 自体に組み込み。
 - **[HYDRA-UMC-EDITOR-URDF](https://github.com/JuanenRac/HYDRA-UMC-EDITOR-URDF)** — 完成したモデルを STUDIO 自身のカタログへ送信するデスクトップ用グラフィカル URDF 作成/編集ツール。
 - **[HYDRA-UMC-EDITOR-STL](https://github.com/JuanenRac/HYDRA-UMC-EDITOR-STL)** — HYDRA-UMC-EDITOR-URDF も編集する同じモデルカタログ内で、実在するパーツを変換/置換/削除/追加するデスクトップ STL モデルエディタ。
-- **[HYDRA-UMC-BRIDGE-AMR](https://github.com/JuanenRac/HYDRA-UMC-BRIDGE-AMR)** — 実際の VDA 5050 MQTT パブリッシャーによる AGV/AMR フリートの調整境界。
-- **[HYDRA-UMC-BRIDGE-CNC](https://github.com/JuanenRac/HYDRA-UMC-BRIDGE-CNC)** — 実際の GRBL ステータス/制御バイトへのアクセスを持つ、CNC セルの高レベルコーディネーター。
-- **[HYDRA-UMC-BRIDGE-DROIDS](https://github.com/JuanenRac/HYDRA-UMC-BRIDGE-DROIDS)** — 実際の Boston Dynamics Spot コマンド送信機能を持つ、脚型/ヒューマノイドドロイドの調整境界。
-- **[HYDRA-UMC-BRIDGE-LASER](https://github.com/JuanenRac/HYDRA-UMC-BRIDGE-LASER)** — 実際のキー/筐体/インターロック GPIO セーフガード 3 系統を読み取る、レーザーセルの安全コーディネーター。
+- **[HYDRA-UMC-BRIDGE-AMR](https://github.com/JuanenRac/HYDRA-UMC-BRIDGE-AMR)** — VDA 5050 MQTT パブリッシャーによる AGV/AMR フリートの調整境界(エミュレートしたフリートに対してのみテスト済み)。
+- **[HYDRA-UMC-BRIDGE-CNC](https://github.com/JuanenRac/HYDRA-UMC-BRIDGE-CNC)** — GRBL ステータス/制御バイトへのアクセスを持つ、CNC セルの高レベルコーディネーター(エミュレーターに対してのみテスト済み)。
+- **[HYDRA-UMC-BRIDGE-DROIDS](https://github.com/JuanenRac/HYDRA-UMC-BRIDGE-DROIDS)** — Boston Dynamics Spot コマンド送信機能を持つ、脚型/ヒューマノイドドロイドの調整境界(エミュレーターに対してのみテスト済み)。
+- **[HYDRA-UMC-BRIDGE-LASER](https://github.com/JuanenRac/HYDRA-UMC-BRIDGE-LASER)** — キー/筐体/インターロックの GPIO 信号 3 系統を読み取るレーザーセルのコーディネーター(模擬チップに対してのみテスト済み。レーザーの武装や発射はできない)。
 - **[HYDRA-UMC-BRIDGE-OPENPNP](https://github.com/JuanenRac/HYDRA-UMC-BRIDGE-OPENPNP)** — OpenPnP ピックアンドプレースの基板フローを安全に統括する高レベルコーディネーター。
 - **[HYDRA-UMC-BRIDGE-PRINTER3D](https://github.com/JuanenRac/HYDRA-UMC-BRIDGE-PRINTER3D)** — 実際にゲート制御されたジョブコマンドを持つ、Moonraker/Klipper 3D プリンター向けの安全な調整境界。
-- **[HYDRA-UMC-BRIDGE-ROS2](https://github.com/JuanenRac/HYDRA-UMC-BRIDGE-ROS2)** — 実際の遅延インポート rclpy ROS 2 トランスポートを持つ安全コーディネーター。
-- **[HYDRA-UMC-BRIDGE-UAV](https://github.com/JuanenRac/HYDRA-UMC-BRIDGE-UAV)** — 実際の MAVLink コマンド送信機能を持つ、カメラ搭載 UAV の調整境界。
+- **[HYDRA-UMC-BRIDGE-ROS2](https://github.com/JuanenRac/HYDRA-UMC-BRIDGE-ROS2)** — 遅延インポートの rclpy ROS 2 トランスポートを持つコーディネーター(ROS 2 環境ではまだ実行していない)。
+- **[HYDRA-UMC-BRIDGE-UAV](https://github.com/JuanenRac/HYDRA-UMC-BRIDGE-UAV)** — MAVLink コマンド送信機能を持つ、カメラ搭載 UAV の調整境界(エミュレーターに対してのみテスト済み)。
 
 *ビジョン AI ノード(Hailo-8)*
 - **[HYDRA-UMC-VISION-NODE](https://github.com/JuanenRac/HYDRA-UMC-VISION-NODE)** — Hailo-8 ビジョンパイプラインの統合ハブ、段階ごとの実際のハードウェア準備状況チェック付き。
 - **[HYDRA-UMC-DETECTION-HEF](https://github.com/JuanenRac/HYDRA-UMC-DETECTION-HEF)** — Hailo アーキテクチャ/チェックサムによる安全読み込み検証を備えた、実際のコンパイル済みモデルレジストリ。
 - **[HYDRA-UMC-VISION-STREAMER](https://github.com/JuanenRac/HYDRA-UMC-VISION-STREAMER)** — 実際の HailoRT 統合境界を持つ、実際の GStreamer パイプライン + MediaMTX 設定生成器。
-- **[HYDRA-UMC-VISUAL-SERVOING-API](https://github.com/JuanenRac/HYDRA-UMC-VISUAL-SERVOING-API)** — 上流のゾーン状態に応じて安全ゲート制御される、実際の Position-Based Visual Servoing 補正則。
-- **[HYDRA-UMC-SAFETY-ZONES](https://github.com/JuanenRac/HYDRA-UMC-SAFETY-ZONES)** — キャリブレーションの鮮度を強制する、実際のゾーン侵入チェックと E-STOP 要求。
+- **[HYDRA-UMC-VISUAL-SERVOING-API](https://github.com/JuanenRac/HYDRA-UMC-VISUAL-SERVOING-API)** — ゾーン状態を条件に承認する Position-Based Visual Servoing 補正則。カメラによる姿勢推定はまだない。
+- **[HYDRA-UMC-SAFETY-ZONES](https://github.com/JuanenRac/HYDRA-UMC-SAFETY-ZONES)** — ファイルから物体位置を受け取る、ゾーン侵入・キャリブレーション鮮度・E-STOP 要求の v0 ロジック。検出器は接続されておらず、物理 E-STOP もまだ配線されていない。
 
 *コグニティブ AI ノード(Hailo-10)*
 - **[HYDRA-UMC-COGNITIVE-NODE](https://github.com/JuanenRac/HYDRA-UMC-COGNITIVE-NODE)** — Hailo-10 コグニティブパイプライン(LLM/VLA/音声オーケストレーション)の統合ハブ。
@@ -538,7 +539,7 @@ URTC Web Studio の著作権は (c) 2026 JuanenRac（Electro Hobby 3D）に帰�
 
 *デジタルツイン&シミュレーション*
 - **[HYDRA-UMC-TWIN](https://github.com/JuanenRac/HYDRA-UMC-TWIN)** — 実際のバージョン互換性同期契約を持つ、デジタルツインエンジンの統合ハブ。
-- **[HYDRA-UMC-HIL-BRIDGE](https://github.com/JuanenRac/HYDRA-UMC-HIL-BRIDGE)** — シミュレーションと実際のハードウェアの間でコマンドをルーティングする、実際のハードウェア・イン・ザ・ループ安全インターロック。
+- **[HYDRA-UMC-HIL-BRIDGE](https://github.com/JuanenRac/HYDRA-UMC-HIL-BRIDGE)** — シミュレーションと実機の間にソフトウェアの衝突インターロックを備えたハードウェア・イン・ザ・ループのルーター(実機なしでテスト済み)。
 - **[HYDRA-UMC-PHYSICS-REPLICA](https://github.com/JuanenRac/HYDRA-UMC-PHYSICS-REPLICA)** — 実際の URDF サブセットに対する、実際の順運動学と関節限界検証。
 - **[HYDRA-UMC-SYNTHETIC-DATA-GEN](https://github.com/JuanenRac/HYDRA-UMC-SYNTHETIC-DATA-GEN)** — YOLO/COCO アノテーションのエクスポート機能を持つ、実際のプロシージャル 2D シーンジェネレーター。
 
@@ -556,7 +557,7 @@ URTC Web Studio の著作権は (c) 2026 JuanenRac（Electro Hobby 3D）に帰�
 
 *補完ツール&エコシステム運用*
 - **[HYDRA-UMC-DASHBOARD-AI](https://github.com/JuanenRac/HYDRA-UMC-DASHBOARD-AI)** — 誠実な統計フォールバックを備えた、DATALAKE/ANOMALY-DETECTOR 上のスマートサマリーと異常ハイライトパネル。
-- **[HYDRA-UMC-WATCH](https://github.com/JuanenRac/HYDRA-UMC-WATCH)** — 実際の触覚アラートとペアリングされたスマートフォンへの音声リレーを備えた WearOS コンパニオンアプリ。
+- **[HYDRA-UMC-WATCH](https://github.com/JuanenRac/HYDRA-UMC-WATCH)** — 触覚アラートのパターンとペアリング済みスマートフォンへの音声リレーを備えた WearOS コンパニオンアプリ(物理的なウォッチではまだ実行していない)。
 - **[URTC-SMART-RACK](https://github.com/JuanenRac/URTC-SMART-RACK)** — 実際の工具 ID デコードと Smart Idle 予熱ロジックを備えた、基板搭載ラック用ファームウェア。
 - **[URTC-VISION-TOOL](https://github.com/JuanenRac/URTC-VISION-TOOL)** — サーマル/RGB 検査ツールヘッド向けの、ファームウェアと実際の Python ビジョンコンパニオン。
 - **[HYDRA-UMC-UPDATER](https://github.com/JuanenRac/HYDRA-UMC-UPDATER)** — このエコシステム内のすべてのリポジトリを検出・クローン・更新する、管理用デスクトップツール。

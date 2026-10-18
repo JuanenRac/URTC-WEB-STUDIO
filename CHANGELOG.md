@@ -12,6 +12,12 @@ build`/`vite build` on its own is deliberately compilation-only) bumps the
 version automatically, so the number reflects build count, not the size or
 compatibility of a change.
 
+## [0.2.9] - Claims aligned with what has been tested
+
+- Maturity is functional: nothing here has been verified on real hardware yet.
+- The README (all eight languages) says that the Web Serial path has never been run against a USB-CAN adapter or a real board, describes the HMAC-SHA256 check as a shared-key check (the published images use the public development key), and no longer headlines the simulator separation and confirmations as safety.
+- The build section is called Static Build instead of Production Build.
+
 ## [0.2.8] - Firmware from the GitHub release, and the firmware patch number over CAN
 
 - **Firmware list and download follow the new distribution:** the URTC binaries are no longer files in git but assets of the GitHub release of each version, so Flasher Studio now lists the application images of the selected board from the releases API of JuanenRac/URTC (the newest release), each with its .sha256 and .manifest.json. A downloaded image must match the digest in its .sha256 file and the one GitHub lists, and the existing checks stay: stack pointer and reset handler, manifest target, a strict hmac_sha256, and the version from the manifest first and then from the file name.

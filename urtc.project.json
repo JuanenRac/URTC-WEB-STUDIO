@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "ecosystem": "URTC",
   "name": "URTC-WEB-STUDIO",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "role": "ui",
   "stack": "node",
   "technologies": [
@@ -10,11 +10,11 @@
     "TypeScript"
   ],
   "deployment_target": "user-pc",
-  "maturity": "established",
+  "maturity": "functional",
   "family": "URTC Tool Platform",
   "parent": "URTC",
   "build": "npm install && npm run build.",
-  "notes": "Real browser-based alternative to URTC-TESTER via the Web Serial API, extensive real version history (jumper sync, OLED reset fixes, ...).",
+  "notes": "Browser-based alternative to URTC-TESTER via the Web Serial API (the Web Serial path has never been run against a USB-CAN adapter), extensive version history (jumper sync, OLED reset fixes, ...).",
   "native_version": {
     "file": "package.json",
     "pattern": "\"version\":\\s*\"(\\d+)\\.(\\d+)\\.(\\d+)\""
