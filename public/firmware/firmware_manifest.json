@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-11T11:36:36Z",
+  "generated_at": "2026-10-18T21:39:35Z",
   "project": {
     "name": "URTC",
     "full_name": "Universal Robot Tool Controller",
@@ -23,26 +23,26 @@
       "hardware_id": "0x0303CC01",
       "version": {
         "major": 0,
-        "minor": 3,
-        "patch": 8
+        "minor": 4,
+        "patch": 0
       },
-      "version_string": "0.3.8",
-      "version_code": 308,
+      "version_string": "0.4.0",
+      "version_code": 400,
       "flash_address": "0x08000000",
       "flash_region_max_bytes": 32768,
       "files": {
         "bin": {
-          "filename": "URTC_MAIN_BOOTLOADER_v0.3.8.bin",
-          "size_bytes": 18244,
-          "crc32": "0xC3A4FDE3",
-          "sha256": "9176c0ebb31da2bb6678884fa2c9a3d68e0153c2683de69b257ae344af18cc67"
+          "filename": "URTC_MAIN_BOOTLOADER_v0.4.0.bin",
+          "size_bytes": 18392,
+          "crc32": "0xE62314F7",
+          "sha256": "c08b5db4d6e1e1a67e17628fb0402b56d4af7c5ef850a853daa72395965803c5"
         },
         "hex": {
-          "filename": "URTC_MAIN_BOOTLOADER_v0.3.8.hex",
-          "size_bytes": 51411
+          "filename": "URTC_MAIN_BOOTLOADER_v0.4.0.hex",
+          "size_bytes": 51824
         },
         "elf": {
-          "filename": "URTC_MAIN_BOOTLOADER_v0.3.8.elf",
+          "filename": "URTC_MAIN_BOOTLOADER_v0.4.0.elf",
           "size_bytes": 51392
         }
       }
@@ -54,33 +54,33 @@
       "version": {
         "major": 0,
         "minor": 3,
-        "patch": 3
+        "patch": 6
       },
-      "version_string": "0.3.3",
-      "version_code": 303,
+      "version_string": "0.3.6",
+      "version_code": 306,
       "flash_address": "0x08008000",
       "flash_region_max_bytes": 114688,
       "files": {
         "bin": {
-          "filename": "URTC_MAIN_FIRMWARE_v0.3.3.bin",
-          "size_bytes": 73476,
-          "crc32": "0xF7B03747",
-          "sha256": "52a0fcd33ef5eb227beda253240663ba87a5167533bce691a1bd6aa76f8eb69e"
+          "filename": "URTC_MAIN_FIRMWARE_v0.3.6.bin",
+          "size_bytes": 73816,
+          "crc32": "0xCD2AAC11",
+          "sha256": "1b7d21f80833d5574e85c25d66305e908651baabb3048ee02f3e267fd35e9109"
         },
         "hex": {
-          "filename": "URTC_MAIN_FIRMWARE_v0.3.3.hex",
-          "size_bytes": 206760
+          "filename": "URTC_MAIN_FIRMWARE_v0.3.6.hex",
+          "size_bytes": 207713
         },
         "elf": {
-          "filename": "URTC_MAIN_FIRMWARE_v0.3.3.elf",
-          "size_bytes": 173628
+          "filename": "URTC_MAIN_FIRMWARE_v0.3.6.elf",
+          "size_bytes": 173756
         }
       },
       "signing": {
         "algorithm": "HMAC-SHA256",
         "key_kind": "dev",
         "key_id": "420298f88970c85f",
-        "hmac_sha256": "73f168d0823552b798dc6b8f6b1c981bc4c13a5eacfd9c67af7e336e19719028"
+        "hmac_sha256": "14e27debdf0c46f442cd85a32cce7718901ce4633af03fccb34de20cd593970b"
       }
     },
     "slave_bootloader": {
@@ -90,26 +90,26 @@
       "version": {
         "major": 0,
         "minor": 2,
-        "patch": 2
+        "patch": 4
       },
-      "version_string": "0.2.2",
-      "version_code": 202,
+      "version_string": "0.2.4",
+      "version_code": 204,
       "flash_address": "0x08000000",
       "flash_region_max_bytes": 18432,
       "files": {
         "bin": {
-          "filename": "URTC_SLAVE_BOOTLOADER_v0.2.2.bin",
-          "size_bytes": 13608,
-          "crc32": "0x4CB42593",
-          "sha256": "933423934ec7bf89e1462ced7435c68f04f0f06aaf33d63f26b4a1a1b7521ab3"
+          "filename": "URTC_SLAVE_BOOTLOADER_v0.2.4.bin",
+          "size_bytes": 13704,
+          "crc32": "0x22CF3577",
+          "sha256": "7cb1a6787b098fec5e61111ccf4bac8fbee7552aefda927d5fe7dc8182e11d02"
         },
         "hex": {
-          "filename": "URTC_SLAVE_BOOTLOADER_v0.2.2.hex",
-          "size_bytes": 38369
+          "filename": "URTC_SLAVE_BOOTLOADER_v0.2.4.hex",
+          "size_bytes": 38639
         },
         "elf": {
-          "filename": "URTC_SLAVE_BOOTLOADER_v0.2.2.elf",
-          "size_bytes": 46744
+          "filename": "URTC_SLAVE_BOOTLOADER_v0.2.4.elf",
+          "size_bytes": 46816
         }
       }
     },
@@ -119,26 +119,26 @@
       "hardware_id": "0x0303CB01",
       "version": {
         "major": 0,
-        "minor": 1,
-        "patch": 9
+        "minor": 2,
+        "patch": 1
       },
-      "version_string": "0.1.9",
-      "version_code": 109,
+      "version_string": "0.2.1",
+      "version_code": 201,
       "flash_address": "0x08005000",
       "flash_region_max_bytes": 55296,
       "files": {
         "bin": {
-          "filename": "URTC_SLAVE_FIRMWARE_v0.1.9.bin",
-          "size_bytes": 34712,
-          "crc32": "0xA3670CFE",
-          "sha256": "b4917dac5eb92f20d16c98e2da24f7a2d79411dd50ccf4ad735bb73b64ccaf3f"
+          "filename": "URTC_SLAVE_FIRMWARE_v0.2.1.bin",
+          "size_bytes": 34776,
+          "crc32": "0x6C9E7ECE",
+          "sha256": "c100166a02e0c2c00c002db51362f19a9388f0bf4e0123fc443dc4a3391bda69"
         },
         "hex": {
-          "filename": "URTC_SLAVE_FIRMWARE_v0.1.9.hex",
-          "size_bytes": 97703
+          "filename": "URTC_SLAVE_FIRMWARE_v0.2.1.hex",
+          "size_bytes": 97891
         },
         "elf": {
-          "filename": "URTC_SLAVE_FIRMWARE_v0.1.9.elf",
+          "filename": "URTC_SLAVE_FIRMWARE_v0.2.1.elf",
           "size_bytes": 109048
         }
       },
@@ -146,7 +146,7 @@
         "algorithm": "HMAC-SHA256",
         "key_kind": "dev",
         "key_id": "e481a6627e419f34",
-        "hmac_sha256": "241c8a7c03ec3b20afa8c22d53fececd3b2907e25e8937256fba2ebe4c72e933"
+        "hmac_sha256": "422f666dbffefeb1cdc6049f2cc17f46237b8d95c798a091e71ebc1ec329b45f"
       }
     }
   },
