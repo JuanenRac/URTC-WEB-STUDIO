@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-10-18T22:54:50Z",
+  "generated_at": "2026-10-19T11:07:24Z",
   "project": {
     "name": "URTC",
     "full_name": "Universal Robot Tool Controller",
@@ -34,8 +34,8 @@
         "bin": {
           "filename": "URTC_MAIN_BOOTLOADER_v0.4.0.bin",
           "size_bytes": 18392,
-          "crc32": "0x834B0875",
-          "sha256": "bcdf3fd79c69838715d8e6e2c3fed148e3361dc0c81601557aabf3aab3bea8a9"
+          "crc32": "0x8695797F",
+          "sha256": "ab2d377597736c258f495589afab907d94649bfdef9fb57b53027541e31d3f94"
         },
         "hex": {
           "filename": "URTC_MAIN_BOOTLOADER_v0.4.0.hex",
@@ -54,33 +54,33 @@
       "version": {
         "major": 0,
         "minor": 3,
-        "patch": 7
+        "patch": 8
       },
-      "version_string": "0.3.7",
-      "version_code": 307,
+      "version_string": "0.3.8",
+      "version_code": 308,
       "flash_address": "0x08008000",
       "flash_region_max_bytes": 114688,
       "files": {
         "bin": {
-          "filename": "URTC_MAIN_FIRMWARE_v0.3.7.bin",
-          "size_bytes": 73816,
-          "crc32": "0x844B6321",
-          "sha256": "c6bc59d02435bf9777e5f463337ec2c64ae33510451da8af431fb7b21734cd9a"
+          "filename": "URTC_MAIN_FIRMWARE_v0.3.8.bin",
+          "size_bytes": 76152,
+          "crc32": "0x45D46757",
+          "sha256": "2ff1504675db4a08e419df09cb6d677489db3085fa3552a2505e30d4f4826972"
         },
         "hex": {
-          "filename": "URTC_MAIN_FIRMWARE_v0.3.7.hex",
-          "size_bytes": 207713
+          "filename": "URTC_MAIN_FIRMWARE_v0.3.8.hex",
+          "size_bytes": 214291
         },
         "elf": {
-          "filename": "URTC_MAIN_FIRMWARE_v0.3.7.elf",
-          "size_bytes": 173756
+          "filename": "URTC_MAIN_FIRMWARE_v0.3.8.elf",
+          "size_bytes": 179192
         }
       },
       "signing": {
         "algorithm": "HMAC-SHA256",
         "key_kind": "dev",
         "key_id": "420298f88970c85f",
-        "hmac_sha256": "4daf6745fec6805ff4454eda6bc57c23ba0d3486726b47830669d86586e486ac"
+        "hmac_sha256": "25fc1c50aa2dc8f63323036da0298ac7f1a8ba00c69eada07a016284398acf6c"
       }
     },
     "slave_bootloader": {

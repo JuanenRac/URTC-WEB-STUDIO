@@ -1,10 +1,10 @@
 {
   "format": 1,
-  "urtc_common_version": "0.0.3",
+  "urtc_common_version": "0.0.5",
   "files": {
     "urtcCanIds.ts": {
       "from": "generated/urtcCanIds.ts",
-      "sha256": "994e249156cbd13cdce8f8c06b987e54e14a1cdec6522abdd7ca0245c6bb5f64"
+      "sha256": "669d643efeaa8b76ea8e1cd111d678949df14e6b63222943051e6ff1ffba0064"
     }
   }
 }

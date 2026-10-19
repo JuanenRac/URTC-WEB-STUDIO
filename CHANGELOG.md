@@ -12,6 +12,10 @@ build`/`vite build` on its own is deliberately compilation-only) bumps the
 version automatically, so the number reflects build count, not the size or
 compatibility of a change.
 
+## [0.3.3] - Follow URTC-COMMON 0.0.5 and the 0.3.8 firmware
+
+- The 0.3.8 firmware images are bundled, and the generated identifiers and the shared vectors follow URTC-COMMON 0.0.5.
+
 ## [0.3.2] - An explicit bump command: building never changes the version
 
 - Building no longer changes the version: build.sh and build.bat only compile, and raising the version is the explicit `python bump.py` step. A test fails if a build script runs a bump.
