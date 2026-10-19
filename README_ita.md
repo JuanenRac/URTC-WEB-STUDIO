@@ -42,7 +42,7 @@ ricevono le trame CAN reali descritte in `docs/CANBUS.TXT` del
 
 | | |
 |---|---|
-| Versione | `0.3.0` |
+| Versione | `0.3.3` |
 | Maturità | Funzionale |
 | Tecnologia | Web Serial API / TypeScript |
 | Destinazione | Un browser web sul PC dell'utente |
