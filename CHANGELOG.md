@@ -192,7 +192,9 @@ All notable changes to this project are documented here.
   running no longer lets a stale timer cut the new one off partway
   through.
 
-## [0.1.x] - Automatic version bump on every build
+## Earlier history
+
+### [0.1.x] - Automatic version bump on every build
 
 - Added `scripts/bump-version.mjs`: a dependency-free Node script that reads
   `package.json`'s `version`, applies a base-10 carry increment (patch +1;
@@ -211,7 +213,7 @@ All notable changes to this project are documented here.
   board's* firmware, queried live over CAN. No new UI was invented to avoid
   conflating those with the web app's own build number.
 
-## [0.1.0] and earlier - Project history (summarized)
+### [0.1.0] and earlier - Project history (summarized)
 
 - **First real session on this project.** Read the full
   source and the sibling Python tools (`URTC-FLASHER`, `URTC-TESTER`) to
@@ -258,12 +260,3 @@ All notable changes to this project are documented here.
   failures silent.
 
 ---
-
-### Note on the versioning scheme
-
-This project does not use Semantic Versioning (`MAJOR.MINOR.PATCH` with
-meaning attached to each digit). Instead it uses a simple base-10 odometer:
-every real production build increments the version by one "tick," carrying
-over patch -> minor -> major exactly like a car's odometer rolling from 9 to
-10. This keeps a monotonically increasing build identifier without requiring
-a human to decide "is this a patch or a minor bump" on every build.
