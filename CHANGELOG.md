@@ -15,6 +15,7 @@ compatibility of a change.
 ## [Unreleased]
 
 - The banner follows the animated style of the ecosystem banners, with the name, the kind and the technologies of the project.
+- The rows of the CAN log are drawn once (`React.memo`): the log keeps 100 frames and a batch of new ones no longer redraws the others.
 - **The page verifies the release signature in the browser** (`src/lib/releaseSignature.ts`, Ed25519 through Web Crypto, against the pinned key of the releases) before it sends the bundled image or an image of a GitHub release to a board: a signature that is not valid stops the update before any frame is sent; an image without a signature (or a browser without Ed25519) is only noted in the log, because the board still verifies its own signature. The release listing now carries each image's `.sig` asset. Messages in eight languages; tests sign with a generated key, refuse a changed name, changed bytes, another key and malformed text, check that the pinned key is the one of `scripts/sync-firmware.mjs`, and verify the real bundled images.
 - The manifest declares how far the project has been shown to work (`evidence`: simulator) and `tools/ci_validate.py` checks the value.
 

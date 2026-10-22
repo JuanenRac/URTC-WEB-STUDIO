@@ -12,6 +12,33 @@ interface CanBusAnalyzerProps {
   onTriggerPreset: (presetName: string) => void;
 }
 
+// A row never changes once logged (the frames are immutable and keyed by their sequence number), so the
+// 100 rows of the log are not drawn again each time a few new frames arrive.
+const FrameRow = React.memo(function FrameRow({ frame }: { frame: CanFrame }) {
+  const { t } = useTranslation();
+  return (
+    <tr className="hover:bg-slate-850 transition-colors">
+      <td className="py-2 px-4 text-slate-500">{frame.timestamp}</td>
+      <td className="py-2 px-4">
+        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+          frame.direction === 'Tx'
+            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+            : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+        }`}>
+          {frame.direction}
+        </span>
+      </td>
+      <td className="py-2 px-4 font-bold text-amber-400">{frame.idHex}</td>
+      <td className="py-2 px-4 text-slate-400">{frame.dlc}</td>
+      <td className="py-2 px-4 text-cyan-300 tracking-wider font-mono">{frame.dataHex}</td>
+      <td className="py-2 px-4 text-slate-300">
+        {frame.simulated && <span className="mr-2 px-1.5 py-0.5 rounded text-[10px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30">{t('canbus.sim_badge', 'SIM')}</span>}
+        {frame.description}
+      </td>
+        </tr>
+  );
+});
+
 export const CanBusAnalyzer: React.FC<CanBusAnalyzerProps> = ({
   canFrames,
   isConnected,
@@ -177,27 +204,7 @@ export const CanBusAnalyzer: React.FC<CanBusAnalyzerProps> = ({
                   </td>
                 </tr>
               ) : (
-                canFrames.map((frame) => (
-                  <tr key={frame.seq} className="hover:bg-slate-850 transition-colors">
-                    <td className="py-2 px-4 text-slate-500">{frame.timestamp}</td>
-                    <td className="py-2 px-4">
-                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                        frame.direction === 'Tx'
-                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                          : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
-                      }`}>
-                        {frame.direction}
-                      </span>
-                    </td>
-                    <td className="py-2 px-4 font-bold text-amber-400">{frame.idHex}</td>
-                    <td className="py-2 px-4 text-slate-400">{frame.dlc}</td>
-                    <td className="py-2 px-4 text-cyan-300 tracking-wider font-mono">{frame.dataHex}</td>
-                    <td className="py-2 px-4 text-slate-300">
-                      {frame.simulated && <span className="mr-2 px-1.5 py-0.5 rounded text-[10px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30">{t('canbus.sim_badge', 'SIM')}</span>}
-                      {frame.description}
-                    </td>
-                  </tr>
-                ))
+                canFrames.map((frame) => <FrameRow key={frame.seq} frame={frame} />)
               )}
             </tbody>
           </table>
