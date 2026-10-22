@@ -242,6 +242,8 @@ manifeste) ne s'installent que sur les cartes dont le bootloader a été
 compilé de la même façon - le journal l'indique. Voir
 `docs/FIRMWARE_SIGNING.TXT` dans URTC.
 
+Le dossier n'est **pas dans git** : `npm run sync-firmware` le crée (la CI et la construction Pages l'exécutent avant les tests et la construction). Tant qu'il n'y a pas de release officielle, le « latest » de GitHub répond 404 et `firmware-release.json` indique la release utilisée à la place (aujourd'hui la pré-release de banc) ; supprimez le fichier, ou changez son tag, quand une release officielle sera publiée. **Sécurité de la page** : les scripts, styles, polices et images viennent de la page elle-même (les polices sont livrées avec l'application, aucune requête ne part vers un serveur de polices), seuls les attributs de style qu'écrit React sont autorisés en ligne, et la page ne peut joindre que sa propre origine et les hôtes GitHub qui servent les releases (Content-Security-Policy dans l'`index.html` construit). Un hôte capable d'envoyer des en-têtes utilise `public/_headers` (la même politique, `Permissions-Policy: serial=(self)` et rien d'autre de puissant) ; GitHub Pages ne peut pas envoyer d'en-têtes, donc seule la politique contenue dans la page s'y applique.
+
 `public/firmware/` contient exactement les fichiers publiés par URTC (mêmes
 noms, mêmes octets, avec leurs fichiers associés). Les binaires d'URTC ne sont
 pas dans git : ce sont des fichiers joints à la release de chaque version.

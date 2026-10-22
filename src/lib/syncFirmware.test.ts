@@ -122,3 +122,52 @@ describe("sync-firmware arguments", () => {
     expect(() => sync.parseArgs(["--nope"])).toThrow(/unknown option/);
   });
 });
+
+describe("sync-firmware while the project has no official release", () => {
+  // GitHub's "latest" ignores pre-releases: it answers 404 until an official release exists.
+  function noLatest(folder: string, tag: string) {
+    const real = fakeRelease(folder, tag);
+    const urls: string[] = [];
+    const fn = async (url: string) => {
+      urls.push(url);
+      if (url.endsWith("/releases/latest")) return { ok: false, status: 404 } as unknown as Response;
+      return real.fn(url);
+    };
+    return { fn, urls };
+  }
+
+  it("reads the pinned tag of firmware-release.json", () => {
+    const root = temp();
+    expect(sync.pinnedTag(root)).toBeUndefined();
+    writeFileSync(join(root, "firmware-release.json"), JSON.stringify({ fallback_tag: "v0.3.8" }));
+    expect(sync.pinnedTag(root)).toBe("v0.3.8");
+    for (const bad of ['{"fallback_tag": "../x"}', '{"fallback_tag": 8}', "[1]", "not json", "{}"]) {
+      writeFileSync(join(root, "firmware-release.json"), bad);
+      expect(sync.pinnedTag(root), bad).toBeUndefined();
+    }
+    expect(sync.pinnedTag(join(__dirname, "..", ".."))).toMatch(/^v\d/);
+  });
+
+  it("uses the pinned release when there is no newest one, and says so", async () => {
+    const { fn, urls } = noLatest(bundled, "v0.3.8");
+    const tag = await sync.downloadRelease({ fetchFn: fn, outDir: temp(), env: {}, fallbackTag: "v0.3.8" });
+    expect(tag).toBe("v0.3.8");
+    expect(urls[0]).toBe("https://api.github.com/repos/JuanenRac/URTC/releases/latest");
+    expect(urls[1]).toBe("https://api.github.com/repos/JuanenRac/URTC/releases/tags/v0.3.8");
+  });
+
+  it("never replaces a tag that was asked for", async () => {
+    const fn = async () => ({ ok: false, status: 404 }) as unknown as Response;
+    await expect(sync.downloadRelease({ fetchFn: fn, tag: "v9.9.9", outDir: temp(), env: {}, fallbackTag: "v0.3.8" })).rejects.toThrow(/404/);
+  });
+
+  it("does not hide a failure other than a missing release", async () => {
+    const fn = async () => ({ ok: false, status: 403 }) as unknown as Response;
+    await expect(sync.downloadRelease({ fetchFn: fn, outDir: temp(), env: {}, fallbackTag: "v0.3.8" })).rejects.toThrow(/403/);
+  });
+
+  it("keeps the 404 when there is no pin", async () => {
+    const fn = async () => ({ ok: false, status: 404 }) as unknown as Response;
+    await expect(sync.downloadRelease({ fetchFn: fn, outDir: temp(), env: {} })).rejects.toThrow(/404/);
+  });
+});

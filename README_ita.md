@@ -238,6 +238,8 @@ PUBBLICA di sviluppo (`signing_key_kind: "dev"` nel manifest) si installano
 solo su schede il cui bootloader è stato compilato allo stesso modo - il log
 lo segnala. Vedi `docs/FIRMWARE_SIGNING.TXT` in URTC.
 
+La cartella **non è in git**: la crea `npm run sync-firmware` (la CI e la build di Pages lo eseguono prima dei test e della build). Finché non esiste una release ufficiale, il «latest» di GitHub risponde 404 e `firmware-release.json` indica la release usata al suo posto (oggi la pre-release da banco); eliminalo, o cambia il suo tag, quando ne verrà pubblicata una ufficiale. **Sicurezza della pagina**: script, stili, font e immagini arrivano dalla pagina stessa (i font sono impacchettati con l'app, nessuna richiesta va a un server di font), in linea sono ammessi solo gli attributi di stile che scrive React, e la pagina può raggiungere solo la propria origine e gli host GitHub che servono le release (Content-Security-Policy nell'`index.html` generato). Un host che può inviare intestazioni usa `public/_headers` (la stessa politica, `Permissions-Policy: serial=(self)` e nient'altro di potente); GitHub Pages non può inviare intestazioni, quindi lì vale solo la politica contenuta nella pagina.
+
 `public/firmware/` contiene esattamente i file pubblicati da URTC (stessi
 nomi, stessi byte, con i loro file associati). I binari di URTC non sono in
 git: sono file allegati alla release di ogni versione.

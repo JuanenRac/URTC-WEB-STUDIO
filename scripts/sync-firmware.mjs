@@ -7,7 +7,9 @@
 // The URTC binaries are not in git: they are the assets of the GitHub release of each
 // version. Where the files come from:
 //
-//   node scripts/sync-firmware.mjs                    assets of the newest release of JuanenRac/URTC
+//   node scripts/sync-firmware.mjs                    assets of the newest official release of JuanenRac/URTC; while there
+//                                                     is none (GitHub's "latest" answers 404 for a pre-release), the release
+//                                                     named in firmware-release.json
 //   node scripts/sync-firmware.mjs --tag v0.3.5       assets of that release
 //   node scripts/sync-firmware.mjs path/to/folder     a local folder (a bench build: ../URTC/firmware
 //                                                     after build_firmware.sh in release mode)
@@ -106,10 +108,30 @@ function apiHeaders(accept, env = process.env) {
   return headers;
 }
 
-/** Downloads the assets of a release (newest, or the given tag) that the bundle needs into outDir. */
-export async function downloadRelease({ fetchFn = fetch, tag, outDir, env = process.env }) {
-  const url = `https://api.github.com/repos/${RELEASE_REPO}/releases/${tag ? `tags/${encodeURIComponent(tag)}` : 'latest'}`;
-  const res = await fetchFn(url, { headers: apiHeaders('application/vnd.github+json', env) });
+/** The `fallback_tag` of firmware-release.json, or undefined when the file is missing, unreadable or names something that is not a tag. */
+export function pinnedTag(root) {
+  try {
+    const tag = JSON.parse(readFileSync(join(root, 'firmware-release.json'), 'utf8')).fallback_tag;
+    return typeof tag === 'string' && /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$/.test(tag) ? tag : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * Downloads the assets of a release (newest, or the given tag) that the bundle needs into outDir.
+ * When the newest release was asked for and GitHub has none (404), the release named by `fallbackTag` is used
+ * instead; a tag that was asked for is never replaced.
+ */
+export async function downloadRelease({ fetchFn = fetch, tag, outDir, env = process.env, fallbackTag }) {
+  const releaseUrl = (name) => `https://api.github.com/repos/${RELEASE_REPO}/releases/${name ? `tags/${encodeURIComponent(name)}` : 'latest'}`;
+  let url = releaseUrl(tag);
+  let res = await fetchFn(url, { headers: apiHeaders('application/vnd.github+json', env) });
+  if (res.status === 404 && !tag && fallbackTag) {
+    console.log(`sync-firmware: no official release yet, using ${fallbackTag} named in firmware-release.json`);
+    url = releaseUrl(fallbackTag);
+    res = await fetchFn(url, { headers: apiHeaders('application/vnd.github+json', env) });
+  }
   if (!res.ok) throw new Error(`GitHub answered ${res.status} for ${url}`);
   const release = await res.json();
   const assets = new Map((release.assets ?? []).map((a) => [a.name, a]));
@@ -167,7 +189,7 @@ async function main() {
     origin = src;
   } else {
     temp = mkdtempSync(join(tmpdir(), 'urtc-release-'));
-    const tag = await downloadRelease({ tag: args.tag, outDir: temp });
+    const tag = await downloadRelease({ tag: args.tag, outDir: temp, fallbackTag: pinnedTag(root) });
     src = temp;
     origin = `release ${tag} of ${RELEASE_REPO}`;
   }

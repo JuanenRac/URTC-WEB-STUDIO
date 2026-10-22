@@ -206,6 +206,8 @@ Studio 只负责传送该签名——与桌面版 `URTC Flasher` 相同的模式
 `signing_key_kind: "dev"`）只能安装到以相同方式构建引导程序的板卡上——日志
 会给出提示。参见 URTC 的 `docs/FIRMWARE_SIGNING.TXT`。
 
+该文件夹**不在 git 中**：由 `npm run sync-firmware` 创建（CI 和 Pages 构建会在测试和构建之前运行它）。在没有正式发布版本期间，GitHub 的 “latest” 会返回 404，由 `firmware-release.json` 指定改用的发布版本（目前是台架预发布版）；发布正式版本后，请删除该文件或修改其标签。**页面的安全性**：脚本、样式、字体和图片都来自页面本身（字体随应用打包，不会向字体服务器发出请求），内联只允许 React 写入的样式属性，页面只能访问自己的源以及提供发布文件的 GitHub 主机（构建出的 `index.html` 中的 Content-Security-Policy）。能够发送响应头的主机使用 `public/_headers`（相同的策略、`Permissions-Policy: serial=(self)`，没有其他强大的权限）；GitHub Pages 无法发送响应头，因此在那里只有页面内的策略生效。
+
 `public/firmware/` 中正是 URTC 发布的文件（相同名称、相同字节，并附带附属
 文件）。URTC 的二进制文件不在 git 中：它们是每个版本 GitHub 发布版本的附件。
 `npm run sync-firmware` 会下载最新的发布版本（指定版本用

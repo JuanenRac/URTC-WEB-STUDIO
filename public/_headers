@@ -1,0 +1,9 @@
+# Response headers for hosts that read this file (Netlify, Cloudflare Pages). GitHub Pages cannot set
+# headers: there the Content-Security-Policy travels in a <meta> tag and the Permissions-Policy is not sent.
+# src/lib/contentSecurityPolicy.test.ts keeps this file equal to the policies in vite.config.ts.
+/*
+  Permissions-Policy: serial=(self), camera=(), microphone=(), geolocation=(), usb=(), bluetooth=(), payment=(), interest-cohort=()
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; font-src 'self'; img-src 'self' data: blob:; connect-src 'self' https://api.github.com https://github.com https://raw.githubusercontent.com https://*.githubusercontent.com; object-src 'none'; base-uri 'self'; form-action 'none'; manifest-src 'self'; frame-ancestors 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  Cross-Origin-Opener-Policy: same-origin

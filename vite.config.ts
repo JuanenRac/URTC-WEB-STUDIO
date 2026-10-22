@@ -3,20 +3,38 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 
 // The built page only talks to itself, to the GitHub API and to the hosts that
-// serve release assets, and loads its fonts from Google Fonts. The policy is
-// added to the built index.html only: the development server injects inline
-// scripts for hot reload, which a strict policy would block.
+// serve release assets; its scripts, styles, fonts and images all come from the page
+// itself. Only the style *attributes* that React writes are allowed inline
+// (style-src-attr); no inline <style> or <script> is. The policy is added to the
+// built index.html only: the development server injects inline scripts for hot
+// reload, which a strict policy would block.
 export const CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
   "script-src 'self'",
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-  "font-src 'self' https://fonts.gstatic.com",
+  "style-src 'self'",
+  "style-src-attr 'unsafe-inline'",
+  "font-src 'self'",
   "img-src 'self' data: blob:",
   "connect-src 'self' https://api.github.com https://github.com https://raw.githubusercontent.com https://*.githubusercontent.com",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'none'",
+  "manifest-src 'self'",
 ].join('; ');
+
+// What the page asks the browser for, and nothing else. Web Serial is the only
+// powerful feature it uses. A meta tag cannot carry this policy; it is sent as a
+// response header by hosts that read public/_headers, and documented for the others.
+export const PERMISSIONS_POLICY = [
+  'serial=(self)',
+  'camera=()',
+  'microphone=()',
+  'geolocation=()',
+  'usb=()',
+  'bluetooth=()',
+  'payment=()',
+  'interest-cohort=()',
+].join(', ');
 
 function contentSecurityPolicy(): Plugin {
   return {

@@ -249,6 +249,8 @@ im Manifest), lassen sich nur auf Platinen installieren, deren Bootloader
 genauso gebaut wurde - das Log weist darauf hin. Siehe
 `docs/FIRMWARE_SIGNING.TXT` in URTC.
 
+Der Ordner liegt **nicht in git**: `npm run sync-firmware` legt ihn an (die CI und der Pages-Build führen es vor den Tests und dem Build aus). Solange es kein offizielles Release gibt, antwortet GitHubs „latest“ mit 404, und `firmware-release.json` nennt das stattdessen verwendete Release (heute das Bench-Pre-Release); löschen Sie die Datei oder ändern Sie ihren Tag, wenn ein offizielles veröffentlicht wird. **Sicherheit der Seite**: Skripte, Styles, Schriften und Bilder kommen von der Seite selbst (die Schriften sind mit der App ausgeliefert, es geht keine Anfrage an einen Schriftenserver), inline sind nur die Style-Attribute erlaubt, die React schreibt, und die Seite erreicht nur ihren eigenen Ursprung und die GitHub-Hosts, die die Releases ausliefern (Content-Security-Policy im gebauten `index.html`). Ein Host, der Header senden kann, nutzt `public/_headers` (dieselbe Richtlinie, `Permissions-Policy: serial=(self)` und nichts anderes Mächtiges); GitHub Pages kann keine Header senden, dort gilt nur die Richtlinie in der Seite.
+
 `public/firmware/` enthält genau die Dateien, die URTC veröffentlicht hat
 (gleiche Namen, gleiche Bytes, mit ihren Begleitdateien). Die URTC-Binärdateien
 liegen nicht in git: sie sind Anhänge des GitHub-Releases jeder Version.

@@ -236,6 +236,8 @@ clave PÚBLICA de desarrollo (`signing_key_kind: "dev"` en el manifiesto)
 solo se instalan en placas cuyo bootloader se compiló igual - el registro lo
 indica. Ver `docs/FIRMWARE_SIGNING.TXT` de URTC.
 
+La carpeta **no está en git**: la crea `npm run sync-firmware` (la CI y la compilación de Pages lo ejecutan antes de las pruebas y de la compilación). Mientras no exista una release oficial, el «latest» de GitHub responde 404 y `firmware-release.json` indica la release que se usa en su lugar (hoy la pre-release de banco); bórralo, o cambia su etiqueta, cuando se publique una oficial. **Seguridad de la página**: los scripts, los estilos, las fuentes y las imágenes vienen de la propia página (las fuentes van empaquetadas con la aplicación, no se pide nada a un servidor de fuentes), solo se permiten en línea los atributos de estilo que escribe React, y la página solo puede llegar a su propio origen y a los servidores de GitHub que sirven las releases (Content-Security-Policy en el `index.html` compilado). Un servidor que pueda enviar cabeceras usa `public/_headers` (la misma política, `Permissions-Policy: serial=(self)` y nada más potente); GitHub Pages no puede enviar cabeceras, así que allí solo vale la política que lleva la propia página.
+
 `public/firmware/` contiene exactamente los archivos que publicó URTC (mismos
 nombres, mismos bytes, con sus archivos adjuntos). Los binarios de URTC no
 están en git: son archivos adjuntos de la release de cada versión.

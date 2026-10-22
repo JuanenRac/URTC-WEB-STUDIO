@@ -233,6 +233,8 @@ flash and never stores it. Images built with the PUBLIC development key
 bootloader was built the same way - the log says so. See URTC's
 `docs/FIRMWARE_SIGNING.TXT`.
 
+The folder is **not in git**: `npm run sync-firmware` creates it (the CI and the Pages build run it before the tests and the build). While there is no official release, GitHub's "latest" answers 404 and `firmware-release.json` names the release used instead (today the bench pre-release); delete the file, or change its tag, when an official one is published. **Security of the page**: scripts, styles, fonts and images come from the page itself (the fonts are packaged with the app, no request goes to a font host), only the style attributes that React writes are allowed inline, and the page can reach only its own origin and the GitHub hosts that serve the releases (Content-Security-Policy in the built `index.html`). A host that can send headers uses `public/_headers` (the same policy, `Permissions-Policy: serial=(self)` and nothing else powerful); GitHub Pages cannot send headers, so there only the policy inside the page applies.
+
 `public/firmware/` holds exactly the files URTC published (same names, same
 bytes, with their sidecars). The URTC binaries are not in git: they are assets
 of each version's GitHub release. `npm run sync-firmware` downloads the newest

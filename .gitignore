@@ -43,3 +43,7 @@ coverage/
 # Python bytecode (generated locally; never source)
 __pycache__/
 *.py[cod]
+
+# The firmware images are not kept in git: they are the assets of the releases of URTC
+# (npm run sync-firmware downloads and verifies them). The folder is created by the sync.
+public/firmware/

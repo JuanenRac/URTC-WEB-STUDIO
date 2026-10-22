@@ -49,6 +49,11 @@ jobs:
       - name: Install the locked dependencies
         if: steps.pages.outcome == 'success'
         run: npm ci --ignore-scripts
+      - name: Download the firmware images of the release (verified against the release signature)
+        if: steps.pages.outcome == 'success'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: npm run sync-firmware
       - name: Type check and tests
         if: steps.pages.outcome == 'success'
         run: |

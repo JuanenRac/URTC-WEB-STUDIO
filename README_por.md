@@ -236,6 +236,8 @@ chave de desenvolvimento PÚBLICA (`signing_key_kind: "dev"` no manifesto)
 só se instalam em placas cujo bootloader tenha sido compilado da mesma forma - o
 registo indica-o. Consulte o `docs/FIRMWARE_SIGNING.TXT` do URTC.
 
+A pasta **não está no git**: cria-a `npm run sync-firmware` (a CI e a compilação do Pages executam-no antes dos testes e da compilação). Enquanto não existir uma release oficial, o «latest» do GitHub responde 404 e `firmware-release.json` indica a release usada em seu lugar (hoje a pré-release de bancada); apague-o, ou mude a sua etiqueta, quando for publicada uma oficial. **Segurança da página**: os scripts, os estilos, os tipos de letra e as imagens vêm da própria página (os tipos de letra vão empacotados com a aplicação, nenhum pedido vai para um servidor de tipos de letra), só são permitidos em linha os atributos de estilo que o React escreve, e a página só alcança a sua própria origem e os servidores do GitHub que servem as releases (Content-Security-Policy no `index.html` compilado). Um servidor que possa enviar cabeçalhos usa `public/_headers` (a mesma política, `Permissions-Policy: serial=(self)` e nada mais poderoso); o GitHub Pages não pode enviar cabeçalhos, por isso aí só vale a política que a própria página leva.
+
 `public/firmware/` contém exatamente os ficheiros que o URTC publicou (mesmos
 nomes, mesmos bytes, com os seus ficheiros auxiliares). Os binários do URTC não
 estão no git: são anexos da release de cada versão no GitHub.
