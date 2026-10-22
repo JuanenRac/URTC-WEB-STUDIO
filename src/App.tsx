@@ -25,6 +25,7 @@ import {
 import { BoardVersionInfo, SlaveVersionInfo, installedVersion } from './lib/boardVersion';
 import { RemoteFirmware, downloadAsset, downloadAssetText, digestMismatch, GithubReleaseError } from './lib/githubRelease';
 import { resolveSignature } from './lib/firmwareSignature';
+import { checkReleaseSignature } from './lib/releaseSignature';
 import { validateImage, checkSidecar, resolveVersion } from './lib/firmwareImage';
 import { parseCustomFrame, customFrameErrorText } from './lib/customFrame';
 import { BUNDLED_FIRMWARE } from './lib/bundledFirmware';
@@ -507,6 +508,31 @@ export default function App() {
         ? t('flasher.err_manifest_signature_malformed', 'The manifest has an hmac_sha256 that is not 64 hexadecimal characters.')
         : t('flasher.err_manifest_wrong_target', 'The manifest is for another board: it declares {{got}} and this update needs {{want}}.', { got: sidecarProblem.got, want: sidecarProblem.want }));
       return;
+    }
+    // The release signature (Ed25519, checked here with the browser's own Web Crypto) says the maintainer published this exact file; the
+    // bundled image and an image of a GitHub release have one when the release was signed. An invalid one stops the update; a missing one
+    // is only said in the log, because the images published before the signature existed have none.
+    if (!fileObj) {
+      let signatureText: string | null = null;
+      try {
+        if (remote) {
+          if (remote.signature) signatureText = await downloadAssetText(fetch, remote.signature);
+        } else {
+          const res = await fetch(`${import.meta.env.BASE_URL}firmware/${fileName}.sig`);
+          const type = res.headers.get('content-type') ?? '';
+          if (res.ok && !type.includes('text/html')) signatureText = await res.text();
+        }
+      } catch {
+        signatureText = null;
+      }
+      const state = await checkReleaseSignature(fileName, data, signatureText);
+      if (state === 'invalid') {
+        refuse(t('flasher.err_release_signature', 'The release signature of this image is not valid: the file was changed or was not published by the maintainer. Nothing was sent to the board.'));
+        return;
+      }
+      flasher.appendLog(state === 'signed'
+        ? t('flasher.log_release_signature_ok', 'Release signature verified: this exact file was published by the maintainer.')
+        : t('flasher.log_release_signature_none', 'This image has no release signature to check (or this browser cannot check it); the board still verifies its own signature.'));
     }
     // No invented version: a wrong one stored in the board would make every later update look like a rollback.
     const version = resolveVersion(manifest, fileName);

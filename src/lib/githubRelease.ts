@@ -38,6 +38,8 @@ export interface RemoteFirmware {
   asset: ReleaseAsset;
   sha256?: ReleaseAsset;
   manifest?: ReleaseAsset;
+  /** The release signature of the image (<image>.sig), when the release has one. */
+  signature?: ReleaseAsset;
 }
 
 export type GithubReleaseErrorCode = 'rate_limit' | 'no_release' | 'http' | 'network' | 'no_images';
@@ -69,6 +71,7 @@ export function imagesFromRelease(release: any, target: FlashTarget): RemoteFirm
       asset: a,
       sha256: byName.get(`${a.name}.sha256`),
       manifest: byName.get(`${a.name}.manifest.json`),
+      signature: byName.get(`${a.name}.sig`),
     }));
 }
 

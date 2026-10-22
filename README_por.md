@@ -247,7 +247,7 @@ assinatura antes de tocar em `public/firmware/`, e regenera
 `src/lib/bundledFirmware.ts`; um teste verifica o pacote contra os seus
 manifestos.
 
-Cada ficheiro de uma release oficial tem uma assinatura de release (`<ficheiro>.sig`, Ed25519): a sincronização verifica-a quando existe e recusa uma errada; um conjunto sem assinaturas (uma pré-release de bancada ou uma compilação local) precisa de `--allow-unsigned`.
+Cada ficheiro de uma release oficial tem uma assinatura de release (`<ficheiro>.sig`, Ed25519): a sincronização verifica-a quando existe e recusa uma errada; um conjunto sem assinaturas (uma pré-release de bancada ou uma compilação local) precisa de `--allow-unsigned`. A página verifica a mesma assinatura no navegador (Web Crypto) antes de enviar uma imagem incluída ou uma imagem de uma release do GitHub para uma placa, e pára se não for válida.
 
 ## 🚀 Primeiros passos
 

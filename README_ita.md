@@ -249,7 +249,7 @@ di firma prima di toccare `public/firmware/`, e rigenera
 `src/lib/bundledFirmware.ts`; un test verifica il pacchetto rispetto ai suoi
 manifest.
 
-Ogni file di una release ufficiale ha una firma di release (`<file>.sig`, Ed25519): la sincronizzazione la verifica quando è presente e rifiuta una firma errata; un insieme senza firme (una pre-release da banco o una build locale) richiede `--allow-unsigned`.
+Ogni file di una release ufficiale ha una firma di release (`<file>.sig`, Ed25519): la sincronizzazione la verifica quando è presente e rifiuta una firma errata; un insieme senza firme (una pre-release da banco o una build locale) richiede `--allow-unsigned`. La pagina verifica la stessa firma nel browser (Web Crypto) prima di inviare a una scheda un'immagine inclusa o un'immagine di una release GitHub, e si ferma se non è valida.
 
 ## 🚀 Per iniziare
 

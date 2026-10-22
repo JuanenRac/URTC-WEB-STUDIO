@@ -253,7 +253,7 @@ signature avant de toucher à `public/firmware/`, et régénère
 `src/lib/bundledFirmware.ts` ; un test vérifie le paquet par rapport à ses
 manifestes.
 
-Chaque fichier d'une release officielle a une signature de release (`<fichier>.sig`, Ed25519) : la synchronisation la vérifie lorsqu'elle est présente et refuse une signature incorrecte ; un jeu sans signatures (une pré-release de banc ou un build local) demande `--allow-unsigned`.
+Chaque fichier d'une release officielle a une signature de release (`<fichier>.sig`, Ed25519) : la synchronisation la vérifie lorsqu'elle est présente et refuse une signature incorrecte ; un jeu sans signatures (une pré-release de banc ou un build local) demande `--allow-unsigned`. La page vérifie la même signature dans le navigateur (Web Crypto) avant d'envoyer à une carte une image fournie ou une image d'une release GitHub, et s'arrête si elle n'est pas valide.
 
 ## 🚀 Pour commencer
 

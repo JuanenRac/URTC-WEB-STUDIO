@@ -55,6 +55,12 @@ describe("the images of the newest release", () => {
     expect(imagesFromRelease(RELEASE, "slave").map(i => i.name)).toEqual(["URTC_SLAVE_FIRMWARE_v0.1.10.bin"]);
   });
 
+  it("links the release signature of an image when the release has one", () => {
+    const signed = { tag_name: "v0.3.5", assets: [...NAMES, "URTC_MAIN_FIRMWARE_v0.3.5.bin.sig"].map(asset) };
+    expect(imagesFromRelease(signed, "main")[0].signature?.name).toBe("URTC_MAIN_FIRMWARE_v0.3.5.bin.sig");
+    expect(imagesFromRelease(RELEASE, "main")[0].signature).toBeUndefined();
+  });
+
   it("leaves out bootloaders, hex files, sidecars and the index", () => {
     const names = [...imagesFromRelease(RELEASE, "main"), ...imagesFromRelease(RELEASE, "slave")].map(i => i.name);
     expect(names.some(n => /BOOTLOADER|\.hex|\.sha256|\.json/.test(n))).toBe(false);
