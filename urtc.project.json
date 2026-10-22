@@ -11,6 +11,7 @@
   ],
   "deployment_target": "user-pc",
   "maturity": "functional",
+  "evidence": "simulator",
   "family": "URTC Tool Platform",
   "parent": "URTC",
   "build": "npm install && npm run build.",

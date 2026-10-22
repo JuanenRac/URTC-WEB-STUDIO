@@ -12,6 +12,10 @@ build`/`vite build` on its own is deliberately compilation-only) bumps the
 version automatically, so the number reflects build count, not the size or
 compatibility of a change.
 
+## [Unreleased]
+
+- The manifest declares how far the project has been shown to work (`evidence`: simulator) and `tools/ci_validate.py` checks the value.
+
 ## [0.3.3] - Follow URTC-COMMON 0.0.5 and the 0.3.8 firmware
 
 - The 0.3.8 firmware images are bundled, and the generated identifiers and the shared vectors follow URTC-COMMON 0.0.5.
