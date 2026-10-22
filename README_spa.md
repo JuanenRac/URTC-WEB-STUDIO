@@ -350,7 +350,7 @@ resumen del trabajo anterior en este proyecto.
 │   │                                el propio inyector de tramas del CAN Bus
 │   │                                Analyzer)
 │   ├── main.tsx                    Punto de entrada de Vite/React
-│   ├── i18n.ts                     Configuracion de i18next - en/es/de/fr/it/zh/ja,
+│   ├── i18n.ts                     Configuracion de i18next - en/es/de/fr/it/zh/ja/pt,
 │   │                                persistido en localStorage
 │   ├── index.css                   Punto de entrada de Tailwind
 │   ├── types.ts                    Tipos TypeScript compartidos (CanFrame,

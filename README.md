@@ -345,7 +345,7 @@ project.
 │   │                                tab below (including CAN OTA start/readback and
 │   │                                the CAN Bus Analyzer's own frame injector)
 │   ├── main.tsx                    Vite/React entry point
-│   ├── i18n.ts                     i18next setup - en/es/de/fr/it/zh/ja, persisted
+│   ├── i18n.ts                     i18next setup - en/es/de/fr/it/zh/ja/pt, persisted
 │   │                                to localStorage
 │   ├── index.css                   Tailwind entry point
 │   ├── types.ts                    Shared TypeScript types (CanFrame, HardwareState,

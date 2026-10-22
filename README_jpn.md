@@ -352,7 +352,7 @@ build`（`vite build`）単体は意図的にコンパイルのみで、バー�
 │   │                                読み戻しと CAN Bus Analyzer 自身の
 │   │                                フレームインジェクターを含む）
 │   ├── main.tsx                    Vite/React エントリポイント
-│   ├── i18n.ts                     i18next 設定——en/es/de/fr/it/zh/ja、
+│   ├── i18n.ts                     i18next 設定——en/es/de/fr/it/zh/ja/pt、
 │   │                                localStorage に永続化
 │   ├── index.css                   Tailwind エントリポイント
 │   ├── types.ts                    共有 TypeScript 型（CanFrame、

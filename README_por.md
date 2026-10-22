@@ -305,7 +305,7 @@ desenho anterior com um hook `prebuild`, mas esse script é hoje legado, mantido
 como referência (veja o seu próprio comentário de cabeçalho); o `npm run dev`/`lint`/`preview`
 também nunca tocam na versão. Isto não é Semantic Versioning: é um
 conta-quilómetros em base 10. O dígito de patch sobe de um em um; quando passaria de
-9, volta a 0 e o dígito de minor sobe em seu lugar (`0.1.9` -> `0.2.0`,
+9, volta a 0 e o dígito de minor sobe no seu lugar (`0.1.9` -> `0.2.0`,
 nunca `0.1.10`); o mesmo transporte propaga-se de minor para major. Consulte o
 `CHANGELOG.md` para o histórico de versões e um resumo do trabalho passado neste
 projeto.
@@ -346,7 +346,7 @@ projeto.
 │   │                                separador abaixo (incluindo o início/leitura de volta de CAN OTA e
 │   │                                o próprio injetor de tramas do CAN Bus Analyzer)
 │   ├── main.tsx                    Ponto de entrada do Vite/React
-│   ├── i18n.ts                     Configuracao do i18next - en/es/de/fr/it/zh/ja, persistido
+│   ├── i18n.ts                     Configuracao do i18next - en/es/de/fr/it/zh/ja/pt, persistido
 │   │                                em localStorage
 │   ├── index.css                   Ponto de entrada do Tailwind
 │   ├── types.ts                    Tipos TypeScript partilhados (CanFrame, HardwareState,

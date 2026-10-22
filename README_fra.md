@@ -357,7 +357,7 @@ travail antérieur sur ce projet.
 │   │                                demarrage/relecture CAN OTA et le propre
 │   │                                injecteur de trames du CAN Bus Analyzer)
 │   ├── main.tsx                    Point d'entree Vite/React
-│   ├── i18n.ts                     Configuration i18next - en/es/de/fr/it/zh/ja,
+│   ├── i18n.ts                     Configuration i18next - en/es/de/fr/it/zh/ja/pt,
 │   │                                persistee dans localStorage
 │   ├── index.css                   Point d'entree Tailwind
 │   ├── types.ts                    Types TypeScript partages (CanFrame,

@@ -364,7 +364,7 @@ Projekt.
 │   │                                Start/Ruecklesung und dem eigenen
 │   │                                Frame-Injektor des CAN Bus Analyzer)
 │   ├── main.tsx                    Vite/React-Einstiegspunkt
-│   ├── i18n.ts                     i18next-Setup - en/es/de/fr/it/zh/ja, in
+│   ├── i18n.ts                     i18next-Setup - en/es/de/fr/it/zh/ja/pt, in
 │   │                                localStorage persistiert
 │   ├── index.css                   Tailwind-Einstiegspunkt
 │   ├── types.ts                    Gemeinsame TypeScript-Typen (CanFrame,

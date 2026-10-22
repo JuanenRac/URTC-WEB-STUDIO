@@ -305,7 +305,7 @@ npm run preview
 │   │                                的处理程序（包括 CAN OTA 启动/读回,
 │   │                                以及 CAN 总线分析器自身的帧注入器）
 │   ├── main.tsx                    Vite/React 入口点
-│   ├── i18n.ts                     i18next 配置——en/es/de/fr/it/zh/ja,
+│   ├── i18n.ts                     i18next 配置——en/es/de/fr/it/zh/ja/pt,
 │   │                                持久化到 localStorage
 │   ├── index.css                   Tailwind 入口点
 │   ├── types.ts                    共享的 TypeScript 类型（CanFrame、
