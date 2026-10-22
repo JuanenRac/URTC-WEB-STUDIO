@@ -12,7 +12,7 @@ build`/`vite build` on its own is deliberately compilation-only) bumps the
 version automatically, so the number reflects build count, not the size or
 compatibility of a change.
 
-## [Unreleased]
+## [0.3.4] - Signed firmware checked in the browser, a final content policy and the shared dashboard notice
 
 - `tools/ci_validate.py` fails when a versioned file has the name of a Windows path (a colon, the character a file system uses to store one, or a first folder named like a drive or a user profile): a path handed to WSL without translation once put build output inside a repository. The same check (`tools/_tracked_names.py`) is in every URTC repository.
 - **The firmware images are no longer kept in git.** `public/firmware/` is created by `npm run sync-firmware` from the assets of the URTC releases (newest official release; while there is none, the release named in `firmware-release.json`, today the bench pre-release), verifying every digest and release signature first; the CI and the Pages build run it before the tests. A test covers the fallback to the named release (never for a tag that was asked for, never for another failure).

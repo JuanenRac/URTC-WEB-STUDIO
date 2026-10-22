@@ -145,7 +145,10 @@ describe("sync-firmware while the project has no official release", () => {
       writeFileSync(join(root, "firmware-release.json"), bad);
       expect(sync.pinnedTag(root), bad).toBeUndefined();
     }
-    expect(sync.pinnedTag(join(__dirname, "..", ".."))).toMatch(/^v\d/);
+    // the repository names a pinned tag only while the file exists (it is deleted once there is an official release)
+    const repoRoot = join(__dirname, "..", "..");
+    if (existsSync(join(repoRoot, "firmware-release.json"))) expect(sync.pinnedTag(repoRoot)).toMatch(/^v\d/);
+    else expect(sync.pinnedTag(repoRoot)).toBeUndefined();
   });
 
   it("uses the pinned release when there is no newest one, and says so", async () => {
