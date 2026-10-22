@@ -1,16 +1,6 @@
 # Changelog
 
-All notable work on URTC Web Studio is summarized here, newest first. This is
-a condensed summary of real development history, not an exhaustive
-implementation-level log of every change.
-
-Versioning here does **not** follow Semantic Versioning. It follows a
-base-10 "odometer" scheme (see the note at the bottom of this file) - every
-real production build (`build.bat`/`build.sh`, which runs
-`bump_manifest_version.py` before calling `npm run build` - `npm run
-build`/`vite build` on its own is deliberately compilation-only) bumps the
-version automatically, so the number reflects build count, not the size or
-compatibility of a change.
+All notable changes to this project are documented here.
 
 ## [0.3.4] - Signed firmware checked in the browser, a final content policy and the shared dashboard notice
 
