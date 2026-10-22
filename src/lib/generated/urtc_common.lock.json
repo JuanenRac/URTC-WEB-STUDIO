@@ -2,9 +2,25 @@
   "format": 1,
   "urtc_common_version": "0.0.5",
   "files": {
+    "blackbox_vectors.json": {
+      "from": "conformance/blackbox_vectors.json",
+      "sha256": "45593844e0671bb37e65904c8fbba10ffb8863d6f98bb838b1568a42645d0bb8"
+    },
+    "rack_vectors.json": {
+      "from": "conformance/rack_vectors.json",
+      "sha256": "9bca19379bab5095cb2086c6ed67ee9e2c88b391eae5475cdcaec2583cb7d0e3"
+    },
+    "thermal_vectors.json": {
+      "from": "conformance/thermal_vectors.json",
+      "sha256": "9e34ab2ed1996a5cd62fb6cb473533afc5cd76a2c106fc3ca2f4bd9e61de9dc9"
+    },
     "urtcCanIds.ts": {
       "from": "generated/urtcCanIds.ts",
-      "sha256": "669d643efeaa8b76ea8e1cd111d678949df14e6b63222943051e6ff1ffba0064"
+      "sha256": "5d4789aec7d22e4ad00c5195200747a63f461bfe97feee6631ad34de1fea6462"
+    },
+    "urtcTools.ts": {
+      "from": "generated/urtcTools.ts",
+      "sha256": "fb0accd981a521734f9ea50b669ec784d5afa88c5050a8a8085818540e2840c8"
     }
   }
 }

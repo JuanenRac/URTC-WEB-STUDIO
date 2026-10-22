@@ -43,7 +43,7 @@ recebem as tramas CAN reais descritas em `docs/CANBUS.TXT` do
 
 | | |
 |---|---|
-| Versão | `0.3.3` |
+| Versão | `0.3.4` |
 | Maturidade | Funcional |
 | Tecnologia | Web Serial API / TypeScript |
 | Destino | Um navegador web no PC do utilizador |
@@ -477,6 +477,8 @@ Se construir sobre este projeto, tenha em conta a divisão de licenças: as alte
 de código devem manter-se GPL-3.0-or-later, os derivados da documentação devem manter-se CC
 BY-SA - cada um com atribuição a este projeto e ao seu autor.
 
+**Separadores Caixa negra, Funções opcionais, Bancada do rack e Vista térmica (novos, verificados apenas com simulações):** o Tester Studio lê o registador de falhas (`0x1A8` / `0x1A9`) e descarrega-o em CSV ou JSON, automaticamente uma vez por cada erro indicado pela placa quando essa opção está ativa; liga as funções opcionais do firmware (`0x1AE` / `0x1AF`, desligadas por predefinição, após uma confirmação; atuam após o próximo arranque); simula o rack de ferramentas na página, com a identidade de cada cabeça (tipo e número de série); e desenha a imagem de inspeção térmica em falsa cor (uma imagem simulada di-lo). O catálogo de ferramentas vem agora dos perfis de ferramenta partilhados do URTC-COMMON. Nada disto foi experimentado com uma placa real.
+
 ## 🔗 Projetos Relacionados
 
 Este projeto faz parte do ecossistema de robótica HYDRA-UMC do mesmo autor (JuanenRac / Electro Hobby 3D). Vale a pena conhecê-los, uma vez que um pedido pode, na verdade, dizer respeito a um destes e não a este repositório.
@@ -486,6 +488,7 @@ Este projeto faz parte do ecossistema de robótica HYDRA-UMC do mesmo autor (Jua
 
 **Projetos Irmãos** — as outras ferramentas da própria família de ferramentas de barramento CAN do URTC
 - **[URTC-FLASHER](https://github.com/JuanenRac/URTC-FLASHER)** — ferramenta de gravação com GUI para ambiente de trabalho para placas URTC, CAN-OTA mais SWD/JTAG de chip completo — mesmo protocolo SLCAN/CAN que esta aplicação baseada no navegador, que é a alternativa sem instalação a essa ferramenta.
+- **[URTC-GATEWAY](https://github.com/JuanenRac/URTC-GATEWAY)** — uma gateway à frente do barramento CAN que só deixa passar identificadores de uma lista, limita a sua taxa e pede uma chave de sessão.
 - **[URTC-TESTER](https://github.com/JuanenRac/URTC-TESTER)** — ferramenta de diagnóstico de barramento CAN em direto para ambiente de trabalho, para placas URTC, um painel por perfil de ferramenta — mesmo protocolo SLCAN/CAN que esta aplicação baseada no navegador, que é a alternativa sem instalação a essa ferramenta.
 
 **Diretamente Relacionados**

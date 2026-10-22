@@ -436,6 +436,8 @@ CERN-OHL-S v2;本工具自身的许可证并不延伸至那个独立的项目,�
 GPL-3.0-or-later,文档衍生品应保持 CC BY-SA——每一项都需附带指向本项目及其
 作者的署名。
 
+**黑匣子、可选功能、机架试验台和热像标签页(新增,仅用模拟对象检查):** Tester Studio 读取故障记录器(`0x1A8` / `0x1A9`)并下载为 CSV 或 JSON,该选项开启时,板卡每报告一次错误就自动读取一次;可在确认后切换固件的可选功能(`0x1AE` / `0x1AF`,默认关闭,下次上电后生效);在页面中模拟工具机架,并带有每个工具头的身份(类型和序列号);并以伪彩色绘制热检测图像(模拟图像会明确标注)。工具目录现在来自 URTC-COMMON 的共享工具配置。这些都没有在真实板卡上试过。
+
 ## 🔗 相关项目
 
 本项目是同一作者(JuanenRac / Electro Hobby 3D)打造的 HYDRA-UMC 机器人生态系统的一部分。值得了解,因为某个请求实际上可能是关于这些项目之一,而非本仓库本身。
@@ -445,6 +447,7 @@ GPL-3.0-or-later,文档衍生品应保持 CC BY-SA——每一项都需附带指
 
 **兄弟项目** —— URTC 自身 CAN 总线工具家族中的其他工具
 - **[URTC-FLASHER](https://github.com/JuanenRac/URTC-FLASHER)** — 面向 URTC 板卡的桌面图形烧录工具，支持 CAN-OTA 以及全芯片 SWD/JTAG —— 与本浏览器应用采用相同的 SLCAN/CAN 协议,本应用即是其免安装替代方案。
+- **[URTC-GATEWAY](https://github.com/JuanenRac/URTC-GATEWAY)** — 位于 CAN 总线前的网关，只放行列表中的标识符，限制其速率，并要求会话密钥。
 - **[URTC-TESTER](https://github.com/JuanenRac/URTC-TESTER)** — 面向 URTC 板卡的桌面实时 CAN 总线诊断工具，每种工具配置对应一个面板 —— 与本浏览器应用采用相同的 SLCAN/CAN 协议,本应用即是其免安装替代方案。
 
 **直接相关**

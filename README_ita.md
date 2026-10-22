@@ -503,6 +503,8 @@ modifiche al codice dovrebbero rimanere GPL-3.0-or-later, i derivati della docum
 dovrebbero rimanere CC BY-SA - ciascuno con attribuzione a questo progetto e al suo
 autore.
 
+**Schede Scatola nera, Funzioni opzionali, Banco del rack e Vista termica (nuove, verificate solo con simulazioni):** Tester Studio legge il registratore di guasti (`0x1A8` / `0x1A9`) e lo scarica in CSV o JSON, automaticamente una volta per ogni errore segnalato dalla scheda quando l'opzione è attiva; attiva le funzioni opzionali del firmware (`0x1AE` / `0x1AF`, spente per impostazione predefinita, dopo una conferma; agiscono al prossimo avvio); simula il rack di utensili nella pagina, con l'identità di ogni testa (tipo e numero di serie); e disegna l'immagine di ispezione termica in falsi colori (un'immagine simulata lo dichiara). Il catalogo degli utensili ora deriva dai profili utensile condivisi di URTC-COMMON. Nulla di tutto ciò è stato provato con una scheda reale.
+
 ## 🔗 Progetti Correlati
 
 Questo progetto fa parte dell'ecosistema robotico HYDRA-UMC dello stesso autore (JuanenRac / Electro Hobby 3D). Vale la pena conoscerlo, poiché una richiesta potrebbe in realtà riguardare uno di questi invece di questo repository.
@@ -512,6 +514,7 @@ Questo progetto fa parte dell'ecosistema robotico HYDRA-UMC dello stesso autore 
 
 **Progetti Fratelli** — gli altri strumenti della propria famiglia di strumenti CAN-bus di URTC
 - **[URTC-FLASHER](https://github.com/JuanenRac/URTC-FLASHER)** — strumento desktop con GUI per il flashing delle schede URTC, CAN-OTA più SWD/JTAG a chip intero — stesso protocollo SLCAN/CAN di questa app basata su browser, che ne è l'alternativa senza installazione.
+- **[URTC-GATEWAY](https://github.com/JuanenRac/URTC-GATEWAY)** — un gateway davanti al bus CAN che lascia passare solo gli identificatori di un elenco, ne limita la frequenza e chiede una chiave di sessione.
 - **[URTC-TESTER](https://github.com/JuanenRac/URTC-TESTER)** — strumento desktop di diagnostica CAN-bus dal vivo per schede URTC, un pannello per profilo utensile — stesso protocollo SLCAN/CAN di questa app basata su browser, che ne è l'alternativa senza installazione.
 
 **Direttamente Correlati**

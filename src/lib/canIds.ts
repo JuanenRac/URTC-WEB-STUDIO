@@ -6,6 +6,7 @@
 // bootloader identifiers live in lib/flasher.ts) - see docs/CANBUS.TXT in the
 // URTC firmware repo for the authoritative wire-level reference.
 // =============================================================================
+import { URTC_TOOL_PROFILES } from './generated/urtcTools';
 
 import * as generated from './generated/urtcCanIds';
 
@@ -16,6 +17,10 @@ export const CAN_ID_ACTIVE_TOOL_RESP = generated.CAN_ID_ACTIVE_TOOL_RESP;
 
 export const CAN_ID_FRAM_QUERY = generated.CAN_ID_FRAM_QUERY;
 export const CAN_ID_FRAM_STATE_RESP = generated.CAN_ID_FRAM_STATE_RESP;
+export const CAN_ID_BLACKBOX_QUERY = generated.CAN_ID_BLACKBOX_QUERY; // one chunk of the fault recorder (lib/blackBox.ts)
+export const CAN_ID_BLACKBOX_CHUNK = generated.CAN_ID_BLACKBOX_CHUNK;
+export const CAN_ID_SET_FEATURES = generated.CAN_ID_SET_FEATURES; // optional firmware functions (persistent)
+export const CAN_ID_FEATURES_RESP = generated.CAN_ID_FEATURES_RESP;
 export const CAN_ID_ERASE_FRAM = generated.CAN_ID_ERASE_FRAM;
 export const ERASE_FRAM_MAGIC = [...generated.MAGIC_ERASE_FRAM];
 
@@ -123,33 +128,8 @@ export const CAN_ID_THERMAL_CAL_CHUNK_RESP = generated.CAN_ID_THERMAL_CAL_CHUNK;
 export const THERMAL_CHUNK_COUNT = 48; // 48 chunks x 16 px = 768px = 32x24
 
 // --- Tool catalog ---
-export const TOOL_NAMES: Record<number, string> = {
-  0: 'Soldering Iron',
-  1: 'Paste Dispenser',
-  2: 'Liquid Dispenser',
-  3: 'Screwdriver',
-  4: 'Vacuum Pickup',
-  5: 'Drill',
-  6: 'Gripper (Gimbal)',
-  7: 'Gripper (NEMA)',
-  8: 'AOI Inspection',
-  9: 'Laser Engraver',
-  10: '3D Printer',
-  11: 'Scan Probe',
-  12: 'SMT Pick & Place',
-  13: 'Electromagnet',
-  14: 'Spot Welder',
-  15: 'Conformal Coating',
-  16: 'Vacuum Gripper (LG)',
-  17: 'Flying Probe',
-  18: 'UV Curing',
-  19: 'Hot Air Rework',
-  20: 'Press-Fit Inserter',
-  21: 'Crimping Actuator',
-  22: 'Thermal Inspection',
-  23: 'Paste Jetting',
-  24: 'Ultrasonic Welder',
-};
+// The names come from the tool profiles of URTC-COMMON (generated/urtcTools.ts).
+export const TOOL_NAMES: Record<number, string> = Object.fromEntries(URTC_TOOL_PROFILES.map(p => [p.id, p.shortName]));
 
 // Tools 1,2,3,6,7,12,16 all share the plain-stepper 0x120 motion panel.
 export const MOTION_TOOL_IDS = new Set([1, 2, 3, 6, 7, 12, 16]);

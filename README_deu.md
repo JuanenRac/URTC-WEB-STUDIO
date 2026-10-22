@@ -522,6 +522,8 @@ Code-Änderungen sollten GPL-3.0-or-later bleiben, Dokumentationsableitungen sol
 CC BY-SA bleiben - jeweils mit Zuschreibung zurück zu diesem Projekt und
 seinem Autor.
 
+**Tabs Blackbox, Optionale Funktionen, Rack-Prüfstand und Wärmebild (neu, nur mit Attrappen geprüft):** Tester Studio liest den Fehlerrekorder (`0x1A8` / `0x1A9`) und lädt ihn als CSV oder JSON herunter, bei eingeschalteter Option automatisch einmal für jeden gemeldeten Fehler; schaltet die optionalen Firmware-Funktionen (`0x1AE` / `0x1AF`, standardmäßig aus, nach einer Bestätigung; wirksam nach dem nächsten Einschalten); simuliert das Werkzeug-Rack auf der Seite, mit der Identität jedes Kopfes (Typ und Seriennummer); und zeichnet das Wärmebild der thermischen Inspektion in Falschfarben (ein simuliertes Bild sagt das). Der Werkzeugkatalog stammt jetzt aus den gemeinsamen Werkzeugprofilen von URTC-COMMON. Nichts davon wurde mit einer echten Platine ausprobiert.
+
 ## 🔗 Verwandte Projekte
 
 Dieses Projekt ist Teil des HYDRA-UMC-Robotik-Ökosystems desselben Autors (JuanenRac / Electro Hobby 3D). Gut zu wissen, da eine Anfrage eigentlich eines dieser Projekte betreffen könnte statt dieses Repositorys.
@@ -531,6 +533,7 @@ Dieses Projekt ist Teil des HYDRA-UMC-Robotik-Ökosystems desselben Autors (Juan
 
 **Geschwisterprojekte** — die übrigen Werkzeuge der eigenen CAN-Bus-Tooling-Familie von URTC
 - **[URTC-FLASHER](https://github.com/JuanenRac/URTC-FLASHER)** — Desktop-GUI-Flash-Tool für URTC-Platinen, CAN-OTA plus Full-Chip-SWD/JTAG — dasselbe SLCAN-/CAN-Protokoll wie diese browserbasierte App, die die installationsfreie Alternative dazu ist.
+- **[URTC-GATEWAY](https://github.com/JuanenRac/URTC-GATEWAY)** — ein Gateway vor dem CAN-Bus, das nur Kennungen einer Liste durchlässt, ihre Rate begrenzt und einen Sitzungsschlüssel verlangt.
 - **[URTC-TESTER](https://github.com/JuanenRac/URTC-TESTER)** — Desktop-Live-CAN-Bus-Diagnosetool für URTC-Platinen, ein Panel pro Werkzeugprofil — dasselbe SLCAN-/CAN-Protokoll wie diese browserbasierte App, die die installationsfreie Alternative dazu ist.
 
 **Direkt verwandt**

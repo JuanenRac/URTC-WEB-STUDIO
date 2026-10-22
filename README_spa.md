@@ -502,6 +502,8 @@ cambios de código deberían mantenerse GPL-3.0-or-later, los derivados de docum
 deberían mantenerse CC BY-SA - cada uno con atribución de vuelta a este proyecto y
 su autor.
 
+**Pestañas Caja negra, Funciones opcionales, Banco de rack y Vista térmica (nuevas, comprobadas solo con simulaciones):** Tester Studio lee el registrador de fallos (`0x1A8` / `0x1A9`) y lo descarga como CSV o JSON, automáticamente una vez por cada error que la placa indica cuando esa opción está activada; activa las funciones opcionales del firmware (`0x1AE` / `0x1AF`, apagadas por defecto, tras una confirmación; actúan tras el próximo arranque); simula el rack de herramientas en la página, con la identidad de cada cabezal (tipo y número de serie); y dibuja la imagen de inspección térmica en falso color (una imagen simulada lo dice). El catálogo de herramientas ahora sale de los perfiles de herramienta compartidos de URTC-COMMON. Nada de esto se ha probado con una placa real.
+
 ## 🔗 Proyectos Relacionados
 
 Este proyecto es parte del ecosistema de robótica HYDRA-UMC del mismo autor (JuanenRac / Electro Hobby 3D). Vale la pena conocerlo, ya que una petición podría en realidad ser sobre alguno de estos en vez de sobre este repositorio.
@@ -511,6 +513,7 @@ Este proyecto es parte del ecosistema de robótica HYDRA-UMC del mismo autor (Ju
 
 **Proyectos Hermanos** — las demás herramientas de la propia familia de herramientas CAN-bus de URTC
 - **[URTC-FLASHER](https://github.com/JuanenRac/URTC-FLASHER)** — herramienta de escritorio con GUI para flashear placas URTC, CAN-OTA más SWD/JTAG de chip completo — mismo protocolo SLCAN/CAN que esta app basada en navegador, que es la alternativa sin instalación a esta herramienta.
+- **[URTC-GATEWAY](https://github.com/JuanenRac/URTC-GATEWAY)** — una pasarela delante del bus CAN que solo deja pasar identificadores de una lista, limita su tasa y pide una clave de sesión.
 - **[URTC-TESTER](https://github.com/JuanenRac/URTC-TESTER)** — herramienta de escritorio de diagnóstico CAN-bus en vivo para placas URTC, un panel por perfil de herramienta — mismo protocolo SLCAN/CAN que esta app basada en navegador, que es la alternativa sin instalación a esta herramienta.
 
 **Directamente Relacionados**

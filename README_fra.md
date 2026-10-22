@@ -510,6 +510,8 @@ Si vous construisez sur ce projet, gardez la séparation des licences à l'espri
 les modifications de code devraient rester GPL-3.0-or-later, les dérivés de documentation
 devraient rester CC BY-SA - chacun avec une attribution à ce projet et son auteur.
 
+**Onglets Boîte noire, Fonctions optionnelles, Banc du rack et Vue thermique (nouveaux, vérifiés avec des simulations seulement) :** Tester Studio lit l'enregistreur de défauts (`0x1A8` / `0x1A9`) et le télécharge en CSV ou JSON, automatiquement une fois pour chaque erreur signalée par la carte quand cette option est activée ; active les fonctions optionnelles du firmware (`0x1AE` / `0x1AF`, désactivées par défaut, après confirmation ; elles agissent au prochain démarrage) ; simule le rack d'outils dans la page, avec l'identité de chaque tête (type et numéro de série) ; et dessine l'image d'inspection thermique en fausses couleurs (une image simulée l'indique). Le catalogue d'outils vient désormais des profils d'outil partagés d'URTC-COMMON. Rien de cela n'a été essayé avec une vraie carte.
+
 ## 🔗 Projets Liés
 
 Ce projet fait partie de l'écosystème robotique HYDRA-UMC du même auteur (JuanenRac / Electro Hobby 3D). Bon à savoir, car une demande pourrait en réalité concerner l'un de ceux-ci plutôt que ce dépôt.
@@ -519,6 +521,7 @@ Ce projet fait partie de l'écosystème robotique HYDRA-UMC du même auteur (Jua
 
 **Projets Frères** — les autres outils de la propre famille d'outils CAN-bus d'URTC
 - **[URTC-FLASHER](https://github.com/JuanenRac/URTC-FLASHER)** — outil de bureau à interface graphique pour flasher les cartes URTC, CAN-OTA plus SWD/JTAG puce complète — même protocole SLCAN/CAN que cette application basée sur navigateur, qui en est l'alternative sans installation.
+- **[URTC-GATEWAY](https://github.com/JuanenRac/URTC-GATEWAY)** — une passerelle devant le bus CAN qui ne laisse passer que les identifiants d'une liste, limite leur débit et exige une clé de session.
 - **[URTC-TESTER](https://github.com/JuanenRac/URTC-TESTER)** — outil de bureau de diagnostic CAN-bus en direct pour cartes URTC, un panneau par profil d'outil — même protocole SLCAN/CAN que cette application basée sur navigateur, qui en est l'alternative sans installation.
 
 **Directement Liés**

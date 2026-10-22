@@ -477,6 +477,8 @@ If you build on this project, keep the licensing split in mind: code
 changes should stay GPL-3.0-or-later, documentation derivatives should stay CC
 BY-SA - each with attribution back to this project and its author.
 
+**Black Box, Optional Functions, Rack Bench and Thermal View tabs (new, checked with fakes only):** Tester Studio reads the fault recorder (`0x1A8` / `0x1A9`) and downloads it as CSV or JSON, automatically once for each error the board reports when that option is on; switches the optional firmware functions (`0x1AE` / `0x1AF`, off by default, after a confirmation; they act after the next power-up); simulates the tool rack in the page, with the identity of each head (type and serial number); and draws the thermal inspection image in false colour (a simulated image says so). The tool catalog now comes from the shared tool profiles of URTC-COMMON. None of it has been tried with a real board.
+
 ## 🔗 Related Projects
 
 This project is part of the HYDRA-UMC robotics ecosystem by the same author (JuanenRac / Electro Hobby 3D). Worth knowing about, since a request might actually be about one of these rather than this repository.
@@ -486,6 +488,7 @@ This project is part of the HYDRA-UMC robotics ecosystem by the same author (Jua
 
 **Sibling Projects** — the other tools of URTC's own CAN-bus tooling family
 - **[URTC-FLASHER](https://github.com/JuanenRac/URTC-FLASHER)** — desktop GUI flashing tool for URTC boards, CAN-OTA plus full-chip SWD/JTAG — same SLCAN/CAN protocol as this browser-based app, which is the no-install alternative to it.
+- **[URTC-GATEWAY](https://github.com/JuanenRac/URTC-GATEWAY)** — a gateway in front of the CAN bus that lets only listed identifiers through, limits their rate and asks for a session key.
 - **[URTC-TESTER](https://github.com/JuanenRac/URTC-TESTER)** — desktop live CAN-bus diagnostic tool for URTC boards, one panel per tool profile — same SLCAN/CAN protocol as this browser-based app, which is the no-install alternative to it.
 
 **Directly Related**
