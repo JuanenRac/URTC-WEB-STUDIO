@@ -43,7 +43,7 @@ real CAN frames described in `docs/CANBUS.TXT` of the
 
 | | |
 |---|---|
-| Version | `0.3.4` |
+| Version | `0.3.5` |
 | Maturity | Functional |
 | Stack | Web Serial API / TypeScript |
 | Target | A web browser on the user's PC |

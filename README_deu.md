@@ -42,7 +42,7 @@ und empfangen die echten CAN-Frames, die in `docs/CANBUS.TXT` des
 
 | | |
 |---|---|
-| Version | `0.3.4` |
+| Version | `0.3.5` |
 | Reifegrad | Funktionsfähig |
 | Technik | Web Serial API / TypeScript |
 | Ziel | Ein Webbrowser auf dem PC des Benutzers |

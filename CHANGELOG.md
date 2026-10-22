@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented here.
 
-## [Unreleased]
+## [0.3.5] - Black box, optional functions, rack bench and thermal view tabs
 
 - **Black Box tab**: reads the fault recorder (`0x1A8` / `0x1A9`), checks it and downloads it as CSV or JSON; it reads it by itself once for each error the board reports when the option is on (on by default, switchable in the tab).
 - **Optional Functions tab**: queries and writes the optional firmware functions (`0x1AE` / `0x1AF`) after a confirmation.
