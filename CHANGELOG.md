@@ -14,6 +14,7 @@ compatibility of a change.
 
 ## [Unreleased]
 
+- The banner follows the animated style of the ecosystem banners, with the name, the kind and the technologies of the project.
 - The manifest declares how far the project has been shown to work (`evidence`: simulator) and `tools/ci_validate.py` checks the value.
 
 ## [0.3.3] - Follow URTC-COMMON 0.0.5 and the 0.3.8 firmware
