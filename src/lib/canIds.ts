@@ -21,6 +21,8 @@ export const CAN_ID_BLACKBOX_QUERY = generated.CAN_ID_BLACKBOX_QUERY; // one chu
 export const CAN_ID_BLACKBOX_CHUNK = generated.CAN_ID_BLACKBOX_CHUNK;
 export const CAN_ID_SET_FEATURES = generated.CAN_ID_SET_FEATURES; // optional firmware functions (persistent)
 export const CAN_ID_FEATURES_RESP = generated.CAN_ID_FEATURES_RESP;
+export const CAN_ID_PID_CONFIG = generated.CAN_ID_PID_CONFIG; // heater PID: store the gains, start or abort the autotune, ask for the state (lib/pid.ts)
+export const CAN_ID_PID_STATE_RESP = generated.CAN_ID_PID_STATE_RESP;
 export const CAN_ID_ERASE_FRAM = generated.CAN_ID_ERASE_FRAM;
 export const ERASE_FRAM_MAGIC = [...generated.MAGIC_ERASE_FRAM];
 

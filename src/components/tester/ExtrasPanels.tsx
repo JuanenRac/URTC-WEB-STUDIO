@@ -4,7 +4,8 @@ import { Section, Field, inputCls, btnCls, btnPrimaryCls, safeInt } from './shar
 import { ToolCtx } from './ToolPanels';
 import { useConfirmAction } from '../../hooks/useConfirmAction';
 import { downloadBlob } from '../../lib/download';
-import { CAN_ID_SET_FEATURES, CAN_ID_FEATURES_RESP } from '../../lib/canIds';
+import { CAN_ID_SET_FEATURES, CAN_ID_FEATURES_RESP, CAN_ID_PID_CONFIG, CAN_ID_PID_STATE_RESP } from '../../lib/canIds';
+import { PID_ACTION_AUTOTUNE_ABORT, PID_ACTION_AUTOTUNE_START, PID_ACTION_QUERY, PID_ACTION_SET_GAINS, PID_STATE_KEYS, decodePidState, encodePidConfig } from '../../lib/pid';
 import {
   BLACK_BOX_CHUNK_COUNT, BLACK_BOX_CHUNK_ID, BLACK_BOX_FRAMES_PER_CHUNK, BLACK_BOX_QUERY_ID, BlackBoxRecord,
   blackBoxCsv, blackBoxJson, chunkRequest, joinFrames, parseBlackBox, triggerIndex,
@@ -119,6 +120,54 @@ export const FeaturesPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
       <div className="flex gap-3 mb-3">
         <button className={btnCls} onClick={query} disabled={!ctx.isConnected}>{t('testerextras.features_query', 'Query')}</button>
         <button className={btnPrimaryCls} onClick={write} disabled={!ctx.isConnected}>{t('testerextras.features_write', 'Write')}</button>
+      </div>
+      {status && <div className="text-xs text-slate-300 font-mono">{status}</div>}
+    </Section>
+  );
+};
+
+// ---- Heater PID (0x1B9 / 0x1BA) ----
+export const PidPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
+  const { t } = useTranslation();
+  const confirm = useConfirmAction();
+  const [kp, setKp] = useState('8');
+  const [ki, setKi] = useState('0.2');
+  const [kd, setKd] = useState('1.5');
+  const [status, setStatus] = useState('');
+
+  const show = (data: number[] | undefined) => {
+    const state = data ? decodePidState(data) : null;
+    if (!state) { setStatus(t('testerextras.pid_no_answer', 'No answer (firmware without the heater PID)')); return; }
+    const key = PID_STATE_KEYS[state.state];
+    setStatus(t('testerextras.pid_status', 'Kp {{kp}}  Ki {{ki}}  Kd {{kd}}  |  State: {{state}}  |  Heater output: {{duty}} %', {
+      kp: state.kp, ki: state.ki, kd: state.kd, state: key ? t(`testerextras.${key}`) : `CODE_${state.state}`, duty: state.dutyPercent,
+    }));
+  };
+  const send = async (action: number, description: string) => {
+    const data = encodePidConfig(action, { kp, ki, kd });
+    if (!data) { setStatus(t('testerextras.pid_bad_gains', 'The gains must be numbers from 0 to 600.')); return; }
+    const r = await ctx.request(CAN_ID_PID_CONFIG, data, CAN_ID_PID_STATE_RESP, 1000, description);
+    show(r?.data);
+  };
+  const store = async () => { if (await confirm('program_config')) await send(PID_ACTION_SET_GAINS, 'Store the PID gains'); };
+  const autotune = async () => {
+    if (await confirm('heater', { value: 1, message: t('testerextras.pid_autotune_confirm', 'The board will heat the tip around the current set-point of the soldering iron to find the gains, and store them. Set the set-point first (100 to 445 C) and stay beside the board.') })) {
+      await send(PID_ACTION_AUTOTUNE_START, 'Start the PID autotune');
+    }
+  };
+
+  return (
+    <Section title={t('testerextras.pid_title', 'Heater PID (0x1B9/0x1BA)')} subtitle={t('testerextras.pid_subtitle', 'Needs the Heater PID function switched on above. The autotune heats the tip around the current set-point of the soldering iron and stores the gains it finds.')}>
+      <div className="grid grid-cols-3 gap-3 mb-3 max-w-md">
+        <Field label="Kp"><input type="text" inputMode="decimal" value={kp} onChange={(e) => setKp(e.target.value)} className={inputCls} /></Field>
+        <Field label="Ki"><input type="text" inputMode="decimal" value={ki} onChange={(e) => setKi(e.target.value)} className={inputCls} /></Field>
+        <Field label="Kd"><input type="text" inputMode="decimal" value={kd} onChange={(e) => setKd(e.target.value)} className={inputCls} /></Field>
+      </div>
+      <div className="flex flex-wrap gap-3 mb-3">
+        <button className={btnCls} onClick={() => send(PID_ACTION_QUERY, 'Query the PID state')} disabled={!ctx.isConnected}>{t('testerextras.pid_query', 'Read the state')}</button>
+        <button className={btnPrimaryCls} onClick={store} disabled={!ctx.isConnected}>{t('testerextras.pid_store', 'Store the gains')}</button>
+        <button className={btnPrimaryCls} onClick={autotune} disabled={!ctx.isConnected}>{t('testerextras.pid_autotune', 'Start the autotune')}</button>
+        <button className={btnCls} onClick={() => send(PID_ACTION_AUTOTUNE_ABORT, 'Abort the PID autotune')} disabled={!ctx.isConnected}>{t('testerextras.pid_abort', 'Abort the autotune')}</button>
       </div>
       {status && <div className="text-xs text-slate-300 font-mono">{status}</div>}
     </Section>

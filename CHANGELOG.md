@@ -2,6 +2,10 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+- **Heater PID panel (in the Optional Functions tab):** reads the state of the heater PID of the firmware (`0x1B9` / `0x1BA`: the gains in force, the state and the output of the last cycle), stores gains from 0 to 600 and starts or aborts the relay autotune, with its texts in the eight languages (15 new keys). Storing gains and starting the autotune ask for a confirmation, aborting does not; a gain that is not a number from 0 to 600 is refused before anything is sent, and `0x1B9` typed by hand in the custom frame panel now asks for a confirmation because the autotune heats. 6 new tests.
+
 ## [0.3.5] - Black box, optional functions, rack bench and thermal view tabs
 
 - **Black Box tab**: reads the fault recorder (`0x1A8` / `0x1A9`), checks it and downloads it as CSV or JSON; it reads it by itself once for each error the board reports when the option is on (on by default, switchable in the tab).

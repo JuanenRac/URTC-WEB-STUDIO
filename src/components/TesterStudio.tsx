@@ -13,7 +13,7 @@ import {
   PasteJettingPanel, ThermalInspectionPanel, NoHandlerPanel
 } from './tester/ToolPanels';
 import { CAN_ID_WELD_SPOT_CMD, CAN_ID_WELD_ULTRASONIC_CMD } from '../lib/canIds';
-import { BlackBoxPanel, FeaturesPanel, RackBenchPanel, ThermalViewPanel } from './tester/ExtrasPanels';
+import { BlackBoxPanel, FeaturesPanel, PidPanel, RackBenchPanel, ThermalViewPanel } from './tester/ExtrasPanels';
 
 interface TesterStudioProps {
   /** What the real board reported (0x111). The tool panels follow this, never the sandbox. */
@@ -182,7 +182,7 @@ export const TesterStudio: React.FC<TesterStudioProps> = ({
       {subTab === 'expansion' && <ExpansionBoardPanel ctx={ctx} />}
       {subTab === 'fram' && <FramPanel ctx={ctx} />}
       {subTab === 'blackbox' && <BlackBoxPanel ctx={ctx} systemError={isConnected && boardStatus.systemError} />}
-      {subTab === 'features' && <FeaturesPanel ctx={ctx} />}
+      {subTab === 'features' && <><FeaturesPanel ctx={ctx} /><PidPanel ctx={ctx} /></>}
       {subTab === 'rack' && <RackBenchPanel />}
       {subTab === 'thermal' && <ThermalViewPanel ctx={ctx} />}
       {subTab === 'selftest' && (toolId !== null ? <SelfTestPanel ctx={ctx} activeToolId={toolId} /> : <div className="text-xs text-amber-300 p-4">{t('tester.selftest_needs_tool', 'The self-test needs the board to report its tool first. Use the Detect button.')}</div>)}
