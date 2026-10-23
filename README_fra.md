@@ -302,9 +302,9 @@ lint` exécute le compilateur TypeScript en mode vérification uniquement.
 
 La page construite déclare une politique de sécurité du contenu (scripts uniquement depuis la page elle-même ; connexions uniquement vers elle-même et vers GitHub) et charge chaque onglet à sa première ouverture. Elle n'a pas encore été essayée dans un vrai navigateur.
 
-### GitHub Pages (outil d'établi)
+### GitHub Pages (désactivé tant que le propriétaire ne l'active pas)
 
-Le dépôt peut publier le site compilé sur GitHub Pages (workflow `.github/workflows/pages.yml` : `npm ci`, vérification des types, tests, `npm run build` avec le chemin de base du projet, puis `upload-pages-artifact` et `deploy-pages`). Il est proposé comme **outil d'établi** : les images de firmware incluses sont signées avec la clé publique de développement, que n'importe qui peut utiliser ; la page publiée affiche donc un avis et n'est pas une source de firmware fiable pour une machine en service. Pour l'activer, le propriétaire du dépôt ouvre Settings > Pages et règle Source sur "GitHub Actions" ; d'ici là, le workflow se termine sans déployer. Web Serial exige un navigateur basé sur Chromium et https, ce que Pages fournit.
+Le dépôt peut publier le site compilé sur GitHub Pages (workflow `.github/workflows/pages.yml` : `npm ci`, vérification des types, tests, `npm run build` avec le chemin de base du projet, puis `upload-pages-artifact` et `deploy-pages`). **Le workflow est désactivé** : ses deux jobs ne s'exécutent que si la variable du dépôt `URTC_PAGES_ENABLED` vaut `true` (Settings > Secrets and variables > Actions > Variables), ce que le propriétaire fait après la première release officielle signée d'URTC. La compilation lance alors `npm run sync-firmware -- --require-official` : elle prend uniquement le firmware de la dernière release officielle (jamais une pré-release, jamais l'étiquette de repli de `firmware-release.json`), refuse tout fichier sans signature de release valide et toute image d'application compilée avec la clé publique de développement, si bien que la page publiée ne peut pas contenir d'images de la clé de développement. Pages doit aussi être activé une fois (Settings > Pages > Source: GitHub Actions) ; sans la variable, le workflow est ignoré. Web Serial nécessite un navigateur basé sur Chromium et https, ce que Pages fournit.
 
 ### Versionnage
 

@@ -15,6 +15,10 @@
 //                                                     after build_firmware.sh in release mode)
 //   --allow-unsigned                                  accept a set that has no release signatures (.sig):
 //                                                     a bench pre-release or a local build
+//   --require-official                                only an official release of the repository (not a pre-release,
+//                                                     no fallback tag, no local folder), every file signed, and every
+//                                                     application image built with a production key: what a published
+//                                                     page may carry
 //
 // A release is first downloaded to a temporary folder; either way every image is checked
 // (sha256 against its manifest and its sidecar) before anything in public/firmware is touched.
@@ -66,7 +70,14 @@ export function signatureState(path, publicKeyHex = RELEASE_PUBLIC_KEY_HEX) {
 }
 
 /** Checks the images of a folder and returns { files, copy(dst) }. Throws before anything is copied. */
-export function checkFolder(src, { allowUnsigned = false, publicKeyHex = RELEASE_PUBLIC_KEY_HEX } = {}) {
+export const PRODUCTION_KEY_KINDS = ['release', 'production'];
+
+/** The kind of key an application image was signed with, from its own manifest or from the index; undefined when neither says. */
+export function keyKindOf(manifest, indexComponent) {
+  return manifest.signing_key_kind ?? indexComponent?.signing?.key_kind;
+}
+
+export function checkFolder(src, { allowUnsigned = false, publicKeyHex = RELEASE_PUBLIC_KEY_HEX, requireProductionKey = false } = {}) {
   const index = JSON.parse(readFileSync(join(src, 'firmware_manifest.json'), 'utf8'));
   const files = pickFiles(index);
   const toCopy = ['firmware_manifest.json'];
@@ -78,6 +89,10 @@ export function checkFolder(src, { allowUnsigned = false, publicKeyHex = RELEASE
     if (sidecar !== actual) throw new Error(`${bin}: sha256 ${actual} does not match its .sha256 file ${sidecar}`);
     if (/application/i.test(manifest.component ?? '') && !/^[0-9a-f]{64}$/i.test(manifest.hmac_sha256 ?? '')) {
       throw new Error(`${bin}: an application image needs hmac_sha256 in its manifest`);
+    }
+    if (requireProductionKey && /application/i.test(manifest.component ?? '')) {
+      const kind = keyKindOf(manifest, index.components?.[manifest.component]);
+      if (!PRODUCTION_KEY_KINDS.includes(kind)) throw new Error(`${bin}: signed with key kind ${JSON.stringify(kind)}, not a production key`);
     }
     const stem = bin.replace(/\.bin$/, '');
     toCopy.push(bin, `${bin}.sha256`, `${bin}.manifest.json`);
@@ -123,7 +138,7 @@ export function pinnedTag(root) {
  * When the newest release was asked for and GitHub has none (404), the release named by `fallbackTag` is used
  * instead; a tag that was asked for is never replaced.
  */
-export async function downloadRelease({ fetchFn = fetch, tag, outDir, env = process.env, fallbackTag }) {
+export async function downloadRelease({ fetchFn = fetch, tag, outDir, env = process.env, fallbackTag, requireOfficial = false }) {
   const releaseUrl = (name) => `https://api.github.com/repos/${RELEASE_REPO}/releases/${name ? `tags/${encodeURIComponent(name)}` : 'latest'}`;
   let url = releaseUrl(tag);
   let res = await fetchFn(url, { headers: apiHeaders('application/vnd.github+json', env) });
@@ -134,6 +149,9 @@ export async function downloadRelease({ fetchFn = fetch, tag, outDir, env = proc
   }
   if (!res.ok) throw new Error(`GitHub answered ${res.status} for ${url}`);
   const release = await res.json();
+  if (requireOfficial && (release.prerelease || release.draft)) {
+    throw new Error(`the release ${release.tag_name} is a ${release.draft ? 'draft' : 'pre-release'}, not an official one`);
+  }
   const assets = new Map((release.assets ?? []).map((a) => [a.name, a]));
   const get = async (name) => {
     const asset = assets.get(name);
@@ -163,9 +181,10 @@ export const BUNDLED_FIRMWARE = ${JSON.stringify(files, null, 2)} as const;
 }
 
 export function parseArgs(argv) {
-  const out = { dir: undefined, tag: undefined, allowUnsigned: false };
+  const out = { dir: undefined, tag: undefined, allowUnsigned: false, requireOfficial: false };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--allow-unsigned') out.allowUnsigned = true;
+    else if (argv[i] === '--require-official') out.requireOfficial = true;
     else if (argv[i] === '--tag') {
       out.tag = argv[++i];
       if (!out.tag) throw new Error('--tag needs a value, for example v0.3.5');
@@ -174,6 +193,8 @@ export function parseArgs(argv) {
     else out.dir = argv[i];
   }
   if (out.dir && out.tag) throw new Error('give a local folder or a release tag, not both');
+  if (out.requireOfficial && out.dir) throw new Error('--require-official reads a release of GitHub, not a local folder');
+  if (out.requireOfficial && out.allowUnsigned) throw new Error('--require-official and --allow-unsigned contradict each other');
   return out;
 }
 
@@ -189,12 +210,12 @@ async function main() {
     origin = src;
   } else {
     temp = mkdtempSync(join(tmpdir(), 'urtc-release-'));
-    const tag = await downloadRelease({ tag: args.tag, outDir: temp, fallbackTag: pinnedTag(root) });
+    const tag = await downloadRelease({ tag: args.tag, outDir: temp, fallbackTag: args.requireOfficial ? undefined : pinnedTag(root), requireOfficial: args.requireOfficial });
     src = temp;
     origin = `release ${tag} of ${RELEASE_REPO}`;
   }
   try {
-    const checked = checkFolder(src, { allowUnsigned: args.allowUnsigned });
+    const checked = checkFolder(src, { allowUnsigned: args.allowUnsigned, requireProductionKey: args.requireOfficial });
     checked.copy(dst);
     writeBundledModule(root, checked.files);
     console.log(`synced ${Object.keys(checked.files).length} images from ${origin}:`, checked.files);

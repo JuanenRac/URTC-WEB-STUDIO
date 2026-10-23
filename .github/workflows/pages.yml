@@ -3,10 +3,17 @@
 # Copyright (C) 2026 JuanenRac (Electro Hobby 3D) <electrohobby3d@gmail.com>
 # GPL-3.0-or-later - see LICENSE
 # =============================================================================
-# Builds the static site and publishes it on GitHub Pages. The page shows a
-# notice that the firmware images are signed with the public development key.
-# The repository owner enables Pages once (Settings > Pages > Source: GitHub
-# Actions); until then the deployment is skipped and the run still succeeds.
+# Builds the static site and publishes it on GitHub Pages. SWITCHED OFF until the
+# owner turns it on: both jobs run only when the repository variable
+# URTC_PAGES_ENABLED is "true" (Settings > Secrets and variables > Actions >
+# Variables). Turn it on after the first official, signed release of URTC: the
+# build then takes the firmware of that release and nothing else (no pre-release,
+# no fallback tag, every file signed by the key of the releases, every
+# application image built with a production key - `sync-firmware --require-official`),
+# so a page can never carry the images of the public development key. Pages itself
+# must also be enabled once (Settings > Pages > Source: GitHub Actions); until then
+# the deployment is skipped and the run still succeeds. With the variable unset
+# or any other value both jobs are skipped.
 name: URTC Web Studio on GitHub Pages
 
 on:
@@ -26,6 +33,7 @@ concurrency:
 jobs:
   build:
     name: Build the static site
+    if: ${{ vars.URTC_PAGES_ENABLED == 'true' }}
     runs-on: ubuntu-latest
     outputs:
       deploy: ${{ steps.pages.outcome == 'success' }}
@@ -49,11 +57,11 @@ jobs:
       - name: Install the locked dependencies
         if: steps.pages.outcome == 'success'
         run: npm ci --ignore-scripts
-      - name: Download the firmware images of the release (verified against the release signature)
+      - name: Download the firmware images of the official release (verified against the release signature)
         if: steps.pages.outcome == 'success'
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: npm run sync-firmware
+        run: npm run sync-firmware -- --require-official
       - name: Type check and tests
         if: steps.pages.outcome == 'success'
         run: |
@@ -63,7 +71,6 @@ jobs:
         if: steps.pages.outcome == 'success'
         env:
           URTC_BASE_PATH: ${{ steps.pages.outputs.base_path }}/
-          VITE_BENCH_NOTICE: "1"
         run: npm run build
       - name: Upload the site
         if: steps.pages.outcome == 'success'
@@ -74,7 +81,7 @@ jobs:
   deploy:
     name: Deploy to GitHub Pages
     needs: build
-    if: needs.build.outputs.deploy == 'true'
+    if: ${{ vars.URTC_PAGES_ENABLED == 'true' && needs.build.outputs.deploy == 'true' }}
     runs-on: ubuntu-latest
     environment:
       name: github-pages

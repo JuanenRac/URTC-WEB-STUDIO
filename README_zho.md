@@ -261,9 +261,9 @@ npm run preview
 
 构建出的页面声明了内容安全策略（脚本只来自页面本身；连接只指向页面本身和 GitHub），并在首次打开每个标签页时才加载它。尚未在真实浏览器中试用过。
 
-### GitHub Pages（台架工具）
+### GitHub Pages（所有者启用前保持关闭）
 
-本仓库可以把构建好的站点发布到 GitHub Pages（工作流 `.github/workflows/pages.yml`：`npm ci`、类型检查、测试、使用项目基础路径的 `npm run build`，然后是 `upload-pages-artifact` 和 `deploy-pages`）。它作为**台架工具**提供：其中包含的固件镜像使用公开的开发密钥签名，任何人都可以使用该密钥，因此发布的页面会显示相应提示，不能作为运行中设备的可信固件来源。要启用它，仓库所有者打开 Settings > Pages，把 Source 设为 "GitHub Actions"；在此之前，工作流会结束而不部署。Web Serial 需要基于 Chromium 的浏览器和 https，Pages 提供 https。
+本仓库可以把构建好的站点发布到 GitHub Pages（工作流 `.github/workflows/pages.yml`：`npm ci`、类型检查、测试、带项目基础路径的 `npm run build`，然后是 `upload-pages-artifact` 和 `deploy-pages`）。**该工作流目前处于关闭状态**：只有当仓库变量 `URTC_PAGES_ENABLED` 为 `true`（Settings > Secrets and variables > Actions > Variables）时，两个作业才会运行，所有者在 URTC 的第一个已签名正式发布之后设置它。此时构建会执行 `npm run sync-firmware -- --require-official`：只取最新正式发布的固件（绝不使用预发布版本，也不使用 `firmware-release.json` 的备用标签），拒绝任何没有有效发布签名的文件，以及任何用公开开发密钥构建的应用镜像，因此发布的页面不可能带有开发密钥的镜像。Pages 本身也需要启用一次（Settings > Pages > Source: GitHub Actions）；变量未设置时工作流会被跳过。Web Serial 需要基于 Chromium 的浏览器和 https，Pages 提供 https。
 
 ### 版本管理
 

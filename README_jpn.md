@@ -299,9 +299,9 @@ npm run preview
 
 ビルドされたページはコンテンツセキュリティポリシー（スクリプトはページ自身からのみ、接続はページ自身と GitHub のみ）を宣言し、各タブを初めて開いたときに読み込みます。実際のブラウザではまだ試していません。
 
-### GitHub Pages（ベンチ用ツール）
+### GitHub Pages（所有者が有効にするまで停止）
 
-このリポジトリは、ビルドしたサイトをGitHub Pagesに公開できます（ワークフロー `.github/workflows/pages.yml`：`npm ci`、型チェック、テスト、プロジェクトのベースパスを指定した `npm run build`、続いて `upload-pages-artifact` と `deploy-pages`）。**ベンチ用ツール**として提供されます。同梱のファームウェアイメージは公開の開発用鍵で署名されており、誰でもこの鍵を使えるため、公開ページにはその旨の通知が表示され、稼働中の機械向けの信頼できるファームウェアの入手元ではありません。有効にするには、リポジトリの所有者が Settings > Pages を開き、Source を "GitHub Actions" に設定します。それまでワークフローは公開せずに終了します。Web SerialにはChromium系ブラウザとhttpsが必要で、Pagesはhttpsを提供します。
+このリポジトリは、ビルドしたサイトをGitHub Pagesに公開できます（ワークフロー `.github/workflows/pages.yml`：`npm ci`、型チェック、テスト、プロジェクトのベースパスを指定した `npm run build`、続いて `upload-pages-artifact` と `deploy-pages`）。**このワークフローは停止中です**。2つのジョブは、リポジトリ変数 `URTC_PAGES_ENABLED` が `true` のときだけ実行されます（Settings > Secrets and variables > Actions > Variables）。所有者が URTC の最初の署名済み正式リリースの後に設定します。そのときビルドは `npm run sync-firmware -- --require-official` を実行し、最新の正式リリースのファームウェアだけを取得します（プレリリースや `firmware-release.json` の代替タグは使いません）。有効なリリース署名のないファイルや、公開の開発用鍵で作られたアプリケーションイメージは拒否されるため、公開ページに開発用鍵のイメージが含まれることはありません。Pages 自体も一度有効にする必要があります（Settings > Pages > Source: GitHub Actions）。変数が未設定ならワークフローはスキップされます。Web SerialにはChromium系ブラウザとhttpsが必要で、Pagesはhttpsを提供します。
 
 ### バージョン管理
 

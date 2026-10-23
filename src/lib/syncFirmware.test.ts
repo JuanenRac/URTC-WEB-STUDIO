@@ -111,9 +111,9 @@ describe("sync-firmware from the release assets", () => {
 
 describe("sync-firmware arguments", () => {
   it("takes a folder, a tag, or nothing (the newest release)", () => {
-    expect(sync.parseArgs([])).toEqual({ dir: undefined, tag: undefined, allowUnsigned: false });
-    expect(sync.parseArgs(["../URTC/firmware"])).toEqual({ dir: "../URTC/firmware", tag: undefined, allowUnsigned: false });
-    expect(sync.parseArgs(["--tag", "v0.3.5"])).toEqual({ dir: undefined, tag: "v0.3.5", allowUnsigned: false });
+    expect(sync.parseArgs([])).toEqual({ dir: undefined, tag: undefined, allowUnsigned: false, requireOfficial: false });
+    expect(sync.parseArgs(["../URTC/firmware"])).toEqual({ dir: "../URTC/firmware", tag: undefined, allowUnsigned: false, requireOfficial: false });
+    expect(sync.parseArgs(["--tag", "v0.3.5"])).toEqual({ dir: undefined, tag: "v0.3.5", allowUnsigned: false, requireOfficial: false });
     expect(sync.parseArgs(["--tag=v0.3.5"]).tag).toBe("v0.3.5");
   });
   it("refuses a folder together with a tag, an empty tag and unknown options", () => {

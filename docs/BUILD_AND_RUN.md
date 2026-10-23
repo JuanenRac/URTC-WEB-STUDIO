@@ -17,8 +17,14 @@ build that follows fails.
 Do not put OTA signing material in browser configuration. `.env.example` is a
 template only; deployment secrets stay outside Git.
 
-## GitHub Pages (bench tool)
+## GitHub Pages (switched off until the owner turns it on)
 
-`.github/workflows/pages.yml` builds the static site and deploys it with `actions/upload-pages-artifact` and `actions/deploy-pages`. The build reads the project base path from `URTC_BASE_PATH` (`vite.config.ts`; the workflow takes it from `actions/configure-pages`, for example `/URTC-WEB-STUDIO/`) and sets `VITE_BENCH_NOTICE=1`, which makes the app show a notice that the firmware images are signed with the public development key. Bundled firmware is fetched relative to `import.meta.env.BASE_URL`, so the page works under that path.
+`.github/workflows/pages.yml` builds the static site and deploys it with `actions/upload-pages-artifact` and `actions/deploy-pages`. The build reads the project base path from `URTC_BASE_PATH` (`vite.config.ts`; the workflow takes it from `actions/configure-pages`, for example `/URTC-WEB-STUDIO/`). Bundled firmware is fetched relative to `import.meta.env.BASE_URL`, so the page works under that path.
 
-To enable it, the repository owner opens Settings > Pages and sets Source to "GitHub Actions". Until then the workflow reports a notice and finishes without deploying. To check the Pages build locally: `URTC_BASE_PATH=/URTC-WEB-STUDIO/ VITE_BENCH_NOTICE=1 npm run build`, then `npm run preview`.
+**The workflow is off.** Both jobs have `if: vars.URTC_PAGES_ENABLED == 'true'`, so with the repository variable unset (or any other value) a push or a manual run shows both jobs as skipped and nothing is built or published. To turn it on, after the first signed official release of URTC exists:
+
+1. Settings > Secrets and variables > Actions > Variables: add `URTC_PAGES_ENABLED` with the value `true`.
+2. Settings > Pages: Source "GitHub Actions" (once). Until then the run reports a notice and ends without deploying.
+3. Run the workflow by hand (Actions > URTC Web Studio on GitHub Pages > Run workflow), or push to `main`.
+
+The firmware step is `npm run sync-firmware -- --require-official`. It takes the newest official release of URTC (GitHub's "latest", so never a pre-release; no fallback tag, no local folder), refuses a file whose release signature is missing or does not verify against the pinned key of the releases, and refuses an application image whose manifest says it was built with a key other than a production one (`release` or `production`). A page published this way therefore cannot carry images of the public development key, and the bench notice (`VITE_BENCH_NOTICE`) is not set. To check the Pages build locally with a bench build instead: `URTC_BASE_PATH=/URTC-WEB-STUDIO/ npm run build`, then `npm run preview`.

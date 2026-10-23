@@ -290,9 +290,9 @@ runs the TypeScript compiler in check-only mode.
 
 The built page declares a content security policy (scripts only from the page itself; connections only to itself and to GitHub) and loads each tab when it is first opened. It has not been tried in a real browser yet.
 
-### GitHub Pages (bench tool)
+### GitHub Pages (switched off until the owner turns it on)
 
-The repository can publish the built site on GitHub Pages (workflow `.github/workflows/pages.yml`: `npm ci`, type check, tests, `npm run build` with the project base path, then `upload-pages-artifact` and `deploy-pages`). It is offered as a **bench tool**: the firmware images it bundles are signed with the public development key, which anyone can use, so the published page shows a notice saying so and is not a source of trusted firmware for a machine in service. To enable it, the repository owner opens Settings > Pages and sets Source to "GitHub Actions"; until then the workflow finishes without deploying. Web Serial needs a Chromium-based browser and https, which Pages provides.
+The repository can publish the built site on GitHub Pages (workflow `.github/workflows/pages.yml`: `npm ci`, type check, tests, `npm run build` with the project base path, then `upload-pages-artifact` and `deploy-pages`). **The workflow is switched off**: both jobs run only when the repository variable `URTC_PAGES_ENABLED` is `true` (Settings > Secrets and variables > Actions > Variables), which the owner sets after the first signed official release of URTC. The build then runs `npm run sync-firmware -- --require-official`: it takes the firmware of the newest official release only (never a pre-release, never the fallback tag of `firmware-release.json`), refuses any file without a valid release signature and any application image built with the public development key, so the published page cannot carry development-key images. Pages itself must also be enabled once (Settings > Pages > Source: GitHub Actions); with the variable unset the workflow is skipped. Web Serial needs a Chromium-based browser and https, which Pages provides.
 
 ### Versioning
 
