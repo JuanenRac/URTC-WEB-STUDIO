@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented here.
 
-## [Unreleased]
+## [0.3.6] - Heater PID panel in the web studio
 
 - **Heater PID panel (in the Optional Functions tab):** reads the state of the heater PID of the firmware (`0x1B9` / `0x1BA`: the gains in force, the state and the output of the last cycle), stores gains from 0 to 600 and starts or aborts the relay autotune, with its texts in the eight languages (15 new keys). Storing gains and starting the autotune ask for a confirmation, aborting does not; a gain that is not a number from 0 to 600 is refused before anything is sent, and `0x1B9` typed by hand in the custom frame panel now asks for a confirmation because the autotune heats. 6 new tests.
 
