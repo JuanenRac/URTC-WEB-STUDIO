@@ -165,7 +165,22 @@
     "no_frames": "Todavía no se han registrado tramas CAN. Envía un comando arriba o activa herramientas.",
     "presets_notice_connected": "Placa conectada: un mensaje predefinido que es una simple consulta se envía a la placa y su propia respuesta aparece en el registro. Cualquier otro mensaje predefinido es solo un ejemplo simulado, marcado SIM, y no se transmite.",
     "presets_notice": "Sin placa conectada: los mensajes predefinidos reproducen un intercambio simulado, marcado SIM. No se transmite nada.",
-    "sim_badge": "SIM"
+    "sim_badge": "SIM",
+    "replay_title": "Reproducir una traza grabada",
+    "replay_notice": "Reproduce en el registro las tramas recibidas de una traza .trc o .asc, marcadas como REPLAY, sin placa. No se transmite nada y una grabación nunca responde a una petición.",
+    "replay_load": "Abrir traza",
+    "replay_play": "Reproducir",
+    "replay_pause": "Pausa",
+    "replay_stop": "Detener",
+    "replay_speed": "Velocidad",
+    "replay_loop": "Repetir",
+    "replay_progress": "{{played}} / {{total}} tramas",
+    "replay_rejected": "{{count}} líneas no eran tramas válidas y se omitieron",
+    "replay_blocked": "Hay una placa conectada: la reproducción queda en pausa para que una grabación nunca se mezcle con lo que dice la placa. Desconecta para reproducirla.",
+    "replay_error_too_big": "El archivo es demasiado grande para que el navegador lo reproduzca (más de 20 MB).",
+    "replay_error_empty": "El archivo no contiene tramas reproducibles: hace falta una traza .trc o .asc con tramas recibidas (Rx).",
+    "replay_error_unreadable": "No se pudo leer el archivo.",
+    "replay_badge": "REPLAY"
   },
   "flasher": {
     "title": "URTC Flasher Studio (CAN OTA)",

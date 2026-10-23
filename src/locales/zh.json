@@ -165,7 +165,22 @@
     "no_frames": "尚未记录任何 CAN 帧。请在上方发送指令或切换工具。",
     "presets_notice_connected": "已连接板子：属于简单查询的预定义消息会发送给板子，板子自己的应答会显示在日志中。其他所有预定义消息只是标有 SIM 的模拟示例，不会被发送。",
     "presets_notice": "未连接板子：预定义消息只会播放标有 SIM 的模拟交互，不会发送任何内容。",
-    "sim_badge": "SIM"
+    "sim_badge": "SIM",
+    "replay_title": "回放已录制的跟踪",
+    "replay_notice": "无需开发板，把 .trc 或 .asc 跟踪中接收到的帧回放到日志中，并标记为 REPLAY。不会发送任何内容，录制内容也绝不会应答请求。",
+    "replay_load": "打开跟踪",
+    "replay_play": "播放",
+    "replay_pause": "暂停",
+    "replay_stop": "停止",
+    "replay_speed": "速度",
+    "replay_loop": "重复",
+    "replay_progress": "{{played}} / {{total}} 帧",
+    "replay_rejected": "有 {{count}} 行不是有效的帧，已跳过",
+    "replay_blocked": "已连接开发板：回放已暂停，以免录制内容与开发板的实际回应混在一起。断开连接后才能回放。",
+    "replay_error_too_big": "文件太大，浏览器无法回放（超过 20 MB）。",
+    "replay_error_empty": "文件中没有可回放的帧：需要包含已接收（Rx）帧的 .trc 或 .asc 跟踪。",
+    "replay_error_unreadable": "无法读取该文件。",
+    "replay_badge": "REPLAY"
   },
   "flasher": {
     "title": "URTC Flasher Studio（CAN OTA）",

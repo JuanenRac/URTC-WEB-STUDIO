@@ -25,6 +25,8 @@ export interface CanFrame {
   description: string;
   // True for a frame the simulator made up. It was never on the bus, so it must never be taken as something the board (or this app) really sent.
   simulated?: boolean;
+  // True for a frame played back from a recorded trace. It was on a bus once, but not now: it is shown with its own badge, it never answers a request and it is never exported as something the board said.
+  replayed?: boolean;
   // Monotonically increasing, assigned at creation - a stable React list key.
   // Frame lists (CAN log, raw bus monitor) prepend new entries rather than
   // appending, so an array-index key would silently reassign every row's

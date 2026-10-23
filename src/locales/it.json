@@ -165,7 +165,22 @@
     "no_frames": "Nessuna trama CAN registrata finora. Invia un comando qui sopra o attiva gli utensili.",
     "presets_notice_connected": "Scheda collegata: un messaggio predefinito che è una semplice interrogazione viene inviato alla scheda e la sua risposta compare nel registro. Ogni altro messaggio predefinito è solo un esempio simulato, contrassegnato SIM, e non viene trasmesso.",
     "presets_notice": "Nessuna scheda collegata: i messaggi predefiniti riproducono uno scambio simulato, contrassegnato SIM. Non viene trasmesso nulla.",
-    "sim_badge": "SIM"
+    "sim_badge": "SIM",
+    "replay_title": "Riproduci una traccia registrata",
+    "replay_notice": "Riproduce nel registro i frame ricevuti di una traccia .trc o .asc, marcati REPLAY, senza scheda. Non viene trasmesso nulla e una registrazione non risponde mai a una richiesta.",
+    "replay_load": "Apri traccia",
+    "replay_play": "Riproduci",
+    "replay_pause": "Pausa",
+    "replay_stop": "Ferma",
+    "replay_speed": "Velocità",
+    "replay_loop": "Ripeti",
+    "replay_progress": "{{played}} / {{total}} frame",
+    "replay_rejected": "{{count}} righe non erano frame validi e sono state saltate",
+    "replay_blocked": "Una scheda è collegata: la riproduzione è in pausa perché una registrazione non si mescoli mai con ciò che dice la scheda. Scollega per riprodurla.",
+    "replay_error_too_big": "Il file è troppo grande perché il browser lo riproduca (oltre 20 MB).",
+    "replay_error_empty": "Il file non contiene frame riproducibili: serve una traccia .trc o .asc con frame ricevuti (Rx).",
+    "replay_error_unreadable": "Impossibile leggere il file.",
+    "replay_badge": "REPLAY"
   },
   "flasher": {
     "title": "URTC Flasher Studio (CAN OTA)",

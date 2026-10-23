@@ -215,6 +215,7 @@ Portato dai propri `tester_tool_panels.py` /
 - **FERMA TUTTO** nell'intestazione (visibile a connessione attiva) spegne ogni attuatore che questa pagina mantiene attivo; chiudere la pagina e disconnettersi fanno lo stesso. È un comando software, non un arresto di emergenza.
 - Flashare un'immagine firmata con la chiave di sviluppo pubblica chiede prima una conferma, perché quella chiave non prova nulla su chi ha creato l'immagine.
 - Quando la scheda dichiara un errore critico, il banner indica anche il motivo della protezione contro la fuga termica se la scheda lo comunica.
+- **Riproduzione di una traccia registrata** (CAN Bus Protocol Analyzer): un file `.trc` o `.asc`, per esempio quello esportato dal Raw Bus Monitor, riproduce i suoi frame ricevuti nel registro e nei pannelli senza scheda, da 0,25x a 10x e volendo in ciclo. I frame sono marcati REPLAY, non si trasmette nulla, una registrazione non risponde mai a una richiesta, non viene mai esportata come qualcosa che ha detto la scheda e la riproduzione va in pausa finché una scheda è collegata.
 
 ### Non ancora coperto
 
@@ -383,6 +384,7 @@ progetto.
 │   │   ├── CanBusAnalyzer.tsx       Scheda reale: log trame CAN grezze,
 │   │   │                            iniettore trama personalizzata, trigger di
 │   │   │                            comando predefiniti
+│   │   ├── TraceReplayPanel.tsx     Carica una traccia .trc/.asc e la riproduce nel registro
 │   │   ├── FlasherStudio.tsx        Scheda reale: interfaccia CAN-OTA
 │   │   │                            (principale + slave di espansione) e lo
 │   │   │                            spiegatore di capacità SWD/JTAG
@@ -409,12 +411,14 @@ progetto.
 │   │   ├── useFlasher.ts            Macchina a stati CAN-OTA (scheda principale
 │   │   │                            + slave di espansione), rispecchia
 │   │   │                            flasher_protocol.py
+│   │   ├── useTraceReplay.ts        Riproduce una traccia registrata nel registro e nei pannelli
 │   │   └── useKeepalive.ts          Hook di reinvio a intervallo fisso che
 │   │                                sostiene il keepalive watchdog della
 │   │                                casella attiva di ogni utensile
 │   ├── lib/
 │   │   ├── flasher.ts               Costanti del protocollo OTA, helper CRC32/HMAC,
 │   │   │                            lettura dei manifest (nessuna chiave di firma)
+│   │   ├── traceReplay.ts           Legge le tracce .trc/.asc; il riproduttore con velocità e pause
 │   │   ├── boardVersion.ts          Richieste di versione: 0x7F9/0x7FA/0x7E9 e 0x217/0x218 dello slave
 │   │   ├── githubRelease.ts         Immagini della release GitHub più recente e relativo download
 │   │   ├── firmwareImage.ts         Controlli dell'immagine, destinazione del manifest e versione (con patch)

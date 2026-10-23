@@ -165,7 +165,22 @@
     "no_frames": "Noch keine CAN-Nachrichten protokolliert. Sende oben einen Befehl oder schalte Werkzeuge um.",
     "presets_notice_connected": "Platine verbunden: Eine vordefinierte Nachricht, die eine einfache Abfrage ist, wird an die Platine gesendet, und deren eigene Antwort erscheint im Protokoll. Jede andere vordefinierte Nachricht ist nur ein simuliertes Beispiel, mit SIM gekennzeichnet, und wird nicht übertragen.",
     "presets_notice": "Keine Platine verbunden: Die vordefinierten Nachrichten spielen einen simulierten Austausch ab, mit SIM gekennzeichnet. Es wird nichts übertragen.",
-    "sim_badge": "SIM"
+    "sim_badge": "SIM",
+    "replay_title": "Aufgezeichneten Trace abspielen",
+    "replay_notice": "Spielt die empfangenen Frames eines .trc- oder .asc-Traces ohne Platine in das Protokoll ein, markiert als REPLAY. Es wird nichts gesendet, und eine Aufzeichnung beantwortet nie eine Anfrage.",
+    "replay_load": "Trace öffnen",
+    "replay_play": "Abspielen",
+    "replay_pause": "Pause",
+    "replay_stop": "Stopp",
+    "replay_speed": "Geschwindigkeit",
+    "replay_loop": "Wiederholen",
+    "replay_progress": "{{played}} / {{total}} Frames",
+    "replay_rejected": "{{count}} Zeilen waren keine gültigen Frames und wurden übersprungen",
+    "replay_blocked": "Eine Platine ist verbunden: Die Wiedergabe ist pausiert, damit sich eine Aufzeichnung nie mit den Aussagen der Platine vermischt. Zum Abspielen trennen.",
+    "replay_error_too_big": "Die Datei ist zu groß, als dass der Browser sie abspielen könnte (mehr als 20 MB).",
+    "replay_error_empty": "Die Datei enthält keine abspielbaren Frames: Nötig ist ein .trc- oder .asc-Trace mit empfangenen (Rx) Frames.",
+    "replay_error_unreadable": "Die Datei konnte nicht gelesen werden.",
+    "replay_badge": "REPLAY"
   },
   "flasher": {
     "title": "URTC Flasher Studio (CAN OTA)",

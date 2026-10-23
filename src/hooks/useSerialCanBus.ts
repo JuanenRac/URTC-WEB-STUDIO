@@ -89,6 +89,10 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
     onFrameReceived(frame);
   }, [onFrameReceived]);
 
+  // A frame played back from a recorded trace reaches the panels that listen and the log, but never the request / answer router:
+  // a recording must not be taken for the answer to something this app just sent.
+  const injectReplayedFrame = useCallback((frame: CanFrame) => dispatchFrame({ ...frame, replayed: true }), [dispatchFrame]);
+
   // Waits for the next frame with this id. A frame that arrived more than a
   // second ago is never served (see lib/frameQueue.ts); to be sure an answer
   // belongs to a request just made, use request() below.
@@ -476,6 +480,7 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
     ...stable,
     subscribe,
     subscribeAll,
+    injectReplayedFrame,
     sendError,
     clearSendError
   };

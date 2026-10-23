@@ -165,7 +165,22 @@
     "no_frames": "まだ CAN フレームは記録されていません。上でコマンドを送信するか、ツールを切り替えてください。",
     "presets_notice_connected": "ボード接続中：単純な問い合わせにあたる定義済みメッセージはボードに送信され、ボード自身の応答がログに表示されます。それ以外の定義済みメッセージは SIM と表示されるシミュレーション例にすぎず、送信されません。",
     "presets_notice": "ボード未接続：定義済みメッセージは SIM と表示されるシミュレーションのやり取りを再生します。何も送信されません。",
-    "sim_badge": "SIM"
+    "sim_badge": "SIM",
+    "replay_title": "記録したトレースを再生",
+    "replay_notice": "ボードなしで、.trc または .asc トレースの受信フレームを REPLAY の印を付けてログに再生します。何も送信されず、記録がリクエストに応答することもありません。",
+    "replay_load": "トレースを開く",
+    "replay_play": "再生",
+    "replay_pause": "一時停止",
+    "replay_stop": "停止",
+    "replay_speed": "速度",
+    "replay_loop": "繰り返し",
+    "replay_progress": "{{played}} / {{total}} フレーム",
+    "replay_rejected": "{{count}} 行は有効なフレームではないためスキップしました",
+    "replay_blocked": "ボードが接続されています。記録がボードの応答と混ざらないよう、再生は一時停止中です。再生するには切断してください。",
+    "replay_error_too_big": "ファイルが大きすぎるため、ブラウザーで再生できません（20 MB 超）。",
+    "replay_error_empty": "再生できるフレームがありません。受信（Rx）フレームを含む .trc または .asc トレースが必要です。",
+    "replay_error_unreadable": "ファイルを読み込めませんでした。",
+    "replay_badge": "REPLAY"
   },
   "flasher": {
     "title": "URTC Flasher Studio（CAN OTA）",

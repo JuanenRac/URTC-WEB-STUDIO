@@ -210,6 +210,7 @@ Ported from `URTC-TESTER`'s own `tester_tool_panels.py` /
 - **STOP ALL** in the header (shown while connected) switches off every actuator that this page keeps alive; closing the page and disconnecting do the same. It is a software command, not an emergency stop.
 - Flashing an image signed with the public development key asks for confirmation first, because that key proves nothing about who made the image.
 - When the board declares a critical error, the banner also gives the reason of the thermal runaway guard if the board reports one.
+- **Replay of a recorded trace** (CAN Bus Protocol Analyzer): a `.trc` or `.asc` file, for example the one the Raw Bus Monitor exports, plays its received frames into the log and the panels with no board, at 0.25x to 10x and optionally in a loop. The frames are marked REPLAY, nothing is transmitted, a recording never answers a request, it is never exported as something the board said, and the replay pauses while a board is connected.
 
 ### Not covered yet
 
@@ -368,6 +369,7 @@ project.
 │   │   │                            used inside the Control and OLED tabs
 │   │   ├── CanBusAnalyzer.tsx       Real tab: raw CAN frame log, custom frame
 │   │   │                            injector, preset command triggers
+│   │   ├── TraceReplayPanel.tsx     Loads a .trc/.asc trace and plays it into the log
 │   │   ├── FlasherStudio.tsx        Real tab: CAN-OTA UI (main + expansion slave) and
 │   │   │                            the SWD/JTAG capability explainer
 │   │   ├── TesterStudio.tsx         Real tab: per-tool live control/telemetry, built
@@ -388,11 +390,13 @@ project.
 │   │   │                            rx buffer and a 500-frame queue cap
 │   │   ├── useFlasher.ts            CAN-OTA state machine (main board + expansion
 │   │   │                            slave), mirrors flasher_protocol.py
+│   │   ├── useTraceReplay.ts        Plays a recorded trace into the log and the panels
 │   │   └── useKeepalive.ts          Fixed-interval resend hook backing every tool's
 │   │                                active-checkbox watchdog keepalive
 │   ├── lib/
 │   │   ├── flasher.ts               OTA protocol constants, CRC32/HMAC helpers,
 │   │   │                            manifest parsing (no signing key)
+│   │   ├── traceReplay.ts           Reads .trc/.asc traces; the player with speed and pauses
 │   │   ├── boardVersion.ts          Version queries: 0x7F9/0x7FA/0x7E9 and the slave's 0x217/0x218
 │   │   ├── githubRelease.ts         Images of the newest GitHub release and their download
 │   │   ├── firmwareImage.ts         Image checks, manifest target and version (with patch)

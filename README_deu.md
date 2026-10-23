@@ -225,6 +225,7 @@ Portiert aus den eigenen `tester_tool_panels.py` /
 - **ALLES STOPPEN** in der Kopfzeile (sichtbar bei bestehender Verbindung) schaltet jeden Aktor ab, den diese Seite am Leben hält; das Schließen der Seite und das Trennen tun dasselbe. Es ist ein Software-Befehl, kein Not-Halt.
 - Das Flashen eines mit dem öffentlichen Entwicklungsschlüssel signierten Images verlangt vorher eine Bestätigung, weil dieser Schlüssel nichts darüber aussagt, wer das Image erstellt hat.
 - Meldet die Platine einen kritischen Fehler, nennt das Banner auch den Grund des Schutzes gegen thermisches Durchgehen, sofern die Platine ihn meldet.
+- **Wiedergabe eines aufgezeichneten Traces** (CAN Bus Protocol Analyzer): Eine `.trc`- oder `.asc`-Datei, etwa die vom Raw Bus Monitor exportierte, spielt ihre empfangenen Frames ohne Platine in das Protokoll und die Panels ein, mit 0,25x bis 10x und wahlweise in einer Schleife. Die Frames sind als REPLAY markiert, es wird nichts gesendet, eine Aufzeichnung beantwortet nie eine Anfrage, sie wird nie als Aussage der Platine exportiert, und die Wiedergabe pausiert, solange eine Platine verbunden ist.
 
 ### Noch nicht abgedeckt
 
@@ -394,6 +395,7 @@ Projekt.
 │   │   ├── CanBusAnalyzer.tsx       Echter Tab: rohes CAN-Frame-Protokoll,
 │   │   │                            benutzerdefinierter Frame-Injektor,
 │   │   │                            voreingestellte Befehlsausloeser
+│   │   ├── TraceReplayPanel.tsx     Lädt einen .trc/.asc-Trace und spielt ihn ins Protokoll ein
 │   │   ├── FlasherStudio.tsx        Echter Tab: CAN-OTA-UI (Haupt- +
 │   │   │                            Erweiterungs-Slave) und der
 │   │   │                            SWD/JTAG-Faehigkeits-Erklaerer
@@ -423,6 +425,7 @@ Projekt.
 │   │   ├── useFlasher.ts            CAN-OTA-Zustandsmaschine (Hauptplatine
 │   │   │                            + Erweiterungs-Slave), spiegelt
 │   │   │                            flasher_protocol.py
+│   │   ├── useTraceReplay.ts        Spielt einen aufgezeichneten Trace in Protokoll und Panels ein
 │   │   └── useKeepalive.ts          Hook fuer erneutes Senden mit festem
 │   │                                Intervall, der den Watchdog-Keepalive
 │   │                                der Aktiv-Checkbox jedes Werkzeugs
@@ -430,6 +433,7 @@ Projekt.
 │   ├── lib/
 │   │   ├── flasher.ts               OTA-Protokollkonstanten, CRC32/HMAC-Helfer,
 │   │   │                            Manifest-Auswertung (kein Signierschlüssel)
+│   │   ├── traceReplay.ts           Liest .trc/.asc-Traces; der Player mit Tempo und Pausen
 │   │   ├── boardVersion.ts          Versionsabfragen: 0x7F9/0x7FA/0x7E9 und 0x217/0x218 des Slaves
 │   │   ├── githubRelease.ts         Images des neuesten GitHub-Releases und ihr Download
 │   │   ├── firmwareImage.ts         Image-Prüfungen, Manifest-Ziel und Version (mit Patch)

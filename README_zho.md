@@ -186,6 +186,7 @@ SWD/JTAG 选项卡说明了桌面版 `URTC Flasher` 工具在本地会运行的�
 - 页眉中的 **全部停止**（连接时显示）会关闭此页面正在保持运行的所有执行器；关闭页面和断开连接时也会执行同样的操作。它是软件命令，不是紧急停止。
 - 烧录使用公开开发密钥签名的镜像之前会先要求确认，因为该密钥无法证明镜像由谁制作。
 - 当电路板报告严重错误时，如果电路板给出了原因，横幅还会显示热失控保护的原因。
+- **回放已录制的跟踪**（CAN Bus Protocol Analyzer）：`.trc` 或 `.asc` 文件（例如 Raw Bus Monitor 导出的文件）中接收到的帧，可在没有开发板的情况下回放到日志和各面板，速度 0.25x 至 10x，也可循环。这些帧标记为 REPLAY，不会发送任何内容，录制内容绝不会应答请求，也绝不会被导出为开发板所说的内容，并且只要连接了开发板，回放就会暂停。
 
 ### 尚未覆盖
 
@@ -331,6 +332,7 @@ npm run preview
 │   │   │                            控制和 OLED 选项卡内使用
 │   │   ├── CanBusAnalyzer.tsx       真实选项卡：原始 CAN 帧日志、自定义
 │   │   │                            帧注入器、预设指令触发器
+│   │   ├── TraceReplayPanel.tsx     加载 .trc/.asc 跟踪并回放到日志
 │   │   ├── FlasherStudio.tsx        真实选项卡：CAN-OTA 界面（主板 +
 │   │   │                            扩展从属）以及 SWD/JTAG 能力说明
 │   │   ├── TesterStudio.tsx         真实选项卡：逐工具实时控制/遥测,
@@ -352,11 +354,13 @@ npm run preview
 │   │   │                            队列上限的逐 ID waitForFrame
 │   │   ├── useFlasher.ts            CAN-OTA 状态机（主板 + 扩展从属）,
 │   │   │                            镜像 flasher_protocol.py
+│   │   ├── useTraceReplay.ts        把已录制的跟踪回放到日志和各面板
 │   │   └── useKeepalive.ts          固定间隔重发钩子,支撑每个工具的
 │   │                                活动复选框看门狗保活
 │   ├── lib/
 │   │   ├── flasher.ts               OTA 协议常量、CRC32/HMAC 辅助函数、
 │   │   │                            清单解析（不含签名密钥）
+│   │   ├── traceReplay.ts           读取 .trc/.asc 跟踪；带速度和暂停的播放器
 │   │   ├── boardVersion.ts          版本查询：0x7F9/0x7FA/0x7E9 以及从属板的 0x217/0x218
 │   │   ├── githubRelease.ts         最新 GitHub 发布版本的镜像及其下载
 │   │   ├── firmwareImage.ts         镜像检查、清单目标与版本（含补丁号）

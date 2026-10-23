@@ -63,7 +63,7 @@ export const TesterStudio: React.FC<TesterStudioProps> = ({
 
   // Only what really crossed the bus is exported; frames from the sandbox and its state are not a diagnosis.
   const exportDebugBundle = () => {
-    const data = JSON.stringify({ board: boardStatus, detected, frames: canFrames.filter(f => !f.simulated).slice(0, 200) }, null, 2);
+    const data = JSON.stringify({ board: boardStatus, detected, frames: canFrames.filter(f => !f.simulated && !f.replayed).slice(0, 200) }, null, 2);
     downloadBlob(new Blob([data], { type: 'application/json' }), `URTC_Debug_Bundle_${new Date().getTime()}.json`);
   };
 

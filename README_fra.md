@@ -218,6 +218,7 @@ Porté depuis les propres `tester_tool_panels.py` /
 - **TOUT ARRÊTER** dans l'en-tête (visible une fois connecté) éteint chaque actionneur que cette page maintient actif ; fermer la page et se déconnecter font de même. C'est une commande logicielle, pas un arrêt d'urgence.
 - Flasher une image signée avec la clé de développement publique demande d'abord une confirmation, car cette clé ne prouve rien sur l'auteur de l'image.
 - Quand la carte déclare une erreur critique, la bannière indique aussi la raison de la protection contre l'emballement thermique si la carte la signale.
+- **Relecture d'une trace enregistrée** (CAN Bus Protocol Analyzer) : un fichier `.trc` ou `.asc`, par exemple celui qu'exporte le Raw Bus Monitor, rejoue ses trames reçues dans le journal et les panneaux sans carte, de 0,25x à 10x et éventuellement en boucle. Les trames sont marquées REPLAY, rien n'est transmis, un enregistrement ne répond jamais à une requête, n'est jamais exporté comme ce que dit la carte, et la relecture se met en pause tant qu'une carte est connectée.
 
 ### Pas encore couvert
 
@@ -389,6 +390,7 @@ travail antérieur sur ce projet.
 │   │   ├── CanBusAnalyzer.tsx       Onglet reel : journal de trames CAN brutes,
 │   │   │                            injecteur de trame personnalisee,
 │   │   │                            declencheurs de commande preetablis
+│   │   ├── TraceReplayPanel.tsx     Charge une trace .trc/.asc et la rejoue dans le journal
 │   │   ├── FlasherStudio.tsx        Onglet reel : interface CAN-OTA (principale
 │   │   │                            + esclave d'extension) et l'explicateur de
 │   │   │                            capacite SWD/JTAG
@@ -416,12 +418,14 @@ travail antérieur sur ce projet.
 │   │   ├── useFlasher.ts            Machine a etats CAN-OTA (carte principale
 │   │   │                            + esclave d'extension), reflete
 │   │   │                            flasher_protocol.py
+│   │   ├── useTraceReplay.ts        Rejoue une trace enregistrée dans le journal et les panneaux
 │   │   └── useKeepalive.ts          Hook de renvoi a intervalle fixe qui
 │   │                                soutient le keepalive watchdog de la case
 │   │                                active de chaque outil
 │   ├── lib/
 │   │   ├── flasher.ts               Constantes du protocole OTA, aides CRC32/HMAC,
 │   │   │                            lecture des manifestes (aucune clé de signature)
+│   │   ├── traceReplay.ts           Lit les traces .trc/.asc ; le lecteur avec vitesse et pauses
 │   │   ├── boardVersion.ts          Requêtes de version : 0x7F9/0x7FA/0x7E9 et 0x217/0x218 de l'esclave
 │   │   ├── githubRelease.ts         Images de la release GitHub la plus récente et leur téléchargement
 │   │   ├── firmwareImage.ts         Contrôles d'image, cible du manifeste et version (avec correctif)

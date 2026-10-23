@@ -165,7 +165,22 @@
     "no_frames": "Ainda não foram registadas tramas CAN. Envie um comando acima ou ative ferramentas.",
     "presets_notice_connected": "Placa ligada: uma mensagem predefinida que seja uma simples consulta é enviada à placa e a resposta da própria placa aparece no registo. Qualquer outra mensagem predefinida é apenas um exemplo simulado, marcado SIM, e não é transmitida.",
     "presets_notice": "Sem placa ligada: as mensagens predefinidas reproduzem uma troca simulada, marcada SIM. Nada é transmitido.",
-    "sim_badge": "SIM"
+    "sim_badge": "SIM",
+    "replay_title": "Reproduzir um rastreio gravado",
+    "replay_notice": "Reproduz no registo as tramas recebidas de um rastreio .trc ou .asc, marcadas como REPLAY, sem placa. Não se transmite nada e uma gravação nunca responde a um pedido.",
+    "replay_load": "Abrir rastreio",
+    "replay_play": "Reproduzir",
+    "replay_pause": "Pausa",
+    "replay_stop": "Parar",
+    "replay_speed": "Velocidade",
+    "replay_loop": "Repetir",
+    "replay_progress": "{{played}} / {{total}} tramas",
+    "replay_rejected": "{{count}} linhas não eram tramas válidas e foram ignoradas",
+    "replay_blocked": "Há uma placa ligada: a reprodução fica em pausa para que uma gravação nunca se misture com o que a placa diz. Desligue para a reproduzir.",
+    "replay_error_too_big": "O ficheiro é demasiado grande para o navegador o reproduzir (mais de 20 MB).",
+    "replay_error_empty": "O ficheiro não contém tramas reproduzíveis: é preciso um rastreio .trc ou .asc com tramas recebidas (Rx).",
+    "replay_error_unreadable": "Não foi possível ler o ficheiro.",
+    "replay_badge": "REPLAY"
   },
   "flasher": {
     "title": "URTC Flasher Studio (CAN OTA)",

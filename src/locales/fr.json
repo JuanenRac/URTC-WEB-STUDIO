@@ -165,7 +165,22 @@
     "no_frames": "Aucune trame CAN enregistrée pour l'instant. Envoyez une commande ci-dessus ou activez des outils.",
     "presets_notice_connected": "Carte connectée : un message prédéfini qui est une simple requête est envoyé à la carte et sa propre réponse apparaît dans le journal. Tout autre message prédéfini n'est qu'un exemple simulé, marqué SIM, et n'est pas transmis.",
     "presets_notice": "Aucune carte connectée : les messages prédéfinis jouent un échange simulé, marqué SIM. Rien n'est transmis.",
-    "sim_badge": "SIM"
+    "sim_badge": "SIM",
+    "replay_title": "Rejouer une trace enregistrée",
+    "replay_notice": "Rejoue dans le journal les trames reçues d'une trace .trc ou .asc, marquées REPLAY, sans carte. Rien n'est transmis et un enregistrement ne répond jamais à une requête.",
+    "replay_load": "Ouvrir une trace",
+    "replay_play": "Lire",
+    "replay_pause": "Pause",
+    "replay_stop": "Arrêter",
+    "replay_speed": "Vitesse",
+    "replay_loop": "Répéter",
+    "replay_progress": "{{played}} / {{total}} trames",
+    "replay_rejected": "{{count}} lignes n'étaient pas des trames valides et ont été ignorées",
+    "replay_blocked": "Une carte est connectée : la relecture est en pause pour qu'un enregistrement ne se mélange jamais à ce que dit la carte. Déconnectez pour la lire.",
+    "replay_error_too_big": "Le fichier est trop gros pour que le navigateur le rejoue (plus de 20 Mo).",
+    "replay_error_empty": "Le fichier ne contient aucune trame rejouable : il faut une trace .trc ou .asc avec des trames reçues (Rx).",
+    "replay_error_unreadable": "Le fichier n'a pas pu être lu.",
+    "replay_badge": "REPLAY"
   },
   "flasher": {
     "title": "URTC Flasher Studio (CAN OTA)",

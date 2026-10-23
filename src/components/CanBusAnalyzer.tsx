@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { CanFrame } from '../types';
 import { Radio, Play, Trash2, Send, ShieldCheck } from 'lucide-react';
 import { PRESET_GROUPS } from '../lib/simPresets';
+import { TraceReplayPanel } from './TraceReplayPanel';
+import type { TraceReplay } from '../hooks/useTraceReplay';
 
 interface CanBusAnalyzerProps {
   canFrames: CanFrame[];
@@ -10,6 +12,7 @@ interface CanBusAnalyzerProps {
   onSendCustomFrame: (idHex: string, dataHex: string, description: string) => void;
   onClearLog: () => void;
   onTriggerPreset: (presetName: string) => void;
+  replay: TraceReplay;
 }
 
 // A row never changes once logged (the frames are immutable and keyed by their sequence number), so the
@@ -33,6 +36,7 @@ const FrameRow = React.memo(function FrameRow({ frame }: { frame: CanFrame }) {
       <td className="py-2 px-4 text-cyan-300 tracking-wider font-mono">{frame.dataHex}</td>
       <td className="py-2 px-4 text-slate-300">
         {frame.simulated && <span className="mr-2 px-1.5 py-0.5 rounded text-[10px] font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30">{t('canbus.sim_badge', 'SIM')}</span>}
+        {frame.replayed && <span className="mr-2 px-1.5 py-0.5 rounded text-[10px] font-bold bg-violet-500/20 text-violet-300 border border-violet-500/30">{t('canbus.replay_badge', 'REPLAY')}</span>}
         {frame.description}
       </td>
         </tr>
@@ -44,7 +48,8 @@ export const CanBusAnalyzer: React.FC<CanBusAnalyzerProps> = ({
   isConnected,
   onSendCustomFrame,
   onClearLog,
-  onTriggerPreset
+  onTriggerPreset,
+  replay
 }) => {
   const { t } = useTranslation();
   const [customId, setCustomId] = useState<string>('0x100');
@@ -122,6 +127,8 @@ export const CanBusAnalyzer: React.FC<CanBusAnalyzerProps> = ({
           </div>
         </div>
       </div>
+
+      <TraceReplayPanel replay={replay} />
 
       {/* Custom CAN Frame Injector */}
       <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-sm">

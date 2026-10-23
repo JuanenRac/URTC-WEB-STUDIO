@@ -16,6 +16,7 @@ import { ConfirmDialog } from './components/ConfirmDialog';
 import { TOOL_PROFILES } from './data/toolsData';
 import { HardwareState, CanFrame, ExpansionBoardType } from './types';
 import { useSerialCanBus } from './hooks/useSerialCanBus';
+import { useTraceReplay } from './hooks/useTraceReplay';
 import { useFlasher } from './hooks/useFlasher';
 import { useConfirmAction } from './hooks/useConfirmAction';
 import {
@@ -96,6 +97,8 @@ export default function App() {
   const handleFrameReceived = useCallback((frame: CanFrame) => { batcherRef.current!.push(frame); }, []);
 
   const serialCan = useSerialCanBus(handleFrameReceived);
+  // A recording played into the log and the panels with no board; it never plays while a real board is connected.
+  const traceReplay = useTraceReplay(serialCan.injectReplayedFrame, serialCan.isConnected, () => { if (!serialCan.isConnected) setBoardStatus(NO_BOARD_STATUS); });
 
   // Real feature detection, not a browser-name sniff - matches the same
   // 'serial' in navigator check useSerialCanBus.ts's own connect() already
@@ -853,6 +856,7 @@ export default function App() {
             onSendCustomFrame={handleSendCustomFrame}
             onClearLog={() => setCanFrames([])}
             onTriggerPreset={handleTriggerPreset}
+            replay={traceReplay}
           />
           </Suspense>
         )}

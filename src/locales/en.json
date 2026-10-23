@@ -165,7 +165,22 @@
     "no_frames": "No CAN frames logged yet. Send a command above or toggle tools.",
     "presets_notice_connected": "Board connected: a predefined message that is a plain query is sent to the board and its own answer appears in the log. Every other predefined message is only a simulated example, marked SIM, and is not transmitted.",
     "presets_notice": "No board connected: the predefined messages play a simulated exchange, marked SIM. Nothing is transmitted.",
-    "sim_badge": "SIM"
+    "sim_badge": "SIM",
+    "replay_title": "Replay a Recorded Trace",
+    "replay_notice": "Plays the received frames of a .trc or .asc trace into the log, marked REPLAY, with no board. Nothing is transmitted, and a recording never answers a request.",
+    "replay_load": "Open Trace",
+    "replay_play": "Play",
+    "replay_pause": "Pause",
+    "replay_stop": "Stop",
+    "replay_speed": "Speed",
+    "replay_loop": "Repeat",
+    "replay_progress": "{{played}} / {{total}} frames",
+    "replay_rejected": "{{count}} lines were not valid frames and were skipped",
+    "replay_blocked": "A board is connected: the replay is paused so that a recording is never mixed with what the board says. Disconnect to play it.",
+    "replay_error_too_big": "The file is too big for the browser to replay (more than 20 MB).",
+    "replay_error_empty": "The file holds no frames that can be replayed: a .trc or .asc trace with received (Rx) frames is needed.",
+    "replay_error_unreadable": "The file could not be read.",
+    "replay_badge": "REPLAY"
   },
   "flasher": {
     "title": "URTC Flasher Studio (CAN OTA)",
