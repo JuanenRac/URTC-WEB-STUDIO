@@ -710,5 +710,9 @@
     "black_chart_target": "Setpoint",
     "black_chart_trigger": "Error flag",
     "black_chart_span": "{{seconds}} s recorded"
+  },
+  "selfupdate": {
+    "new_available": "A newer version of the Studio is being served ({{served}}; this page is {{built}}). Nothing reloads by itself: reload when no flash or bench session is running.",
+    "reload": "Reload"
   }
 }

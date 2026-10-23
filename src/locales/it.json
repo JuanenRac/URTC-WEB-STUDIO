@@ -710,5 +710,9 @@
     "black_chart_target": "Setpoint",
     "black_chart_trigger": "Flag di errore",
     "black_chart_span": "{{seconds}} s registrati"
+  },
+  "selfupdate": {
+    "new_available": "Viene servita una versione più recente dello Studio ({{served}}; questa pagina è la {{built}}). Niente si ricarica da solo: ricarica quando non c'è un flash o una sessione di banco in corso.",
+    "reload": "Ricarica"
   }
 }

@@ -710,5 +710,9 @@
     "black_chart_target": "设定值",
     "black_chart_trigger": "错误标志",
     "black_chart_span": "已记录 {{seconds}} 秒"
+  },
+  "selfupdate": {
+    "new_available": "正在提供更新版本的 Studio（{{served}}；当前页面为 {{built}}）。不会自动刷新：请在没有烧录或台架会话进行时再刷新。",
+    "reload": "刷新"
   }
 }

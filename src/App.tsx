@@ -17,6 +17,7 @@ import { TOOL_PROFILES } from './data/toolsData';
 import { HardwareState, CanFrame, ExpansionBoardType } from './types';
 import { useSerialCanBus } from './hooks/useSerialCanBus';
 import { useTraceReplay } from './hooks/useTraceReplay';
+import { checkServedVersion } from './lib/selfUpdate';
 import { useFlasher } from './hooks/useFlasher';
 import { useConfirmAction } from './hooks/useConfirmAction';
 import {
@@ -97,6 +98,17 @@ export default function App() {
   const handleFrameReceived = useCallback((frame: CanFrame) => { batcherRef.current!.push(frame); }, []);
 
   const serialCan = useSerialCanBus(handleFrameReceived);
+  // A higher version served next to this page: the person is told and decides; nothing reloads by itself.
+  const [servedNewer, setServedNewer] = useState<string | null>(null);
+  useEffect(() => {
+    if (!import.meta.env.PROD || typeof __APP_VERSION__ === 'undefined' || window.location.protocol === 'file:') return;
+    let cancelled = false;
+    void checkServedVersion(__APP_VERSION__, (url, init) => fetch(url, init)).then((result) => {
+      if (!cancelled && result.state === 'newer') setServedNewer(result.served);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
   // A recording played into the log and the panels with no board; it never plays while a real board is connected.
   const traceReplay = useTraceReplay(serialCan.injectReplayedFrame, serialCan.isConnected, () => { if (!serialCan.isConnected) setBoardStatus(NO_BOARD_STATUS); });
 
@@ -721,6 +733,17 @@ export default function App() {
           which are fire-and-forget and would otherwise fail silently with
           nothing but a console trace. Placed above the tab content so it's
           visible no matter which tab was active when the send failed. */}
+      {servedNewer && (
+        <div className="max-w-[1400px] w-full mx-auto px-2 md:px-4 pt-3">
+          <div role="status" className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg bg-sky-950/80 text-sky-200 border border-sky-800/80 text-xs font-medium">
+            <span className="min-w-0">{t('selfupdate.new_available', 'A newer version of the Studio is being served ({{served}}; this page is {{built}}). Nothing reloads by itself: reload when no flash or bench session is running.', { served: servedNewer, built: __APP_VERSION__ })}</span>
+            <span className="flex items-center gap-2 shrink-0">
+              <button onClick={() => window.location.reload()} className="px-2 py-1 rounded bg-sky-800 hover:bg-sky-700 text-sky-50">{t('selfupdate.reload', 'Reload')}</button>
+              <button onClick={() => setServedNewer(null)} className="text-sky-300 hover:text-sky-100" title={t('app.dismiss', 'Dismiss')}><X className="w-4 h-4" /></button>
+            </span>
+          </div>
+        </div>
+      )}
       {serialCan.sendError && (
         <div className="max-w-[1400px] w-full mx-auto px-2 md:px-4 pt-3">
           <div className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg bg-red-950/80 text-red-400 border border-red-800/80 text-xs font-medium">

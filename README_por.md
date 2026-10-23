@@ -485,6 +485,8 @@ BY-SA - cada um com atribuição a este projeto e ao seu autor.
 
 **Visualizador da caixa negra (novo, verificado só com testes):** o separador Black Box desenha a temperatura medida e o valor pretendido dos segundos gravados antes do erro, com uma linha onde o indicador de erro aparece pela primeira vez, e abre um registo guardado antes (o ficheiro JSON ou CSV que o próprio separador escreve) sem placa ligada; um ficheiro que não é um registo, tem um valor fora do intervalo ou mais de 67 amostras é recusado com o motivo.
 
+**Aviso de versão (novo, verificado só com testes):** a compilação escreve um `version.json` junto da página; a página compilada compara-o uma vez, ao abrir e só com a mesma origem, com a sua própria versão e avisa quando é servida uma superior, com um botão Recarregar. Nada recarrega sozinho, uma versão igual ou anterior não diz nada e um ficheiro em falta ou a falta de rede passam em silêncio.
+
 **PID do aquecedor (no separador Funções opcionais; novo, verificado só com simulações):** o Tester Studio lê o estado do PID do aquecedor do firmware (`0x1B9` / `0x1BA`: os ganhos em vigor, o estado e a saída do último ciclo de controlo), guarda ganhos (de 0 a 600) e inicia ou cancela o autoajuste por relé, que aquece a ponta em torno do ponto de regulação atual do ferro de soldar (100 a 445 C) e guarda os ganhos encontrados. Guardar ganhos e iniciar o autoajuste pedem confirmação, cancelar não; um ganho que não seja um número de 0 a 600 é recusado antes de enviar o que quer que seja. A função tem de ser ativada antes, entre as funções opcionais; nada disto foi experimentado com uma placa real.
 
 ## 🔗 Projetos Relacionados

@@ -530,6 +530,8 @@ seinem Autor.
 
 **Black-Box-Anzeige (neu, nur mit Tests geprüft):** Der Tab Black Box zeichnet die gemessene Temperatur und den Sollwert der aufgezeichneten Sekunden vor dem Fehler, mit einer Linie dort, wo das Fehlerflag zum ersten Mal erscheint, und öffnet einen früher gespeicherten Datensatz (die JSON- oder CSV-Datei, die der Tab selbst schreibt) ohne angeschlossene Platine; eine Datei, die kein Datensatz ist, einen Wert außerhalb des Bereichs oder mehr als 67 Messwerte enthält, wird mit Begründung abgelehnt.
 
+**Versionshinweis (neu, nur mit Tests geprüft):** Der Build schreibt eine `version.json` neben die Seite; die gebaute Seite vergleicht sie beim Öffnen einmal und nur über denselben Ursprung mit ihrer eigenen Version und meldet, wenn eine höhere ausgeliefert wird, mit einer Schaltfläche zum Neuladen. Nichts lädt von selbst neu, eine gleiche oder ältere Version meldet nichts, und eine fehlende Datei oder fehlendes Netz bleiben stumm.
+
 **Heizer-PID (im Tab Optionale Funktionen; neu, nur mit Attrappen geprüft):** Tester Studio liest den Zustand des Heizer-PID der Firmware (`0x1B9` / `0x1BA`: die gültigen Verstärkungen, den Zustand und den Ausgang des letzten Regelzyklus), speichert Verstärkungen (0 bis 600) und startet oder bricht den Relais-Autotune ab, der die Spitze um den aktuellen Sollwert des Lötkolbens (100 bis 445 C) heizt und die gefundenen Verstärkungen speichert. Verstärkungen speichern und den Autotune starten verlangen eine Bestätigung, das Abbrechen nicht; eine Verstärkung, die keine Zahl von 0 bis 600 ist, wird vor dem Senden abgelehnt. Die Funktion muss vorher bei den optionalen Funktionen eingeschaltet werden; nichts davon wurde mit einer echten Platine ausprobiert.
 
 ## 🔗 Verwandte Projekte

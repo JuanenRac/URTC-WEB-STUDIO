@@ -511,6 +511,8 @@ autore.
 
 **Visualizzatore della scatola nera (nuovo, verificato solo con test):** la scheda Black Box disegna la temperatura misurata e il setpoint dei secondi registrati prima dell'errore, con una linea dove compare per la prima volta il flag di errore, e apre una registrazione salvata in precedenza (il file JSON o CSV che la scheda stessa scrive) senza scheda collegata; un file che non è una registrazione, ha un valore fuori intervallo o più di 67 campioni viene rifiutato con il motivo.
 
+**Avviso di versione (nuovo, verificato solo con test):** la compilazione scrive un `version.json` accanto alla pagina; la pagina compilata lo confronta una volta, all'apertura e solo con la stessa origine, con la propria versione e segnala quando ne viene servita una maggiore, con un pulsante Ricarica. Niente si ricarica da solo, una versione uguale o più vecchia non dice nulla e un file mancante o l'assenza di rete restano in silenzio.
+
 **PID del riscaldatore (nella scheda Funzioni opzionali; nuovo, verificato solo con simulazioni):** Tester Studio legge lo stato del PID del riscaldatore del firmware (`0x1B9` / `0x1BA`: i guadagni in vigore, lo stato e l'uscita dell'ultimo ciclo di controllo), salva i guadagni (da 0 a 600) e avvia o annulla l'autotuning a relè, che scalda la punta attorno al setpoint attuale del saldatore (da 100 a 445 C) e salva i guadagni trovati. Salvare i guadagni e avviare l'autotuning chiedono conferma, annullare no; un guadagno che non sia un numero da 0 a 600 viene rifiutato prima di inviare qualsiasi cosa. La funzione va prima attivata tra le funzioni opzionali; nulla di tutto ciò è stato provato con una scheda reale.
 
 ## 🔗 Progetti Correlati

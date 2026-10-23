@@ -710,5 +710,9 @@
     "black_chart_target": "設定値",
     "black_chart_trigger": "エラーフラグ",
     "black_chart_span": "{{seconds}} 秒を記録"
+  },
+  "selfupdate": {
+    "new_available": "より新しいバージョンの Studio が配信されています（{{served}}。このページは {{built}}）。自動では再読み込みされません。書き込みやベンチ作業の最中でないときに再読み込みしてください。",
+    "reload": "再読み込み"
   }
 }

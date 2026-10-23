@@ -710,5 +710,9 @@
     "black_chart_target": "Consigne",
     "black_chart_trigger": "Drapeau d'erreur",
     "black_chart_span": "{{seconds}} s enregistrées"
+  },
+  "selfupdate": {
+    "new_available": "Une version plus récente du Studio est servie ({{served}} ; cette page est la {{built}}). Rien ne se recharge tout seul : rechargez quand aucun flashage ni session de banc n'est en cours.",
+    "reload": "Recharger"
   }
 }

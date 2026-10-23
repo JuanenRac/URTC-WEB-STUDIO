@@ -1,6 +1,21 @@
 import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
+import { readFileSync } from 'node:fs';
+
+const APP_VERSION: string = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')).version;
+
+// Writes version.json next to the built page: the page compares it with its own version (src/lib/selfUpdate.ts) and
+// offers a reload when the host serves a newer one.
+function versionFile(): Plugin {
+  return {
+    name: 'urtc-version-file',
+    apply: 'build',
+    generateBundle() {
+      this.emitFile({ type: 'asset', fileName: 'version.json', source: JSON.stringify({ name: 'urtc-web-studio', version: APP_VERSION }) + '\n' });
+    },
+  };
+}
 
 // The built page only talks to itself, to the GitHub API and to the hosts that
 // serve release assets; its scripts, styles, fonts and images all come from the page
@@ -49,7 +64,8 @@ function contentSecurityPolicy(): Plugin {
 export default defineConfig({
   // GitHub Pages serves a project site under /<repository>/; the workflow passes that path.
   base: process.env.URTC_BASE_PATH || '/',
-  plugins: [react(), tailwindcss(), contentSecurityPolicy()],
+  plugins: [react(), tailwindcss(), contentSecurityPolicy(), versionFile()],
+  define: { __APP_VERSION__: JSON.stringify(APP_VERSION) },
   server: {
     // Web Serial only works on https or on localhost, so the development
     // server has no reason to listen on the network.

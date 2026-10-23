@@ -485,6 +485,8 @@ BY-SA - each with attribution back to this project and its author.
 
 **Black Box viewer (new, checked with tests only):** the Black Box tab draws the measured temperature and the setpoint of the recorded seconds before the error, with a line where the error flag first shows, and opens a record saved earlier (the JSON or CSV file the tab itself writes) with no board connected; a file that is not a record, has a value out of range or more than 67 samples is refused with the reason.
 
+**Version notice (new, checked with tests only):** the build writes a `version.json` next to the page; the built page compares it with its own version once, when it opens, over the same origin only, and tells you when a higher one is being served, with a Reload button. Nothing reloads by itself, an equal or older version says nothing, and a missing file or no network is silent.
+
 **Heater PID (in the Optional Functions tab; new, checked with fakes only):** Tester Studio reads the state of the heater PID of the firmware (`0x1B9` / `0x1BA`: the gains in force, the state and the output of the last control cycle), stores gains (0 to 600) and starts or aborts the relay autotune, which heats the tip around the current set-point of the soldering iron (100 to 445 C) and stores the gains it finds. Storing gains and starting the autotune ask for a confirmation, aborting does not; a gain that is not a number from 0 to 600 is refused before anything is sent. The function must be switched on first among the optional functions; none of it has been tried with a real board.
 
 ## 🔗 Related Projects

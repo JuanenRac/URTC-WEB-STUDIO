@@ -710,5 +710,9 @@
     "black_chart_target": "Sollwert",
     "black_chart_trigger": "Fehlerflag",
     "black_chart_span": "{{seconds}} s aufgezeichnet"
+  },
+  "selfupdate": {
+    "new_available": "Eine neuere Version des Studios wird ausgeliefert ({{served}}; diese Seite ist {{built}}). Nichts lädt von selbst neu: Laden Sie neu, wenn kein Flashvorgang und keine Bench-Sitzung läuft.",
+    "reload": "Neu laden"
   }
 }

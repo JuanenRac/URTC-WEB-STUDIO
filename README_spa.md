@@ -510,6 +510,8 @@ su autor.
 
 **Visor de la caja negra (nuevo, comprobado solo con tests):** la pestaña Black Box dibuja la temperatura medida y la consigna de los segundos grabados antes del error, con una línea donde aparece por primera vez el indicador de error, y abre un registro guardado antes (el archivo JSON o CSV que escribe la propia pestaña) sin placa conectada; un archivo que no es un registro, tiene un valor fuera de rango o más de 67 muestras se rechaza con el motivo.
 
+**Aviso de versión (nuevo, comprobado solo con tests):** la compilación escribe un `version.json` junto a la página; la página compilada lo compara una vez, al abrirse y solo con su mismo origen, con su propia versión y avisa cuando se sirve una mayor, con un botón Recargar. Nada se recarga solo, una versión igual o anterior no dice nada y un archivo ausente o la falta de red pasan en silencio.
+
 **PID del calentador (en la pestaña Funciones opcionales; nuevo, comprobado solo con simulaciones):** Tester Studio lee el estado del PID del calentador del firmware (`0x1B9` / `0x1BA`: las ganancias en vigor, el estado y la salida del último ciclo de control), guarda ganancias (de 0 a 600) y inicia o cancela el autoajuste por relé, que calienta la punta alrededor de la consigna actual del soldador (100 a 445 C) y guarda las ganancias que encuentra. Guardar ganancias e iniciar el autoajuste piden confirmación; cancelar no; una ganancia que no sea un número de 0 a 600 se rechaza antes de enviar nada. Hay que activar antes la función entre las funciones opcionales; nada de esto se ha probado con una placa real.
 
 ## 🔗 Proyectos Relacionados

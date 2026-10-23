@@ -710,5 +710,9 @@
     "black_chart_target": "Valor pretendido",
     "black_chart_trigger": "Indicador de erro",
     "black_chart_span": "{{seconds}} s registados"
+  },
+  "selfupdate": {
+    "new_available": "Está a ser servida uma versão mais recente do Studio ({{served}}; esta página é a {{built}}). Nada recarrega sozinho: recarregue quando não houver uma gravação nem uma sessão de bancada em curso.",
+    "reload": "Recarregar"
   }
 }

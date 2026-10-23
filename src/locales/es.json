@@ -710,5 +710,9 @@
     "black_chart_target": "Consigna",
     "black_chart_trigger": "Indicador de error",
     "black_chart_span": "{{seconds}} s registrados"
+  },
+  "selfupdate": {
+    "new_available": "Se está sirviendo una versión más nueva del Studio ({{served}}; esta página es la {{built}}). Nada se recarga solo: recarga cuando no haya un flasheo ni una sesión de banco en curso.",
+    "reload": "Recargar"
   }
 }
