@@ -693,6 +693,8 @@
     "rack_empty": "vide",
     "rack_no_serial": "sans n° de série",
     "rack_limit": "limite atteinte",
+    "rack_min_interval": "Intervalle minimal entre deux commandes (ms, 0 = désactivé)",
+    "rack_throttled": "commande retenue : l'intervalle minimal n'est pas écoulé",
     "rack_export": "Télécharger la page d'état",
     "thermal_title": "Vue thermique (outil 22, 0x250 à 0x255)",
     "thermal_subtitle": "L'image thermique en fausses couleurs, depuis la carte ou simulée.",

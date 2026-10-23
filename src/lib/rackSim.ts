@@ -58,6 +58,9 @@ export function validateSetPreheat(payload: number[]): { status: RackCommandStat
   return { status: 'ok', tool, target };
 }
 
+/** The least time between two commands accepted for the same tool (ms): the firmware's default, 0 = no limit. */
+export const RACK_COMMAND_MIN_INTERVAL_MS = 20;
+
 export interface RackSlot { occupied: boolean; toolId: number; serial: number; targetC: number }
 export interface RackReply { kind: 'ack' | 'nack' | 'none'; action: 'none' | 'set_target' | 'safe_state'; toolId: number | null; targetC: number | null; detail: string }
 
@@ -70,7 +73,8 @@ export class SimulatedRack {
   lastSeq = new Map<number, number>();
   startedMs = new Map<number, number>();
   expired = new Set<number>();
-  constructor(public preheatMaxMs: number | null = RACK_PREHEAT_MAX_MS) {}
+  lastCommandMs = new Map<number, number>();
+  constructor(public preheatMaxMs: number | null = RACK_PREHEAT_MAX_MS, public commandMinIntervalMs: number = RACK_COMMAND_MIN_INTERVAL_MS) {}
 
   setSlot(slot: number, toolId: number, serial = 0) {
     if (!Number.isInteger(slot) || slot < 0 || slot >= RACK_SLOTS) throw new Error('slot out of range');
@@ -98,7 +102,7 @@ export class SimulatedRack {
 
   tick(nowMs: number): number {
     let cut = 0;
-    if (this.lastRxMs !== null && this.linkLost(nowMs)) { this.lastRxMs = null; this.lastSeq.clear(); }
+    if (this.lastRxMs !== null && this.linkLost(nowMs)) { this.lastRxMs = null; this.lastSeq.clear(); this.lastCommandMs.clear(); }
     const lost = this.linkLost(nowMs);
     this.slots.forEach((s, i) => {
       if (!s.occupied || s.targetC === 0) return;
@@ -132,6 +136,13 @@ export class SimulatedRack {
       const d = (seq - prev) & 0xFF;
       if (d === 0 || d >= 128) return { kind: 'ack', action: 'none', toolId: tool, targetC: null, detail: 'retransmission already applied' };
     }
+    // a command that would be applied is held back when the same tool had one accepted less than the interval ago (a flood): nothing changes, no acknowledgement,
+    // and its sequence is not spent; a refusal above (a safe state) and a retransmission are never held back
+    const lastCommand = this.lastCommandMs.get(tool);
+    if (this.commandMinIntervalMs > 0 && lastCommand !== undefined && ((nowMs - lastCommand) >>> 0) < this.commandMinIntervalMs) {
+      return { kind: 'none', action: 'none', toolId: tool, targetC: null, detail: 'throttled' };
+    }
+    this.lastCommandMs.set(tool, nowMs);
     this.lastSeq.set(tool, seq);
     const slot = this.find(tool);
     if (slot === null) return { kind: 'ack', action: 'none', toolId: tool, targetC: target, detail: 'tool not racked: target not applied' };

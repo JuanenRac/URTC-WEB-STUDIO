@@ -693,6 +693,8 @@
     "rack_empty": "空",
     "rack_no_serial": "无序列号",
     "rack_limit": "已达上限",
+    "rack_min_interval": "命令之间的最小间隔(毫秒,0 = 关闭)",
+    "rack_throttled": "命令已被拦截:尚未达到最小间隔",
     "rack_export": "下载状态页",
     "thermal_title": "热像（工具 22，0x250 至 0x255）",
     "thermal_subtitle": "伪彩色热像，来自板卡或模拟。",

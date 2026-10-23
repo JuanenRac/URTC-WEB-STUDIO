@@ -693,6 +693,8 @@
     "rack_empty": "vacío",
     "rack_no_serial": "sin serie",
     "rack_limit": "límite alcanzado",
+    "rack_min_interval": "Intervalo mínimo entre órdenes (ms, 0 = sin límite)",
+    "rack_throttled": "orden retenida: aún no ha pasado el intervalo mínimo",
     "rack_export": "Descargar la página de estado",
     "thermal_title": "Vista térmica (herramienta 22, 0x250 a 0x255)",
     "thermal_subtitle": "La imagen térmica en falso color, de la placa o simulada.",

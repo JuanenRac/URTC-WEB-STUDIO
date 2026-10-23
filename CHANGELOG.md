@@ -4,6 +4,7 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **Rack bench: minimum interval between commands:** the simulated rack holds back a command for a tool sent less than the configured interval after the previous one (20 ms by default, 0 = off), as the rack firmware does; a safe state and a retransmission are never held back. The option is in the rack bench, in the eight languages.
 - **The language files are generated** from the catalog of texts of URTC-COMMON (`tools/i18n_generate.py sync`), with a lock (`urtc_i18n.lock.json`) and a test of this program (`src/locales/generated.test.ts`) that fails when a generated file is edited by hand; a text the glossary names is a reference to it. The eight files keep the order of the English one; no text changes.
 - **The README files carry sections written once in URTC-COMMON:** "Compatibility", in the eight languages, between marker comments before the license heading (`tools/readme_sections.py` of URTC-COMMON writes and checks them; the rest of each README is hand-written as before).
 - **Texts the other programs also say follow the shared glossary of URTC-COMMON:** 7 strings changed to say what the flasher and the tester say - Italian `Pulisci` for Clear and `Ciclo di lavoro (%)`, Chinese `通电` for Energize, `Falló la actualización` / `Falhou a atualização`, and the heater PID in Japanese. The glossary names each shared phrase once in the eight languages and the nightly comparison checks the programs against it.

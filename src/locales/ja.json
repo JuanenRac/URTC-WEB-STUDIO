@@ -693,6 +693,8 @@
     "rack_empty": "空",
     "rack_no_serial": "シリアルなし",
     "rack_limit": "上限に到達",
+    "rack_min_interval": "コマンド間の最小間隔(ms、0 = 無効)",
+    "rack_throttled": "コマンドを保留:最小間隔がまだ経過していません",
     "rack_export": "状態ページをダウンロード",
     "thermal_title": "熱画像（ツール22、0x250〜0x255）",
     "thermal_subtitle": "疑似カラーの熱画像。ボードから、またはシミュレーションです。",

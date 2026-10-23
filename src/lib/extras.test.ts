@@ -5,7 +5,7 @@ import {
   BLACK_BOX_CHUNK_COUNT, BlackBoxError, FaultTrigger, blackBoxCsv, blackBoxJson, blackBoxRows, chunkRequest, joinFrames, parseBlackBox, triggerIndex,
 } from "./blackBox";
 import {
-  RACK_PREHEAT_MAX_MS, SimulatedRack, encodeRackFrame, encodeSetPreheat, parseRackFrame, unitKey, validateSetPreheat, verifySlot,
+  RACK_COMMAND_MIN_INTERVAL_MS, RACK_PREHEAT_MAX_MS, SimulatedRack, encodeRackFrame, encodeSetPreheat, parseRackFrame, unitKey, validateSetPreheat, verifySlot,
 } from "./rackSim";
 import {
   ThermalError, assembleThermal, decodeThermalChunk, syntheticThermalFrame, thermalChunkCount, thermalColor, thermalRegionStats, thermalRgb, thermalScale,
@@ -119,6 +119,22 @@ describe("the rack simulator", () => {
     unlimited.setSlot(0, 0, 5);
     for (let seq = 1, t = 0; seq < 100; seq++, t += 200) unlimited.receive(encodeSetPreheat(seq, 0, 250), t);
     expect(unlimited.slots[0].targetC).toBe(250);
+  });
+  it("holds back a flood of commands for one tool, but never a safe state or a retransmission", () => {
+    const rack = new SimulatedRack(null, 100);
+    rack.setSlot(0, 0, 5);
+    rack.setSlot(1, 19, 6);
+    expect(rack.receive(encodeSetPreheat(1, 0, 200), 1000).action).toBe("set_target");
+    const held = rack.receive(encodeSetPreheat(2, 0, 210), 1050);
+    expect([held.kind, held.action, held.detail]).toEqual(["none", "none", "throttled"]);
+    expect(rack.slots[0].targetC).toBe(200);
+    expect(rack.receive(encodeSetPreheat(2, 0, 210), 1100).action).toBe("set_target");
+    expect(rack.receive(encodeSetPreheat(2, 0, 210), 1110).detail).toBe("retransmission already applied");
+    expect(rack.receive(encodeSetPreheat(3, 0, 5000), 1120).action).toBe("safe_state");
+    expect(rack.receive(encodeSetPreheat(1, 19, 300), 1121).action).toBe("set_target");
+    rack.commandMinIntervalMs = 0;
+    expect(rack.receive(encodeSetPreheat(3, 0, 220), 1122).action).toBe("set_target");
+    expect(new SimulatedRack().commandMinIntervalMs).toBe(RACK_COMMAND_MIN_INTERVAL_MS);
   });
   it("identifies a head by its type and serial number", () => {
     const rack = new SimulatedRack();

@@ -693,6 +693,8 @@
     "rack_empty": "empty",
     "rack_no_serial": "no serial",
     "rack_limit": "limit reached",
+    "rack_min_interval": "Minimum interval between commands (ms, 0 = off)",
+    "rack_throttled": "command held back: the minimum interval has not passed",
     "rack_export": "Download the status page",
     "thermal_title": "Thermal view (tool 22, 0x250 to 0x255)",
     "thermal_subtitle": "The thermal image in false colour, from the board or simulated.",

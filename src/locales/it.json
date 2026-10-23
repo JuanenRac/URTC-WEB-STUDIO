@@ -693,6 +693,8 @@
     "rack_empty": "vuoto",
     "rack_no_serial": "senza seriale",
     "rack_limit": "limite raggiunto",
+    "rack_min_interval": "Intervallo minimo tra i comandi (ms, 0 = disattivato)",
+    "rack_throttled": "comando trattenuto: l'intervallo minimo non è ancora trascorso",
     "rack_export": "Scarica la pagina di stato",
     "thermal_title": "Vista termica (utensile 22, da 0x250 a 0x255)",
     "thermal_subtitle": "L'immagine termica in falsi colori, dalla scheda o simulata.",

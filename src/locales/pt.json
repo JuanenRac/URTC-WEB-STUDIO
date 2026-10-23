@@ -693,6 +693,8 @@
     "rack_empty": "vazia",
     "rack_no_serial": "sem série",
     "rack_limit": "limite atingido",
+    "rack_min_interval": "Intervalo mínimo entre comandos (ms, 0 = desativado)",
+    "rack_throttled": "comando retido: o intervalo mínimo ainda não passou",
     "rack_export": "Descarregar a página de estado",
     "thermal_title": "Vista térmica (ferramenta 22, 0x250 a 0x255)",
     "thermal_subtitle": "A imagem térmica em falsa cor, da placa ou simulada.",

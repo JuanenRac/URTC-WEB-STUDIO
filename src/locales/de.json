@@ -693,6 +693,8 @@
     "rack_empty": "leer",
     "rack_no_serial": "ohne Seriennr.",
     "rack_limit": "Grenze erreicht",
+    "rack_min_interval": "Mindestabstand zwischen Befehlen (ms, 0 = aus)",
+    "rack_throttled": "Befehl zurückgehalten: der Mindestabstand ist noch nicht vergangen",
     "rack_export": "Statusseite herunterladen",
     "thermal_title": "Wärmebild (Werkzeug 22, 0x250 bis 0x255)",
     "thermal_subtitle": "Das Wärmebild in Falschfarben, von der Platine oder simuliert.",

@@ -10,7 +10,7 @@ import {
   BLACK_BOX_CHUNK_COUNT, BLACK_BOX_CHUNK_ID, BLACK_BOX_FRAMES_PER_CHUNK, BLACK_BOX_QUERY_ID, BlackBoxRecord,
   blackBoxChart, blackBoxCsv, blackBoxFromText, blackBoxJson, chunkRequest, joinFrames, parseBlackBox, triggerIndex,
 } from '../../lib/blackBox';
-import { SimulatedRack, encodeSetPreheat, unitKey } from '../../lib/rackSim';
+import { SimulatedRack, RACK_COMMAND_MIN_INTERVAL_MS, encodeSetPreheat, unitKey } from '../../lib/rackSim';
 import {
   THERMAL_CALIBRATED_CHUNK_ID, THERMAL_CALIBRATED_REQUEST_ID, THERMAL_FRAMES_PER_CHUNK, THERMAL_STATUS_ID, THERMAL_TRIGGER_ID,
   ThermalFrame, assembleThermal, syntheticThermalFrame, thermalChunkCount, thermalRegionStats, thermalRgb,
@@ -232,6 +232,7 @@ export const RackBenchPanel: React.FC = () => {
   const [serial, setSerial] = useState(0);
   const [target, setTarget] = useState(200);
   const [advance, setAdvance] = useState(1000);
+  const [minInterval, setMinInterval] = useState(rackRef.current.commandMinIntervalMs);
   const [headline, setHeadline] = useState('');
   const [, refresh] = useState(0);
 
@@ -239,7 +240,9 @@ export const RackBenchPanel: React.FC = () => {
   const place = () => act(() => { rackRef.current.setSlot(slot, tool, serial); return `slot ${slot}: tool ${tool}${serial ? ` serial ${serial}` : ''}`; });
   const send = () => act(() => {
     clock.current.seq = (clock.current.seq + 1) & 0xFF;
+    rackRef.current.commandMinIntervalMs = minInterval;
     const reply = rackRef.current.receive(encodeSetPreheat(clock.current.seq, tool, target), clock.current.now);
+    if (reply.detail === 'throttled') return t('testerextras.rack_throttled', 'command held back: the minimum interval has not passed');
     return `${reply.kind.toUpperCase()}${reply.action !== 'none' ? ` ${reply.action}` : ''}${reply.detail ? ` (${reply.detail})` : ''}`;
   });
   const wait = () => act(() => {
@@ -256,12 +259,13 @@ export const RackBenchPanel: React.FC = () => {
 
   return (
     <Section title={t('testerextras.rack_title', 'Rack bench (simulated, no board)')} subtitle={t('testerextras.rack_subtitle', 'The serial protocol and the behaviour of the tool rack, simulated here. The identity of a head is its type plus its serial number.')}>
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-3">
+      <div className="grid grid-cols-2 sm:grid-cols-6 gap-3 mb-3">
         <Field label={t('testerextras.rack_slot', 'Slot')}><input type="number" min={0} max={7} value={slot} onChange={(e) => setSlot(safeInt(e.target.value, 0, 0, 7))} className={inputCls} /></Field>
         <Field label={t('testerextras.rack_tool', 'Tool')}><input type="number" min={0} max={24} value={tool} onChange={(e) => setTool(safeInt(e.target.value, 0, 0, 24))} className={inputCls} /></Field>
         <Field label={t('testerextras.rack_serial', 'Serial')}><input type="number" min={0} max={255} value={serial} onChange={(e) => setSerial(safeInt(e.target.value, 0, 0, 255))} className={inputCls} /></Field>
         <Field label={t('testerextras.rack_target', 'Target C')}><input type="number" min={0} max={400} value={target} onChange={(e) => setTarget(safeInt(e.target.value, 0, 0, 400))} className={inputCls} /></Field>
         <Field label={t('testerextras.rack_advance', 'Advance time (ms)')}><input type="number" min={0} value={advance} onChange={(e) => setAdvance(safeInt(e.target.value, 1000, 0, 3_600_000))} className={inputCls} /></Field>
+        <Field label={t('testerextras.rack_min_interval', 'Minimum interval between commands (ms, 0 = off)')}><input type="number" min={0} max={60000} value={minInterval} onChange={(e) => setMinInterval(safeInt(e.target.value, RACK_COMMAND_MIN_INTERVAL_MS, 0, 60_000))} className={inputCls} /></Field>
       </div>
       <div className="flex flex-wrap gap-3 mb-3">
         <button className={btnCls} onClick={place}>{t('testerextras.rack_place', 'Rack the head')}</button>
