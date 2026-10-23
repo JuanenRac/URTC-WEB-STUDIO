@@ -480,6 +480,12 @@ travail antérieur sur ce projet.
 └── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md  <- traductions
 ```
 
+<!-- urtc-section:compatibility -->
+## 🧩 Compatibilité
+
+Les versions des programmes URTC qui fonctionnent ensemble, et la version du protocole que parle chacune, figurent dans le tableau de compatibilité que génère URTC-COMMON : [docs/COMPATIBILITY.md](https://github.com/JuanenRac/URTC/blob/main/docs/COMPATIBILITY.md).
+<!-- /urtc-section:compatibility -->
+
 ## 📜 LICENCE
 
 URTC Web Studio est (c) 2026 JuanenRac (Electro Hobby 3D). Cet avis doit être

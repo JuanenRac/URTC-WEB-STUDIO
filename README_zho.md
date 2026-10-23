@@ -411,6 +411,12 @@ npm run preview
 └── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md  <- 翻译
 ```
 
+<!-- urtc-section:compatibility -->
+## 🧩 兼容性
+
+哪些版本的 URTC 程序可以配合使用、各自使用哪个协议版本，列在 URTC-COMMON 生成的兼容性表中：[docs/COMPATIBILITY.md](https://github.com/JuanenRac/URTC/blob/main/docs/COMPATIBILITY.md)。
+<!-- /urtc-section:compatibility -->
+
 ## 📜 许可证
 
 URTC Web Studio 版权所有 (c) 2026 JuanenRac（Electro Hobby 3D）。分发本项目
