@@ -52,6 +52,6 @@ jobs:
       - name: Type check
         run: npm run lint
       - name: Tests
-        run: npm test
+        run: npm run test:coverage
       - name: Build the static site
         run: npm run build

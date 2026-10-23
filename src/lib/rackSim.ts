@@ -1,7 +1,7 @@
 // Simulator of the tool rack (URTC-SMART-RACK) for the studio: no board needed. Same rules as urtc_common.rack_sim and as the C code
-// of the rack; the shared vectors check all three.
+// of the rack; the shared vectors check all three. Frame version 2: every multi-byte value is big-endian, like the bus.
 export const RACK_SOF = 0xA5;
-export const RACK_VERSION = 1;
+export const RACK_VERSION = 2;
 export const RACK_MAX_PAYLOAD = 16;
 export const RACK_CMD_SET_PREHEAT = 0x01;
 export const RACK_TOOL_ID_NONE = 31;
@@ -40,7 +40,7 @@ export function parseRackFrame(buf: number[]): { status: RackFrameStatus; frame:
   return { status: 'ok', frame: { seq: buf[2], cmd: buf[3], payload: buf.slice(5, 5 + len) } };
 }
 
-export const encodeSetPreheat = (seq: number, tool: number, targetC: number) => encodeRackFrame(seq, RACK_CMD_SET_PREHEAT, [tool, targetC & 0xFF, (targetC >> 8) & 0xFF]);
+export const encodeSetPreheat = (seq: number, tool: number, targetC: number) => encodeRackFrame(seq, RACK_CMD_SET_PREHEAT, [tool, (targetC >> 8) & 0xFF, targetC & 0xFF]);
 
 export type RackCommandStatus = 'ok' | 'wrong_payload_len' | 'tool_id_absent' | 'temp_out_of_range' | 'tool_id_invalid' | 'tool_not_heatable';
 
@@ -50,7 +50,7 @@ export function validateSetPreheat(payload: number[]): { status: RackCommandStat
   if (tool > 31) return { status: 'tool_id_invalid', tool, target: 0 };
   if (tool === RACK_TOOL_ID_NONE) return { status: 'tool_id_absent', tool, target: 0 };
   if (tool > RACK_TOOL_ID_LAST) return { status: 'tool_id_invalid', tool, target: 0 };
-  const target = payload[1] | (payload[2] << 8);
+  const target = (payload[1] << 8) | payload[2];
   if (target > RACK_CEILING_C) return { status: 'temp_out_of_range', tool, target };
   const ceiling = MAX_PREHEAT_C[tool] ?? 0;
   if (target > 0 && ceiling === 0) return { status: 'tool_not_heatable', tool, target };

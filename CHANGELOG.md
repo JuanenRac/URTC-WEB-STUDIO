@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+- The tests run with a coverage floor (`npm run test:coverage`, used by the CI): 26 percent of the lines and statements, 27 of the functions and 85 of the branches, about eight points under what is measured today (34, 35 and 93; the screens are not exercised by the unit tests).
+- **The rack simulator speaks frame version 2:** the temperature of the pre-heat command is two bytes, big-endian, like every other multi-byte value of the family, and `rackSim.ts` carries version 2, so a version 1 frame is refused as an unsupported version. The copy of the rack vectors from URTC-COMMON (frames, command checks, CAN data and link scenarios) was written again for the new layout and the tests pass against it.
+
 ## [0.3.6] - Heater PID panel in the web studio
 
 - **Heater PID panel (in the Optional Functions tab):** reads the state of the heater PID of the firmware (`0x1B9` / `0x1BA`: the gains in force, the state and the output of the last cycle), stores gains from 0 to 600 and starts or aborts the relay autotune, with its texts in the eight languages (15 new keys). Storing gains and starting the autotune ask for a confirmation, aborting does not; a gain that is not a number from 0 to 600 is refused before anything is sent, and `0x1B9` typed by hand in the custom frame panel now asks for a confirmation because the autotune heats. 6 new tests.
