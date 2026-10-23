@@ -282,7 +282,7 @@
     "log_release_signature_ok": "Assinatura de lançamento verificada: este ficheiro exato foi publicado pelo mantenedor.",
     "log_release_signature_none": "Esta imagem não tem assinatura de lançamento para verificar (ou este navegador não a consegue verificar); a placa continua a verificar a sua própria assinatura.",
     "log_signature_runtime_key": "Assinada localmente com a chave introduzida para esta gravação.",
-    "status_update_failed": "Atualização falhada",
+    "status_update_failed": "Falhou a atualização",
     "log_error_prefix": "ERRO: {{message}}",
     "status_reading_back": "A ler o slot principal via CAN...",
     "log_starting_readback": "A iniciar a leitura da flash (0x7FE/0x7FF)...",

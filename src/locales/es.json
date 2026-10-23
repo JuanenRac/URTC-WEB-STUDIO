@@ -282,7 +282,7 @@
     "log_release_signature_ok": "Firma de publicación verificada: este archivo exacto lo publicó el mantenedor.",
     "log_release_signature_none": "Esta imagen no tiene firma de publicación que comprobar (o este navegador no puede comprobarla); la placa sigue verificando su propia firma.",
     "log_signature_runtime_key": "Firmada localmente con la clave introducida para esta grabación.",
-    "status_update_failed": "Actualización fallida",
+    "status_update_failed": "Falló la actualización",
     "log_error_prefix": "ERROR: {{message}}",
     "status_reading_back": "Leyendo el slot principal vía CAN...",
     "log_starting_readback": "Iniciando lectura de flash (0x7FE/0x7FF)...",

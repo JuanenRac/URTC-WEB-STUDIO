@@ -574,7 +574,7 @@
     "last_impact_label": "最后一次撞击：",
     "electromagnet_title": "电磁铁（0x1B0）",
     "electromagnet_subtitle": "锁存式数字指令——按设计无通信看门狗（见 CANBUS.TXT 关于 0x1B0 的说明）。",
-    "energize": "激励",
+    "energize": "通电",
     "weld_subtitle_gated": "需要接触传感器满足条件（固件端门控）。",
     "weld_subtitle_ungated": "无接触传感器门控。",
     "pulse_duration_label": "脉冲持续时间（1-{{max}} 毫秒）",
