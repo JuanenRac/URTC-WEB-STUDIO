@@ -121,3 +121,99 @@ export class FaultTrigger {
   }
   reset() { this.wasSet = false; }
 }
+
+// ---- Records saved earlier: open the JSON or CSV this tool wrote, with no board ----------------------------------------------
+const intOf = (value: unknown, max: number, what: string): number => {
+  const n = typeof value === 'number' ? value : typeof value === 'string' && value.trim() !== '' ? Number(value) : NaN;
+  if (!Number.isInteger(n) || n < 0 || n > max) throw new BlackBoxError(`${what} is not a whole number from 0 to ${max}`);
+  return n;
+};
+
+function recordFromRows(rows: Array<Record<string, unknown>>): BlackBoxRecord {
+  if (rows.length === 0) throw new BlackBoxError('the record holds no samples');
+  if (rows.length > BLACK_BOX_SAMPLES) throw new BlackBoxError(`a record holds at most ${BLACK_BOX_SAMPLES} samples, this one has ${rows.length}`);
+  const samples = rows.map((row, i): BlackBoxSample => {
+    const where = `sample ${i}`;
+    const fault = intOf(row.thermal_fault, 3, `${where}: thermal_fault`);
+    const error = intOf(row.system_error, 1, `${where}: system_error`);
+    const endstop = intOf(row.endstop, 1, `${where}: endstop`);
+    return {
+      tickMs: intOf(row.tick_ms, 0xFFFFFFFF, `${where}: tick_ms`),
+      toolId: intOf(row.tool_id, 255, `${where}: tool_id`),
+      currentTemperature: intOf(row.current_temperature, 0xFFFF, `${where}: current_temperature`),
+      targetTemperature: intOf(row.target_temperature, 0xFFFF, `${where}: target_temperature`),
+      flags: endstop | (error << 1) | (fault << 2),
+    };
+  });
+  return { version: BLACK_BOX_VERSION, sampleCount: samples.length, writeIndex: samples.length % BLACK_BOX_SAMPLES, samples };
+}
+
+/** The record in a JSON file written by `blackBoxJson` (format `urtc-blackbox/1`). */
+export function blackBoxFromJson(text: string): BlackBoxRecord {
+  let doc: unknown;
+  try { doc = JSON.parse(text); } catch { throw new BlackBoxError('not a JSON file'); }
+  if (!doc || typeof doc !== 'object' || (doc as { format?: unknown }).format !== 'urtc-blackbox/1') throw new BlackBoxError('not a urtc-blackbox/1 file');
+  const samples = (doc as { samples?: unknown }).samples;
+  if (!Array.isArray(samples)) throw new BlackBoxError('the file has no list of samples');
+  return recordFromRows(samples as Array<Record<string, unknown>>);
+}
+
+/** The record in a CSV file written by `blackBoxCsv` (the header names the columns, in any order). */
+export function blackBoxFromCsv(text: string): BlackBoxRecord {
+  const lines = text.split(/\r?\n/).filter((l) => l.trim() !== '');
+  if (lines.length < 2) throw new BlackBoxError('the file has no samples');
+  const header = lines[0].split(',').map((h) => h.trim());
+  for (const column of CSV_COLUMNS) if (!header.includes(column)) throw new BlackBoxError(`the file has no ${column} column`);
+  const rows = lines.slice(1).map((line) => {
+    const cells = line.split(',');
+    const row: Record<string, unknown> = {};
+    header.forEach((name, i) => { row[name] = cells[i]; });
+    return row;
+  });
+  return recordFromRows(rows);
+}
+
+/** A saved record of either kind, by what the text looks like. */
+export function blackBoxFromText(text: string): BlackBoxRecord {
+  return text.trimStart().startsWith('{') ? blackBoxFromJson(text) : blackBoxFromCsv(text);
+}
+
+// ---- The chart ----------------------------------------------------------------------------------------------------------------
+export interface BlackBoxChart {
+  /** SVG `points` of the measured temperature and of the setpoint. */
+  current: string;
+  target: string;
+  /** X of the first sample that carries the error flag, or null. */
+  triggerX: number | null;
+  minTemperature: number;
+  maxTemperature: number;
+  /** Length of the record in milliseconds. */
+  spanMs: number;
+  /** Y of the horizontal grid lines with the temperature they mark. */
+  grid: Array<{ y: number; temperature: number }>;
+}
+
+/** Scales the samples into a `width` x `height` box with `pad` pixels around it: time runs left to right, temperature bottom to top. */
+export function blackBoxChart(record: BlackBoxRecord, width: number, height: number, pad = 8): BlackBoxChart {
+  const samples = record.samples;
+  const first = samples.length ? samples[0].tickMs : 0;
+  const spanMs = samples.length ? ((samples[samples.length - 1].tickMs - first) >>> 0) : 0;
+  const temperatures = samples.flatMap((s) => [s.currentTemperature, s.targetTemperature]);
+  const low = temperatures.length ? Math.min(...temperatures) : 0;
+  const high = temperatures.length ? Math.max(...temperatures) : 0;
+  const minTemperature = Math.max(0, Math.floor((low - 5) / 10) * 10);
+  const maxTemperature = Math.max(minTemperature + 10, Math.ceil((high + 5) / 10) * 10);
+  const x = (tick: number) => pad + (spanMs === 0 ? 0 : (((tick - first) >>> 0) / spanMs) * (width - 2 * pad));
+  const y = (temperature: number) => height - pad - ((temperature - minTemperature) / (maxTemperature - minTemperature)) * (height - 2 * pad);
+  const points = (pick: (s: BlackBoxSample) => number) => samples.map((s) => `${x(s.tickMs).toFixed(1)},${y(pick(s)).toFixed(1)}`).join(' ');
+  const trigger = triggerIndex(record);
+  const steps = 4;
+  const grid = Array.from({ length: steps + 1 }, (_, i) => {
+    const temperature = minTemperature + ((maxTemperature - minTemperature) * i) / steps;
+    return { y: y(temperature), temperature: Math.round(temperature) };
+  });
+  return {
+    current: points((s) => s.currentTemperature), target: points((s) => s.targetTemperature),
+    triggerX: trigger === null ? null : x(samples[trigger].tickMs), minTemperature, maxTemperature, spanMs, grid,
+  };
+}

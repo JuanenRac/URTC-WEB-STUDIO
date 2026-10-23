@@ -8,7 +8,7 @@ import { CAN_ID_SET_FEATURES, CAN_ID_FEATURES_RESP, CAN_ID_PID_CONFIG, CAN_ID_PI
 import { PID_ACTION_AUTOTUNE_ABORT, PID_ACTION_AUTOTUNE_START, PID_ACTION_QUERY, PID_ACTION_SET_GAINS, PID_STATE_KEYS, decodePidState, encodePidConfig } from '../../lib/pid';
 import {
   BLACK_BOX_CHUNK_COUNT, BLACK_BOX_CHUNK_ID, BLACK_BOX_FRAMES_PER_CHUNK, BLACK_BOX_QUERY_ID, BlackBoxRecord,
-  blackBoxCsv, blackBoxJson, chunkRequest, joinFrames, parseBlackBox, triggerIndex,
+  blackBoxChart, blackBoxCsv, blackBoxFromText, blackBoxJson, chunkRequest, joinFrames, parseBlackBox, triggerIndex,
 } from '../../lib/blackBox';
 import { SimulatedRack, encodeSetPreheat, unitKey } from '../../lib/rackSim';
 import {
@@ -31,6 +31,36 @@ async function collectFrames(ctx: ToolCtx, requestId: number, data: number[], an
 }
 
 // ---- Fault recorder (0x1A8 / 0x1A9) ----
+const CHART_WIDTH = 480;
+const CHART_HEIGHT = 170;
+
+/** The temperature before the error: measured and setpoint, with a line where the error flag first shows. */
+const BlackBoxChartView: React.FC<{ record: BlackBoxRecord }> = ({ record }) => {
+  const { t } = useTranslation();
+  const chart = blackBoxChart(record, CHART_WIDTH, CHART_HEIGHT);
+  return (
+    <div className="mt-3" data-testid="black-box-chart">
+      <div className="flex flex-wrap items-center gap-4 text-[11px] font-mono text-slate-300 mb-1">
+        <span className="text-slate-400">{t('testerextras.black_chart_title', 'Temperature before the error')}</span>
+        <span className="flex items-center gap-1"><span className="inline-block w-3 h-0.5 bg-amber-400" />{t('testerextras.black_chart_current', 'Measured')}</span>
+        <span className="flex items-center gap-1"><span className="inline-block w-3 h-0.5 bg-cyan-400" />{t('testerextras.black_chart_target', 'Setpoint')}</span>
+        {chart.triggerX !== null && <span className="flex items-center gap-1"><span className="inline-block w-3 h-0.5 bg-red-500" />{t('testerextras.black_chart_trigger', 'Error flag')}</span>}
+        <span className="text-slate-500">{t('testerextras.black_chart_span', '{{seconds}} s recorded', { seconds: (chart.spanMs / 1000).toFixed(1) })}</span>
+      </div>
+      <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} className="w-full max-w-xl bg-slate-950 border border-slate-800 rounded" role="img" aria-label={t('testerextras.black_chart_title', 'Temperature before the error')}>
+        {chart.grid.map((g) => (
+          <g key={g.y}>
+            <line x1="8" x2={CHART_WIDTH - 8} y1={g.y} y2={g.y} stroke="#334155" strokeWidth="0.5" />
+            <text x="10" y={g.y - 2} fontSize="8" fill="#64748b">{g.temperature}</text>
+          </g>
+        ))}
+        <polyline points={chart.target} fill="none" stroke="#22d3ee" strokeWidth="1.2" strokeDasharray="4 2" />
+        <polyline points={chart.current} fill="none" stroke="#fbbf24" strokeWidth="1.6" />
+        {chart.triggerX !== null && <line x1={chart.triggerX} x2={chart.triggerX} y1="8" y2={CHART_HEIGHT - 8} stroke="#ef4444" strokeWidth="1" />}
+      </svg>
+    </div>
+  );
+};
 export const BlackBoxPanel: React.FC<{ ctx: ToolCtx; systemError: boolean }> = ({ ctx, systemError }) => {
   const { t } = useTranslation();
   const [record, setRecord] = useState<BlackBoxRecord | null>(null);
@@ -72,6 +102,17 @@ export const BlackBoxPanel: React.FC<{ ctx: ToolCtx; systemError: boolean }> = (
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [systemError]);
 
+  const openSaved = async (file: File) => {
+    try {
+      if (file.size > 1024 * 1024) throw new Error(t('testerextras.black_open_big', 'the file is too big for a record'));
+      const parsed = blackBoxFromText(await file.text());
+      setRecord(parsed);
+      setMessage(t('testerextras.black_open_ok', '{{name}}: {{count}} samples', { name: file.name, count: parsed.samples.length }));
+    } catch (e) {
+      setMessage(t('testerextras.black_open_failed', '{{name}} is not a record that can be read: {{reason}}', { name: file.name, reason: e instanceof Error ? e.message : String(e) }));
+    }
+  };
+
   const stamp = () => new Date().toISOString().replace(/[:.]/g, '-');
   return (
     <Section title={t('testerextras.black_title', 'Fault recorder (black box, 0x1A8/0x1A9)')} subtitle={t('testerextras.black_subtitle', 'Reads the last ten seconds the board recorded before an error and saves them as CSV or JSON.')}>
@@ -83,7 +124,14 @@ export const BlackBoxPanel: React.FC<{ ctx: ToolCtx; systemError: boolean }> = (
         <button className={btnCls} disabled={!record} onClick={() => record && downloadBlob(new Blob([blackBoxCsv(record)], { type: 'text/csv' }), `urtc_blackbox_${stamp()}.csv`)}>{t('testerextras.black_csv', 'Download CSV')}</button>
         <button className={btnCls} disabled={!record} onClick={() => record && downloadBlob(new Blob([blackBoxJson(record, new Date().toISOString())], { type: 'application/json' }), `urtc_blackbox_${stamp()}.json`)}>{t('testerextras.black_json', 'Download JSON')}</button>
       </div>
+      <div className="flex flex-wrap items-center gap-3 mb-3">
+        <label className={btnCls + ' cursor-pointer'}>
+          {t('testerextras.black_open', 'Open a saved record (JSON or CSV)')}
+          <input type="file" accept=".json,.csv,application/json,text/csv" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) void openSaved(f); e.target.value = ''; }} />
+        </label>
+      </div>
       {message && <div className="text-xs text-slate-300 font-mono">{message}</div>}
+      {record && <BlackBoxChartView record={record} />}
     </Section>
   );
 };

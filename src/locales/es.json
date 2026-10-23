@@ -700,6 +700,15 @@
     "thermal_read": "Leer de la placa",
     "thermal_banner_sim": "Imagen SIMULADA: no se leyó ninguna placa",
     "thermal_stats": "mín {{min}} C, máx {{max}} C, media {{mean}} C",
-    "thermal_failed": "No se pudo leer la imagen térmica: {{reason}}"
+    "thermal_failed": "No se pudo leer la imagen térmica: {{reason}}",
+    "black_open": "Abrir un registro guardado (JSON o CSV)",
+    "black_open_big": "el archivo es demasiado grande para ser un registro",
+    "black_open_ok": "{{name}}: {{count}} muestras",
+    "black_open_failed": "{{name}} no es un registro que se pueda leer: {{reason}}",
+    "black_chart_title": "Temperatura antes del error",
+    "black_chart_current": "Medida",
+    "black_chart_target": "Consigna",
+    "black_chart_trigger": "Indicador de error",
+    "black_chart_span": "{{seconds}} s registrados"
   }
 }

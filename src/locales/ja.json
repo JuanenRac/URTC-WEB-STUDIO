@@ -700,6 +700,15 @@
     "thermal_read": "ボードから読む",
     "thermal_banner_sim": "模擬画像: ボードは読んでいません",
     "thermal_stats": "最小 {{min}} C、最大 {{max}} C、平均 {{mean}} C",
-    "thermal_failed": "熱画像を読めませんでした: {{reason}}"
+    "thermal_failed": "熱画像を読めませんでした: {{reason}}",
+    "black_open": "保存した記録を開く（JSON または CSV）",
+    "black_open_big": "ファイルが大きすぎて記録として読めません",
+    "black_open_ok": "{{name}}：{{count}} サンプル",
+    "black_open_failed": "{{name}} は読み取れる記録ではありません：{{reason}}",
+    "black_chart_title": "エラー前の温度",
+    "black_chart_current": "測定値",
+    "black_chart_target": "設定値",
+    "black_chart_trigger": "エラーフラグ",
+    "black_chart_span": "{{seconds}} 秒を記録"
   }
 }

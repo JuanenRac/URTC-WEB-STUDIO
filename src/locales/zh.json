@@ -700,6 +700,15 @@
     "thermal_read": "从板卡读取",
     "thermal_banner_sim": "模拟图像：没有读取板卡",
     "thermal_stats": "最低 {{min}} C，最高 {{max}} C，平均 {{mean}} C",
-    "thermal_failed": "无法读取热像：{{reason}}"
+    "thermal_failed": "无法读取热像：{{reason}}",
+    "black_open": "打开已保存的记录（JSON 或 CSV）",
+    "black_open_big": "文件太大，不可能是一条记录",
+    "black_open_ok": "{{name}}：{{count}} 个采样",
+    "black_open_failed": "{{name}} 不是可读取的记录：{{reason}}",
+    "black_chart_title": "错误发生前的温度",
+    "black_chart_current": "测量值",
+    "black_chart_target": "设定值",
+    "black_chart_trigger": "错误标志",
+    "black_chart_span": "已记录 {{seconds}} 秒"
   }
 }

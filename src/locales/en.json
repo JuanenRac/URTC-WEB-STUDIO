@@ -700,6 +700,15 @@
     "thermal_read": "Read from the board",
     "thermal_banner_sim": "SIMULATED image: no board was read",
     "thermal_stats": "min {{min}} C, max {{max}} C, mean {{mean}} C",
-    "thermal_failed": "The thermal image could not be read: {{reason}}"
+    "thermal_failed": "The thermal image could not be read: {{reason}}",
+    "black_open": "Open a saved record (JSON or CSV)",
+    "black_open_big": "the file is too big for a record",
+    "black_open_ok": "{{name}}: {{count}} samples",
+    "black_open_failed": "{{name}} is not a record that can be read: {{reason}}",
+    "black_chart_title": "Temperature before the error",
+    "black_chart_current": "Measured",
+    "black_chart_target": "Setpoint",
+    "black_chart_trigger": "Error flag",
+    "black_chart_span": "{{seconds}} s recorded"
   }
 }

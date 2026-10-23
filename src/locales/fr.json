@@ -700,6 +700,15 @@
     "thermal_read": "Lire depuis la carte",
     "thermal_banner_sim": "Image SIMULÉE : aucune carte n'a été lue",
     "thermal_stats": "min {{min}} C, max {{max}} C, moyenne {{mean}} C",
-    "thermal_failed": "L'image thermique n'a pas pu être lue : {{reason}}"
+    "thermal_failed": "L'image thermique n'a pas pu être lue : {{reason}}",
+    "black_open": "Ouvrir un enregistrement sauvegardé (JSON ou CSV)",
+    "black_open_big": "le fichier est trop gros pour un enregistrement",
+    "black_open_ok": "{{name}} : {{count}} échantillons",
+    "black_open_failed": "{{name}} n'est pas un enregistrement lisible : {{reason}}",
+    "black_chart_title": "Température avant l'erreur",
+    "black_chart_current": "Mesurée",
+    "black_chart_target": "Consigne",
+    "black_chart_trigger": "Drapeau d'erreur",
+    "black_chart_span": "{{seconds}} s enregistrées"
   }
 }

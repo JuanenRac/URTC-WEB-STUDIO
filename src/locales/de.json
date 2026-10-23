@@ -700,6 +700,15 @@
     "thermal_read": "Von der Platine lesen",
     "thermal_banner_sim": "SIMULIERTES Bild: keine Platine gelesen",
     "thermal_stats": "min {{min}} C, max {{max}} C, Mittel {{mean}} C",
-    "thermal_failed": "Das Wärmebild konnte nicht gelesen werden: {{reason}}"
+    "thermal_failed": "Das Wärmebild konnte nicht gelesen werden: {{reason}}",
+    "black_open": "Gespeicherten Datensatz öffnen (JSON oder CSV)",
+    "black_open_big": "die Datei ist zu groß für einen Datensatz",
+    "black_open_ok": "{{name}}: {{count}} Messwerte",
+    "black_open_failed": "{{name}} ist kein lesbarer Datensatz: {{reason}}",
+    "black_chart_title": "Temperatur vor dem Fehler",
+    "black_chart_current": "Gemessen",
+    "black_chart_target": "Sollwert",
+    "black_chart_trigger": "Fehlerflag",
+    "black_chart_span": "{{seconds}} s aufgezeichnet"
   }
 }

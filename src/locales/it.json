@@ -700,6 +700,15 @@
     "thermal_read": "Leggi dalla scheda",
     "thermal_banner_sim": "Immagine SIMULATA: nessuna scheda letta",
     "thermal_stats": "min {{min}} C, max {{max}} C, media {{mean}} C",
-    "thermal_failed": "Impossibile leggere l'immagine termica: {{reason}}"
+    "thermal_failed": "Impossibile leggere l'immagine termica: {{reason}}",
+    "black_open": "Apri una registrazione salvata (JSON o CSV)",
+    "black_open_big": "il file è troppo grande per essere una registrazione",
+    "black_open_ok": "{{name}}: {{count}} campioni",
+    "black_open_failed": "{{name}} non è una registrazione leggibile: {{reason}}",
+    "black_chart_title": "Temperatura prima dell'errore",
+    "black_chart_current": "Misurata",
+    "black_chart_target": "Setpoint",
+    "black_chart_trigger": "Flag di errore",
+    "black_chart_span": "{{seconds}} s registrati"
   }
 }
