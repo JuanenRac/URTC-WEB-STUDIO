@@ -123,7 +123,7 @@ export interface SlaveAppVersionInfo {
   responder: 'application' | 'bootloader';
   hardwareId: string;
   major: number;
-  /** null: the answer of 8 bytes stops at the high byte of the minor field, so the minor number is not in it; a longer answer carries it. */
+  /** null: the answer of 8 bytes stops at the high byte of the minor field, so the low byte comes from the third byte of the 0x222 companion (or from a longer answer); null when neither carries it. */
   minor: number | null;
   minorHigh: number;
   /** undefined when the slave sends none: a slave application from before the field sends no 0x222. */
@@ -138,12 +138,16 @@ const SLAVE_APP_PATCH_MAX = 127;
 export function parseSlaveAppVersion(frames: Array<{ id: number; data: number[] }>): SlaveAppVersionInfo | null {
   let answer: number[] | null = null;
   let patch: number | undefined;
+  let minorLow: number | undefined;
   for (const frame of frames) {
     if (frame.id === CAN_ID_SLAVE_REG_READ && frame.data.length >= 8 && answer === null) {
       answer = frame.data;
     } else if (frame.id === CAN_ID_SLAVE_APP_PATCH && patch === undefined) {
       const fields = decodeSlaveAppPatch(frame.data);
-      if (fields && fields.register === SLAVE_APP_VERSION_REGISTER && Number(fields.patch) >= 1 && Number(fields.patch) <= SLAVE_APP_PATCH_MAX) patch = Number(fields.patch);
+      if (fields && fields.register === SLAVE_APP_VERSION_REGISTER && Number(fields.patch) >= 1 && Number(fields.patch) <= SLAVE_APP_PATCH_MAX) {
+        patch = Number(fields.patch);
+        if (fields.minor_low !== undefined && fields.minor_low !== null) minorLow = Number(fields.minor_low);
+      }
     }
   }
   if (answer === null) return null;
@@ -152,7 +156,7 @@ export function parseSlaveAppVersion(frames: Array<{ id: number; data: number[] 
     responder: answer[0] === 0x01 ? 'bootloader' : 'application',
     hardwareId: `0x${hardwareId.toString(16).toUpperCase().padStart(8, '0')}`,
     major: (answer[5] << 8) | answer[6],
-    minor: answer.length >= 9 ? (answer[7] << 8) | answer[8] : null,
+    minor: answer.length >= 9 ? (answer[7] << 8) | answer[8] : minorLow !== undefined ? (answer[7] << 8) | minorLow : null,
     minorHigh: answer[7],
     patch,
     patchAware: patch !== undefined,

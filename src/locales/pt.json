@@ -354,7 +354,7 @@
     "verify_fail_unknown": "motivo desconhecido",
     "log_dev_key_declined": "Cancelado: a imagem está assinada com a chave de desenvolvimento pública e a confirmação foi recusada.",
     "slave_app_label": "Aplicação do escravo de expansão (0x221/0x222)",
-    "slave_app_minor_hint": "O número menor não vem na resposta do mestre, por isso aparece como ?",
+    "slave_app_minor_hint": "O número menor chega na trama companheira de um escravo que a envia; num escravo mais antigo aparece como ?",
     "slave_app_value": "v{{version}} / HW {{hw}}"
   },
   "thermal": {

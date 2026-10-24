@@ -122,6 +122,12 @@ describe("slave application version (0x221 and its 0x222 companion)", () => {
     const info = await querySlaveApplicationVersion(bus);
     expect(sent).toEqual([[0x221, [1, 8]]]);
     expect(slaveAppVersionText(info)).toBe("0.?.5");
+    const full: VersionBus = {
+      async request(_i, _d, respId) { return frame(respId, bytes("000303cc01000000")); },
+      async waitForFrame(id) { return id === 0x222 ? frame(0x222, [1, 4, 2]) : null; },
+      flushFrames() {},
+    };
+    expect(slaveAppVersionText(await querySlaveApplicationVersion(full))).toBe("0.2.4");
     const silent: VersionBus = { async request() { return null; }, async waitForFrame() { return null; }, flushFrames() {} };
     expect(await querySlaveApplicationVersion(silent)).toBeNull();
     const old: VersionBus = { async request(_i, _d, respId) { return frame(respId, bytes("000303cc01000000")); }, async waitForFrame() { return null; }, flushFrames() {} };

@@ -354,7 +354,7 @@
     "verify_fail_unknown": "未知原因",
     "log_dev_key_declined": "已取消：镜像使用公开的开发密钥签名，且确认被拒绝。",
     "slave_app_label": "扩展从机应用程序 (0x221/0x222)",
-    "slave_app_minor_hint": "主板的应答中不含次版本号，因此显示为 ?",
+    "slave_app_minor_hint": "次版本号由会发送它的从机在伴随帧中提供；较旧的从机则显示为 ?",
     "slave_app_value": "v{{version}} / HW {{hw}}"
   },
   "thermal": {

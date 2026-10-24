@@ -354,7 +354,7 @@
     "verify_fail_unknown": "unknown reason",
     "log_dev_key_declined": "Cancelled: the image is signed with the public development key and the confirmation was declined.",
     "slave_app_label": "Expansion slave application (0x221/0x222)",
-    "slave_app_minor_hint": "The minor number is not in the answer of the master, so it shows as ?",
+    "slave_app_minor_hint": "The minor number comes in the companion frame of a slave that sends it; a slave from before that shows it as ?",
     "slave_app_value": "v{{version}} / HW {{hw}}"
   },
   "thermal": {

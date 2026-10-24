@@ -16,7 +16,7 @@
     },
     "slave_version_vectors.json": {
       "from": "conformance/slave_version_vectors.json",
-      "sha256": "7f9501e3fa4e295d1e465592c0364e80b1ad07db7e7d5892ae10596eb97d255d"
+      "sha256": "4913b5f2d420d94bfd186c019d9bd622e6da82d5bc81ef912fc809d68ece1459"
     },
     "thermal_vectors.json": {
       "from": "conformance/thermal_vectors.json",
@@ -24,7 +24,7 @@
     },
     "urtcCanIds.ts": {
       "from": "generated/urtcCanIds.ts",
-      "sha256": "9f77bac90c5e80cbc5c134d99ac6e60879520340764cead8c35e45acc31018d9"
+      "sha256": "7c8644faf6e1a770ffc98116e875eed0367cfc0413bfe8a431368cf006383b54"
     },
     "urtcTools.ts": {
       "from": "generated/urtcTools.ts",

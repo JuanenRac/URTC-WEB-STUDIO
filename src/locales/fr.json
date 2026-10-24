@@ -354,7 +354,7 @@
     "verify_fail_unknown": "raison inconnue",
     "log_dev_key_declined": "Annulé : l'image est signée avec la clé de développement publique et la confirmation a été refusée.",
     "slave_app_label": "Application de l'esclave d'extension (0x221/0x222)",
-    "slave_app_minor_hint": "Le numéro mineur n'est pas dans la réponse du maître ; il s'affiche donc comme ?",
+    "slave_app_minor_hint": "Le numéro mineur arrive dans la trame compagnon d'un esclave qui l'envoie ; pour un esclave plus ancien il s'affiche comme ?",
     "slave_app_value": "v{{version}} / HW {{hw}}"
   },
   "thermal": {

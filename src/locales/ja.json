@@ -354,7 +354,7 @@
     "verify_fail_unknown": "不明な理由",
     "log_dev_key_declined": "キャンセルしました：イメージは公開の開発用の鍵で署名されており、確認が拒否されました。",
     "slave_app_label": "拡張スレーブのアプリケーション (0x221/0x222)",
-    "slave_app_minor_hint": "マイナー番号はマスターの応答に含まれないため、? と表示されます",
+    "slave_app_minor_hint": "マイナー番号は、送信するスレーブの付随フレームで届きます。古いスレーブでは ? と表示されます",
     "slave_app_value": "v{{version}} / HW {{hw}}"
   },
   "thermal": {
