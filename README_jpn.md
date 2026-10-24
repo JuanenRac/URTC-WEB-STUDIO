@@ -552,6 +552,7 @@ URTC Web Studio の著作権は (c) 2026 JuanenRac（Electro Hobby 3D）に帰�
 
 **兄弟プロジェクト** —— URTC 自身の CAN バスツール群における他のツール
 - **[URTC-FLASHER](https://github.com/JuanenRac/URTC-FLASHER)** — URTC 基板用のデスクトップ GUI 書き込みツール、CAN-OTA およびフルチップ SWD/JTAG ——このブラウザベースアプリと同じ SLCAN/CAN プロトコルを使用し、本アプリはそれに代わるインストール不要の選択肢である。
+- **[URTC-COMMON](https://github.com/JuanenRac/URTC-COMMON)** — 一度だけ書かれた CAN プロトコルのデータ（仕様、生成された表、適合ベクトル）と、各プログラムが共有するコード。このリポジトリは使用する部分のコピーを含みます。
 - **[URTC-GATEWAY](https://github.com/JuanenRac/URTC-GATEWAY)** — CAN バスの手前に置き、一覧にある識別子だけを通し、レートを制限し、セッション鍵を求めるゲートウェイ。
 - **[URTC-TESTER](https://github.com/JuanenRac/URTC-TESTER)** — URTC 基板向けのデスクトップ CAN バスライブ診断ツール、ツールプロファイルごとに 1 パネル ——このブラウザベースアプリと同じ SLCAN/CAN プロトコルを使用し、本アプリはそれに代わるインストール不要の選択肢である。
 

@@ -502,6 +502,7 @@ GPL-3.0-or-later,文档衍生品应保持 CC BY-SA——每一项都需附带指
 
 **兄弟项目** —— URTC 自身 CAN 总线工具家族中的其他工具
 - **[URTC-FLASHER](https://github.com/JuanenRac/URTC-FLASHER)** — 面向 URTC 板卡的桌面图形烧录工具，支持 CAN-OTA 以及全芯片 SWD/JTAG —— 与本浏览器应用采用相同的 SLCAN/CAN 协议,本应用即是其免安装替代方案。
+- **[URTC-COMMON](https://github.com/JuanenRac/URTC-COMMON)** — 只写一次的 CAN 协议数据（规范、生成的表、一致性向量）以及各程序共享的代码；本仓库带有其所用部分的副本。
 - **[URTC-GATEWAY](https://github.com/JuanenRac/URTC-GATEWAY)** — 位于 CAN 总线前的网关，只放行列表中的标识符，限制其速率，并要求会话密钥。
 - **[URTC-TESTER](https://github.com/JuanenRac/URTC-TESTER)** — 面向 URTC 板卡的桌面实时 CAN 总线诊断工具，每种工具配置对应一个面板 —— 与本浏览器应用采用相同的 SLCAN/CAN 协议,本应用即是其免安装替代方案。
 

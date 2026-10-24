@@ -543,6 +543,7 @@ Este projeto faz parte do ecossistema de robótica HYDRA-UMC do mesmo autor (Jua
 
 **Projetos Irmãos** — as outras ferramentas da própria família de ferramentas de barramento CAN do URTC
 - **[URTC-FLASHER](https://github.com/JuanenRac/URTC-FLASHER)** — ferramenta de gravação com GUI para ambiente de trabalho para placas URTC, CAN-OTA mais SWD/JTAG de chip completo — mesmo protocolo SLCAN/CAN que esta aplicação baseada no navegador, que é a alternativa sem instalação a essa ferramenta.
+- **[URTC-COMMON](https://github.com/JuanenRac/URTC-COMMON)** — o protocolo CAN escrito uma só vez como dados (especificação, tabelas geradas, vetores de conformidade) e o código que os programas partilham; este repositório traz cópias das partes que usa.
 - **[URTC-GATEWAY](https://github.com/JuanenRac/URTC-GATEWAY)** — uma gateway à frente do barramento CAN que só deixa passar identificadores de uma lista, limita a sua taxa e pede uma chave de sessão.
 - **[URTC-TESTER](https://github.com/JuanenRac/URTC-TESTER)** — ferramenta de diagnóstico de barramento CAN em direto para ambiente de trabalho, para placas URTC, um painel por perfil de ferramenta — mesmo protocolo SLCAN/CAN que esta aplicação baseada no navegador, que é a alternativa sem instalação a essa ferramenta.
 

@@ -576,6 +576,7 @@ Ce projet fait partie de l'écosystème robotique HYDRA-UMC du même auteur (Jua
 
 **Projets Frères** — les autres outils de la propre famille d'outils CAN-bus d'URTC
 - **[URTC-FLASHER](https://github.com/JuanenRac/URTC-FLASHER)** — outil de bureau à interface graphique pour flasher les cartes URTC, CAN-OTA plus SWD/JTAG puce complète — même protocole SLCAN/CAN que cette application basée sur navigateur, qui en est l'alternative sans installation.
+- **[URTC-COMMON](https://github.com/JuanenRac/URTC-COMMON)** — le protocole CAN écrit une seule fois comme données (spécification, tables générées, vecteurs de conformité) et le code que les programmes partagent ; ce dépôt porte des copies des parties qu'il utilise.
 - **[URTC-GATEWAY](https://github.com/JuanenRac/URTC-GATEWAY)** — une passerelle devant le bus CAN qui ne laisse passer que les identifiants d'une liste, limite leur débit et exige une clé de session.
 - **[URTC-TESTER](https://github.com/JuanenRac/URTC-TESTER)** — outil de bureau de diagnostic CAN-bus en direct pour cartes URTC, un panneau par profil d'outil — même protocole SLCAN/CAN que cette application basée sur navigateur, qui en est l'alternative sans installation.
 
