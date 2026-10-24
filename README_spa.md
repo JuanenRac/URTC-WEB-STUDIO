@@ -42,7 +42,7 @@ reciben las tramas CAN reales descritas en `docs/CANBUS.TXT` del
 
 | | |
 |---|---|
-| Versión | `0.3.6` |
+| Versión | `0.3.7` |
 | Madurez | Funcional |
 | Tecnología | Web Serial API / TypeScript |
 | Destino | Un navegador web en el PC del usuario |
