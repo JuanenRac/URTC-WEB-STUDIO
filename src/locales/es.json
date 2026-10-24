@@ -518,7 +518,16 @@
     "keepalive_watchdog": "({{ms}}ms de watchdog)",
     "custom_frame_bad_id": "El identificador debe tener de 1 a 3 dígitos hexadecimales, de 0 a 7FF.",
     "custom_frame_bad_byte": "Cada byte de datos debe tener 1 o 2 dígitos hexadecimales.",
-    "custom_frame_too_many": "Una trama CAN lleva como máximo 8 bytes de datos."
+    "custom_frame_too_many": "Una trama CAN lleva como máximo 8 bytes de datos.",
+    "session_save": "Guardar la sesión",
+    "session_check": "Comprobar una sesión guardada",
+    "session_empty": "Todavía no hay tramas que guardar.",
+    "session_saved": "Guardados {{log}} y {{record}}: el registro identifica el log por su SHA-256.",
+    "session_pick_both": "Elige juntos el registro (.json) y su log.",
+    "session_too_big": "Los ficheros son demasiado grandes para una sesión.",
+    "session_ok": "{{log}} coincide con su registro (SHA-256 y tamaño).",
+    "session_bad_record": "{{name}} no es un registro de sesión legible.",
+    "session_mismatch": "{{log}} NO coincide con su registro: el log se editó o es otro."
   },
   "testertool": {
     "soldering_heater_title": "Resistencia (0x130 / telemetría 0x135)",
@@ -723,7 +732,17 @@
     "black_chart_current": "Medida",
     "black_chart_target": "Consigna",
     "black_chart_trigger": "Indicador de error",
-    "black_chart_span": "{{seconds}} s registrados"
+    "black_chart_span": "{{seconds}} s registrados",
+    "counters_chart_title": "Contadores térmicos a lo largo del tiempo",
+    "counters_chart_heater": "Calentador encendido (horas)",
+    "counters_chart_faults": "Fallos (0 a {{max}})",
+    "counters_chart_span": "{{minutes}} min, {{count}} lecturas",
+    "counters_chart_added": "{{count}} fallos añadidos",
+    "counters_chart_need_two": "La gráfica aparece desde la segunda lectura.",
+    "counters_poll": "Leerlos de nuevo cada",
+    "counters_poll_off": "nunca",
+    "counters_poll_seconds": "{{n}} s",
+    "counters_clear": "Borrar el historial"
   },
   "selfupdate": {
     "new_available": "Se está sirviendo una versión más nueva del Studio ({{served}}; esta página es la {{built}}). Nada se recarga solo: recarga cuando no haya un flasheo ni una sesión de banco en curso.",
@@ -782,5 +801,13 @@
     "bus_selected": "Cabezal {{node}} seleccionado",
     "msg_not_connected": "Conecta primero con el bus: los cabezales se buscan por la conexión abierta.",
     "btn_open": "Cabezales"
+  },
+  "pwa": {
+    "offline_short": "Sin red",
+    "offline": "Sin red: el Studio funciona con la copia guardada en este navegador.",
+    "offline_ready": "Funciona sin red",
+    "offline_ready_title": "El Studio y el firmware incluido están guardados en este navegador: se abre sin red.",
+    "install": "Instalar",
+    "install_title": "Instalar el Studio como una aplicación de este equipo"
   }
 }

@@ -518,7 +518,16 @@
     "keepalive_watchdog": "({{ms}}ms Watchdog)",
     "custom_frame_bad_id": "Die Kennung muss aus 1 bis 3 Hexadezimalziffern bestehen, von 0 bis 7FF.",
     "custom_frame_bad_byte": "Jedes Datenbyte muss aus 1 oder 2 Hexadezimalziffern bestehen.",
-    "custom_frame_too_many": "Ein CAN-Frame enthält höchstens 8 Datenbytes."
+    "custom_frame_too_many": "Ein CAN-Frame enthält höchstens 8 Datenbytes.",
+    "session_save": "Sitzung speichern",
+    "session_check": "Gespeicherte Sitzung prüfen",
+    "session_empty": "Es gibt noch keine Frames zum Speichern.",
+    "session_saved": "{{log}} und {{record}} gespeichert: Der Datensatz benennt das Log über seinen SHA-256.",
+    "session_pick_both": "Wählen Sie den Datensatz (.json) und sein Log gemeinsam aus.",
+    "session_too_big": "Die Dateien sind für eine Sitzung zu groß.",
+    "session_ok": "{{log}} stimmt mit seinem Datensatz überein (SHA-256 und Größe).",
+    "session_bad_record": "{{name}} ist kein lesbarer Sitzungsdatensatz.",
+    "session_mismatch": "{{log}} stimmt NICHT mit seinem Datensatz überein: Das Log wurde bearbeitet oder ist ein anderes."
   },
   "testertool": {
     "soldering_heater_title": "Heizung (0x130 / Telemetrie 0x135)",
@@ -723,7 +732,17 @@
     "black_chart_current": "Gemessen",
     "black_chart_target": "Sollwert",
     "black_chart_trigger": "Fehlerflag",
-    "black_chart_span": "{{seconds}} s aufgezeichnet"
+    "black_chart_span": "{{seconds}} s aufgezeichnet",
+    "counters_chart_title": "Thermik-Zähler im Zeitverlauf",
+    "counters_chart_heater": "Heizung an (Stunden)",
+    "counters_chart_faults": "Fehler (0 bis {{max}})",
+    "counters_chart_span": "{{minutes}} Min., {{count}} Messwerte",
+    "counters_chart_added": "{{count}} Fehler hinzugekommen",
+    "counters_chart_need_two": "Das Diagramm erscheint ab der zweiten Messung.",
+    "counters_poll": "Erneut lesen alle",
+    "counters_poll_off": "nie",
+    "counters_poll_seconds": "{{n}} s",
+    "counters_clear": "Verlauf löschen"
   },
   "selfupdate": {
     "new_available": "Eine neuere Version des Studios wird ausgeliefert ({{served}}; diese Seite ist {{built}}). Nichts lädt von selbst neu: Laden Sie neu, wenn kein Flashvorgang und keine Bench-Sitzung läuft.",
@@ -782,5 +801,13 @@
     "bus_selected": "Kopf {{node}} ausgewählt",
     "msg_not_connected": "Verbinden Sie sich zuerst mit dem Bus: Die Köpfe werden über die offene Verbindung gesucht.",
     "btn_open": "Köpfe"
+  },
+  "pwa": {
+    "offline_short": "Offline",
+    "offline": "Offline: Das Studio läuft aus der in diesem Browser gespeicherten Kopie.",
+    "offline_ready": "Offline nutzbar",
+    "offline_ready_title": "Das Studio und die mitgelieferte Firmware sind in diesem Browser gespeichert: Es öffnet sich ohne Netzwerk.",
+    "install": "Installieren",
+    "install_title": "Das Studio als Anwendung auf diesem Computer installieren"
   }
 }

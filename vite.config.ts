@@ -1,7 +1,11 @@
 import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
-import { readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { renderServiceWorker, type PrecacheEntry } from './src/lib/serviceWorkerBuild';
 
 const APP_VERSION: string = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8')).version;
 
@@ -13,6 +17,36 @@ function versionFile(): Plugin {
     apply: 'build',
     generateBundle() {
       this.emitFile({ type: 'asset', fileName: 'version.json', source: JSON.stringify({ name: 'urtc-web-studio', version: APP_VERSION }) + '\n' });
+    },
+  };
+}
+
+function publicFiles(directory: string, prefix = ''): PrecacheEntry[] {
+  const found: PrecacheEntry[] = [];
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    const path = prefix ? `${prefix}/${entry.name}` : entry.name;
+    if (entry.isDirectory()) found.push(...publicFiles(join(directory, entry.name), path));
+    else found.push({ path, digest: createHash('sha256').update(readFileSync(join(directory, entry.name))).digest('hex') });
+  }
+  return found;
+}
+
+// The service worker (scripts/sw.template.js) keeps the built page, its scripts, styles, fonts and everything in public/ (the
+// bundled firmware among it), so the Studio opens without a network. It is written next to index.html with the list filled in.
+function serviceWorker(): Plugin {
+  return {
+    name: 'urtc-service-worker',
+    apply: 'build',
+    enforce: 'post',
+    generateBundle(_options, bundle) {
+      const entries: PrecacheEntry[] = Object.values(bundle).map((chunk) => ({
+        path: chunk.fileName,
+        digest: chunk.type === 'asset' ? createHash('sha256').update(chunk.source).digest('hex') : chunk.fileName,
+      }));
+      const publicDir = fileURLToPath(new URL('./public', import.meta.url));
+      if (existsSync(publicDir)) entries.push(...publicFiles(publicDir));
+      const template = readFileSync(new URL('./scripts/sw.template.js', import.meta.url), 'utf8');
+      this.emitFile({ type: 'asset', fileName: 'sw.js', source: renderServiceWorker(template, APP_VERSION, entries) });
     },
   };
 }
@@ -35,6 +69,7 @@ export const CONTENT_SECURITY_POLICY = [
   "base-uri 'self'",
   "form-action 'none'",
   "manifest-src 'self'",
+  "worker-src 'self'",
 ].join('; ');
 
 // What the page asks the browser for, and nothing else. Web Serial is the only
@@ -64,7 +99,7 @@ function contentSecurityPolicy(): Plugin {
 export default defineConfig({
   // GitHub Pages serves a project site under /<repository>/; the workflow passes that path.
   base: process.env.URTC_BASE_PATH || '/',
-  plugins: [react(), tailwindcss(), contentSecurityPolicy(), versionFile()],
+  plugins: [react(), tailwindcss(), contentSecurityPolicy(), versionFile(), serviceWorker()],
   define: { __APP_VERSION__: JSON.stringify(APP_VERSION) },
   server: {
     // Web Serial only works on https or on localhost, so the development

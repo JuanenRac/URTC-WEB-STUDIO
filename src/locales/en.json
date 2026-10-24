@@ -518,7 +518,16 @@
     "keepalive_watchdog": "({{ms}}ms watchdog)",
     "custom_frame_bad_id": "The identifier must be 1 to 3 hexadecimal digits, from 0 to 7FF.",
     "custom_frame_bad_byte": "Every data byte must be 1 or 2 hexadecimal digits.",
-    "custom_frame_too_many": "A CAN frame carries at most 8 data bytes."
+    "custom_frame_too_many": "A CAN frame carries at most 8 data bytes.",
+    "session_save": "Save the session",
+    "session_check": "Check a saved session",
+    "session_empty": "There are no frames to save yet.",
+    "session_saved": "Saved {{log}} and {{record}}: the record names the log by its SHA-256.",
+    "session_pick_both": "Choose the record (.json) and its log together.",
+    "session_too_big": "The files are too big for a session.",
+    "session_ok": "{{log}} matches its record (SHA-256 and size).",
+    "session_bad_record": "{{name}} is not a session record that can be read.",
+    "session_mismatch": "{{log}} does NOT match its record: the log was edited, or it is another one."
   },
   "testertool": {
     "soldering_heater_title": "Heater (0x130 / telemetry 0x135)",
@@ -723,7 +732,17 @@
     "black_chart_current": "Measured",
     "black_chart_target": "Setpoint",
     "black_chart_trigger": "Error flag",
-    "black_chart_span": "{{seconds}} s recorded"
+    "black_chart_span": "{{seconds}} s recorded",
+    "counters_chart_title": "Thermal counters over time",
+    "counters_chart_heater": "Heater on (hours)",
+    "counters_chart_faults": "Faults (0 to {{max}})",
+    "counters_chart_span": "{{minutes}} min, {{count}} readings",
+    "counters_chart_added": "{{count}} faults added",
+    "counters_chart_need_two": "The chart appears from the second reading.",
+    "counters_poll": "Read them again every",
+    "counters_poll_off": "never",
+    "counters_poll_seconds": "{{n}} s",
+    "counters_clear": "Clear the history"
   },
   "selfupdate": {
     "new_available": "A newer version of the Studio is being served ({{served}}; this page is {{built}}). Nothing reloads by itself: reload when no flash or bench session is running.",
@@ -782,5 +801,13 @@
     "bus_selected": "Head {{node}} selected",
     "msg_not_connected": "Connect to the bus first: the heads are looked for over the open connection.",
     "btn_open": "Heads"
+  },
+  "pwa": {
+    "offline_short": "Offline",
+    "offline": "Offline: the Studio is running from the copy stored in this browser.",
+    "offline_ready": "Works offline",
+    "offline_ready_title": "The Studio and the bundled firmware are stored in this browser: it opens without a network.",
+    "install": "Install",
+    "install_title": "Install the Studio as an application of this computer"
   }
 }

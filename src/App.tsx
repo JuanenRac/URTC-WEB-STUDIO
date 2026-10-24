@@ -15,6 +15,7 @@ const TesterStudio = lazy(() => import('./components/TesterStudio').then(m => ({
 import { ConfirmDialog } from './components/ConfirmDialog';
 import { NodePickerDialog } from './components/NodePickerDialog';
 import { useNodePicker } from './hooks/useNodePicker';
+import { usePwa } from './hooks/usePwa';
 import { TOOL_PROFILES } from './data/toolsData';
 import { HardwareState, CanFrame, ExpansionBoardType } from './types';
 import { useSerialCanBus } from './hooks/useSerialCanBus';
@@ -102,6 +103,7 @@ export default function App() {
   const serialCan = useSerialCanBus(handleFrameReceived);
   // The tool heads of the bus: found and selected from a window of their own; with one head, or with the extension off, nothing changes.
   const nodePicker = useNodePicker(serialCan);
+  const pwa = usePwa();
   const [headsOpen, setHeadsOpen] = useState(false);
   // A higher version served next to this page: the person is told and decides; nothing reloads by itself.
   const [servedNewer, setServedNewer] = useState<string | null>(null);
@@ -714,6 +716,7 @@ export default function App() {
         onOpenHeads={() => setHeadsOpen(true)}
         headsSummary={nodePicker.snapshot.mode === 'multi' ? (nodePicker.snapshot.selected !== null ? t('nodes.bus_selected', { node: nodePicker.snapshot.selected }) : t('nodes.bus_found', { count: nodePicker.snapshot.count })) : undefined}
         portName={serialCan.portName}
+        pwa={pwa}
       />
       <NodePickerDialog open={headsOpen} onClose={() => setHeadsOpen(false)} picker={nodePicker} />
 

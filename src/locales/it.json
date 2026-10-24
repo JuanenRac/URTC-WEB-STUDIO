@@ -518,7 +518,16 @@
     "keepalive_watchdog": "({{ms}}ms di watchdog)",
     "custom_frame_bad_id": "L'identificatore deve avere da 1 a 3 cifre esadecimali, da 0 a 7FF.",
     "custom_frame_bad_byte": "Ogni byte di dati deve avere 1 o 2 cifre esadecimali.",
-    "custom_frame_too_many": "Un frame CAN contiene al massimo 8 byte di dati."
+    "custom_frame_too_many": "Un frame CAN contiene al massimo 8 byte di dati.",
+    "session_save": "Salva la sessione",
+    "session_check": "Verifica una sessione salvata",
+    "session_empty": "Non ci sono ancora frame da salvare.",
+    "session_saved": "Salvati {{log}} e {{record}}: il record identifica il log tramite il suo SHA-256.",
+    "session_pick_both": "Scegli insieme il record (.json) e il suo log.",
+    "session_too_big": "I file sono troppo grandi per una sessione.",
+    "session_ok": "{{log}} corrisponde al suo record (SHA-256 e dimensione).",
+    "session_bad_record": "{{name}} non è un record di sessione leggibile.",
+    "session_mismatch": "{{log}} NON corrisponde al suo record: il log è stato modificato o è un altro."
   },
   "testertool": {
     "soldering_heater_title": "Resistenza (0x130 / telemetria 0x135)",
@@ -723,7 +732,17 @@
     "black_chart_current": "Misurata",
     "black_chart_target": "Setpoint",
     "black_chart_trigger": "Flag di errore",
-    "black_chart_span": "{{seconds}} s registrati"
+    "black_chart_span": "{{seconds}} s registrati",
+    "counters_chart_title": "Contatori termici nel tempo",
+    "counters_chart_heater": "Riscaldatore acceso (ore)",
+    "counters_chart_faults": "Guasti (da 0 a {{max}})",
+    "counters_chart_span": "{{minutes}} min, {{count}} letture",
+    "counters_chart_added": "{{count}} guasti aggiunti",
+    "counters_chart_need_two": "Il grafico compare dalla seconda lettura.",
+    "counters_poll": "Rileggili ogni",
+    "counters_poll_off": "mai",
+    "counters_poll_seconds": "{{n}} s",
+    "counters_clear": "Cancella lo storico"
   },
   "selfupdate": {
     "new_available": "Viene servita una versione più recente dello Studio ({{served}}; questa pagina è la {{built}}). Niente si ricarica da solo: ricarica quando non c'è un flash o una sessione di banco in corso.",
@@ -782,5 +801,13 @@
     "bus_selected": "Testa {{node}} selezionata",
     "msg_not_connected": "Collegati prima al bus: le teste si cercano tramite la connessione aperta.",
     "btn_open": "Teste"
+  },
+  "pwa": {
+    "offline_short": "Offline",
+    "offline": "Offline: lo Studio funziona dalla copia salvata in questo browser.",
+    "offline_ready": "Funziona offline",
+    "offline_ready_title": "Lo Studio e il firmware incluso sono salvati in questo browser: si apre senza rete.",
+    "install": "Installa",
+    "install_title": "Installa lo Studio come applicazione di questo computer"
   }
 }

@@ -6,6 +6,7 @@ import { useConfirmAction } from '../../hooks/useConfirmAction';
 import { rawSendPolicy } from '../../lib/dangerousActions';
 import { traceBitCount, traceFileName, toAscTrace, toTrcTrace } from '../../lib/traceExport';
 import { downloadBlob } from '../../lib/download';
+import { checkSession, manifestJson, sessionFileNames, sessionLogText, sessionManifest } from '../../lib/sessionRecord';
 import { parseCustomFrame, customFrameErrorText } from '../../lib/customFrame';
 import { Section, Field, inputCls, btnCls, btnPrimaryCls, safeInt } from './shared';
 import { ToolCtx } from './ToolPanels';
@@ -265,6 +266,32 @@ export const BusMonitorPanel: React.FC<{ ctx: ToolCtx; subscribeAll: (cb: (f: Ca
     downloadBlob(new Blob([text], { type: 'text/plain' }), traceFileName(format));
   };
 
+  // A session that can be shown to be unedited: the log of the frames and a record that names it by its SHA-256 (the same record the
+  // desktop Tester writes). Checking takes the record and its log together.
+  const [sessionMessage, setSessionMessage] = useState('');
+  const saveSession = async () => {
+    if (frames.length === 0) { setSessionMessage(t('testerglobal.session_empty', 'There are no frames to save yet.')); return; }
+    const names = sessionFileNames(new Date().toISOString().replace(/[-:]/g, '').replace(/\..*$/, '').replace('T', '_'));
+    const log = sessionLogText(frames.slice().reverse());
+    const record = manifestJson(await sessionManifest(log, names.log, { studio_version: __APP_VERSION__, connected: ctx.isConnected, frames: frames.length }));
+    downloadBlob(new Blob([log], { type: 'text/plain' }), names.log);
+    downloadBlob(new Blob([record + '\n'], { type: 'application/json' }), names.record);
+    setSessionMessage(t('testerglobal.session_saved', 'Saved {{log}} and {{record}}: the record names the log by its SHA-256.', names));
+  };
+  const checkSavedSession = async (files: FileList | null) => {
+    const list = files ? [...files] : [];
+    const record = list.find(f => f.name.endsWith('.json'));
+    const log = list.find(f => f !== record);
+    if (!record || !log) { setSessionMessage(t('testerglobal.session_pick_both', 'Choose the record (.json) and its log together.')); return; }
+    if (record.size > 1024 * 1024 || log.size > 64 * 1024 * 1024) { setSessionMessage(t('testerglobal.session_too_big', 'The files are too big for a session.')); return; }
+    const result = await checkSession(await record.text(), await log.text());
+    setSessionMessage(result.ok
+      ? t('testerglobal.session_ok', '{{log}} matches its record (SHA-256 and size).', { log: log.name })
+      : result.reason === 'record'
+        ? t('testerglobal.session_bad_record', '{{name}} is not a session record that can be read.', { name: record.name })
+        : t('testerglobal.session_mismatch', '{{log}} does NOT match its record: the log was edited, or it is another one.', { log: log.name }));
+  };
+
   return (
     <Section title={t('testerglobal.bus_title', 'Raw Bus Monitor')} subtitle={t('testerglobal.bus_subtitle', 'Every frame seen on the bus, Tx and Rx.')}>
       <div className="flex items-center gap-3 mb-3 text-xs">
@@ -272,8 +299,14 @@ export const BusMonitorPanel: React.FC<{ ctx: ToolCtx; subscribeAll: (cb: (f: Ca
         <button className={btnCls} onClick={() => setFrames([])}>{t('testerglobal.clear', 'Clear')}</button>
         <button className={btnCls} onClick={() => exportTrace('trc')}>{t('testerglobal.export_trc', 'Export .trc')}</button>
         <button className={btnCls} onClick={() => exportTrace('asc')}>{t('testerglobal.export_asc', 'Export .asc')}</button>
+        <button className={btnCls} onClick={() => { void saveSession(); }}>{t('testerglobal.session_save', 'Save the session')}</button>
+        <label className={`${btnCls} cursor-pointer`}>
+          {t('testerglobal.session_check', 'Check a saved session')}
+          <input type="file" multiple accept=".json,.log,.txt,application/json,text/plain" className="hidden" data-testid="session-check" onChange={(e) => { void checkSavedSession(e.target.files); e.target.value = ''; }} />
+        </label>
         <span className="text-slate-500">{t('testerglobal.bus_rate', '~{{rate}} fps • ~{{load}}% bus load (approx.)', { rate, load: busLoadPct.toFixed(1) })}</span>
       </div>
+      {sessionMessage && <div className="text-xs text-slate-300 font-mono mb-3" data-testid="session-message">{sessionMessage}</div>}
       <div className="max-h-80 overflow-y-auto font-mono text-[10px] border border-slate-800 rounded">
         <table className="w-full">
           <thead className="sticky top-0 bg-slate-900 text-slate-500">

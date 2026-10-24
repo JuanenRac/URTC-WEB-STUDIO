@@ -55,3 +55,14 @@ jobs:
         run: npm run test:coverage
       - name: Build the static site
         run: npm run build
+      - name: Install the browser for the end-to-end checks
+        run: npx playwright install --with-deps chromium
+      - name: End-to-end checks of the built page (offline copy, thermal history, saved session)
+        run: npm run test:e2e
+      - name: Keep the report of a failed end-to-end run
+        if: failure()
+        uses: actions/upload-artifact@v5
+        with:
+          name: e2e-report
+          path: test-results/
+          if-no-files-found: ignore

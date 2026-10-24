@@ -25,3 +25,10 @@ The multinode extension of the firmware is off by default; with it off, or with 
 `src/components/NodePickerDialog.tsx` is the window: address, tool, serial and a state written in words per head, a confirmation before a head is
 selected, a banner when the selected head is lost, and the checkbox that decides whether every head is then put in its safe state (on by default).
 `src/lib/multinodeSim.ts` models the nodes and the bus for the tests; nothing has been tried against boards.
+
+## The offline copy, the thermal history and the saved session
+
+- **Offline copy.** `vite.config.ts` has a plugin that fills `scripts/sw.template.js` (the list of files and the name of the stored copy, from `src/lib/serviceWorkerBuild.ts`) and emits it as `sw.js`; `src/lib/pwa.ts` registers it and `src/hooks/usePwa.ts` gives the header the state (offline copy ready, no network, install offer). The worker is a classic script with no imports; `src/lib/serviceWorker.test.ts` runs it in Node against a model of the browser caches and of the network.
+- **Thermal history.** `src/lib/thermalHistory.ts` keeps the readings of the lifetime thermal counters (`src/lib/thermalStats.ts`) with the time they were taken: the rules for adding a reading (a counter that goes down starts the history again), the chart, the CSV and the storage in the browser. The Black Box panel reads the counters on request or every few seconds.
+- **Saved session.** `src/lib/sessionRecord.ts` writes the log of the frames and a record with the log's name, SHA-256 and size and the context, in the format of the desktop Tester (`tester_result_record.session_manifest`), and checks a record against a log.
+- **End-to-end checks.** `e2e/` holds the Playwright files; `e2e/support/fakeBoard.ts` models the adapter and the board behind `navigator.serial`.

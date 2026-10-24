@@ -518,7 +518,16 @@
     "keepalive_watchdog": "({{ms}}ms de watchdog)",
     "custom_frame_bad_id": "L'identifiant doit comporter de 1 à 3 chiffres hexadécimaux, de 0 à 7FF.",
     "custom_frame_bad_byte": "Chaque octet de données doit comporter 1 ou 2 chiffres hexadécimaux.",
-    "custom_frame_too_many": "Une trame CAN contient au plus 8 octets de données."
+    "custom_frame_too_many": "Une trame CAN contient au plus 8 octets de données.",
+    "session_save": "Enregistrer la session",
+    "session_check": "Vérifier une session enregistrée",
+    "session_empty": "Il n'y a pas encore de trames à enregistrer.",
+    "session_saved": "{{log}} et {{record}} enregistrés : le registre désigne le journal par son SHA-256.",
+    "session_pick_both": "Choisissez ensemble le registre (.json) et son journal.",
+    "session_too_big": "Les fichiers sont trop volumineux pour une session.",
+    "session_ok": "{{log}} correspond à son registre (SHA-256 et taille).",
+    "session_bad_record": "{{name}} n'est pas un registre de session lisible.",
+    "session_mismatch": "{{log}} ne correspond PAS à son registre : le journal a été modifié ou c'est un autre."
   },
   "testertool": {
     "soldering_heater_title": "Résistance (0x130 / télémétrie 0x135)",
@@ -723,7 +732,17 @@
     "black_chart_current": "Mesurée",
     "black_chart_target": "Consigne",
     "black_chart_trigger": "Drapeau d'erreur",
-    "black_chart_span": "{{seconds}} s enregistrées"
+    "black_chart_span": "{{seconds}} s enregistrées",
+    "counters_chart_title": "Compteurs thermiques dans le temps",
+    "counters_chart_heater": "Chauffe active (heures)",
+    "counters_chart_faults": "Défauts (0 à {{max}})",
+    "counters_chart_span": "{{minutes}} min, {{count}} lectures",
+    "counters_chart_added": "{{count}} défauts ajoutés",
+    "counters_chart_need_two": "Le graphique apparaît à partir de la deuxième lecture.",
+    "counters_poll": "Les relire toutes les",
+    "counters_poll_off": "jamais",
+    "counters_poll_seconds": "{{n}} s",
+    "counters_clear": "Effacer l'historique"
   },
   "selfupdate": {
     "new_available": "Une version plus récente du Studio est servie ({{served}} ; cette page est la {{built}}). Rien ne se recharge tout seul : rechargez quand aucun flashage ni session de banc n'est en cours.",
@@ -782,5 +801,13 @@
     "bus_selected": "Tête {{node}} sélectionnée",
     "msg_not_connected": "Connectez-vous d'abord au bus : les têtes se cherchent par la connexion ouverte.",
     "btn_open": "Têtes"
+  },
+  "pwa": {
+    "offline_short": "Hors ligne",
+    "offline": "Hors ligne : le Studio fonctionne depuis la copie enregistrée dans ce navigateur.",
+    "offline_ready": "Fonctionne hors ligne",
+    "offline_ready_title": "Le Studio et le firmware fourni sont enregistrés dans ce navigateur : il s'ouvre sans réseau.",
+    "install": "Installer",
+    "install_title": "Installer le Studio comme application de cet ordinateur"
   }
 }

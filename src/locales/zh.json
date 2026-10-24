@@ -518,7 +518,16 @@
     "keepalive_watchdog": "（{{ms}}ms 看门狗）",
     "custom_frame_bad_id": "标识符必须是 1 到 3 位十六进制数字，范围 0 到 7FF。",
     "custom_frame_bad_byte": "每个数据字节必须是 1 或 2 位十六进制数字。",
-    "custom_frame_too_many": "一个 CAN 帧最多携带 8 个数据字节。"
+    "custom_frame_too_many": "一个 CAN 帧最多携带 8 个数据字节。",
+    "session_save": "保存会话",
+    "session_check": "校验已保存的会话",
+    "session_empty": "还没有可保存的帧。",
+    "session_saved": "已保存 {{log}} 和 {{record}}：记录通过 SHA-256 标识日志。",
+    "session_pick_both": "请同时选择记录 (.json) 及其日志。",
+    "session_too_big": "文件对于一个会话来说太大。",
+    "session_ok": "{{log}} 与其记录一致（SHA-256 和大小）。",
+    "session_bad_record": "{{name}} 不是可读取的会话记录。",
+    "session_mismatch": "{{log}} 与其记录不一致：日志被编辑过，或是另一个日志。"
   },
   "testertool": {
     "soldering_heater_title": "加热器（0x130 / 遥测 0x135）",
@@ -723,7 +732,17 @@
     "black_chart_current": "测量值",
     "black_chart_target": "设定值",
     "black_chart_trigger": "错误标志",
-    "black_chart_span": "已记录 {{seconds}} 秒"
+    "black_chart_span": "已记录 {{seconds}} 秒",
+    "counters_chart_title": "热计数随时间变化",
+    "counters_chart_heater": "加热器开启（小时）",
+    "counters_chart_faults": "故障（0 到 {{max}}）",
+    "counters_chart_span": "{{minutes}} 分钟，{{count}} 次读取",
+    "counters_chart_added": "新增 {{count}} 次故障",
+    "counters_chart_need_two": "从第二次读取起显示图表。",
+    "counters_poll": "每隔以下时间重新读取",
+    "counters_poll_off": "从不",
+    "counters_poll_seconds": "{{n}} 秒",
+    "counters_clear": "清除历史"
   },
   "selfupdate": {
     "new_available": "正在提供更新版本的 Studio（{{served}}；当前页面为 {{built}}）。不会自动刷新：请在没有烧录或台架会话进行时再刷新。",
@@ -782,5 +801,13 @@
     "bus_selected": "已选择工具头 {{node}}",
     "msg_not_connected": "请先连接总线：工具头通过已打开的连接来查找。",
     "btn_open": "工具头"
+  },
+  "pwa": {
+    "offline_short": "离线",
+    "offline": "离线：Studio 正在使用此浏览器中保存的副本运行。",
+    "offline_ready": "可离线使用",
+    "offline_ready_title": "Studio 和随附固件已保存在此浏览器中：无需网络即可打开。",
+    "install": "安装",
+    "install_title": "将 Studio 安装为此计算机的应用"
   }
 }

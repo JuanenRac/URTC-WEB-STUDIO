@@ -518,7 +518,16 @@
     "keepalive_watchdog": "({{ms}}ms de watchdog)",
     "custom_frame_bad_id": "O identificador deve ter de 1 a 3 dígitos hexadecimais, de 0 a 7FF.",
     "custom_frame_bad_byte": "Cada byte de dados deve ter 1 ou 2 dígitos hexadecimais.",
-    "custom_frame_too_many": "Uma trama CAN leva no máximo 8 bytes de dados."
+    "custom_frame_too_many": "Uma trama CAN leva no máximo 8 bytes de dados.",
+    "session_save": "Guardar a sessão",
+    "session_check": "Verificar uma sessão guardada",
+    "session_empty": "Ainda não há tramas para guardar.",
+    "session_saved": "Guardados {{log}} e {{record}}: o registo identifica o log pelo seu SHA-256.",
+    "session_pick_both": "Escolha em conjunto o registo (.json) e o seu log.",
+    "session_too_big": "Os ficheiros são demasiado grandes para uma sessão.",
+    "session_ok": "{{log}} corresponde ao seu registo (SHA-256 e tamanho).",
+    "session_bad_record": "{{name}} não é um registo de sessão legível.",
+    "session_mismatch": "{{log}} NÃO corresponde ao seu registo: o log foi editado ou é outro."
   },
   "testertool": {
     "soldering_heater_title": "Resistência (0x130 / telemetria 0x135)",
@@ -723,7 +732,17 @@
     "black_chart_current": "Medida",
     "black_chart_target": "Valor pretendido",
     "black_chart_trigger": "Indicador de erro",
-    "black_chart_span": "{{seconds}} s registados"
+    "black_chart_span": "{{seconds}} s registados",
+    "counters_chart_title": "Contadores térmicos ao longo do tempo",
+    "counters_chart_heater": "Aquecedor ligado (horas)",
+    "counters_chart_faults": "Falhas (0 a {{max}})",
+    "counters_chart_span": "{{minutes}} min, {{count}} leituras",
+    "counters_chart_added": "{{count}} falhas adicionadas",
+    "counters_chart_need_two": "O gráfico aparece a partir da segunda leitura.",
+    "counters_poll": "Lê-los de novo a cada",
+    "counters_poll_off": "nunca",
+    "counters_poll_seconds": "{{n}} s",
+    "counters_clear": "Limpar o histórico"
   },
   "selfupdate": {
     "new_available": "Está a ser servida uma versão mais recente do Studio ({{served}}; esta página é a {{built}}). Nada recarrega sozinho: recarregue quando não houver uma gravação nem uma sessão de bancada em curso.",
@@ -782,5 +801,13 @@
     "bus_selected": "Cabeça {{node}} selecionada",
     "msg_not_connected": "Ligue-se primeiro ao barramento: as cabeças são procuradas pela ligação aberta.",
     "btn_open": "Cabeças"
+  },
+  "pwa": {
+    "offline_short": "Sem rede",
+    "offline": "Sem rede: o Studio está a funcionar a partir da cópia guardada neste navegador.",
+    "offline_ready": "Funciona sem rede",
+    "offline_ready_title": "O Studio e o firmware incluído estão guardados neste navegador: abre sem rede.",
+    "install": "Instalar",
+    "install_title": "Instalar o Studio como aplicação deste computador"
   }
 }

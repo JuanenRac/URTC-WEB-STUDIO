@@ -518,7 +518,16 @@
     "keepalive_watchdog": "（{{ms}}ms ウォッチドッグ）",
     "custom_frame_bad_id": "識別子は 0 から 7FF までの 1 ～ 3 桁の16進数で指定してください。",
     "custom_frame_bad_byte": "各データバイトは 1 桁または 2 桁の16進数で指定してください。",
-    "custom_frame_too_many": "CAN フレームのデータは最大 8 バイトです。"
+    "custom_frame_too_many": "CAN フレームのデータは最大 8 バイトです。",
+    "session_save": "セッションを保存",
+    "session_check": "保存したセッションを検証",
+    "session_empty": "保存するフレームがまだありません。",
+    "session_saved": "{{log}} と {{record}} を保存しました。レコードはログを SHA-256 で特定します。",
+    "session_pick_both": "レコード (.json) とそのログを一緒に選んでください。",
+    "session_too_big": "ファイルがセッションとしては大きすぎます。",
+    "session_ok": "{{log}} はレコードと一致しています (SHA-256 とサイズ)。",
+    "session_bad_record": "{{name}} は読み取れるセッションレコードではありません。",
+    "session_mismatch": "{{log}} はレコードと一致しません。ログが編集されたか、別のログです。"
   },
   "testertool": {
     "soldering_heater_title": "ヒーター（0x130 / テレメトリ 0x135）",
@@ -723,7 +732,17 @@
     "black_chart_current": "測定値",
     "black_chart_target": "設定値",
     "black_chart_trigger": "エラーフラグ",
-    "black_chart_span": "{{seconds}} 秒を記録"
+    "black_chart_span": "{{seconds}} 秒を記録",
+    "counters_chart_title": "熱カウンタの推移",
+    "counters_chart_heater": "ヒーター ON (時間)",
+    "counters_chart_faults": "異常 (0 〜 {{max}})",
+    "counters_chart_span": "{{minutes}} 分、{{count}} 回の読み取り",
+    "counters_chart_added": "異常が {{count}} 件増加",
+    "counters_chart_need_two": "グラフは 2 回目の読み取りから表示されます。",
+    "counters_poll": "再読み取りの間隔",
+    "counters_poll_off": "しない",
+    "counters_poll_seconds": "{{n}} 秒",
+    "counters_clear": "履歴を消去"
   },
   "selfupdate": {
     "new_available": "より新しいバージョンの Studio が配信されています（{{served}}。このページは {{built}}）。自動では再読み込みされません。書き込みやベンチ作業の最中でないときに再読み込みしてください。",
@@ -782,5 +801,13 @@
     "bus_selected": "ヘッド {{node}} を選択中",
     "msg_not_connected": "先にバスに接続してください。ヘッドは開いている接続を通じて検索されます。",
     "btn_open": "ヘッド"
+  },
+  "pwa": {
+    "offline_short": "オフライン",
+    "offline": "オフライン: Studio はこのブラウザーに保存されたコピーで動作しています。",
+    "offline_ready": "オフライン対応",
+    "offline_ready_title": "Studio と同梱ファームウェアはこのブラウザーに保存されており、ネットワークなしで開けます。",
+    "install": "インストール",
+    "install_title": "Studio をこのコンピューターのアプリとしてインストールします"
   }
 }

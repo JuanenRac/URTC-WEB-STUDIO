@@ -12,6 +12,7 @@ import {
 } from '../../lib/blackBox';
 import { CAN_ID_THERMAL_STATS_QUERY, CAN_ID_THERMAL_STATS_RESP } from '../../lib/generated/urtcCanIds';
 import { parseThermalStats, thermalFaultTextKey } from '../../lib/thermalStats';
+import { ThermalSample, addSample, faultsAdded, loadHistory, sampleOf, saveHistory, thermalHistoryChart, thermalHistoryCsv } from '../../lib/thermalHistory';
 import { SimulatedRack, RACK_COMMAND_MIN_INTERVAL_MS, encodeSetPreheat, unitKey } from '../../lib/rackSim';
 import {
   THERMAL_CALIBRATED_CHUNK_ID, THERMAL_CALIBRATED_REQUEST_ID, THERMAL_FRAMES_PER_CHUNK, THERMAL_STATUS_ID, THERMAL_TRIGGER_ID,
@@ -63,6 +64,39 @@ const BlackBoxChartView: React.FC<{ record: BlackBoxRecord }> = ({ record }) => 
     </div>
   );
 };
+const HISTORY_CHART_WIDTH = 480;
+const HISTORY_CHART_HEIGHT = 150;
+const POLL_SECONDS = [10, 30, 60, 300];
+
+/** The hours of the heater and the faults of the board over the time the counters were read. */
+const ThermalHistoryView: React.FC<{ history: ThermalSample[] }> = ({ history }) => {
+  const { t } = useTranslation();
+  const chart = thermalHistoryChart(history, HISTORY_CHART_WIDTH, HISTORY_CHART_HEIGHT);
+  const title = t('testerextras.counters_chart_title', 'Thermal counters over time');
+  return (
+    <div className="mb-3" data-testid="thermal-history-chart">
+      <div className="flex flex-wrap items-center gap-4 text-[11px] font-mono text-slate-300 mb-1">
+        <span className="text-slate-400">{title}</span>
+        <span className="flex items-center gap-1"><span className="inline-block w-3 h-0.5 bg-amber-400" />{t('testerextras.counters_chart_heater', 'Heater on (hours)')}</span>
+        <span className="flex items-center gap-1"><span className="inline-block w-3 h-0.5 bg-red-500" />{t('testerextras.counters_chart_faults', 'Faults (0 to {{max}})', { max: chart.maxFaults })}</span>
+        <span className="text-slate-500">{t('testerextras.counters_chart_span', '{{minutes}} min, {{count}} readings', { minutes: (chart.spanMs / 60000).toFixed(1), count: history.length })}</span>
+        <span className="text-slate-500">{t('testerextras.counters_chart_added', '{{count}} faults added', { count: faultsAdded(history) })}</span>
+      </div>
+      <svg viewBox={`0 0 ${HISTORY_CHART_WIDTH} ${HISTORY_CHART_HEIGHT}`} className="w-full max-w-xl bg-slate-950 border border-slate-800 rounded" role="img" aria-label={title}>
+        {chart.grid.map((g) => (
+          <g key={g.y}>
+            <line x1="8" x2={HISTORY_CHART_WIDTH - 8} y1={g.y} y2={g.y} stroke="#334155" strokeWidth="0.5" />
+            <text x="10" y={g.y - 2} fontSize="8" fill="#64748b">{g.hours} h</text>
+          </g>
+        ))}
+        {chart.faultMarks.map((x) => <line key={x} x1={x} x2={x} y1="8" y2={HISTORY_CHART_HEIGHT - 8} stroke="#ef4444" strokeWidth="0.6" strokeDasharray="2 2" />)}
+        <polyline points={chart.faults} fill="none" stroke="#ef4444" strokeWidth="1.2" />
+        <polyline points={chart.heater} fill="none" stroke="#fbbf24" strokeWidth="1.6" />
+      </svg>
+    </div>
+  );
+};
+
 export const BlackBoxPanel: React.FC<{ ctx: ToolCtx; systemError: boolean }> = ({ ctx, systemError }) => {
   const { t } = useTranslation();
   const [record, setRecord] = useState<BlackBoxRecord | null>(null);
@@ -70,20 +104,46 @@ export const BlackBoxPanel: React.FC<{ ctx: ToolCtx; systemError: boolean }> = (
   const [auto, setAuto] = useState(true);
   const [busy, setBusy] = useState(false);
   const [counters, setCounters] = useState('');
+  const [history, setHistory] = useState<ThermalSample[]>(() => loadHistory(typeof localStorage === 'undefined' ? undefined : localStorage));
+  const [pollEvery, setPollEvery] = useState<number | null>(null);
   const wasError = useRef(false);
+  const readingCounters = useRef(false);
 
   // The lifetime thermal counters (0x1AA / 0x1AB): one question, one answer of 8 bytes.
   const readCounters = async () => {
-    if (!ctx.isConnected) return;
+    if (!ctx.isConnected || readingCounters.current) return;
+    readingCounters.current = true;
+    try {
+      await readCountersOnce();
+    } finally {
+      readingCounters.current = false;
+    }
+  };
+  const readCountersOnce = async () => {
     const answer = await ctx.request(CAN_ID_THERMAL_STATS_QUERY, [], CAN_ID_THERMAL_STATS_RESP, 1000, 'Thermal counters');
     const stats = answer ? parseThermalStats(answer.data) : null;
     if (!stats) { setCounters(t('testerextras.counters_no_answer', 'No answer to 0x1AA: the lifetime thermal counters need URTC firmware 0.3.3 or newer.')); return; }
+    setHistory((before) => {
+      const after = addSample(before, sampleOf(stats, Date.now()));
+      saveHistory(typeof localStorage === 'undefined' ? undefined : localStorage, after);
+      return after;
+    });
     const last = stats.lastFault === 0
       ? t('testerextras.counters_none', 'none')
       : t(thermalFaultTextKey(stats), 'fault {{n}}', { n: stats.lastFault });
     const line = t('testerextras.counters_text', 'Thermal runaway faults ever: {{faults}} | Heater on: {{hours}} h | Last fault: {{last}}', { faults: stats.faultCount, hours: stats.heaterOnHours.toFixed(2), last });
     setCounters(stats.persisted ? line : `${line}\n${t('testerextras.counters_not_persisted', 'F-RAM not answering: the counters are RAM-only since the last boot.')}`);
   };
+
+  // Read the counters again every so often while the board is connected, for the history; off until the person asks.
+  const readCountersLatest = useRef(readCounters);
+  readCountersLatest.current = readCounters;
+  useEffect(() => {
+    if (pollEvery === null || !ctx.isConnected) return;
+    const timer = setInterval(() => { void readCountersLatest.current(); }, pollEvery * 1000);
+    return () => clearInterval(timer);
+  }, [pollEvery, ctx.isConnected]);
+  const clearHistory = () => { setHistory([]); saveHistory(typeof localStorage === 'undefined' ? undefined : localStorage, []); };
 
   const read = async () => {
     if (!ctx.isConnected || busy) return;
@@ -148,8 +208,20 @@ export const BlackBoxPanel: React.FC<{ ctx: ToolCtx; systemError: boolean }> = (
       </div>
       <div className="flex flex-wrap items-center gap-3 mb-3">
         <button className={btnCls} onClick={readCounters} disabled={!ctx.isConnected}>{t('testerextras.counters_read', 'Read the thermal counters')}</button>
+        <label className="flex items-center gap-2 text-xs text-slate-300">
+          {t('testerextras.counters_poll', 'Read them again every')}
+          <select className={inputCls} data-testid="thermal-poll" value={pollEvery ?? ''} onChange={(e) => setPollEvery(e.target.value === '' ? null : Number(e.target.value))}>
+            <option value="">{t('testerextras.counters_poll_off', 'never')}</option>
+            {POLL_SECONDS.map((s) => <option key={s} value={s}>{t('testerextras.counters_poll_seconds', '{{n}} s', { n: s })}</option>)}
+          </select>
+        </label>
+        <button className={btnCls} disabled={history.length === 0} onClick={() => downloadBlob(new Blob([thermalHistoryCsv(history)], { type: 'text/csv' }), `urtc_thermal_counters_${stamp()}.csv`)}>{t('testerextras.black_csv', 'Download CSV')}</button>
+        <button className={btnCls} disabled={history.length === 0} onClick={clearHistory}>{t('testerextras.counters_clear', 'Clear the history')}</button>
       </div>
       {counters && <div className="text-xs text-slate-300 font-mono mb-3 whitespace-pre-line" data-testid="thermal-counters">{counters}</div>}
+      {history.length >= 2
+        ? <ThermalHistoryView history={history} />
+        : history.length === 1 && <div className="text-xs text-slate-500 font-mono mb-3">{t('testerextras.counters_chart_need_two', 'The chart appears from the second reading.')}</div>}
       {message && <div className="text-xs text-slate-300 font-mono">{message}</div>}
       {record && <BlackBoxChartView record={record} />}
     </Section>

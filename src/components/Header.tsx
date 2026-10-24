@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Zap, AlertTriangle, Usb, Globe, Power, Cpu } from 'lucide-react';
+import { Zap, AlertTriangle, Usb, Globe, Power, Cpu, Download, WifiOff, HardDriveDownload } from 'lucide-react';
+import type { PwaState } from '../hooks/usePwa';
 import { HardwareState } from '../types';
 import urtcLogoTester from '../../images/urtc_custom_icon.svg';
 
@@ -20,6 +21,8 @@ interface HeaderProps {
   onOpenHeads?: () => void;
   headsSummary?: string;
   portName?: string;
+  /** The offline copy and the install offer of the browser. */
+  pwa?: PwaState;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -33,7 +36,8 @@ export const Header: React.FC<HeaderProps> = ({
   onStopAll,
   onOpenHeads,
   headsSummary,
-  portName
+  portName,
+  pwa
 }) => {
   const { t, i18n } = useTranslation();
 
@@ -180,6 +184,26 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 <Usb className="w-3.5 h-3.5" />
                 <span>{t('header.connect_button', 'Connect Hardware')}</span>
+              </button>
+            )}
+
+            {/* The offline copy: running from the stored copy (no network), or ready to run without one; and the install offer */}
+            {pwa && !pwa.online && (
+              <div data-testid="pwa-offline" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-950/50 text-amber-300 border border-amber-800/80" title={t('pwa.offline', 'Offline: the Studio is running from the copy stored in this browser.')}>
+                <WifiOff className="w-3.5 h-3.5" />
+                <span>{t('pwa.offline_short', 'Offline')}</span>
+              </div>
+            )}
+            {pwa && pwa.online && pwa.offlineReady && (
+              <div data-testid="pwa-ready" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 border border-slate-700/80" title={t('pwa.offline_ready_title', 'The Studio and the bundled firmware are stored in this browser: it opens without a network.')}>
+                <HardDriveDownload className="w-3.5 h-3.5 text-emerald-400" />
+                <span>{t('pwa.offline_ready', 'Works offline')}</span>
+              </div>
+            )}
+            {pwa?.canInstall && (
+              <button onClick={pwa.install} data-testid="pwa-install" className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition-colors" title={t('pwa.install_title', 'Install the Studio as an application of this computer')}>
+                <Download className="w-3.5 h-3.5 text-cyan-400" />
+                <span>{t('pwa.install', 'Install')}</span>
               </button>
             )}
 

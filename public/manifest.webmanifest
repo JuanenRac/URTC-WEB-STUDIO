@@ -1,0 +1,14 @@
+{
+  "name": "URTC Web Studio",
+  "short_name": "URTC Studio",
+  "description": "Test, flash and simulate URTC tool controllers from the browser, also without a network.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#020617",
+  "theme_color": "#0f172a",
+  "icons": [
+    { "src": "images/urtc_custom_icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
