@@ -39,6 +39,11 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
   const [sendError, setSendError] = useState<string | null>(null);
   const clearSendError = useCallback(() => setSendError(null), []);
 
+  // The check the tool head window sets while several heads are on the bus: it throws for a single-head frame that would go to a head that is
+  // not selected and confirmed (see lib/nodePicker.ts). Null while nobody set one, which is how every send behaved before.
+  const sendGateRef = useRef<((id: number, data: number[]) => void) | null>(null);
+  const setSendGate = useCallback((gate: ((id: number, data: number[]) => void) | null) => { sendGateRef.current = gate; }, []);
+
   const portRef = useRef<any>(null);
   const readerRef = useRef<any>(null);
   const writerRef = useRef<any>(null);
@@ -338,6 +343,13 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
       return;
     }
 
+    try {
+      sendGateRef.current?.(id, data);
+    } catch (e: any) {
+      setSendError(e?.message || String(e));
+      throw e;
+    }
+
     const dlc = data.length;
     const hexData = data.map(b => b.toString(16).padStart(2, '0').toUpperCase()).join('');
     const cmd = `t${id.toString(16).padStart(3, '0').toUpperCase()}${dlc}${hexData}`;
@@ -481,6 +493,7 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
     subscribe,
     subscribeAll,
     injectReplayedFrame,
+    setSendGate,
     sendError,
     clearSendError
   };

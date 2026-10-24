@@ -411,6 +411,12 @@ npm run preview
 └── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md  <- 翻译
 ```
 
+<!-- urtc-section:heads -->
+## 🧭 一条总线上的多个工具头
+
+固件可以让多个工具头共用一条 CAN 总线（多节点扩展）。它**默认关闭**，只有一个工具头的总线与以前完全一样地工作。**工具头**窗口会查找工具头，列出每个工具头的地址、工具和序列号，并显示其状态：就绪、已选择、地址冲突、故障已锁定、处于引导程序或已丢失。您选择一个后，程序会先请您确认，之后才向该工具头发送任何内容；只要总线上有多个工具头，在选中一个并得到它的确认之前，命令都会被拒绝。如果所选工具头丢失，所有工具头都会进入安全状态（窗口中的复选框可关闭此行为）。目前只针对总线模型测试过，没有在电路板上试过。参见 URTC-COMMON 中的 `docs/MULTINODE.md`。
+<!-- /urtc-section:heads -->
+
 <!-- urtc-section:compatibility -->
 ## 🧩 兼容性
 

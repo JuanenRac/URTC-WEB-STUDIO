@@ -1,6 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { Zap, AlertTriangle, Usb, Globe, Power } from 'lucide-react';
+import { Zap, AlertTriangle, Usb, Globe, Power, Cpu } from 'lucide-react';
 import { HardwareState } from '../types';
 import urtcLogoTester from '../../images/urtc_custom_icon.svg';
 
@@ -16,6 +16,9 @@ interface HeaderProps {
   onDisconnect: () => void;
   /** Switches off every actuator the page keeps alive; shown while connected. */
   onStopAll?: () => void;
+  /** Opens the window of the tool heads; the summary is the short line the button carries while heads are on the bus. */
+  onOpenHeads?: () => void;
+  headsSummary?: string;
   portName?: string;
 }
 
@@ -28,6 +31,8 @@ export const Header: React.FC<HeaderProps> = ({
   onConnect,
   onDisconnect,
   onStopAll,
+  onOpenHeads,
+  headsSummary,
   portName
 }) => {
   const { t, i18n } = useTranslation();
@@ -142,6 +147,18 @@ export const Header: React.FC<HeaderProps> = ({
               >
                 <Power className="w-3.5 h-3.5" />
                 {t('header.stop_all', 'STOP ALL')}
+              </button>
+            )}
+
+            {/* The tool heads of the bus: find them and select one (the multinode extension, off in the firmware by default) */}
+            {onOpenHeads && (
+              <button
+                onClick={onOpenHeads}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition-colors"
+                title={t('nodes.title', 'Tool heads on the bus')}
+              >
+                <Cpu className="w-3.5 h-3.5 text-cyan-400" />
+                <span>{headsSummary || t('nodes.btn_open', 'Heads')}</span>
               </button>
             )}
 

@@ -16,7 +16,7 @@ import {
   packUInt32BE, packUInt16BE, unpackUInt32BE, getCrc32, isLastPartialPage, readbackChunkLength,
   minorField, formatVersion
 } from '../lib/flasher';
-import { queryMainVersion, querySlaveVersion, BoardVersionInfo, SlaveVersionInfo } from '../lib/boardVersion';
+import { queryMainVersion, querySlaveVersion, querySlaveApplicationVersion, BoardVersionInfo, SlaveVersionInfo, SlaveAppVersionInfo } from '../lib/boardVersion';
 import { CAN_ID_ERASE_FRAM, CAN_ID_FRAM_STATE_RESP, ERASE_FRAM_MAGIC, VERIFY_FAIL_CODES } from '../lib/canIds';
 
 export interface FlashOptions {
@@ -101,6 +101,12 @@ export function useFlasher(serialCan: SerialCanBus) {
   const queryExpansionVersion = useCallback(async (): Promise<SlaveVersionInfo | null> => {
     if (!serialCan.isConnected) return null;
     return querySlaveVersion(serialCan);
+  }, [serialCan]);
+
+  // The application of the expansion slave, read through the master: 0x221 for register 0x01 and its 0x222 companion.
+  const queryExpansionApplication = useCallback(async (): Promise<SlaveAppVersionInfo | null> => {
+    if (!serialCan.isConnected) return null;
+    return querySlaveApplicationVersion(serialCan);
   }, [serialCan]);
 
   // The patch goes to END_UPDATE only towards a bootloader that announced it in its own answer, asked once it is listening.
@@ -430,5 +436,5 @@ export function useFlasher(serialCan: SerialCanBus) {
     return buffer;
   }, [serialCan]);
 
-  return { flasherState, setFlasherState, appendLog, cancel, queryVersion, queryExpansionVersion, queryErrorCounters, errorCounters, flashMain, flashSlave, readBack };
+  return { flasherState, setFlasherState, appendLog, cancel, queryVersion, queryExpansionVersion, queryExpansionApplication, queryErrorCounters, errorCounters, flashMain, flashSlave, readBack };
 }

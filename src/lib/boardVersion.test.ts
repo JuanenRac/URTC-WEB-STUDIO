@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { CanFrame } from "../types";
-import { VersionBus, installedVersion, queryMainVersion, querySlaveVersion } from "./boardVersion";
+import { VersionBus, installedVersion, parseSlaveAppVersion, queryMainVersion, querySlaveApplicationVersion, querySlaveVersion, slaveAppVersionText } from "./boardVersion";
+import slaveVectors from "./generated/slave_version_vectors.json";
 
 // A bus that answers from a script: the frames the board "sends" after each query.
 function frame(id: number, data: number[]): CanFrame {
@@ -91,5 +92,39 @@ describe("expansion slave version", () => {
   it("answers with what it has when 0x218 does not come, and is null without 0x217", async () => {
     expect((await querySlaveVersion(fakeBus({}, { 0x217: FIRST })))?.appMajor).toBe(0);
     expect(await querySlaveVersion(fakeBus({}, { 0x217: null }))).toBeNull();
+  });
+});
+
+describe("slave application version (0x221 and its 0x222 companion)", () => {
+  const cases = slaveVectors.cases as Array<{ name: string; frames: Array<[number, string]>; expected: null | { responder: string; hardware_id: string; major: number; minor: number | null; minor_high: number; patch: number | null; patch_aware: boolean }; text: string }>;
+  const bytes = (hex: string) => (hex.match(/../g) ?? []).map((pair) => parseInt(pair, 16));
+
+  for (const c of cases) {
+    it(`reads the vectors of the shared code: ${c.name}`, () => {
+      const info = parseSlaveAppVersion(c.frames.map(([id, hex]) => ({ id, data: bytes(hex) })));
+      if (c.expected === null) {
+        expect(info).toBeNull();
+      } else {
+        expect(info).toMatchObject({ responder: c.expected.responder, hardwareId: c.expected.hardware_id, major: c.expected.major, minor: c.expected.minor, minorHigh: c.expected.minor_high, patchAware: c.expected.patch_aware });
+        expect(info?.patch ?? null).toBe(c.expected.patch);
+      }
+      expect(slaveAppVersionText(info)).toBe(c.text);
+    });
+  }
+
+  it("asks the master for the version register and waits for the companion", async () => {
+    const sent: Array<[number, number[]]> = [];
+    const bus: VersionBus = {
+      async request(id, data, respId) { sent.push([id, data]); return frame(respId, bytes("000303cc01000000")); },
+      async waitForFrame(id) { return id === 0x222 ? frame(0x222, [1, 5]) : null; },
+      flushFrames() {},
+    };
+    const info = await querySlaveApplicationVersion(bus);
+    expect(sent).toEqual([[0x221, [1, 8]]]);
+    expect(slaveAppVersionText(info)).toBe("0.?.5");
+    const silent: VersionBus = { async request() { return null; }, async waitForFrame() { return null; }, flushFrames() {} };
+    expect(await querySlaveApplicationVersion(silent)).toBeNull();
+    const old: VersionBus = { async request(_i, _d, respId) { return frame(respId, bytes("000303cc01000000")); }, async waitForFrame() { return null; }, flushFrames() {} };
+    expect(slaveAppVersionText(await querySlaveApplicationVersion(old))).toBe("0.?");
   });
 });

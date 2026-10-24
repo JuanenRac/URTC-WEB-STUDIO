@@ -10,7 +10,8 @@ import { parseSerialNumber } from '../lib/boardConfig';
 import { FlasherState, CanFrame } from '../types';
 import { RefreshCw, ShieldCheck, Cpu, CheckCircle2, AlertOctagon, Terminal, DownloadCloud, XCircle, Fingerprint } from 'lucide-react';
 import { TOOL_PROFILES } from '../data/toolsData';
-import { BoardVersionInfo, SlaveVersionInfo } from '../App';
+import { BoardVersionInfo, SlaveVersionInfo, SlaveAppVersionInfo } from '../App';
+import { slaveAppVersionText } from '../lib/boardVersion';
 import {
   CAN_ID_EXPANSION_TYPE_RESP, CAN_ID_MLX_VARIANT_RESP, CAN_ID_SET_FREE_TOOL,
   CAN_ID_FREE_TOOL_CONFIG_RESP, CAN_ID_PERIPHERAL_INFO_RESP, CAN_ID_SET_DEVICE_SERIAL, EXPANSION_BOARD_TYPES, MLX_SENSOR_VARIANTS
@@ -34,6 +35,8 @@ interface FlasherStudioProps {
   onQueryVersion: () => void;
   slaveVersion: SlaveVersionInfo | null;
   onQuerySlaveVersion: () => void | Promise<void>;
+  slaveAppVersion: SlaveAppVersionInfo | null;
+  onQuerySlaveApp: () => void | Promise<void>;
   errorCounters: { tec: number; rec: number } | null;
   onQueryErrorCounters: () => void;
   onSendFrame?: (id: number, data: number[], description?: string) => Promise<void>;
@@ -65,6 +68,8 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
   onQueryVersion,
   slaveVersion,
   onQuerySlaveVersion,
+  slaveAppVersion,
+  onQuerySlaveApp,
   errorCounters,
   onQueryErrorCounters,
   onSendFrame,
@@ -241,6 +246,24 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
                 </div>
               </div>
             )}
+
+            <div className="flex items-center justify-between pt-1 border-t border-slate-800/60">
+              <span className="text-[11px] text-slate-400">{t('flasher.slave_app_label', 'Expansion slave application (0x221/0x222)')}</span>
+              <div className="flex items-center gap-2">
+                {slaveAppVersion && (
+                  <span className="font-mono text-[11px] px-2 py-0.5 rounded border bg-slate-900 text-slate-200 border-slate-700" title={t('flasher.slave_app_minor_hint', 'The minor number is not in the answer of the master, so it shows as ?')}>
+                    {t('flasher.slave_app_value', 'v{{version}} / HW {{hw}}', { version: slaveAppVersionText(slaveAppVersion), hw: slaveAppVersion.hardwareId })}
+                  </span>
+                )}
+                <button
+                  onClick={() => { void onQuerySlaveApp(); }}
+                  disabled={!isConnected}
+                  className="px-2.5 py-1 rounded border text-[11px] font-semibold bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700 disabled:opacity-40 transition"
+                >
+                  {t('flasher.query', 'Query')}
+                </button>
+              </div>
+            </div>
 
             <div className="flex items-center justify-between pt-1 border-t border-slate-800/60">
               <span className="text-[11px] text-slate-400">{t('flasher.error_counters_label', 'CAN error counters (TEC/REC, 0x7FB/0x7FC)')}</span>

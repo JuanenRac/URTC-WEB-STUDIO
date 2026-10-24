@@ -480,6 +480,12 @@ travail antérieur sur ce projet.
 └── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md  <- traductions
 ```
 
+<!-- urtc-section:heads -->
+## 🧭 Plusieurs têtes d'outil sur un bus
+
+Le firmware peut faire partager un bus CAN à plusieurs têtes d'outil (l'extension multinœud). Elle est **désactivée par défaut**, et un bus avec une seule tête fonctionne exactement comme avant. La fenêtre **Têtes** trouve les têtes, liste chacune avec son adresse, son outil et son numéro de série, et affiche son état : prête, sélectionnée, conflit d'adresse, défaut mémorisé, dans son bootloader ou perdue. Vous en sélectionnez une, le programme demande confirmation et ne lui envoie rien avant ; tant que plusieurs têtes sont sur le bus, une commande est refusée jusqu'à ce qu'une soit sélectionnée et l'ait confirmé. Si la tête sélectionnée est perdue, toutes les têtes passent à leur état sûr (une case de la fenêtre le désactive). Testé seulement contre un modèle du bus, pas avec des cartes. Voir `docs/MULTINODE.md` dans URTC-COMMON.
+<!-- /urtc-section:heads -->
+
 <!-- urtc-section:compatibility -->
 ## 🧩 Compatibilité
 

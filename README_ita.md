@@ -472,6 +472,12 @@ progetto.
 └── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md  <- traduzioni
 ```
 
+<!-- urtc-section:heads -->
+## 🧭 Più teste utensile su un bus
+
+Il firmware può far condividere un bus CAN a più teste utensile (l'estensione multinodo). È **disattivata per impostazione predefinita**, e un bus con una sola testa funziona esattamente come prima. La finestra **Teste** trova le teste, elenca ciascuna con indirizzo, utensile e numero di serie, e mostra il suo stato: pronta, selezionata, conflitto di indirizzo, guasto memorizzato, nel suo bootloader o persa. Ne selezioni una, il programma chiede conferma e solo dopo le invia qualcosa; finché sul bus ci sono più teste, un comando viene rifiutato finché una non è selezionata e l'ha confermato. Se la testa selezionata si perde, tutte le teste passano allo stato sicuro (una casella della finestra lo disattiva). Provata solo contro un modello del bus, non con schede. Vedi `docs/MULTINODE.md` in URTC-COMMON.
+<!-- /urtc-section:heads -->
+
 <!-- urtc-section:compatibility -->
 ## 🧩 Compatibilità
 

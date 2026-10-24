@@ -13,6 +13,8 @@ const ThermalCameraViewer = lazy(() => import('./components/ThermalCameraViewer'
 const SpecsAndBomViewer = lazy(() => import('./components/SpecsAndBomViewer').then(m => ({ default: m.SpecsAndBomViewer })));
 const TesterStudio = lazy(() => import('./components/TesterStudio').then(m => ({ default: m.TesterStudio })));
 import { ConfirmDialog } from './components/ConfirmDialog';
+import { NodePickerDialog } from './components/NodePickerDialog';
+import { useNodePicker } from './hooks/useNodePicker';
 import { TOOL_PROFILES } from './data/toolsData';
 import { HardwareState, CanFrame, ExpansionBoardType } from './types';
 import { useSerialCanBus } from './hooks/useSerialCanBus';
@@ -24,7 +26,7 @@ import {
   THIS_HARDWARE_ID, SLAVE_HARDWARE_ID, APP_MAX_SIZE, SLAVE_APP_MAX_SIZE,
   parseManifest, FirmwareManifest, compareVersions, formatVersion, computeSha256Hex
 } from './lib/flasher';
-import { BoardVersionInfo, SlaveVersionInfo, installedVersion } from './lib/boardVersion';
+import { BoardVersionInfo, SlaveVersionInfo, SlaveAppVersionInfo, installedVersion } from './lib/boardVersion';
 import { RemoteFirmware, downloadAsset, downloadAssetText, digestMismatch, GithubReleaseError } from './lib/githubRelease';
 import { resolveSignature } from './lib/firmwareSignature';
 import { checkReleaseSignature } from './lib/releaseSignature';
@@ -39,7 +41,7 @@ import { rawSendPolicy } from './lib/dangerousActions';
 import { runAllSafeOff } from './lib/safeOff';
 import { downloadBlob } from './lib/download';
 
-export type { BoardVersionInfo, SlaveVersionInfo };
+export type { BoardVersionInfo, SlaveVersionInfo, SlaveAppVersionInfo };
 
 export default function App() {
   const { t } = useTranslation();
@@ -98,6 +100,9 @@ export default function App() {
   const handleFrameReceived = useCallback((frame: CanFrame) => { batcherRef.current!.push(frame); }, []);
 
   const serialCan = useSerialCanBus(handleFrameReceived);
+  // The tool heads of the bus: found and selected from a window of their own; with one head, or with the extension off, nothing changes.
+  const nodePicker = useNodePicker(serialCan);
+  const [headsOpen, setHeadsOpen] = useState(false);
   // A higher version served next to this page: the person is told and decides; nothing reloads by itself.
   const [servedNewer, setServedNewer] = useState<string | null>(null);
   useEffect(() => {
@@ -184,6 +189,11 @@ export default function App() {
 
   const handleQueryVersion = async () => {
     setBoardVersion(await flasher.queryVersion());
+  };
+
+  const [slaveAppVersion, setSlaveAppVersion] = useState<SlaveAppVersionInfo | null>(null);
+  const handleQuerySlaveApp = async () => {
+    setSlaveAppVersion(await flasher.queryExpansionApplication());
   };
 
   const handleQuerySlaveVersion = async () => {
@@ -701,8 +711,11 @@ export default function App() {
         onConnect={serialCan.connect}
         onDisconnect={handleDisconnect}
         onStopAll={() => { void runAllSafeOff(); }}
+        onOpenHeads={() => setHeadsOpen(true)}
+        headsSummary={nodePicker.snapshot.mode === 'multi' ? (nodePicker.snapshot.selected !== null ? t('nodes.bus_selected', { node: nodePicker.snapshot.selected }) : t('nodes.bus_found', { count: nodePicker.snapshot.count })) : undefined}
         portName={serialCan.portName}
       />
+      <NodePickerDialog open={headsOpen} onClose={() => setHeadsOpen(false)} picker={nodePicker} />
 
       {/* Bench-tool notice - only in the build published on GitHub Pages (VITE_BENCH_NOTICE=1). */}
       {import.meta.env.VITE_BENCH_NOTICE === '1' && (
@@ -898,6 +911,8 @@ export default function App() {
             onQueryVersion={handleQueryVersion}
             slaveVersion={slaveVersion}
             onQuerySlaveVersion={handleQuerySlaveVersion}
+            slaveAppVersion={slaveAppVersion}
+            onQuerySlaveApp={handleQuerySlaveApp}
             errorCounters={flasher.errorCounters}
             onQueryErrorCounters={flasher.queryErrorCounters}
             onSendFrame={serialCan.sendFrame}

@@ -1,4 +1,5 @@
 import { CanFrame } from '../types';
+import { CAN_ID_SLAVE_REG_READ, CAN_ID_SLAVE_APP_PATCH, decodeSlaveAppPatch, encodeSlaveRegReadRequest } from './generated/urtcCanIds';
 import {
   CAN_ID_QUERY_VERSION, CAN_ID_VERSION_RESPONSE, CAN_ID_BOOTLOADER_VERSION_RESPONSE, CAN_ID_VERSION_PATCH_RESPONSE,
   CAN_ID_SLAVE_VERSION_RESP_1, CAN_ID_SLAVE_VERSION_RESP_2, PATCH_GRACE_MS, PATCH_UNKNOWN,
@@ -115,4 +116,61 @@ export async function querySlaveVersion(bus: VersionBus): Promise<SlaveVersionIn
     info.bootPatch = second.data[4];
   }
   return info;
+}
+
+/** The application of the expansion slave as the master relays it: 0x221 for register 0x01, then the 0x222 companion with the patch. */
+export interface SlaveAppVersionInfo {
+  responder: 'application' | 'bootloader';
+  hardwareId: string;
+  major: number;
+  /** null: the answer of 8 bytes stops at the high byte of the minor field, so the minor number is not in it; a longer answer carries it. */
+  minor: number | null;
+  minorHigh: number;
+  /** undefined when the slave sends none: a slave application from before the field sends no 0x222. */
+  patch?: number;
+  patchAware: boolean;
+}
+
+const SLAVE_APP_VERSION_REGISTER = 0x01;
+const SLAVE_APP_PATCH_MAX = 127;
+
+/** Joins the frames that answer one read of the version register of the slave application into one description; null when there is no answer. */
+export function parseSlaveAppVersion(frames: Array<{ id: number; data: number[] }>): SlaveAppVersionInfo | null {
+  let answer: number[] | null = null;
+  let patch: number | undefined;
+  for (const frame of frames) {
+    if (frame.id === CAN_ID_SLAVE_REG_READ && frame.data.length >= 8 && answer === null) {
+      answer = frame.data;
+    } else if (frame.id === CAN_ID_SLAVE_APP_PATCH && patch === undefined) {
+      const fields = decodeSlaveAppPatch(frame.data);
+      if (fields && fields.register === SLAVE_APP_VERSION_REGISTER && Number(fields.patch) >= 1 && Number(fields.patch) <= SLAVE_APP_PATCH_MAX) patch = Number(fields.patch);
+    }
+  }
+  if (answer === null) return null;
+  const hardwareId = ((answer[1] << 24) | (answer[2] << 16) | (answer[3] << 8) | answer[4]) >>> 0;
+  return {
+    responder: answer[0] === 0x01 ? 'bootloader' : 'application',
+    hardwareId: `0x${hardwareId.toString(16).toUpperCase().padStart(8, '0')}`,
+    major: (answer[5] << 8) | answer[6],
+    minor: answer.length >= 9 ? (answer[7] << 8) | answer[8] : null,
+    minorHigh: answer[7],
+    patch,
+    patchAware: patch !== undefined,
+  };
+}
+
+/** major.minor.patch with a ? for what the frames did not carry (the minor of a slave seen through the master). */
+export function slaveAppVersionText(info: SlaveAppVersionInfo | null): string {
+  if (info === null) return '?';
+  return `${info.major}.${info.minor === null ? '?' : info.minor}${info.patch !== undefined ? `.${info.patch}` : ''}`;
+}
+
+/** Asks the master for the version register of the slave application (0x221, 8 of its 10 bytes) and waits a moment for the 0x222 companion. */
+export async function querySlaveApplicationVersion(bus: VersionBus): Promise<SlaveAppVersionInfo | null> {
+  bus.flushFrames(CAN_ID_SLAVE_APP_PATCH);
+  const request = encodeSlaveRegReadRequest(SLAVE_APP_VERSION_REGISTER, 8);
+  const answer = await bus.request(request.id, request.data, CAN_ID_SLAVE_REG_READ, 1500, 'Slave application: query version');
+  if (!answer || answer.data.length < 8) return null;
+  const companion = await bus.waitForFrame(CAN_ID_SLAVE_APP_PATCH, PATCH_GRACE_MS * 2);
+  return parseSlaveAppVersion([{ id: answer.id, data: answer.data }, ...(companion ? [{ id: companion.id, data: companion.data }] : [])]);
 }
