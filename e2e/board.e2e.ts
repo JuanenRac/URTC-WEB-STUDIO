@@ -139,3 +139,32 @@ test.describe('the saved session', () => {
     await expect(page.getByTestId('session-message')).toHaveText('Choose the record (.json) and its log together.');
   });
 });
+
+test.describe('the filter of the bus monitor', () => {
+  test('shows only the chosen IDs', async ({ page }) => {
+    await installFakeBoard(page);
+    await page.goto('/');
+    await connectBoard(page);
+    await openTesterPanel(page, 'Bus Monitor');
+    await page.getByTestId('monitor-ids').fill('111');
+    await page.getByRole('button', { name: 'Detect Hardware' }).click();
+    await expect(page.locator('table tbody tr')).toHaveCount(1);
+    await expect(page.locator('table tbody tr').first()).toContainText('0x111');
+    await page.getByTestId('monitor-ids').fill('');
+    await page.getByRole('button', { name: 'Detect Hardware' }).click();
+    await expect(page.locator('table tbody tr')).toHaveCount(5);
+  });
+
+  test('shows only the frames whose data changed', async ({ page }) => {
+    await installFakeBoard(page);
+    await page.goto('/');
+    await connectBoard(page);
+    await openTesterPanel(page, 'Bus Monitor');
+    await page.getByTestId('monitor-changes').check();
+    await page.getByRole('button', { name: 'Detect Hardware' }).click();
+    await expect(page.locator('table tbody tr')).toHaveCount(4);
+    await page.getByRole('button', { name: 'Detect Hardware' }).click();
+    await page.waitForTimeout(500);
+    await expect(page.locator('table tbody tr')).toHaveCount(4);
+  });
+});

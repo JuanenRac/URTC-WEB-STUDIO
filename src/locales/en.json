@@ -527,7 +527,9 @@
     "session_too_big": "The files are too big for a session.",
     "session_ok": "{{log}} matches its record (SHA-256 and size).",
     "session_bad_record": "{{name}} is not a session record that can be read.",
-    "session_mismatch": "{{log}} does NOT match its record: the log was edited, or it is another one."
+    "session_mismatch": "{{log}} does NOT match its record: the log was edited, or it is another one.",
+    "filter_ids": "Only these IDs",
+    "filter_changes": "Only frames whose data changed"
   },
   "testertool": {
     "soldering_heater_title": "Heater (0x130 / telemetry 0x135)",

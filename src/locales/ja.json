@@ -527,7 +527,9 @@
     "session_too_big": "ファイルがセッションとしては大きすぎます。",
     "session_ok": "{{log}} はレコードと一致しています (SHA-256 とサイズ)。",
     "session_bad_record": "{{name}} は読み取れるセッションレコードではありません。",
-    "session_mismatch": "{{log}} はレコードと一致しません。ログが編集されたか、別のログです。"
+    "session_mismatch": "{{log}} はレコードと一致しません。ログが編集されたか、別のログです。",
+    "filter_ids": "これらの ID のみ",
+    "filter_changes": "データが変わったフレームのみ"
   },
   "testertool": {
     "soldering_heater_title": "ヒーター（0x130 / テレメトリ 0x135）",

@@ -527,7 +527,9 @@
     "session_too_big": "文件对于一个会话来说太大。",
     "session_ok": "{{log}} 与其记录一致（SHA-256 和大小）。",
     "session_bad_record": "{{name}} 不是可读取的会话记录。",
-    "session_mismatch": "{{log}} 与其记录不一致：日志被编辑过，或是另一个日志。"
+    "session_mismatch": "{{log}} 与其记录不一致：日志被编辑过，或是另一个日志。",
+    "filter_ids": "仅这些 ID",
+    "filter_changes": "仅数据发生变化的帧"
   },
   "testertool": {
     "soldering_heater_title": "加热器（0x130 / 遥测 0x135）",

@@ -527,7 +527,9 @@
     "session_too_big": "Die Dateien sind für eine Sitzung zu groß.",
     "session_ok": "{{log}} stimmt mit seinem Datensatz überein (SHA-256 und Größe).",
     "session_bad_record": "{{name}} ist kein lesbarer Sitzungsdatensatz.",
-    "session_mismatch": "{{log}} stimmt NICHT mit seinem Datensatz überein: Das Log wurde bearbeitet oder ist ein anderes."
+    "session_mismatch": "{{log}} stimmt NICHT mit seinem Datensatz überein: Das Log wurde bearbeitet oder ist ein anderes.",
+    "filter_ids": "Nur diese IDs",
+    "filter_changes": "Nur Frames mit geänderten Daten"
   },
   "testertool": {
     "soldering_heater_title": "Heizung (0x130 / Telemetrie 0x135)",

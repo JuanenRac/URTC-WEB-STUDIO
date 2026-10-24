@@ -501,7 +501,7 @@ BY-SA - each with attribution back to this project and its author.
 
 **Thermal counters over time (new, checked with tests and a modelled board only):** in the Black Box tab the lifetime thermal counters (`0x1AA` / `0x1AB`) can be read again every 10 s, 30 s, 1 min or 5 min; each reading is added to a history kept in the browser that draws the hours of the heater and the faults over time, can be downloaded as CSV and cleared; a counter that goes down (another board) starts the history again.
 
-**Saved session (new, checked with tests and a modelled board only):** the Bus Monitor saves the frames as a log and a record that names the log by its SHA-256 and its size, in the same format the desktop Tester writes; **Check a saved session** takes the record and its log and says whether they belong together. It shows that a log was not edited; it is not a signature.
+**Saved session (new, checked with tests and a modelled board only):** the Bus Monitor saves the frames as a log and a record that names the log by its SHA-256 and its size, in the same format the desktop Tester writes; **Check a saved session** takes the record and its log and says whether they belong together. It shows that a log was not edited; it is not a signature. The monitor can also show only the IDs you type, or only the frames whose data changed (the rate and the load keep counting every frame).
 
 **Version notice (new, checked with tests only):** the build writes a `version.json` next to the page; the built page compares it with its own version once, when it opens, over the same origin only, and tells you when a higher one is being served, with a Reload button. Nothing reloads by itself, an equal or older version says nothing, and a missing file or no network is silent.
 

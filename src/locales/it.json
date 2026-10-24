@@ -527,7 +527,9 @@
     "session_too_big": "I file sono troppo grandi per una sessione.",
     "session_ok": "{{log}} corrisponde al suo record (SHA-256 e dimensione).",
     "session_bad_record": "{{name}} non è un record di sessione leggibile.",
-    "session_mismatch": "{{log}} NON corrisponde al suo record: il log è stato modificato o è un altro."
+    "session_mismatch": "{{log}} NON corrisponde al suo record: il log è stato modificato o è un altro.",
+    "filter_ids": "Solo questi ID",
+    "filter_changes": "Solo i frame con dati cambiati"
   },
   "testertool": {
     "soldering_heater_title": "Resistenza (0x130 / telemetria 0x135)",

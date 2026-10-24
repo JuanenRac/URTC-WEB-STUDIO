@@ -6,6 +6,7 @@ import { useConfirmAction } from '../../hooks/useConfirmAction';
 import { rawSendPolicy } from '../../lib/dangerousActions';
 import { traceBitCount, traceFileName, toAscTrace, toTrcTrace } from '../../lib/traceExport';
 import { downloadBlob } from '../../lib/download';
+import { FrameFilter } from '../../lib/frameFilter';
 import { checkSession, manifestJson, sessionFileNames, sessionLogText, sessionManifest } from '../../lib/sessionRecord';
 import { parseCustomFrame, customFrameErrorText } from '../../lib/customFrame';
 import { Section, Field, inputCls, btnCls, btnPrimaryCls, safeInt } from './shared';
@@ -242,10 +243,18 @@ export const BusMonitorPanel: React.FC<{ ctx: ToolCtx; subscribeAll: (cb: (f: Ca
   const countRef = useRef(0);
   const bitsRef = useRef(0);
 
+  // Which frames become rows: only some IDs and/or only frames whose data changed. The rate and the load keep counting every frame.
+  const filterRef = useRef(new FrameFilter());
+  const [idFilter, setIdFilter] = useState('');
+  const [onlyChanges, setOnlyChanges] = useState(false);
+  useEffect(() => { filterRef.current.setIds(idFilter); filterRef.current.reset(); }, [idFilter]);
+  useEffect(() => { filterRef.current.onlyChanges = onlyChanges; filterRef.current.reset(); }, [onlyChanges]);
+
   useEffect(() => subscribeAll((f) => {
     countRef.current++;
     bitsRef.current += traceBitCount(f.dlc);
     if (pausedRef.current) return;
+    if (!filterRef.current.accept(f.id, f.dataHex)) return;
     setFrames(prev => {
       const next = [f, ...prev];
       return next.length > 500 ? next.slice(0, 500) : next;
@@ -294,8 +303,10 @@ export const BusMonitorPanel: React.FC<{ ctx: ToolCtx; subscribeAll: (cb: (f: Ca
 
   return (
     <Section title={t('testerglobal.bus_title', 'Raw Bus Monitor')} subtitle={t('testerglobal.bus_subtitle', 'Every frame seen on the bus, Tx and Rx.')}>
-      <div className="flex items-center gap-3 mb-3 text-xs">
+      <div className="flex flex-wrap items-center gap-3 mb-3 text-xs">
         <label className="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" checked={paused} onChange={(e) => setPaused(e.target.checked)} className="accent-purple-500" /> {t('testerglobal.pause', 'Pause')}</label>
+        <label className="flex items-center gap-1.5">{t('testerglobal.filter_ids', 'Only these IDs')} <input className={inputCls} data-testid="monitor-ids" placeholder="1A0 110 7F8" value={idFilter} onChange={(e) => setIdFilter(e.target.value)} /></label>
+        <label className="flex items-center gap-1.5 cursor-pointer"><input type="checkbox" data-testid="monitor-changes" checked={onlyChanges} onChange={(e) => setOnlyChanges(e.target.checked)} className="accent-purple-500" /> {t('testerglobal.filter_changes', 'Only frames whose data changed')}</label>
         <button className={btnCls} onClick={() => setFrames([])}>{t('testerglobal.clear', 'Clear')}</button>
         <button className={btnCls} onClick={() => exportTrace('trc')}>{t('testerglobal.export_trc', 'Export .trc')}</button>
         <button className={btnCls} onClick={() => exportTrace('asc')}>{t('testerglobal.export_asc', 'Export .asc')}</button>
