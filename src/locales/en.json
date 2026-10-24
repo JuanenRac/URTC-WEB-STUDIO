@@ -528,6 +528,9 @@
     "session_ok": "{{log}} matches its record (SHA-256 and size).",
     "session_bad_record": "{{name}} is not a session record that can be read.",
     "session_mismatch": "{{log}} does NOT match its record: the log was edited, or it is another one.",
+    "session_saved_signed": "Saved {{log}} and {{record}}: the record names the log by its SHA-256 and is signed with the key {{key}} of this browser.",
+    "session_ok_signed": "{{log}} matches its record (SHA-256 and size), and the record is signed with the key {{key}}. The signature shows the record was not edited; it does not say who holds the key.",
+    "session_signature_bad": "{{log}} matches its record, but the signature of the record does NOT match: the record was edited after it was signed.",
     "filter_ids": "Only these IDs",
     "filter_changes": "Only frames whose data changed"
   },

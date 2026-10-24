@@ -7,7 +7,8 @@ import { rawSendPolicy } from '../../lib/dangerousActions';
 import { traceBitCount, traceFileName, toAscTrace, toTrcTrace } from '../../lib/traceExport';
 import { downloadBlob } from '../../lib/download';
 import { FrameFilter } from '../../lib/frameFilter';
-import { checkSession, manifestJson, sessionFileNames, sessionLogText, sessionManifest } from '../../lib/sessionRecord';
+import { checkSession, manifestJson, sessionFileNames, sessionLogText, sessionManifest, signedManifest } from '../../lib/sessionRecord';
+import { loadOrCreateKey } from '../../lib/recordSigning';
 import { parseCustomFrame, customFrameErrorText } from '../../lib/customFrame';
 import { Section, Field, inputCls, btnCls, btnPrimaryCls, safeInt } from './shared';
 import { ToolCtx } from './ToolPanels';
@@ -282,10 +283,14 @@ export const BusMonitorPanel: React.FC<{ ctx: ToolCtx; subscribeAll: (cb: (f: Ca
     if (frames.length === 0) { setSessionMessage(t('testerglobal.session_empty', 'There are no frames to save yet.')); return; }
     const names = sessionFileNames(new Date().toISOString().replace(/[-:]/g, '').replace(/\..*$/, '').replace('T', '_'));
     const log = sessionLogText(frames.slice().reverse());
-    const record = manifestJson(await sessionManifest(log, names.log, { studio_version: __APP_VERSION__, connected: ctx.isConnected, frames: frames.length }));
+    const signed = await signedManifest(await sessionManifest(log, names.log, { studio_version: __APP_VERSION__, connected: ctx.isConnected, frames: frames.length }), await loadOrCreateKey());
+    const record = manifestJson(signed);
     downloadBlob(new Blob([log], { type: 'text/plain' }), names.log);
     downloadBlob(new Blob([record + '\n'], { type: 'application/json' }), names.record);
-    setSessionMessage(t('testerglobal.session_saved', 'Saved {{log}} and {{record}}: the record names the log by its SHA-256.', names));
+    const block = signed.signature;
+    setSessionMessage(typeof block === 'object'
+      ? t('testerglobal.session_saved_signed', 'Saved {{log}} and {{record}}: the record names the log by its SHA-256 and is signed with the key {{key}} of this browser.', { ...names, key: block.key_id })
+      : t('testerglobal.session_saved', 'Saved {{log}} and {{record}}: the record names the log by its SHA-256.', names));
   };
   const checkSavedSession = async (files: FileList | null) => {
     const list = files ? [...files] : [];
@@ -295,7 +300,11 @@ export const BusMonitorPanel: React.FC<{ ctx: ToolCtx; subscribeAll: (cb: (f: Ca
     if (record.size > 1024 * 1024 || log.size > 64 * 1024 * 1024) { setSessionMessage(t('testerglobal.session_too_big', 'The files are too big for a session.')); return; }
     const result = await checkSession(await record.text(), await log.text());
     setSessionMessage(result.ok
-      ? t('testerglobal.session_ok', '{{log}} matches its record (SHA-256 and size).', { log: log.name })
+      ? result.signature.state === 'valid'
+        ? t('testerglobal.session_ok_signed', '{{log}} matches its record (SHA-256 and size), and the record is signed with the key {{key}}. The signature shows the record was not edited; it does not say who holds the key.', { log: log.name, key: result.signature.keyId })
+        : result.signature.state === 'invalid'
+          ? t('testerglobal.session_signature_bad', '{{log}} matches its record, but the signature of the record does NOT match: the record was edited after it was signed.', { log: log.name })
+          : t('testerglobal.session_ok', '{{log}} matches its record (SHA-256 and size).', { log: log.name })
       : result.reason === 'record'
         ? t('testerglobal.session_bad_record', '{{name}} is not a session record that can be read.', { name: record.name })
         : t('testerglobal.session_mismatch', '{{log}} does NOT match its record: the log was edited, or it is another one.', { log: log.name }));

@@ -528,6 +528,9 @@
     "session_ok": "{{log}} 与其记录一致（SHA-256 和大小）。",
     "session_bad_record": "{{name}} 不是可读取的会话记录。",
     "session_mismatch": "{{log}} 与其记录不一致：日志被编辑过，或是另一个日志。",
+    "session_saved_signed": "已保存 {{log}} 和 {{record}}：记录通过 SHA-256 指明日志，并使用此浏览器的密钥 {{key}} 签名。",
+    "session_ok_signed": "{{log}} 与其记录一致（SHA-256 和大小），且记录已用密钥 {{key}} 签名。签名表明记录未被编辑，但不说明谁持有该密钥。",
+    "session_signature_bad": "{{log}} 与其记录一致，但记录的签名不匹配：记录在签名后被编辑过。",
     "filter_ids": "仅这些 ID",
     "filter_changes": "仅数据发生变化的帧"
   },

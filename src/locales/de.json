@@ -528,6 +528,9 @@
     "session_ok": "{{log}} stimmt mit seinem Datensatz überein (SHA-256 und Größe).",
     "session_bad_record": "{{name}} ist kein lesbarer Sitzungsdatensatz.",
     "session_mismatch": "{{log}} stimmt NICHT mit seinem Datensatz überein: Das Log wurde bearbeitet oder ist ein anderes.",
+    "session_saved_signed": "{{log}} und {{record}} gespeichert: Der Datensatz nennt das Protokoll mit seinem SHA-256 und ist mit dem Schlüssel {{key}} dieses Browsers signiert.",
+    "session_ok_signed": "{{log}} stimmt mit seinem Datensatz überein (SHA-256 und Größe), und der Datensatz ist mit dem Schlüssel {{key}} signiert. Die Signatur zeigt, dass der Datensatz nicht bearbeitet wurde; sie sagt nicht, wer den Schlüssel besitzt.",
+    "session_signature_bad": "{{log}} stimmt mit seinem Datensatz überein, aber die Signatur des Datensatzes stimmt NICHT: Der Datensatz wurde nach dem Signieren bearbeitet.",
     "filter_ids": "Nur diese IDs",
     "filter_changes": "Nur Frames mit geänderten Daten"
   },

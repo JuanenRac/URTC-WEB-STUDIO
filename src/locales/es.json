@@ -528,6 +528,9 @@
     "session_ok": "{{log}} coincide con su registro (SHA-256 y tamaño).",
     "session_bad_record": "{{name}} no es un registro de sesión legible.",
     "session_mismatch": "{{log}} NO coincide con su registro: el log se editó o es otro.",
+    "session_saved_signed": "Guardados {{log}} y {{record}}: el registro nombra el log por su SHA-256 y está firmado con la clave {{key}} de este navegador.",
+    "session_ok_signed": "{{log}} coincide con su registro (SHA-256 y tamaño) y el registro está firmado con la clave {{key}}. La firma muestra que el registro no se editó; no dice quién tiene la clave.",
+    "session_signature_bad": "{{log}} coincide con su registro, pero la firma del registro NO coincide: el registro se editó después de firmarse.",
     "filter_ids": "Solo estos ID",
     "filter_changes": "Solo tramas cuyos datos cambiaron"
   },

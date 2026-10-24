@@ -528,6 +528,9 @@
     "session_ok": "{{log}} corrisponde al suo record (SHA-256 e dimensione).",
     "session_bad_record": "{{name}} non è un record di sessione leggibile.",
     "session_mismatch": "{{log}} NON corrisponde al suo record: il log è stato modificato o è un altro.",
+    "session_saved_signed": "Salvati {{log}} e {{record}}: il record indica il log con il suo SHA-256 ed è firmato con la chiave {{key}} di questo browser.",
+    "session_ok_signed": "{{log}} corrisponde al suo record (SHA-256 e dimensione) e il record è firmato con la chiave {{key}}. La firma mostra che il record non è stato modificato; non dice chi possiede la chiave.",
+    "session_signature_bad": "{{log}} corrisponde al suo record, ma la firma del record NON corrisponde: il record è stato modificato dopo la firma.",
     "filter_ids": "Solo questi ID",
     "filter_changes": "Solo i frame con dati cambiati"
   },

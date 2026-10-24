@@ -1,4 +1,5 @@
 import type { CanFrame } from '../types';
+import { checkSignature, SESSION_KIND, sessionPayload, signPayload, type SignatureBlock, type SignatureCheck } from './recordSigning';
 
 // A saved session that can be shown to be unedited. The log is a text file; next to it goes a record that names it by its SHA-256 and its
 // size, with the settings in use. It is the same record the desktop Tester writes (tester_result_record.session_manifest: log_file,
@@ -8,7 +9,7 @@ import type { CanFrame } from '../types';
 export const SESSION_LOG_EXTENSION = 'log';
 export const SESSION_RECORD_EXTENSION = 'json';
 
-export type SessionManifest = Record<string, string | number>;
+export type SessionManifest = Record<string, string | number | SignatureBlock>;
 
 /** The SHA-256 of a text as it is stored (UTF-8), 64 lowercase hexadecimal digits. */
 export async function sha256Hex(text: string): Promise<string> {
@@ -37,16 +38,27 @@ export async function sessionManifest(logText: string, logFile: string, context:
 
 /** JSON with the keys sorted, two spaces of indent and non-ASCII characters escaped: the bytes Python's json.dumps(indent=2, sort_keys=True) writes. */
 export function manifestJson(manifest: SessionManifest): string {
-  const escape = (text: string) => JSON.stringify(text).replace(/[\u0080-￿]/g, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`);
+  const escape = (text: string) => JSON.stringify(text).replace(/[\u0080-\uffff]/g, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`);
   const lines = Object.keys(manifest).sort().map((key) => {
     const value = manifest[key];
+    if (typeof value === 'object') {
+      const fields = value as unknown as Record<string, unknown>;
+      const inner = Object.keys(fields).sort().map((name) => `    ${escape(name)}: ${escape(String(fields[name]))}`);
+      return `  ${escape(key)}: {\n${inner.join(',\n')}\n  }`;
+    }
     return `  ${escape(key)}: ${typeof value === 'number' ? String(value) : escape(value)}`;
   });
   return `{\n${lines.join(',\n')}\n}`;
 }
 
+/** The manifest with a `signature` block made with the key of this browser; the manifest as it was where the browser cannot sign. */
+export async function signedManifest(manifest: SessionManifest, jwk: JsonWebKey | null): Promise<SessionManifest> {
+  const block = await signPayload(SESSION_KIND, sessionPayload({ log_file: manifest.log_file, log_sha256: manifest.log_sha256, log_bytes: manifest.log_bytes }), jwk);
+  return block ? { ...manifest, signature: block } : manifest;
+}
+
 export type SessionCheck =
-  | { ok: true; logFile: string; bytes: number }
+  | { ok: true; logFile: string; bytes: number; signature: SignatureCheck }
   | { ok: false; reason: 'record' | 'size' | 'hash'; logFile?: string };
 
 /** Reads a record and compares it with a log: not a record, a log of another size, or a log whose SHA-256 differs. */
@@ -65,7 +77,7 @@ export async function checkSession(recordText: string, logText: string): Promise
   }
   if (new TextEncoder().encode(logText).length !== bytes) return { ok: false, reason: 'size', logFile };
   if ((await sha256Hex(logText)) !== sha) return { ok: false, reason: 'hash', logFile };
-  return { ok: true, logFile, bytes };
+  return { ok: true, logFile, bytes, signature: await checkSignature(fields.signature, SESSION_KIND, sessionPayload({ log_file: logFile, log_sha256: sha, log_bytes: bytes })) };
 }
 
 /** The names of the two files of a saved session, from a stamp such as 20000101_000000. */

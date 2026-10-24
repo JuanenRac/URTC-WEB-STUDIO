@@ -528,6 +528,9 @@
     "session_ok": "{{log}} corresponde ao seu registo (SHA-256 e tamanho).",
     "session_bad_record": "{{name}} não é um registo de sessão legível.",
     "session_mismatch": "{{log}} NÃO corresponde ao seu registo: o log foi editado ou é outro.",
+    "session_saved_signed": "Guardados {{log}} e {{record}}: o registo indica o log pelo seu SHA-256 e está assinado com a chave {{key}} deste navegador.",
+    "session_ok_signed": "{{log}} corresponde ao seu registo (SHA-256 e tamanho) e o registo está assinado com a chave {{key}}. A assinatura mostra que o registo não foi editado; não diz quem tem a chave.",
+    "session_signature_bad": "{{log}} corresponde ao seu registo, mas a assinatura do registo NÃO corresponde: o registo foi editado depois de assinado.",
     "filter_ids": "Só estes ID",
     "filter_changes": "Só tramas cujos dados mudaram"
   },

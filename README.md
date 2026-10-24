@@ -415,7 +415,7 @@ project.
 │   │   ├── blackBox.ts / thermalStats.ts / thermalHistory.ts / thermalView.ts / pid.ts Fault recorder, lifetime thermal counters and their history, thermal image, heater PID frames
 │   │   ├── nodePicker.ts / multinodeSim.ts Rules of the tool heads window and a model of the nodes to try it without boards
 │   │   ├── rackSim.ts               Simulator of the tool rack (frame version 2, big-endian)
-│   │   ├── sessionRecord.ts / traceExport.ts / download.ts Saved session record (SHA-256 of the log), trace files and downloads
+│   │   ├── sessionRecord.ts / recordSigning.ts / traceExport.ts / download.ts Saved session record (SHA-256 of the log, signed), trace files and downloads
 │   │   ├── safeOff.ts / keepaliveLoop.ts / confirmController.ts / dangerousActions.ts Switching off the actuators kept alive, and which actions ask for a confirmation first
 │   │   ├── pwa.ts / serviceWorkerBuild.ts / selfUpdate.ts Offline copy, the text of the service worker and the notice of a newer version
 │   │   ├── releaseSignature.ts      Check of the signature of a release in the browser
@@ -528,7 +528,7 @@ BY-SA - each with attribution back to this project and its author.
 
 **Thermal counters over time (new, checked with tests and a modelled board only):** in the Black Box tab the lifetime thermal counters (`0x1AA` / `0x1AB`) can be read again every 10 s, 30 s, 1 min or 5 min; each reading is added to a history kept in the browser that draws the hours of the heater and the faults over time, can be downloaded as CSV and cleared; a counter that goes down (another board) starts the history again.
 
-**Saved session (new, checked with tests and a modelled board only):** the Bus Monitor saves the frames as a log and a record that names the log by its SHA-256 and its size, in the same format the desktop Tester writes; **Check a saved session** takes the record and its log and says whether they belong together. It shows that a log was not edited; it is not a signature. The monitor can also show only the IDs you type, or only the frames whose data changed (the rate and the load keep counting every frame).
+**Saved session (new, checked with tests and a modelled board only):** the Bus Monitor saves the frames as a log and a record that names the log by its SHA-256 and its size, in the same format the desktop Tester writes; **Check a saved session** takes the record and its log and says whether they belong together. It shows that a log was not edited. Where the browser can make Ed25519 signatures, the record also carries a signature made with a key of this browser (made on first use and kept in the browser): it shows the record was not edited after it was signed, and it does not say who holds the key. The monitor can also show only the IDs you type, or only the frames whose data changed (the rate and the load keep counting every frame).
 
 **Version notice (new, checked with tests only):** the build writes a `version.json` next to the page; the built page compares it with its own version once, when it opens, over the same origin only, and tells you when a higher one is being served, with a Reload button. Nothing reloads by itself, an equal or older version says nothing, and a missing file or no network is silent.
 
