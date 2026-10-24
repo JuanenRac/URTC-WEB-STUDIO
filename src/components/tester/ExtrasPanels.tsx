@@ -10,6 +10,8 @@ import {
   BLACK_BOX_CHUNK_COUNT, BLACK_BOX_CHUNK_ID, BLACK_BOX_FRAMES_PER_CHUNK, BLACK_BOX_QUERY_ID, BlackBoxRecord,
   blackBoxChart, blackBoxCsv, blackBoxFromText, blackBoxJson, chunkRequest, joinFrames, parseBlackBox, triggerIndex,
 } from '../../lib/blackBox';
+import { CAN_ID_THERMAL_STATS_QUERY, CAN_ID_THERMAL_STATS_RESP } from '../../lib/generated/urtcCanIds';
+import { parseThermalStats, thermalFaultTextKey } from '../../lib/thermalStats';
 import { SimulatedRack, RACK_COMMAND_MIN_INTERVAL_MS, encodeSetPreheat, unitKey } from '../../lib/rackSim';
 import {
   THERMAL_CALIBRATED_CHUNK_ID, THERMAL_CALIBRATED_REQUEST_ID, THERMAL_FRAMES_PER_CHUNK, THERMAL_STATUS_ID, THERMAL_TRIGGER_ID,
@@ -67,7 +69,21 @@ export const BlackBoxPanel: React.FC<{ ctx: ToolCtx; systemError: boolean }> = (
   const [message, setMessage] = useState('');
   const [auto, setAuto] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [counters, setCounters] = useState('');
   const wasError = useRef(false);
+
+  // The lifetime thermal counters (0x1AA / 0x1AB): one question, one answer of 8 bytes.
+  const readCounters = async () => {
+    if (!ctx.isConnected) return;
+    const answer = await ctx.request(CAN_ID_THERMAL_STATS_QUERY, [], CAN_ID_THERMAL_STATS_RESP, 1000, 'Thermal counters');
+    const stats = answer ? parseThermalStats(answer.data) : null;
+    if (!stats) { setCounters(t('testerextras.counters_no_answer', 'No answer to 0x1AA: the lifetime thermal counters need URTC firmware 0.3.3 or newer.')); return; }
+    const last = stats.lastFault === 0
+      ? t('testerextras.counters_none', 'none')
+      : t(thermalFaultTextKey(stats), 'fault {{n}}', { n: stats.lastFault });
+    const line = t('testerextras.counters_text', 'Thermal runaway faults ever: {{faults}} | Heater on: {{hours}} h | Last fault: {{last}}', { faults: stats.faultCount, hours: stats.heaterOnHours.toFixed(2), last });
+    setCounters(stats.persisted ? line : `${line}\n${t('testerextras.counters_not_persisted', 'F-RAM not answering: the counters are RAM-only since the last boot.')}`);
+  };
 
   const read = async () => {
     if (!ctx.isConnected || busy) return;
@@ -130,6 +146,10 @@ export const BlackBoxPanel: React.FC<{ ctx: ToolCtx; systemError: boolean }> = (
           <input type="file" accept=".json,.csv,application/json,text/csv" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) void openSaved(f); e.target.value = ''; }} />
         </label>
       </div>
+      <div className="flex flex-wrap items-center gap-3 mb-3">
+        <button className={btnCls} onClick={readCounters} disabled={!ctx.isConnected}>{t('testerextras.counters_read', 'Read the thermal counters')}</button>
+      </div>
+      {counters && <div className="text-xs text-slate-300 font-mono mb-3 whitespace-pre-line" data-testid="thermal-counters">{counters}</div>}
       {message && <div className="text-xs text-slate-300 font-mono">{message}</div>}
       {record && <BlackBoxChartView record={record} />}
     </Section>
