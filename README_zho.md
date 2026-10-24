@@ -33,7 +33,7 @@ CAN 协议。目标是把这两款工具的主要工作流集中到单个浏览�
 [URTC 固件仓库](https://github.com/JuanenRac/URTC) `docs/CANBUS.TXT` 中所描述
 的真实 CAN 帧。
 
-**诚实检查——今天真正能运行的部分：** `npm test`（Vitest）覆盖纯逻辑：SLCAN 解析、请求与应答的匹配、固件镜像和清单检查、工具限值、确认对话框、将模拟器与真实总线隔离的规则、追踪导出以及八种界面语言。界面和 Web Serial 传输本身没有自动化测试，而且在本环境中这些都没有对真实的 URTC 板子运行过（这里没有可用于测试的 USB-CAN 适配器）：Flasher Studio、Tester Studio 和 CAN 总线协议分析器是真实代码，仅由这些测试、类型检查（`npm run lint`）和代码审查验证。Control/OLED/Specs-BOM/Thermal IR Inspection 是明确标注的沙盒选项卡，没有任何 CAN 流量。迄今已交付的确切内容请参阅 `CHANGELOG.md`。 `npm run test:e2e` 还会在真实浏览器（Playwright）中打开构建好的页面，并对接建模的板子：离线副本、热计数历史和已保存的会话都以此方式检查。
+**诚实检查——今天真正能运行的部分：** `npm test`（Vitest）覆盖纯逻辑：SLCAN 解析、请求与应答的匹配、固件镜像和清单检查、工具限值、确认对话框、将模拟器与真实总线隔离的规则、追踪导出以及八种界面语言。界面和 Web Serial 传输本身没有单元测试（本段末尾的端到端检查会针对建模的板子驱动它们），而且在本环境中这些都没有对真实的 URTC 板子运行过（这里没有可用于测试的 USB-CAN 适配器）：Flasher Studio、Tester Studio 和 CAN 总线协议分析器是真实代码，仅由这些测试、类型检查（`npm run lint`）和代码审查验证。Control/OLED/Specs-BOM/Thermal IR Inspection 是明确标注的沙盒选项卡，没有任何 CAN 流量。迄今已交付的确切内容请参阅 `CHANGELOG.md`。 `npm run test:e2e` 还会在真实浏览器（Playwright）中打开构建好的页面，并对接建模的板子：离线副本、热计数历史和已保存的会话都以此方式检查。
 
 ---
 
@@ -153,8 +153,8 @@ SWD/JTAG 选项卡说明了桌面版 `URTC Flasher` 工具在本地会运行的�
 
 ## 🧰 Tester Studio ——真实功能覆盖
 
-从 `URTC-TESTER` 自身的 `tester_tool_panels.py` /
-`tester_common_panels.py` 移植而来,针对相同的 CAN ID：
+从 `URTC-TESTER` 自身的 Qt Quick 面板
+(`assets/qml/TesterDeck.qml`) 移植而来,针对相同的 CAN ID：
 
 - 每个工具一个面板（电烙铁 + 送丝器、共享的纯步进运动工具、真空拾取、
   钻头、AOI、激光器、3D 打印机加热器/运动/风扇、扫描探针、电磁铁、
@@ -190,7 +190,6 @@ SWD/JTAG 选项卡说明了桌面版 `URTC Flasher` 工具在本地会运行的�
 
 ### 尚未覆盖
 
-- 热成像检测的错误计数器（`0x1AA`/`0x1AB`）。
 - 仅监听模式和手动选择比特率：无法接入没有任何板子应答的总线。
 - 读取热成像图像时不会先检查传感器是否就绪，也不会重试丢失的数据块。
 - 在浏览器中直接从 GitHub 发布版本下载固件文件：GitHub 从不带 CORS 头的主机提供发布版本的文件，因此下载可能被阻止（内置镜像，或从磁盘选择的文件连同其 `.manifest.json`，始终可用）。
@@ -259,7 +258,7 @@ npm run preview
 或使用你选择的任何静态文件托管服务提供 `dist/`。`npm run lint` 以仅检查
 模式运行 TypeScript 编译器。
 
-构建出的页面声明了内容安全策略（脚本只来自页面本身；连接只指向页面本身和 GitHub），并在首次打开每个标签页时才加载它。尚未在真实浏览器中试用过。
+构建出的页面声明了内容安全策略（脚本只来自页面本身；连接只指向页面本身和 GitHub），并在首次打开每个标签页时才加载它。`npm run test:e2e` 会在真实的 Chromium 中针对建模的板子驱动它；尚未配合真实适配器试用过。
 
 ### GitHub Pages（所有者启用前保持关闭）
 
@@ -315,6 +314,7 @@ npm run preview
 │   │                                HardwareState、FlasherState、
 │   │                                ExpansionBoardType 等）
 │   ├── vite-env.d.ts                Vite 自身的环境类型声明
+│   ├── *.test.ts                    Vitest 测试，每个都放在它所覆盖的模块旁边（npm test）
 │   ├── components/
 │   │   ├── Header.tsx               顶部栏：连接/断开按钮、当前工具
 │   │   │                            名称、FW v0.0/v0.1 沙盒切换开关
@@ -333,6 +333,8 @@ npm run preview
 │   │   ├── CanBusAnalyzer.tsx       真实选项卡：原始 CAN 帧日志、自定义
 │   │   │                            帧注入器、预设指令触发器
 │   │   ├── TraceReplayPanel.tsx     加载 .trc/.asc 跟踪并回放到日志
+│   │   ├── NodePickerDialog.tsx     工具头窗口：查找工具头、选择一个并释放它
+│   │   ├── ConfirmDialog.tsx        对开发板执行操作之前的确认
 │   │   ├── FlasherStudio.tsx        真实选项卡：CAN-OTA 界面（主板 +
 │   │   │                            扩展从属）以及 SWD/JTAG 能力说明
 │   │   ├── TesterStudio.tsx         真实选项卡：逐工具实时控制/遥测,
@@ -343,6 +345,7 @@ npm run preview
 │   │       │                        保活
 │   │       ├── GlobalPanels.tsx     全局控制、扩展板、F-RAM、自检、
 │   │       │                        原始总线监视器、自定义帧注入器
+│   │       ├── ExtrasPanels.tsx     黑匣子、可选功能、加热器 PID、机架试验台和热成像视图面板
 │   │       └── shared.tsx           共享的 UI 基础组件（Section、
 │   │                                Field、按钮/输入框样式、safeInt）
 │   ├── data/
@@ -355,6 +358,9 @@ npm run preview
 │   │   ├── useFlasher.ts            CAN-OTA 状态机（主板 + 扩展从属）,
 │   │   │                            镜像 flasher_protocol.py
 │   │   ├── useTraceReplay.ts        把已录制的跟踪回放到日志和各面板
+│   │   ├── useConfirmAction.ts      在对开发板执行操作之前请求确认
+│   │   ├── useNodePicker.ts         查找总线上的工具头并保持所选的那一个
+│   │   ├── usePwa.ts                离线副本、安装按钮以及有新版本的提示
 │   │   └── useKeepalive.ts          固定间隔重发钩子,支撑每个工具的
 │   │                                活动复选框看门狗保活
 │   ├── lib/
@@ -368,6 +374,16 @@ npm run preview
 │   │   │                            刷写输入的密钥；sha256 检查
 │   │   ├── quickState.ts            0x111 解码（热故障、复位原因）
 │   │   ├── bundledFirmware.ts       由 scripts/sync-firmware.mjs 生成
+│   │   ├── slcan.ts / customFrame.ts / boardConfig.ts / boardTelemetry.ts / toolLimits.ts / simPresets.ts SLCAN 解析、自定义帧、开发板配置、开发板所说的内容、工具限值和分析器预设
+│   │   ├── frameFilter.ts / frameQueue.ts / frameRouter.ts / frameBatcher.ts 总线监视器的过滤器、未被认领帧的队列、应答的路由以及为屏幕批量处理帧
+│   │   ├── blackBox.ts / thermalStats.ts / thermalHistory.ts / thermalView.ts / pid.ts 黑匣子、累计热计数及其历史、热成像图、加热器 PID 帧
+│   │   ├── nodePicker.ts / multinodeSim.ts 工具头窗口的规则，以及无需开发板即可试用的节点模型
+│   │   ├── rackSim.ts               工具机架模拟器（帧版本 2，大端）
+│   │   ├── sessionRecord.ts / traceExport.ts / download.ts 已保存会话的记录（日志的 SHA-256）、轨迹文件和下载
+│   │   ├── safeOff.ts / keepaliveLoop.ts / confirmController.ts / dangerousActions.ts 关闭保持活动的执行器，以及哪些操作需要先确认
+│   │   ├── pwa.ts / serviceWorkerBuild.ts / selfUpdate.ts 离线副本、service worker 的文本以及有新版本的提示
+│   │   ├── releaseSignature.ts      在浏览器中检查发布版本的签名
+│   │   ├── generated/               由 URTC-COMMON 写出的表和向量（工具、标识符、共享向量）及其锁定文件
 │   │   └── canIds.ts                Tester Studio 的 CAN ID 常量——逐字节
 │   │                                 镜像 tester_config.py
 │   └── locales/                     界面字符串——en.json、es.json、
@@ -377,12 +393,16 @@ npm run preview
 │   ├── bump-version.mjs             无依赖的版本递增脚本;如今已是
 │   │                                 遗留脚本,仅作参考 - 已由 bump_manifest_version.py
 │   │                                 取代（见上方“版本管理”）
-│   └── sync-firmware.mjs            将 URTC 发布版本文件（或本地文件夹）复制到
+│   ├── sync-firmware.mjs            将 URTC 发布版本文件（或本地文件夹）复制到
 │   │                                 public/firmware/，校验摘要 - npm run sync-firmware
+│   ├── sw.template.js               构建时写成 sw.js 的 service worker 模板
+│   └── sync-firmware.test.mjs       sync-firmware.mjs 的测试
 ├── public/
-│   └── firmware/                    主应用程序、主引导程序、扩展从属
-│                                     应用程序,以及扩展从属引导程序的
-│                                     打包 .bin/.elf/.hex 文件
+│   ├── firmware/                    主应用程序、主引导程序、扩展从属
+│   │                                  应用程序,以及扩展从属引导程序的
+│   │                                  打包 .bin/.elf/.hex 文件
+│   ├── _headers                     供读取此文件的主机使用的安全头
+│   └── manifest.webmanifest         用于安装 Studio 的网页应用清单（名称、图标）
 ├── images/
 │   ├── URTC_WEB_STUDIO_BANNER.svg   完整的 Logo 横幅（显示在本 README
 │   │                                顶部）
@@ -392,14 +412,21 @@ npm run preview
 ├── index.html                       Vite 入口 HTML
 ├── vite.config.ts                   Vite + Tailwind 插件配置
 ├── tsconfig.json                    TypeScript 配置
+├── playwright.config.ts             真实浏览器中端到端检查的设置（npm run test:e2e）
+├── e2e/                             端到端检查，以及它们所驱动的适配器与开发板的模型
 ├── .env.example                     应用不读取任何环境变量
 ├── dev.bat / dev.sh                 安装依赖 + 启动 Vite 开发服务器
 ├── build.bat / build.sh             安装依赖 + 生成静态 dist/ 构建
+├── build-test.bat / build-test.sh   不改版本号的检查：类型、测试和构建
 ├── tools/
-│   └── ci_validate.py               CI 使用的 manifest/CHANGELOG/docs 校验
+│   ├── ci_validate.py               CI 使用的 manifest/CHANGELOG/docs 校验
+│   ├── build_test.py                build-test.sh / .bat 使用的不改版本号的检查
+│   └── _doc_policy.py / _readme_parity.py / _tracked_names.py ci_validate.py 使用的共享检查
 ├── bump.py                          显式的版本递增命令（编译从不递增）
 ├── bump_manifest_version.py         仅由 `bump.py` 触发的版本递增（package.json + 清单，见“版本管理”）；也存在 `--sync` 模式用于接受一次先前的原生递增
 ├── package.json
+├── package-lock.json 依赖的确切版本（npm ci）
+├── urtc_i18n.lock.json 由 URTC-COMMON 目录生成的语言文件的锁定文件
 ├── CHANGELOG.md                     版本历史与过往工作摘要
 ├── LICENSE
 ├── NOTICE                      版权声明和文档许可证
@@ -408,7 +435,7 @@ npm run preview
 │   ├── ARCHITECTURE.md
 │   ├── BUILD_AND_RUN.md
 │   └── INTEGRATION_CONTRACT.md
-└── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md  <- 翻译
+└── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md / README_por.md  <- 翻译
 ```
 
 <!-- urtc-section:heads -->

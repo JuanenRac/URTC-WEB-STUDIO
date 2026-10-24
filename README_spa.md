@@ -32,7 +32,7 @@ compañeras de escritorio, [URTC Flasher](https://github.com/JuanenRac/URTC-FLAS
 reciben las tramas CAN reales descritas en `docs/CANBUS.TXT` del
 [repositorio de firmware de URTC](https://github.com/JuanenRac/URTC).
 
-**Comprobación de honestidad - lo que realmente funciona hoy:** `npm test` (Vitest) cubre la lógica pura: el análisis SLCAN, la correspondencia petición/respuesta, las comprobaciones de imagen de firmware y de manifiesto, los límites de las herramientas, las confirmaciones, las reglas que separan el simulador del bus real, la exportación de trazas y los ocho idiomas de la interfaz. Las pantallas y el propio transporte Web Serial no tienen tests automatizados, y nada de esto se ha ejecutado contra una placa URTC real en este entorno (aquí no hay un adaptador USB-CAN con el que probarlo): Flasher Studio, Tester Studio y el Analizador de Protocolo CAN Bus son código real verificado solo con esos tests, la comprobación de tipos (`npm run lint`) y la revisión del código. Control/OLED/Specs-BOM/Thermal IR Inspection son pestañas de sandbox declaradas abiertamente como tales, sin tráfico CAN de ningún tipo. Consulta `CHANGELOG.md` para ver exactamente qué se ha entregado hasta ahora. `npm run test:e2e` además abre la página compilada en un navegador real (Playwright) frente a una placa modelada: así se comprueban la copia sin red, el historial de los contadores térmicos y la sesión guardada.
+**Comprobación de honestidad - lo que realmente funciona hoy:** `npm test` (Vitest) cubre la lógica pura: el análisis SLCAN, la correspondencia petición/respuesta, las comprobaciones de imagen de firmware y de manifiesto, los límites de las herramientas, las confirmaciones, las reglas que separan el simulador del bus real, la exportación de trazas y los ocho idiomas de la interfaz. Las pantallas y el propio transporte Web Serial no tienen tests unitarios (las comprobaciones de extremo a extremo del final de este párrafo los manejan frente a una placa modelada), y nada de esto se ha ejecutado contra una placa URTC real en este entorno (aquí no hay un adaptador USB-CAN con el que probarlo): Flasher Studio, Tester Studio y el Analizador de Protocolo CAN Bus son código real verificado solo con esos tests, la comprobación de tipos (`npm run lint`) y la revisión del código. Control/OLED/Specs-BOM/Thermal IR Inspection son pestañas de sandbox declaradas abiertamente como tales, sin tráfico CAN de ningún tipo. Consulta `CHANGELOG.md` para ver exactamente qué se ha entregado hasta ahora. `npm run test:e2e` además abre la página compilada en un navegador real (Playwright) frente a una placa modelada: así se comprueban la copia sin red, el historial de los contadores térmicos y la sesión guardada.
 
 ---
 
@@ -174,8 +174,8 @@ option-byte/RDP, o un respaldo de flash completo antes de un borrado masivo.
 
 ## 🧰 Tester Studio - cobertura real de funcionalidades
 
-Portado desde los propios `tester_tool_panels.py` /
-`tester_common_panels.py` de `URTC-TESTER`, contra los mismos CAN ID:
+Portado desde los paneles del propio deck Qt Quick de `URTC-TESTER`
+(`assets/qml/TesterDeck.qml`), contra los mismos CAN ID:
 
 - Un panel por herramienta (soldador + alimentador de hilo, herramientas de
   movimiento de motor paso a paso compartidas, recogida por vacío, taladro, AOI,
@@ -217,7 +217,6 @@ Portado desde los propios `tester_tool_panels.py` /
 
 ### Aún no cubierto
 
-- Los contadores de error de la inspección térmica (`0x1AA`/`0x1AB`).
 - Un modo solo escucha y elegir la velocidad a mano: no se puede entrar en un bus en el que ninguna placa responde.
 - La lectura de la imagen térmica no comprueba antes que el sensor esté listo ni reintenta un bloque perdido.
 - Descargar un archivo de firmware directamente de la release de GitHub dentro del navegador: GitHub sirve los archivos de una release desde un host sin cabeceras CORS, así que la descarga puede estar bloqueada (la imagen incluida, o un archivo elegido del disco con su `.manifest.json`, siempre funcionan).
@@ -292,7 +291,7 @@ npm run preview
 o sirve `dist/` con cualquier host de archivos estáticos de tu elección. `npm run
 lint` ejecuta el compilador de TypeScript en modo de solo comprobación.
 
-La página compilada declara una política de seguridad de contenido (scripts solo de la propia página; conexiones solo a ella misma y a GitHub) y carga cada pestaña al abrirla por primera vez. Todavía no se ha probado en un navegador real.
+La página compilada declara una política de seguridad de contenido (scripts solo de la propia página; conexiones solo a ella misma y a GitHub) y carga cada pestaña al abrirla por primera vez. `npm run test:e2e` la maneja en un Chromium real frente a una placa modelada; no se ha probado con un adaptador real.
 
 ### GitHub Pages (desactivado hasta que el dueño lo active)
 
@@ -360,6 +359,7 @@ resumen del trabajo anterior en este proyecto.
 │   │                                HardwareState, FlasherState,
 │   │                                ExpansionBoardType, ...)
 │   ├── vite-env.d.ts                Declaraciones de tipos ambientales propias de
+│   ├── *.test.ts                    Tests de Vitest, cada uno junto al módulo que cubre (npm test)
 │   │                                Vite
 │   ├── components/
 │   │   ├── Header.tsx               Barra superior: boton conectar/desconectar,
@@ -384,6 +384,8 @@ resumen del trabajo anterior en este proyecto.
 │   │   │                            bruto, inyector de trama personalizada,
 │   │   │                            disparadores de comando predefinidos
 │   │   ├── TraceReplayPanel.tsx     Carga una traza .trc/.asc y la reproduce en el registro
+│   │   ├── NodePickerDialog.tsx     La ventana de cabezales: encontrar los cabezales, seleccionar uno y soltarlo
+│   │   ├── ConfirmDialog.tsx        La confirmación antes de una acción que actúa sobre la placa
 │   │   ├── FlasherStudio.tsx        Pestana real: interfaz CAN-OTA (principal +
 │   │   │                            esclavo de expansion) y el explicador de
 │   │   │                            capacidad SWD/JTAG
@@ -397,6 +399,7 @@ resumen del trabajo anterior en este proyecto.
 │   │       ├── GlobalPanels.tsx     Global Controls, Expansion Board, F-RAM,
 │   │       │                        Self-Test, Raw Bus Monitor, inyector de
 │   │       │                        Custom Frame
+│   │       ├── ExtrasPanels.tsx     Paneles de caja negra, funciones opcionales, PID del calentador, banco del rack y vista térmica
 │   │       └── shared.tsx           Primitivas de UI compartidas (Section,
 │   │                                Field, clases de boton/input, safeInt)
 │   ├── data/
@@ -411,6 +414,9 @@ resumen del trabajo anterior en este proyecto.
 │   │   │                            principal + esclavo de expansion), refleja
 │   │   │                            flasher_protocol.py
 │   │   ├── useTraceReplay.ts        Reproduce una traza grabada en el registro y los paneles
+│   │   ├── useConfirmAction.ts      Pide la confirmación antes de una acción que actúa sobre la placa
+│   │   ├── useNodePicker.ts         Encuentra los cabezales del bus y mantiene el seleccionado
+│   │   ├── usePwa.ts                Copia sin red, botón de instalar y aviso de una versión más nueva
 │   │   └── useKeepalive.ts          Hook de reenvio a intervalo fijo que
 │   │                                respalda el keepalive de watchdog de la
 │   │                                casilla activa de cada herramienta
@@ -425,6 +431,16 @@ resumen del trabajo anterior en este proyecto.
 │   │   │                            clave introducida para una grabación; sha256
 │   │   ├── quickState.ts            Decodificación de 0x111 (fallo térmico, reset)
 │   │   ├── bundledFirmware.ts       Generado por scripts/sync-firmware.mjs
+│   │   ├── slcan.ts / customFrame.ts / boardConfig.ts / boardTelemetry.ts / toolLimits.ts / simPresets.ts Análisis SLCAN, tramas propias, configuración de la placa, lo que dijo la placa, límites de herramienta y predefinidos del analizador
+│   │   ├── frameFilter.ts / frameQueue.ts / frameRouter.ts / frameBatcher.ts Filtro del monitor de bus, cola de tramas sin reclamar, encaminamiento de las respuestas y agrupación de tramas para la pantalla
+│   │   ├── blackBox.ts / thermalStats.ts / thermalHistory.ts / thermalView.ts / pid.ts Caja negra, contadores térmicos acumulados y su historial, imagen térmica, tramas del PID del calentador
+│   │   ├── nodePicker.ts / multinodeSim.ts Reglas de la ventana de cabezales y un modelo de los nodos para probarla sin placas
+│   │   ├── rackSim.ts               Simulador del rack de herramientas (trama versión 2, big-endian)
+│   │   ├── sessionRecord.ts / traceExport.ts / download.ts Registro de la sesión guardada (SHA-256 del log), archivos de traza y descargas
+│   │   ├── safeOff.ts / keepaliveLoop.ts / confirmController.ts / dangerousActions.ts Apagado de los actuadores mantenidos activos y qué acciones piden confirmación antes
+│   │   ├── pwa.ts / serviceWorkerBuild.ts / selfUpdate.ts Copia sin red, el texto del service worker y el aviso de una versión más nueva
+│   │   ├── releaseSignature.ts      Comprobación de la firma de una versión publicada en el navegador
+│   │   ├── generated/               Tablas y vectores escritos por URTC-COMMON (herramientas, identificadores, vectores compartidos) y su bloqueo
 │   │   └── canIds.ts                Constantes de CAN ID para Tester Studio -
 │   │                                 refleja tester_config.py byte a byte
 │   └── locales/                     Cadenas de UI - en.json, es.json, de.json,
@@ -433,33 +449,44 @@ resumen del trabajo anterior en este proyecto.
 │   ├── bump-version.mjs             Script de subida de version sin dependencias;
 │   │                                 hoy es legado, se mantiene solo como referencia
 │   │                                 - reemplazado por bump_manifest_version.py (ver "Versionado")
-│   └── sync-firmware.mjs            Copia los archivos de la release de URTC (o
-│                                     una carpeta local) a public/firmware/,
-│                                     resúmenes comprobados - npm run sync-firmware
+│   ├── sync-firmware.mjs            Copia los archivos de la release de URTC (o
+│   │                                  una carpeta local) a public/firmware/,
+│   │                                  resúmenes comprobados - npm run sync-firmware
+│   ├── sw.template.js               Plantilla del service worker que la compilación escribe como sw.js
+│   └── sync-firmware.test.mjs       Tests de sync-firmware.mjs
 ├── public/
-│   └── firmware/                    .bin/.elf/.hex incluidos para la aplicacion
-│                                     principal, el bootloader principal, la
-│                                     aplicacion del esclavo de expansion, y el
-│                                     bootloader del esclavo de expansion
+│   ├── firmware/                    .bin/.elf/.hex incluidos para la aplicacion
+│   │                                  principal, el bootloader principal, la
+│   │                                  aplicacion del esclavo de expansion, y el
+│   │                                  bootloader del esclavo de expansion
+│   ├── _headers                     Cabeceras de seguridad para hosts que leen este archivo
+│   └── manifest.webmanifest         Manifiesto de la aplicación web (nombre, iconos) para instalar el Studio
 ├── images/
 │   ├── URTC_WEB_STUDIO_BANNER.svg   Banner de logo completo (mostrado arriba en
-│                                     este README)
+│   │                                  este README)
 │   ├── URTC_APP_ICON_NEW.svg        Icono de la app
 │   ├── urtc_custom_icon.svg         Icono de la app, mismo artwork
 │   └── urtc_icon.ico                Favicon
 ├── index.html                       HTML de entrada de Vite
 ├── vite.config.ts                   Configuracion de Vite + plugin de Tailwind
 ├── tsconfig.json                    Configuracion de TypeScript
+├── playwright.config.ts             Ajustes de las comprobaciones de extremo a extremo en un navegador real (npm run test:e2e)
+├── e2e/                             Las comprobaciones de extremo a extremo y el modelo del adaptador y la placa que manejan
 ├── .env.example                     Ninguna variable la lee la app
 ├── dev.bat / dev.sh                 Instala dependencias + inicia el servidor de
 │                                     desarrollo de Vite
 ├── build.bat / build.sh             Instala dependencias + produce el build
+├── build-test.bat / build-test.sh   Comprobación sin subir versión: tipos, tests y compilación
 │                                     estatico de dist/
 ├── tools/
-│   └── ci_validate.py               Validación de manifest/CHANGELOG/docs usada por la CI
+│   ├── ci_validate.py               Validación de manifest/CHANGELOG/docs usada por la CI
+│   ├── build_test.py                Comprobación sin subir versión que usan build-test.sh / .bat
+│   └── _doc_policy.py / _readme_parity.py / _tracked_names.py Comprobaciones compartidas que usa ci_validate.py
 ├── bump.py                          Orden explícita de subir versión (compilar nunca la sube)
 ├── bump_manifest_version.py         Subida de versión, iniciada solo por `bump.py` (package.json + manifest, ver "Versionado"); el modo `--sync` también existe para aceptar un incremento nativo previo
 ├── package.json
+├── package-lock.json Versiones exactas de las dependencias (npm ci)
+├── urtc_i18n.lock.json Bloqueo de los archivos de idioma generados desde el catálogo de URTC-COMMON
 ├── CHANGELOG.md                     Historial de versiones y resumen del trabajo pasado
 ├── LICENSE
 ├── NOTICE                      Aviso de copyright y licencia de la documentación
@@ -468,7 +495,7 @@ resumen del trabajo anterior en este proyecto.
 │   ├── ARCHITECTURE.md
 │   ├── BUILD_AND_RUN.md
 │   └── INTEGRATION_CONTRACT.md
-└── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md  <- traducciones
+└── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md / README_por.md  <- traducciones
 ```
 
 <!-- urtc-section:heads -->

@@ -34,7 +34,7 @@ React/Vite シングルページアプリで、2 つのデスクトップコン�
 [URTC ファームウェアリポジトリ](https://github.com/JuanenRac/URTC) の
 `docs/CANBUS.TXT` に記載された実際の CAN フレームを送受信します。
 
-**正直なチェック - 今日実際に動作するもの：** `npm test`（Vitest）は純粋なロジックを対象にしています：SLCAN の解析、リクエストと応答の対応付け、ファームウェアイメージとマニフェストの検査、ツールの上限値、確認ダイアログ、シミュレーターを実バスから分離する規則、トレースのエクスポート、そして 8 つの UI 言語です。画面と Web Serial トランスポート自体には自動テストがなく、この環境では実際の URTC ボードに対してこれらを実行したこともありません（テスト用の USB-CAN アダプターがありません）：Flasher Studio、Tester Studio、CAN バスプロトコルアナライザーは、これらのテスト、型チェック（`npm run lint`）、コードレビューのみで検証された実コードです。Control/OLED/Specs-BOM/Thermal IR Inspection は CAN 通信を一切行わないサンドボックスタブであることを明示しています。これまでに提供された内容は `CHANGELOG.md` を参照してください。 `npm run test:e2e` は、ビルドしたページを実際のブラウザー（Playwright）でモデル化したボードに対して開き、オフラインコピー、熱カウンタの履歴、保存したセッションを確認します。
+**正直なチェック - 今日実際に動作するもの：** `npm test`（Vitest）は純粋なロジックを対象にしています：SLCAN の解析、リクエストと応答の対応付け、ファームウェアイメージとマニフェストの検査、ツールの上限値、確認ダイアログ、シミュレーターを実バスから分離する規則、トレースのエクスポート、そして 8 つの UI 言語です。画面と Web Serial トランスポート自体には単体テストがなく（この段落の最後にあるエンドツーエンド検査がモデル化したボードに対してそれらを動かします）、この環境では実際の URTC ボードに対してこれらを実行したこともありません（テスト用の USB-CAN アダプターがありません）：Flasher Studio、Tester Studio、CAN バスプロトコルアナライザーは、これらのテスト、型チェック（`npm run lint`）、コードレビューのみで検証された実コードです。Control/OLED/Specs-BOM/Thermal IR Inspection は CAN 通信を一切行わないサンドボックスタブであることを明示しています。これまでに提供された内容は `CHANGELOG.md` を参照してください。 `npm run test:e2e` は、ビルドしたページを実際のブラウザー（Playwright）でモデル化したボードに対して開き、オフラインコピー、熱カウンタの履歴、保存したセッションを確認します。
 
 ---
 
@@ -180,8 +180,8 @@ SWD/JTAG デバッグプローブを駆動できる Web API は存在しませ�
 
 ## 🧰 Tester Studio ——実際の機能カバレッジ
 
-`URTC-TESTER` 自身の `tester_tool_panels.py` /
-`tester_common_panels.py` から移植され、同じ CAN ID に対して動作します：
+`URTC-TESTER` 自身の Qt Quick デッキのパネル
+(`assets/qml/TesterDeck.qml`) から移植され、同じ CAN ID に対して動作します：
 
 - ツールごとに 1 つのパネル（電烙铁 + ワイヤーフィーダー、共有される
   単純なステッピングモーションツール、真空ピックアップ、ドリル、AOI、
@@ -223,7 +223,6 @@ SWD/JTAG デバッグプローブを駆動できる Web API は存在しませ�
 
 ### 未対応の項目
 
-- サーマル検査のエラーカウンター（`0x1AA`/`0x1AB`）。
 - 受信専用モードとビットレートの手動選択：どのボードも応答しないバスには接続できません。
 - サーマル画像の読み取りは、事前にセンサーの準備完了を確認せず、失われたチャンクの再試行も行いません。
 - ブラウザー内で GitHub リリースからファームウェアファイルを直接ダウンロードすること：GitHub は CORS ヘッダーのないホストからリリースのファイルを配信するため、ダウンロードがブロックされることがあります（同梱イメージ、またはディスクから `.manifest.json` と一緒に選んだファイルは常に使えます）。
@@ -297,7 +296,7 @@ npm run preview
 または、お好みの静的ファイルホストで `dist/` を配信してください。
 `npm run lint` は TypeScript コンパイラをチェックのみモードで実行します。
 
-ビルドされたページはコンテンツセキュリティポリシー（スクリプトはページ自身からのみ、接続はページ自身と GitHub のみ）を宣言し、各タブを初めて開いたときに読み込みます。実際のブラウザではまだ試していません。
+ビルドされたページはコンテンツセキュリティポリシー（スクリプトはページ自身からのみ、接続はページ自身と GitHub のみ）を宣言し、各タブを初めて開いたときに読み込みます。`npm run test:e2e` が実際の Chromium でモデル化したボードに対して動かしますが、実際のアダプターではまだ試していません。
 
 ### GitHub Pages（所有者が有効にするまで停止）
 
@@ -362,6 +361,7 @@ build`（`vite build`）単体は意図的にコンパイルのみで、バー�
 │   │                                HardwareState、FlasherState、
 │   │                                ExpansionBoardType など）
 │   ├── vite-env.d.ts                Vite 自身のアンビエント型宣言
+│   ├── *.test.ts                    Vitest のテスト。対象のモジュールの隣に置く（npm test）
 │   ├── components/
 │   │   ├── Header.tsx               トップバー：接続/切断ボタン、現在の
 │   │   │                            ツール名、FW v0.0/v0.1 サンドボックス
@@ -386,6 +386,8 @@ build`（`vite build`）単体は意図的にコンパイルのみで、バー�
 │   │   │                            カスタムフレームインジェクター、
 │   │   │                            プリセットコマンドトリガー
 │   │   ├── TraceReplayPanel.tsx     .trc/.asc トレースを読み込みログに再生
+│   │   ├── NodePickerDialog.tsx     ツールヘッドのウィンドウ：ヘッドを探し、1 つを選び、解放する
+│   │   ├── ConfirmDialog.tsx        ボードに作用する操作の前の確認
 │   │   ├── FlasherStudio.tsx        実際のタブ：CAN-OTA UI（メイン +
 │   │   │                            拡張スレーブ）と SWD/JTAG 機能の
 │   │   │                            説明
@@ -400,6 +402,7 @@ build`（`vite build`）単体は意図的にコンパイルのみで、バー�
 │   │       ├── GlobalPanels.tsx     Global Controls、Expansion Board、
 │   │       │                        F-RAM、Self-Test、Raw Bus Monitor、
 │   │       │                        Custom Frame インジェクター
+│   │       ├── ExtrasPanels.tsx     ブラックボックス、オプション機能、ヒーター PID、ラックベンチ、サーマルビューのパネル
 │   │       └── shared.tsx           共有 UI プリミティブ（Section、
 │   │                                Field、ボタン/入力クラス、safeInt）
 │   ├── data/
@@ -414,6 +417,9 @@ build`（`vite build`）単体は意図的にコンパイルのみで、バー�
 │   │   │                            + 拡張スレーブ）、flasher_protocol.py
 │   │   │                            をミラーリング
 │   │   ├── useTraceReplay.ts        記録したトレースをログとパネルに再生
+│   │   ├── useConfirmAction.ts      ボードに作用する操作の前に確認を求める
+│   │   ├── useNodePicker.ts         バス上のツールヘッドを探し、選択したものを保持する
+│   │   ├── usePwa.ts                オフラインコピー、インストールボタン、新しいバージョンの通知
 │   │   └── useKeepalive.ts          すべてのツールのアクティブチェック
 │   │                                ボックスウォッチドッグキープアライブ
 │   │                                を支える固定間隔再送信フック
@@ -428,6 +434,16 @@ build`（`vite build`）単体は意図的にコンパイルのみで、バー�
 │   │   │                            入力した鍵；sha256 チェック
 │   │   ├── quickState.ts            0x111 のデコード（熱異常、リセット要因）
 │   │   ├── bundledFirmware.ts       scripts/sync-firmware.mjs が生成
+│   │   ├── slcan.ts / customFrame.ts / boardConfig.ts / boardTelemetry.ts / toolLimits.ts / simPresets.ts SLCAN の解析、カスタムフレーム、ボード設定、ボードが返した内容、ツールの上限、アナライザーのプリセット
+│   │   ├── frameFilter.ts / frameQueue.ts / frameRouter.ts / frameBatcher.ts バスモニターのフィルター、受け取り手のないフレームのキュー、応答のルーティング、画面向けのフレームのまとめ処理
+│   │   ├── blackBox.ts / thermalStats.ts / thermalHistory.ts / thermalView.ts / pid.ts ブラックボックス、累積熱カウンターとその履歴、サーマル画像、ヒーター PID フレーム
+│   │   ├── nodePicker.ts / multinodeSim.ts ツールヘッドのウィンドウの規則と、ボードなしで試すためのノードのモデル
+│   │   ├── rackSim.ts               ツールラックのシミュレーター（フレームバージョン 2、ビッグエンディアン）
+│   │   ├── sessionRecord.ts / traceExport.ts / download.ts 保存したセッションの記録（ログの SHA-256）、トレースファイル、ダウンロード
+│   │   ├── safeOff.ts / keepaliveLoop.ts / confirmController.ts / dangerousActions.ts 維持中のアクチュエーターの停止と、先に確認を求める操作
+│   │   ├── pwa.ts / serviceWorkerBuild.ts / selfUpdate.ts オフラインコピー、service worker のテキスト、新しいバージョンの通知
+│   │   ├── releaseSignature.ts      ブラウザでのリリース署名の検証
+│   │   ├── generated/               URTC-COMMON が書き出す表とベクター（ツール、識別子、共有ベクター）とそのロックファイル
 │   │   └── canIds.ts                Tester Studio 用の CAN ID 定数——
 │   │                                 tester_config.py をバイト単位で
 │   │                                 ミラーリング
@@ -438,14 +454,18 @@ build`（`vite build`）単体は意図的にコンパイルのみで、バー�
 │   ├── bump-version.mjs             依存関係のないバージョン加算スクリ
 │   │                                 プト。現在はレガシーで参考用のみ
 │   │                                 - bump_manifest_version.py に置き換えられた（「バージョン管理」参照）
-│   └── sync-firmware.mjs            URTC のリリースのファイル（またはローカル
+│   ├── sync-firmware.mjs            URTC のリリースのファイル（またはローカル
 │   │                                 フォルダー）を public/firmware/ にコピー
 │   │                                 （ダイジェスト確認）- npm run sync-firmware
+│   ├── sw.template.js               ビルドが sw.js として書き出す service worker のテンプレート
+│   └── sync-firmware.test.mjs       sync-firmware.mjs のテスト
 ├── public/
-│   └── firmware/                    メインアプリケーション、メインブート
-│                                     ローダー、拡張スレーブアプリケー
-│                                     ション、拡張スレーブブートローダー
-│                                     用のバンドルされた .bin/.elf/.hex
+│   ├── firmware/                    メインアプリケーション、メインブート
+│   │                                  ローダー、拡張スレーブアプリケー
+│   │                                  ション、拡張スレーブブートローダー
+│   │                                  用のバンドルされた .bin/.elf/.hex
+│   ├── _headers                     このファイルを読むホスト向けのセキュリティヘッダー
+│   └── manifest.webmanifest         Studio をインストールするための Web アプリマニフェスト（名前、アイコン）
 ├── images/
 │   ├── URTC_WEB_STUDIO_BANNER.svg   完全なロゴバナー（本 README の先頭
 │   │                                に表示）
@@ -455,16 +475,23 @@ build`（`vite build`）単体は意図的にコンパイルのみで、バー�
 ├── index.html                       Vite エントリ HTML
 ├── vite.config.ts                   Vite + Tailwind プラグイン設定
 ├── tsconfig.json                    TypeScript 設定
+├── playwright.config.ts             実際のブラウザでのエンドツーエンド検査の設定（npm run test:e2e）
+├── e2e/                             エンドツーエンド検査と、それが動かすアダプターとボードのモデル
 ├── .env.example                     アプリは環境変数を読み込みません
 ├── dev.bat / dev.sh                 依存関係のインストール + Vite 開発
 │                                     サーバーの起動
 ├── build.bat / build.sh             依存関係のインストール + 静的な
+├── build-test.bat / build-test.sh   バージョンを変えない確認：型、テスト、ビルド
 │                                     dist/ ビルドの生成
 ├── tools/
-│   └── ci_validate.py               CI が使用する manifest/CHANGELOG/docs の検証
+│   ├── ci_validate.py               CI が使用する manifest/CHANGELOG/docs の検証
+│   ├── build_test.py                build-test.sh / .bat が使うバージョンを変えない確認
+│   └── _doc_policy.py / _readme_parity.py / _tracked_names.py ci_validate.py が使う共有チェック
 ├── bump.py                          明示的なバージョン加算コマンド（コンパイルでは加算されない）
 ├── bump_manifest_version.py         `bump.py` の明示的な実行時のみのバージョン加算（package.json + マニフェスト、「バージョン管理」参照）。以前のネイティブ側の単独加算を取り込む `--sync` モードもある
 ├── package.json
+├── package-lock.json 依存関係の正確なバージョン（npm ci）
+├── urtc_i18n.lock.json URTC-COMMON のカタログから生成した言語ファイルのロックファイル
 ├── CHANGELOG.md                     バージョン履歴と過去の作業の要約
 ├── LICENSE
 ├── NOTICE                      著作権表示とドキュメントのライセンス
@@ -473,7 +500,7 @@ build`（`vite build`）単体は意図的にコンパイルのみで、バー�
 │   ├── ARCHITECTURE.md
 │   ├── BUILD_AND_RUN.md
 │   └── INTEGRATION_CONTRACT.md
-└── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md  <- 翻訳
+└── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md / README_por.md  <- 翻訳
 ```
 
 <!-- urtc-section:heads -->
