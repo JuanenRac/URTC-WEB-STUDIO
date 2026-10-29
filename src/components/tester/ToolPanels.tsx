@@ -27,6 +27,10 @@ import {
 import {
   MAX_HEATER_SETPOINT_C, MAX_MOTION_STEPS, AOI_STROBE_MIN_MS, AOI_STROBE_MAX_MS, PASTE_PULSE_MIN_MS, PASTE_PULSE_MAX_MS, stepsToBytes, configWordToBytes, isConfigWord
 } from '../../lib/toolLimits';
+import {
+  aoiRingCommand, drillCommand, drillStop, electromagnetCommand, hotAirCommand, hotAirOff, laserCommand, laserOff, pasteJettingConfig, pasteJettingPulse,
+  powerByte, powerOff, solderOff, solderSetpoint,
+} from '../../lib/toolFrames';
 
 export interface ToolCtx {
   sendFrame: (id: number, data: number[], description?: string) => Promise<void>;
@@ -60,7 +64,7 @@ export const SolderingIronPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   const liveTemp = useTelemetry(ctx, CAN_ID_SOLDER_TELEMETRY, (d) => d.length >= 2 ? (d[0] << 8) | d[1] : null);
 
   // Switched off whenever the keepalive ends: unchecked, panel replaced, tab changed or page closed.
-  useKeepalive(active, KEEPALIVE_INTERVAL_MS, () => ctx.sendFrame(CAN_ID_SOLDER_SETPOINT, [(temp >> 8) & 0xFF, temp & 0xFF], `Soldering iron setpoint ${temp}C`), () => setActive(false), () => ctx.sendFrame(CAN_ID_SOLDER_SETPOINT, [0, 0], 'Soldering iron off'));
+  useKeepalive(active, KEEPALIVE_INTERVAL_MS, () => ctx.sendFrame(CAN_ID_SOLDER_SETPOINT, solderSetpoint(temp), `Soldering iron setpoint ${temp}C`), () => setActive(false), () => ctx.sendFrame(CAN_ID_SOLDER_SETPOINT, solderOff(), 'Soldering iron off'));
 
   const queryPosition = async () => {
     const resp = await ctx.request(CAN_ID_SOLDER_FEEDER_QUERY, [], CAN_ID_SOLDER_FEEDER_QUERY, 1500, 'Query feeder position');
@@ -160,7 +164,7 @@ export const DrillPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   const [active, setActive] = useState(false);
   const confirm = useConfirmAction();
   // The firmware stops the drill (and latches a fault) 250 ms after the last command, so the command is resent while Active is checked; it is stopped explicitly when that ends.
-  useKeepalive(active, KEEPALIVE_INTERVAL_MS, () => ctx.sendFrame(CAN_ID_DRILL_CMD, [speed, dir === 'ccw' ? 1 : 0], 'Drill command'), () => setActive(false), () => ctx.sendFrame(CAN_ID_DRILL_CMD, [0, 0], 'Drill stop'));
+  useKeepalive(active, KEEPALIVE_INTERVAL_MS, () => ctx.sendFrame(CAN_ID_DRILL_CMD, drillCommand(speed, dir === 'ccw' ? 'ccw' : 'cw'), 'Drill command'), () => setActive(false), () => ctx.sendFrame(CAN_ID_DRILL_CMD, drillStop(), 'Drill stop'));
   const telemetry = useTelemetry(ctx, CAN_ID_DRILL_TELEMETRY, (d) => d.length >= 2 ? (d[0] << 8) | d[1] : null);
   const [endstop, setEndstop] = useState<number | null>(null);
   useEffect(() => ctx.subscribe(CAN_ID_DRILL_TELEMETRY, (f) => { if (f.data.length >= 3) setEndstop(f.data[2]); }), [ctx]);
@@ -177,7 +181,7 @@ export const DrillPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
           </select>
         </Field>
         <KeepaliveCheckbox checked={active} onChange={async (v) => { if (v && !(await confirm('drill'))) return; setActive(v); }} watchdogMs={250} />
-        <button className={btnCls} onClick={() => { setActive(false); setSpeed(0); ctx.sendFrame(CAN_ID_DRILL_CMD, [0, 0], 'Drill stop'); }}>{t('testertool.stop', 'Stop')}</button>
+        <button className={btnCls} onClick={() => { setActive(false); setSpeed(0); ctx.sendFrame(CAN_ID_DRILL_CMD, drillStop(), 'Drill stop'); }}>{t('testertool.stop', 'Stop')}</button>
       </div>
       <div className="text-xs text-slate-400">{t('testertool.rpm_label', 'RPM:')} <span className="font-mono text-slate-200">{telemetry ?? '--'}</span> &bull; {t('testertool.endstop_label', 'Endstop:')} <span className="font-mono text-slate-200">{endstop ?? '--'}</span></div>
     </Section>
@@ -204,7 +208,7 @@ export const AoiPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
         <Field label={t('testertool.strobe_period_label', 'Strobe period (ms)')}>
           <input type="number" min={AOI_STROBE_MIN_MS} max={AOI_STROBE_MAX_MS} value={period} onChange={(e) => setPeriod(safeInt(e.target.value, AOI_STROBE_MIN_MS, AOI_STROBE_MIN_MS, AOI_STROBE_MAX_MS))} className={inputCls} />
         </Field>
-        <button className={btnPrimaryCls} onClick={() => ctx.sendFrame(CAN_ID_AOI_CMD, [modeByte, (period >> 8) & 0xFF, period & 0xFF], 'AOI ring command')}>{t('testertool.send', 'Send')}</button>
+        <button className={btnPrimaryCls} onClick={() => ctx.sendFrame(CAN_ID_AOI_CMD, aoiRingCommand(modeByte, period), 'AOI ring command')}>{t('testertool.send', 'Send')}</button>
       </div>
       <div className="mt-2 text-xs text-slate-400">{t('testertool.endstop_label', 'Endstop:')} <span className="font-mono text-slate-200">{endstop ?? '--'}</span></div>
     </Section>
@@ -220,7 +224,7 @@ export const LaserPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   const endstop = useTelemetry(ctx, CAN_ID_LASER_TELEMETRY, (d) => d.length >= 1 ? d[0] : null);
   const confirm = useConfirmAction();
 
-  useKeepalive(active, KEEPALIVE_INTERVAL_MS, () => ctx.sendFrame(CAN_ID_LASER_CMD, [power, interlock ? 1 : 0], 'Laser power command'), () => setActive(false), () => ctx.sendFrame(CAN_ID_LASER_CMD, [0, 0], 'Laser off'));
+  useKeepalive(active, KEEPALIVE_INTERVAL_MS, () => ctx.sendFrame(CAN_ID_LASER_CMD, laserCommand(power, interlock), 'Laser power command'), () => setActive(false), () => ctx.sendFrame(CAN_ID_LASER_CMD, laserOff(), 'Laser off'));
 
   return (
     <Section title={t('testertool.laser_title', 'Laser Engraver (0x160 / telemetry 0x165)')}>
@@ -260,7 +264,7 @@ export const Printer3DPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   const [layerFanActive, setLayerFanActive] = useState(false);
   const [layerFanPower, setLayerFanPower] = useState(0);
   const layerFanRpm = useTelemetry(ctx, CAN_ID_3DP_LAYERFAN_TELEMETRY, (d) => d.length >= 2 ? (d[0] << 8) | d[1] : null);
-  useKeepalive(layerFanActive, LAYERFAN_KEEPALIVE_INTERVAL_MS, () => ctx.sendFrame(CAN_ID_3DP_LAYERFAN_CMD, [layerFanPower], 'Layer fan power'), () => setLayerFanActive(false), () => ctx.sendFrame(CAN_ID_3DP_LAYERFAN_CMD, [0], 'Layer fan off'));
+  useKeepalive(layerFanActive, LAYERFAN_KEEPALIVE_INTERVAL_MS, () => ctx.sendFrame(CAN_ID_3DP_LAYERFAN_CMD, powerByte(layerFanPower), 'Layer fan power'), () => setLayerFanActive(false), () => ctx.sendFrame(CAN_ID_3DP_LAYERFAN_CMD, powerOff(), 'Layer fan off'));
 
   const [hotendFanPower, setHotendFanPower] = useState(0);
   const hotendFanRpm = useTelemetry(ctx, CAN_ID_3DP_HOTENDFAN_TELEMETRY, (d) => d.length >= 2 ? (d[0] << 8) | d[1] : null);
@@ -303,7 +307,7 @@ export const Printer3DPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
           <Field label={t('testertool.hotend_fan_label', 'Hotend fan ({{power}})', { power: hotendFanPower })}>
             <input type="range" min={0} max={255} value={hotendFanPower} onChange={(e) => setHotendFanPower(parseInt(e.target.value))} className="w-32" />
           </Field>
-          <button className={btnPrimaryCls} onClick={() => ctx.sendFrame(CAN_ID_3DP_HOTENDFAN_CMD, [hotendFanPower], 'Hotend fan power')}>{t('testertool.send', 'Send')}</button>
+          <button className={btnPrimaryCls} onClick={() => ctx.sendFrame(CAN_ID_3DP_HOTENDFAN_CMD, powerByte(hotendFanPower), 'Hotend fan power')}>{t('testertool.send', 'Send')}</button>
         </div>
         <div className="text-[10px] text-slate-500 mb-1">{t('testertool.no_watchdog_note', 'One-shot, no watchdog (stall detector).')}</div>
         <div className="text-xs text-slate-400">{t('testertool.rpm_label', 'RPM:')} <span className="font-mono text-slate-200">{hotendFanRpm ?? '--'}</span></div>
@@ -337,7 +341,7 @@ export const ElectromagnetPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   return (
     <Section title={t('testertool.electromagnet_title', 'Electromagnet (0x1B0)')} subtitle={t('testertool.electromagnet_subtitle', 'Latched digital command - no comms watchdog by design (see CANBUS.TXT note on 0x1B0).')}>
       <label className="flex items-center gap-2 text-sm text-slate-200 cursor-pointer">
-        <input type="checkbox" checked={on} onChange={(e) => { setOn(e.target.checked); ctx.sendFrame(CAN_ID_ELECTROMAGNET_CMD, [e.target.checked ? 1 : 0], `Electromagnet ${e.target.checked ? 'ON' : 'OFF'}`); }} className="accent-purple-500 w-4 h-4" />
+        <input type="checkbox" checked={on} onChange={(e) => { setOn(e.target.checked); ctx.sendFrame(CAN_ID_ELECTROMAGNET_CMD, electromagnetCommand(e.target.checked), `Electromagnet ${e.target.checked ? 'ON' : 'OFF'}`); }} className="accent-purple-500 w-4 h-4" />
         {t('testertool.energize', 'Energize')}
       </label>
     </Section>
@@ -410,7 +414,7 @@ export const UvCuringPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   const [active, setActive] = useState(false);
   const [power, setPower] = useState(0);
   const confirm = useConfirmAction();
-  useKeepalive(active, KEEPALIVE_INTERVAL_MS, () => ctx.sendFrame(CAN_ID_UV_CURING_CMD, [power], 'UV curing power'), () => setActive(false), () => ctx.sendFrame(CAN_ID_UV_CURING_CMD, [0], 'UV curing off'));
+  useKeepalive(active, KEEPALIVE_INTERVAL_MS, () => ctx.sendFrame(CAN_ID_UV_CURING_CMD, powerByte(power), 'UV curing power'), () => setActive(false), () => ctx.sendFrame(CAN_ID_UV_CURING_CMD, powerOff(), 'UV curing off'));
   return (
     <Section title={t('testertool.uv_curing_title', 'UV Curing (0x1D0)')} subtitle={t('testertool.uv_curing_subtitle', 'Shares TIM1_CH1 with the laser - same 250ms watchdog.')}>
       <div className="flex items-end gap-3">
@@ -431,7 +435,7 @@ export const HotAirReworkPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   const [blower, setBlower] = useState(0);
   const liveTemp = useTelemetry(ctx, CAN_ID_SOLDER_TELEMETRY, (d) => d.length >= 2 ? (d[0] << 8) | d[1] : null);
   const confirm = useConfirmAction();
-  useKeepalive(active, KEEPALIVE_INTERVAL_MS, () => ctx.sendFrame(CAN_ID_HOTAIR_CMD, [(temp >> 8) & 0xFF, temp & 0xFF, blower], 'Hot air rework command'), () => setActive(false), () => ctx.sendFrame(CAN_ID_HOTAIR_CMD, [0, 0, 0], 'Hot air rework off'));
+  useKeepalive(active, KEEPALIVE_INTERVAL_MS, () => ctx.sendFrame(CAN_ID_HOTAIR_CMD, hotAirCommand(temp, blower), 'Hot air rework command'), () => setActive(false), () => ctx.sendFrame(CAN_ID_HOTAIR_CMD, hotAirOff(), 'Hot air rework off'));
   return (
     <Section title={t('testertool.hotair_title', 'Hot Air Rework (0x1E0, telemetry shared with 0x135)')}>
       <div className="flex items-end gap-3">
@@ -463,14 +467,14 @@ export const PasteJettingPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
         <div className="flex items-end gap-3">
           <Field label={t('testertool.channel_label', 'Channel (0-3)')}><input type="number" min={0} max={3} value={channel} onChange={(e) => setChannel(safeInt(e.target.value, 0, 0, 3))} className={inputCls} /></Field>
           <Field label={t('testertool.frequency_label', 'Frequency (Hz)')}><input type="number" min={1} max={65535} value={freq} onChange={(e) => setFreq(safeInt(e.target.value, 1, 1, 65535))} className={inputCls} /></Field>
-          <button className={btnPrimaryCls} onClick={() => ctx.sendFrame(CAN_ID_PASTE_JETTING_CONFIG, [channel, (freq >> 8) & 0xFF, freq & 0xFF], 'Paste jetting config')}>{t('testertool.configure', 'Configure')}</button>
+          <button className={btnPrimaryCls} onClick={() => ctx.sendFrame(CAN_ID_PASTE_JETTING_CONFIG, pasteJettingConfig(channel, freq), 'Paste jetting config')}>{t('testertool.configure', 'Configure')}</button>
         </div>
       </Section>
       <Section title={t('testertool.paste_fire_title', 'Fire Pulse (0x231)')} subtitle={t('testertool.paste_fire_subtitle', 'Reuses the last-configured channel.')}>
         <div className="flex items-end gap-3">
           <Field label={t('testertool.duty_label', 'Duty (%)')}><input type="number" min={0} max={100} value={duty} onChange={(e) => setDuty(safeInt(e.target.value, 0, 0, 100))} className={inputCls} /></Field>
           <Field label={t('testertool.duration_ms_label', 'Duration (ms)')}><input type="number" min={PASTE_PULSE_MIN_MS} max={PASTE_PULSE_MAX_MS} value={pulseMs} onChange={(e) => setPulseMs(safeInt(e.target.value, PASTE_PULSE_MIN_MS, PASTE_PULSE_MIN_MS, PASTE_PULSE_MAX_MS))} className={inputCls} /></Field>
-          <button className={btnPrimaryCls} onClick={async () => { if (await confirm('paste')) ctx.sendFrame(CAN_ID_PASTE_JETTING_PULSE, [channel, duty, pulseMs], 'Paste jetting pulse'); }}>{t('testertool.fire_pulse', 'Fire Pulse')}</button>
+          <button className={btnPrimaryCls} onClick={async () => { if (await confirm('paste')) ctx.sendFrame(CAN_ID_PASTE_JETTING_PULSE, pasteJettingPulse(channel, duty, pulseMs), 'Paste jetting pulse'); }}>{t('testertool.fire_pulse', 'Fire Pulse')}</button>
         </div>
       </Section>
     </div>
