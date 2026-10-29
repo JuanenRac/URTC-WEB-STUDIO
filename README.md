@@ -49,6 +49,21 @@ real CAN frames described in `docs/CANBUS.TXT` of the
 | Target | A web browser on the user's PC |
 | On real hardware | Simulated only: tested against emulators, fakes or simulators; no run on real hardware is recorded for this version |
 
+<!-- urtc-section:status_web_studio -->
+## 🚦 Project status
+
+🟢 done and verified · 🟡 works, with known limits · 🟠 half done or not verified · 🔴 not done or not working. Nothing is green if it never ran on real hardware.
+
+| Part | Status | What the repository can show |
+| --- | :---: | --- |
+| Software | 🟡 | Works on a PC and against the simulator; never run against a real board. |
+| Interface | 🟡 | The window runs and is checked against a simulated board; not tried with a real adapter. |
+| Tests | 🟢 | The test suite passes in the CI on every push. |
+| Real hardware | 🟠 | No run on a real board yet: the bench test is still pending. |
+| Documentation | 🟡 | README in eight languages and reference documents; the translations were not reviewed by native speakers. |
+
+<!-- /urtc-section:status_web_studio -->
+
 ## 🧭 What's real vs. what's a sandbox
 
 This app has two kinds of tabs:
@@ -484,21 +499,6 @@ The firmware can let several tool heads share one CAN bus (the multinode extensi
 
 Which versions of the URTC programs work together, and which protocol version each one speaks, is listed in the compatibility table that URTC-COMMON generates: [docs/COMPATIBILITY.md](https://github.com/JuanenRac/URTC/blob/main/docs/COMPATIBILITY.md).
 <!-- /urtc-section:compatibility -->
-
-<!-- urtc-section:status_web_studio -->
-## 💡 Project status
-
-🟢 done and verified · 🟡 works, with known limits · 🟠 half done or not verified · 🔴 not done or not working. Nothing is green if it never ran on real hardware.
-
-| Part | Status | What the repository can show |
-| --- | :---: | --- |
-| Software | 🟡 | Works on a PC and against the simulator; never run against a real board. |
-| Interface | 🟡 | The window runs and is checked against a simulated board; not tried with a real adapter. |
-| Tests | 🟢 | The test suite passes in the CI on every push. |
-| Real hardware | 🟠 | No run on a real board yet: the bench test is still pending. |
-| Documentation | 🟡 | README in eight languages and reference documents; the translations were not reviewed by native speakers. |
-
-<!-- /urtc-section:status_web_studio -->
 
 ## 📜 LICENSE
 
