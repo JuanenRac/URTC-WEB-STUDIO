@@ -1,4 +1,5 @@
 import { FirmwareVersion, FirmwareManifest, APP_MAX_SIZE, SLAVE_APP_MAX_SIZE, THIS_HARDWARE_ID, SLAVE_HARDWARE_ID } from './flasher';
+import { parseFirmwareImageName } from './generated/firmwareNames';
 
 // Checks that run before anything is sent to a board, shared by every place
 // that offers or flashes an image. They mirror the desktop Flasher's own
@@ -16,9 +17,9 @@ const SLOTS: Record<FlashTarget, { base: number; max: number }> = {
  * and not the other board's image.
  */
 export function isFlashableFirmwareName(name: string, target: FlashTarget): boolean {
-  const m = /^URTC_(MAIN|SLAVE)_FIRMWARE_v\d+(\.\d+)+\.bin$/i.exec(name);
-  if (!m) return false;
-  return (m[1].toUpperCase() === 'SLAVE') === (target === 'slave');
+  const parts = parseFirmwareImageName(name);
+  if (!parts || parts.kind !== 'FIRMWARE') return false;
+  return (parts.board === 'SLAVE') === (target === 'slave');
 }
 
 export type ImageProblem = 'empty' | 'too_large' | 'too_small' | 'bad_stack' | 'bad_reset';

@@ -1,4 +1,5 @@
 import { isFlashableFirmwareName, FlashTarget } from './firmwareImage';
+import { firmwareSidecarName } from './generated/firmwareNames';
 
 // The URTC firmware binaries are not in git: they are assets of the GitHub release of
 // each version (see URTC docs/FIRMWARE_DISTRIBUTION.md). This lists the application
@@ -69,9 +70,9 @@ export function imagesFromRelease(release: any, target: FlashTarget): RemoteFirm
       size: a.size,
       tag,
       asset: a,
-      sha256: byName.get(`${a.name}.sha256`),
-      manifest: byName.get(`${a.name}.manifest.json`),
-      signature: byName.get(`${a.name}.sig`),
+      sha256: byName.get(firmwareSidecarName(a.name, '.sha256')),
+      manifest: byName.get(firmwareSidecarName(a.name, '.manifest.json')),
+      signature: byName.get(firmwareSidecarName(a.name, '.sig')),
     }));
 }
 
