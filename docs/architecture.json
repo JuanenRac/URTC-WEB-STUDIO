@@ -1,0 +1,153 @@
+{
+  "repo": "URTC-WEB-STUDIO",
+  "ecosystem": "urtc",
+  "tagline": "A browser tab that talks to a URTC board through a USB-CAN adapter with Web Serial, plus offline sandbox tabs to explore the 25 tools.",
+  "description": "URTC-WEB-STUDIO is a React and Vite single-page app. Flasher Studio and Tester Studio send and receive the real CAN frames of the URTC protocol through a Web Serial SLCAN adapter, with the frames validated in both directions; the sandbox tabs transmit nothing. Everything is verified by unit tests and end-to-end checks against a modelled board; nothing has been run against a real adapter or board.",
+  "columns": [
+    "WHO USES IT",
+    "THE WEB APP",
+    "WHAT IT TALKS TO"
+  ],
+  "nodes": [
+    {
+      "id": "user",
+      "column": 0,
+      "level": "external",
+      "title": "A person in Chrome",
+      "lines": [
+        "opens the page over https or",
+        "on localhost; Firefox and Safari",
+        "have no Web Serial"
+      ]
+    },
+    {
+      "id": "pwa",
+      "column": 0,
+      "level": "config",
+      "title": "A static host",
+      "lines": [
+        "dist/ is a plain static site with",
+        "an offline copy; GitHub Pages",
+        "stays switched off"
+      ],
+      "code": [
+        "scripts/sw.template.js",
+        ".github/workflows/pages.yml"
+      ]
+    },
+    {
+      "id": "bus",
+      "column": 1,
+      "level": "tested",
+      "title": "SLCAN transport",
+      "lines": [
+        "Web Serial, frame validation in",
+        "both directions, answers matched",
+        "by identifier"
+      ],
+      "code": [
+        "src/hooks/useSerialCanBus.ts",
+        "src/lib/slcan.ts"
+      ]
+    },
+    {
+      "id": "flash",
+      "column": 1,
+      "level": "tested",
+      "title": "Flasher Studio",
+      "lines": [
+        "CAN-OTA of the board and the",
+        "slave: manifest and signature",
+        "checks, readback, no key in the app"
+      ],
+      "code": [
+        "src/hooks/useFlasher.ts",
+        "src/lib/flasher.ts",
+        "src/lib/firmwareSignature.ts"
+      ]
+    },
+    {
+      "id": "test",
+      "column": 1,
+      "level": "tested",
+      "title": "Tester Studio",
+      "lines": [
+        "a panel per tool, keepalives,",
+        "raw bus monitor, trace replay",
+        "and confirmations"
+      ],
+      "code": [
+        "src/components/TesterStudio.tsx",
+        "src/lib/dangerousActions.ts"
+      ]
+    },
+    {
+      "id": "sand",
+      "column": 1,
+      "level": "config",
+      "title": "Sandbox tabs",
+      "lines": [
+        "catalog, OLED, BOM and a thermal",
+        "mock-up; they transmit nothing",
+        "and answer no real board"
+      ],
+      "code": [
+        "src/components/ToolCatalog.tsx",
+        "src/components/ThermalCameraViewer.tsx"
+      ]
+    },
+    {
+      "id": "adapter",
+      "column": 2,
+      "level": "untested",
+      "title": "USB-CAN adapter, board",
+      "lines": [
+        "SLCAN at 500 kbit/s and a URTC",
+        "board behind it; never connected",
+        "to this page"
+      ]
+    },
+    {
+      "id": "gh",
+      "column": 2,
+      "level": "external",
+      "title": "GitHub releases",
+      "lines": [
+        "URTC firmware images; its host",
+        "sends no CORS headers, so a",
+        "download may be blocked"
+      ],
+      "code": [
+        "src/lib/githubRelease.ts"
+      ]
+    },
+    {
+      "id": "common",
+      "column": 2,
+      "level": "external",
+      "title": "URTC-COMMON",
+      "lines": [
+        "tables, identifiers and vectors",
+        "generated from its specification"
+      ],
+      "code": [
+        "src/lib/generated"
+      ]
+    }
+  ],
+  "edges": [
+    {"from": "user", "to": "bus", "label": "connect", "level": "tested"},
+    {"from": "bus", "to": "flash", "level": "tested"},
+    {"from": "bus", "to": "test", "level": "tested"},
+    {"from": "flash", "to": "adapter", "label": "CAN-OTA", "level": "untested"},
+    {"from": "test", "to": "common", "level": "contract"}
+  ],
+  "legend": {
+    "tested": "covered by tests against a modelled board",
+    "contract": "generated from another repository",
+    "config": "sends nothing to the bus",
+    "untested": "has not run on real hardware",
+    "external": "a person, another repository or a host"
+  },
+  "footer": "A software STOP ALL is not an emergency stop."
+}

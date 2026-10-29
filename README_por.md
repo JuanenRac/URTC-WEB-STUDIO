@@ -15,23 +15,17 @@
   🇵🇹 <b>Português</b>
 </p>
 
+### Os principais fluxos do gravador e do testador do URTC num separador do navegador, com um adaptador USB-CAN e Web Serial
 
 <p align="center">
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
+  <img src="https://img.shields.io/badge/Tests-560-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
 </p>
 
-
-Um companheiro baseado no navegador para o **Universal Robot Tool Controller (URTC)** -
-uma aplicação de página única em React/Vite que destina-se a comunicar com hardware URTC real (nunca foi executada com nenhum) através de um
-adaptador USB-CAN, por meio da [Web Serial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API),
-usando o mesmo framing SLCAN e o mesmo protocolo CAN que as duas ferramentas
-de ambiente de trabalho que o acompanham, o [URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER) e o
-[URTC Tester](https://github.com/JuanenRac/URTC-TESTER). O objetivo é reunir os principais fluxos de trabalho dessas duas ferramentas num único separador do navegador, não uma demonstração simplificada das mesmas; a paridade completa ainda não foi alcançada (veja «Ainda não coberto» mais abaixo) - os separadores Flasher Studio e Tester Studio enviam e
-recebem as tramas CAN reais descritas em `docs/CANBUS.TXT` do
-[repositório de firmware do URTC](https://github.com/JuanenRac/URTC).
+---
 
 **Verificação de honestidade - o que realmente funciona hoje:** `npm test` (Vitest) cobre a lógica pura: a análise SLCAN, a correspondência pedido/resposta, as verificações de imagem de firmware e de manifesto, os limites das ferramentas, as confirmações, as regras que separam o simulador do barramento real, a exportação de traços e os oito idiomas da interface. Os ecrãs e o próprio transporte Web Serial não têm testes unitários (as verificações de ponta a ponta no fim deste parágrafo conduzem-nos perante uma placa modelada), e nada disto foi executado contra uma placa URTC real neste ambiente (aqui não há um adaptador USB-CAN com que testar): o Flasher Studio, o Tester Studio e o Analisador de Protocolo CAN Bus são código real verificado apenas por esses testes, pela verificação de tipos (`npm run lint`) e pela revisão do código. Control/OLED/Specs-BOM/Thermal IR Inspection são separadores de sandbox declarados abertamente como tal, sem qualquer tráfego CAN. Consulte o `CHANGELOG.md` para ver exatamente o que foi entregue até agora. `npm run test:e2e` abre ainda a página compilada num navegador real (Playwright) perante uma placa modelada: é assim que se verificam a cópia sem rede, o histórico dos contadores térmicos e a sessão guardada.
 
@@ -45,9 +39,12 @@ recebem as tramas CAN reais descritas em `docs/CANBUS.TXT` do
 |---|---|
 | Versão | `0.3.7` |
 | Maturidade | Funcional |
+| Testes | 560 (`npm test`) |
 | Tecnologia | Web Serial API / TypeScript |
 | Destino | Um navegador web no PC do utilizador |
 | Em hardware real | Só simulado: testado com emuladores, dublês de teste ou simuladores; não há registo de execução em hardware real para esta versão |
+
+**Ir para:** [Visão geral](#-visão-geral) · [Arquitetura](#-arquitetura) · [Funcionalidades](#-funcionalidades) · [Segurança](#-segurança-e-proteção) · [Interfaces](#-interfaces) · [Início rápido](#-início-rápido) · [Testes](#-testes) · [Estrutura](#-estrutura-do-repositório) · [Relacionados](#-projetos-relacionados)
 
 <!-- urtc-section:status_web_studio -->
 ## 🚦 Estado do projeto
@@ -64,7 +61,18 @@ recebem as tramas CAN reais descritas em `docs/CANBUS.TXT` do
 
 <!-- /urtc-section:status_web_studio -->
 
-## 🧭 O que é real e o que é uma sandbox
+## 🎯 Visão geral
+
+Um companheiro baseado no navegador para o **Universal Robot Tool Controller (URTC)** -
+uma aplicação de página única em React/Vite que destina-se a comunicar com hardware URTC real (nunca foi executada com nenhum) através de um
+adaptador USB-CAN, por meio da [Web Serial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API),
+usando o mesmo framing SLCAN e o mesmo protocolo CAN que as duas ferramentas
+de ambiente de trabalho que o acompanham, o [URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER) e o
+[URTC Tester](https://github.com/JuanenRac/URTC-TESTER). O objetivo é reunir os principais fluxos de trabalho dessas duas ferramentas num único separador do navegador, não uma demonstração simplificada das mesmas; a paridade completa ainda não foi alcançada (veja «Ainda não coberto» mais abaixo) - os separadores Flasher Studio e Tester Studio enviam e
+recebem as tramas CAN reais descritas em `docs/CANBUS.TXT` do
+[repositório de firmware do URTC](https://github.com/JuanenRac/URTC).
+
+### O que é real e o que é uma sandbox
 
 Esta aplicação tem dois tipos de separadores:
 
@@ -89,37 +97,33 @@ Esta aplicação tem dois tipos de separadores:
     "Thermal Inspection" do Tester Studio, e apenas depois de o hardware estar
     ligado.
 
-## 🔌 Hardware de que precisa
+## 🧩 Papel no URTC
 
-- Um adaptador USB-CAN com firmware **SLCAN** (p. ex. um CANable com
-  `candlelight`/`slcan`, ou qualquer adaptador que fale o protocolo série SLCAN
-  `lawicel` padrão) - a mesma classe de adaptador que ambas as ferramentas de
-  ambiente de trabalho suportam através do seu próprio transporte Serial.
-- O barramento configurado a **500 kbit/s**. Ao ligar, a aplicação experimenta por ordem 500, 250, 125 kbit/s e as restantes velocidades padrão e fica com a primeira em que uma placa responde a um pedido de versão; ainda não é possível escolher a velocidade à mão nem apenas escutar sem que uma placa responda.
-- Um navegador com suporte de Web Serial - **Chrome ou Edge**. O Firefox e o Safari
-  não implementam Web Serial e não conseguirão ligar de todo.
-- O Web Serial exige um contexto seguro (HTTPS) ou `localhost` - e não pode ser usado
-  a partir do interior de uma iframe. Se estiver a pré-visualizar esta aplicação dentro de uma
-  frame incorporada, abra-a primeiro no seu próprio separador.
+O URTC-WEB-STUDIO é a versão de navegador dos dois programas de secretária do URTC, URTC-FLASHER e URTC-TESTER: uma página React que fala com uma placa URTC através de um adaptador USB-CAN com Web Serial, com o mesmo enquadramento SLCAN e o mesmo protocolo CAN (as suas tabelas e vetores são gerados a partir do URTC-COMMON). Traz os seus principais fluxos para um separador do navegador sem instalar nada, e deixa o SWD/JTAG, que nenhum navegador consegue controlar, para o gravador de secretária. Tem também separadores de caixa de areia que exploram as 25 ferramentas offline e não transmitem nada.
 
-## 🛡️ Validação de tramas CAN
+## 🏛️ Arquitetura
 
-Ambos os sentidos da ligação SLCAN são validados antes de qualquer coisa chegar à
-UI ou ao cabo (`src/hooks/useSerialCanBus.ts`):
+<p align="center">
+  <img src="images/architecture.svg" alt="Arquitetura de URTC-WEB-STUDIO: quem o usa, o que contém e de que depende" width="100%">
+</p>
 
-- **Saída** - `sendFrame()` recusa-se a serializar um comando cujo
-  identificador fique fora do intervalo CAN padrão de 11 bits (`0x000`-`0x7FF`),
-  cujo payload exceda 8 bytes, ou cujo payload contenha um byte fora de
-  `0x00`-`0xFF`. A UI mostra "Refusing malformed CAN frame: ..." em vez de
-  escrever texto inválido na porta série.
-- **Entrada** - `processBuffer()` exige uma correspondência real
-  `t<3-hex ID><1-hex DLC 0-8><hex payload>` antes de converter uma linha
-  SLCAN recebida num `CanFrame`; um DLC fora de `0`-`8` ou um payload mais curto
-  do que o seu próprio comprimento declarado é registado na consola e descartado em vez de
-  ser entregue a um painel de ferramenta como um byte `NaN`. Um timestamp
-  opcional do adaptador no final continua a ser aceite depois de um payload válido.
+Como as partes deste repositório se encaixam: quem o usa, o que contém e de que depende. A imagem é desenhada a partir de `docs/architecture.json` e verificada com o código.
 
-## ⚡ Flasher Studio - cobertura real de funcionalidades
+### Stack tecnológica
+
+- **Linguagem:** TypeScript
+- **Framework de frontend:** React 18
+- **Ferramenta de build:** Vite
+- **Estilos:** Tailwind CSS
+- **Ícones:** Lucide React
+- **CRC32:** `crc-32` - verificação de integridade da imagem de firmware, espelha
+  o próprio cálculo de CRC32 do bootloader
+- **Transporte de hardware:** Web Serial API + framing SLCAN (sem dependências
+  nativas, sem servidor backend companheiro)
+
+## ✨ Funcionalidades
+
+### Flasher Studio - cobertura real de funcionalidades
 
 Portado a partir do próprio `flasher_protocol.py` do `URTC-FLASHER`, contra os mesmos
 CAN IDs:
@@ -175,7 +179,7 @@ CAN IDs:
   configuração livre de ferramenta (pinos de ID `11111`) / informação de periféricos e
   número de série - `0x1A0`-`0x1A7`.
 
-### SWD/JTAG - não disponível a partir de um navegador, por design
+#### SWD/JTAG - não disponível a partir de um navegador, por design
 
 Não existe nenhuma Web API capaz de controlar uma sonda de depuração SWD/JTAG - o Web Serial
 só comunica com dispositivos de framing série (como um adaptador USB-CAN), não com o
@@ -187,7 +191,7 @@ trabalho `URTC Flasher` executaria localmente, para referência - use essa ferra
 diretamente para programação de chip completo, verificações de option-byte/RDP, ou uma
 cópia de segurança completa da flash antes de um apagamento total.
 
-## 🧰 Tester Studio - cobertura real de funcionalidades
+### Tester Studio - cobertura real de funcionalidades
 
 Portado a partir dos painéis do próprio deck Qt Quick do `URTC-TESTER`
 (`assets/qml/TesterDeck.qml`), contra os mesmos CAN IDs:
@@ -220,6 +224,26 @@ Portado a partir dos painéis do próprio deck Qt Quick do `URTC-TESTER`
   versão da placa (`0x7F8`/`0x7F9`), e um erro crítico declarado (`0x111` byte 1)
   surge como um banner de falha em direto.
 
+<!-- urtc-section:heads -->
+### Várias cabeças de ferramenta num barramento
+
+O firmware pode fazer várias cabeças de ferramenta partilharem um barramento CAN (a extensão multinó). Vem **desativada por defeito**, e um barramento com uma só cabeça funciona exatamente como antes. A janela **Cabeças** encontra as cabeças, lista cada uma com o seu endereço, ferramenta e número de série, e mostra o seu estado: pronta, selecionada, conflito de endereço, falha retida, no seu bootloader ou perdida. Seleciona uma, o programa pede confirmação e só depois lhe envia alguma coisa; enquanto houver várias cabeças no barramento, um comando é recusado até uma estar selecionada e o ter confirmado. Se a cabeça selecionada se perder, todas as cabeças passam ao estado seguro (uma caixa da janela desativa-o). Só foi testada contra um modelo do barramento, não com placas. Veja `docs/MULTINODE.md` em URTC-COMMON.
+<!-- /urtc-section:heads -->
+
+## 🔒 Segurança e proteção
+
+| Ameaça | Defesa |
+|---|---|
+| Uma trama mal formada chega ao fio ou ao ecrã | Os dois sentidos da ligação SLCAN são validados: um identificador fora de `0x000`-`0x7FF`, uma carga acima de 8 bytes ou um byte fora de `0x00`-`0xFF` é recusado antes de ser escrito, e uma linha recebida que não é uma trama SLCAN verdadeira é descartada |
+| Um segredo segue na página | A aplicação não contém nenhuma chave de assinatura: o Flasher Studio só envia a assinatura que a compilação do URTC publicou junto de cada imagem, pelo que a página pode ser alojada publicamente |
+| Uma imagem de firmware errada ou adulterada | Um manifesto cujo `sha256` não coincide com o ficheiro bloqueia a gravação; cada imagem de uma release oficial traz uma assinatura de release Ed25519 que a página verifica no navegador antes de enviar a imagem |
+| Uma resposta simulada tomada por real | Os separadores de caixa de areia não transmitem nada e, com uma placa ligada, não respondem nada; as suas tramas são marcadas SIM e um traço reproduzido REPLAY |
+| Uma ação sobre a placa por engano | Laser, berbequim, cura UV, soldadura, aquecedores, movimento, jetting de pasta, escritas na memória da placa, tramas arriscadas escritas à mão e uma imagem assinada com a chave pública de desenvolvimento pedem primeiro uma confirmação |
+| Um atuador que fica a funcionar | Cada ferramenta com cão de guarda no firmware é mantida viva por um reenvio e desligada quando o painel é substituído, o separador muda, a placa é desligada ou a página fecha; STOP ALL desliga tudo o que a página mantém vivo |
+| Uma página que carrega código de outro lado | Uma política de segurança de conteúdo: scripts só da própria página, ligações só a si mesma e ao GitHub |
+
+STOP ALL é um comando de software, não uma paragem de emergência, e nenhuma das verificações acima é uma função de segurança.
+
 ### Separação do simulador e confirmações (verificações de software, não funções de segurança)
 
 - Os separadores de sandbox (Control, OLED, Thermal IR) não transmitem nada. As suas tramas levam a marca SIM e, enquanto há uma placa ligada, não produzem nenhuma resposta simulada. Das mensagens predefinidas do analisador de protocolo só são enviadas a uma placa ligada as consultas simples; as restantes continuam simuladas.
@@ -230,13 +254,7 @@ Portado a partir dos painéis do próprio deck Qt Quick do `URTC-TESTER`
 - Quando a placa declara um erro crítico, o aviso indica também o motivo da proteção contra fuga térmica, se a placa o comunicar.
 - **Reprodução de um rastreio gravado** (CAN Bus Protocol Analyzer): um ficheiro `.trc` ou `.asc`, por exemplo o que o Raw Bus Monitor exporta, reproduz as suas tramas recebidas no registo e nos painéis sem placa, de 0,25x a 10x e, se quiser, em ciclo. As tramas são marcadas REPLAY, não se transmite nada, uma gravação nunca responde a um pedido, nunca é exportada como algo que a placa disse e a reprodução fica em pausa enquanto houver uma placa ligada.
 
-### Ainda não coberto
-
-- Um modo só de escuta e a escolha da velocidade à mão: não é possível entrar num barramento em que nenhuma placa responde.
-- A leitura da imagem térmica não verifica antes se o sensor está pronto nem repete um bloco perdido.
-- Transferir um ficheiro de firmware diretamente da release do GitHub dentro do navegador: o GitHub serve os ficheiros de uma release a partir de um anfitrião sem cabeçalhos CORS, pelo que a transferência pode ser bloqueada (a imagem incluída, ou um ficheiro escolhido do disco com o seu `.manifest.json`, funcionam sempre).
-
-## 🔐 Nota de segurança: nenhuma chave de assinatura nesta aplicação
+### Nota de segurança: nenhuma chave de assinatura nesta aplicação
 
 Desde a 0.2.3 esta aplicação **não** contém nenhuma chave de assinatura HMAC-SHA256.
 A build do URTC assina ela própria cada imagem de aplicação (com uma chave privada apenas nas builds de release; as imagens publicadas usam a chave pública de desenvolvimento) e publica a assinatura a seu lado; o Flasher
@@ -266,9 +284,40 @@ manifestos.
 
 Cada ficheiro de uma release oficial tem uma assinatura de release (`<ficheiro>.sig`, Ed25519): a sincronização verifica-a quando existe e recusa uma errada; um conjunto sem assinaturas (uma pré-release de bancada ou uma compilação local) precisa de `--allow-unsigned`. A página verifica a mesma assinatura no navegador (Web Crypto) antes de enviar uma imagem incluída ou uma imagem de uma release do GitHub para uma placa, e pára se não for válida.
 
-## 🚀 Primeiros passos
+## 🔌 Interfaces
+
+- Um adaptador USB-CAN com firmware **SLCAN** (p. ex. um CANable com
+  `candlelight`/`slcan`, ou qualquer adaptador que fale o protocolo série SLCAN
+  `lawicel` padrão) - a mesma classe de adaptador que ambas as ferramentas de
+  ambiente de trabalho suportam através do seu próprio transporte Serial.
+- O barramento configurado a **500 kbit/s**. Ao ligar, a aplicação experimenta por ordem 500, 250, 125 kbit/s e as restantes velocidades padrão e fica com a primeira em que uma placa responde a um pedido de versão; ainda não é possível escolher a velocidade à mão nem apenas escutar sem que uma placa responda.
+- Um navegador com suporte de Web Serial - **Chrome ou Edge**. O Firefox e o Safari
+  não implementam Web Serial e não conseguirão ligar de todo.
+- O Web Serial exige um contexto seguro (HTTPS) ou `localhost` - e não pode ser usado
+  a partir do interior de uma iframe. Se estiver a pré-visualizar esta aplicação dentro de uma
+  frame incorporada, abra-a primeiro no seu próprio separador.
+
+### Validação de tramas CAN
+
+Ambos os sentidos da ligação SLCAN são validados antes de qualquer coisa chegar à
+UI ou ao cabo (`src/hooks/useSerialCanBus.ts`):
+
+- **Saída** - `sendFrame()` recusa-se a serializar um comando cujo
+  identificador fique fora do intervalo CAN padrão de 11 bits (`0x000`-`0x7FF`),
+  cujo payload exceda 8 bytes, ou cujo payload contenha um byte fora de
+  `0x00`-`0xFF`. A UI mostra "Refusing malformed CAN frame: ..." em vez de
+  escrever texto inválido na porta série.
+- **Entrada** - `processBuffer()` exige uma correspondência real
+  `t<3-hex ID><1-hex DLC 0-8><hex payload>` antes de converter uma linha
+  SLCAN recebida num `CanFrame`; um DLC fora de `0`-`8` ou um payload mais curto
+  do que o seu próprio comprimento declarado é registado na consola e descartado em vez de
+  ser entregue a um painel de ferramenta como um byte `NaN`. Um timestamp
+  opcional do adaptador no final continua a ser aceite depois de um payload válido.
+
+## 🚀 Início rápido
 
 ### Pré-requisitos
+
 - Node.js 20 LTS+
 - npm
 
@@ -309,247 +358,75 @@ executa o compilador de TypeScript em modo de apenas verificação.
 
 A página compilada declara uma política de segurança de conteúdo (scripts só da própria página; ligações só a si mesma e ao GitHub) e carrega cada separador quando é aberto pela primeira vez. `npm run test:e2e` conduz-a num Chromium real perante uma placa modelada; ainda não foi experimentada com um adaptador real.
 
-### GitHub Pages (desativado até o dono o ativar)
-
-O repositório pode publicar o site compilado no GitHub Pages (fluxo `.github/workflows/pages.yml`: `npm ci`, verificação de tipos, testes, `npm run build` com o caminho base do projeto e depois `upload-pages-artifact` e `deploy-pages`). **O fluxo está desativado**: os seus dois trabalhos só correm quando a variável do repositório `URTC_PAGES_ENABLED` vale `true` (Settings > Secrets and variables > Actions > Variables), o que o dono faz depois da primeira release oficial assinada do URTC. A compilação executa então `npm run sync-firmware -- --require-official`: usa apenas o firmware da última release oficial (nunca uma pré-release, nunca a etiqueta de reserva de `firmware-release.json`), recusa qualquer ficheiro sem assinatura de release válida e qualquer imagem de aplicação compilada com a chave pública de desenvolvimento, pelo que a página publicada não pode conter imagens da chave de desenvolvimento. O Pages também tem de ser ativado uma vez (Settings > Pages > Source: GitHub Actions); com a variável por definir o fluxo é ignorado. O Web Serial precisa de um navegador baseado em Chromium e de https, que o Pages fornece.
-
-### Versionamento
-
-A `version` do `package.json` (e a `version` correspondente em `urtc.project.json`) só sobe com o passo explícito `python bump.py` (executa o `bump_manifest_version.py`, que lê a versão atual do `package.json`, incrementa-a, volta a escrevê-la, sincroniza o manifesto e acrescenta uma entrada mínima ao CHANGELOG se essa versão ainda não tiver uma). `build.bat`/`build.sh` apenas compilam e nunca tocam na versão. O `npm run
-build` (`vite build`) por si só é deliberadamente apenas de compilação e
-nunca toca na versão - o `scripts/bump-version.mjs` fazia este trabalho num
-desenho anterior com um hook `prebuild`, mas esse script é hoje legado, mantido apenas
-como referência (veja o seu próprio comentário de cabeçalho); o `npm run dev`/`lint`/`preview`
-também nunca tocam na versão. Isto não é Semantic Versioning: é um
-conta-quilómetros em base 10. O dígito de patch sobe de um em um; quando passaria de
-9, volta a 0 e o dígito de minor sobe no seu lugar (`0.1.9` -> `0.2.0`,
-nunca `0.1.10`); o mesmo transporte propaga-se de minor para major. Consulte o
-`CHANGELOG.md` para o histórico de versões e um resumo do trabalho passado neste
-projeto.
-
-## 📖 Mais documentação
-
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — como a UI, as definições
-  persistidas e a autoridade do transporte externo se mantêm separadas, e porque
-  é que os separadores sandbox têm de expor estados offline/indisponível em vez de
-  apresentar dados simulados como reais.
-- [`docs/BUILD_AND_RUN.md`](docs/BUILD_AND_RUN.md) — o caminho de validação
-  não mutante `build-test.bat`/`.sh` (TypeScript + testes, sem alterações de versão
-  nem de CHANGELOG), `dev.bat`/`.sh` para desenvolvimento local, e porque é que o
-  material de assinatura OTA nunca pertence à configuração do navegador.
-- [`docs/INTEGRATION_CONTRACT.md`](docs/INTEGRATION_CONTRACT.md) — o que este
-  cliente deve fazer perante um esquema desconhecido, uma identidade de destino
-  em falta ou um resultado de API malformado, e porque é que a autoridade real de
-  gravação permanece no servidor ou nas ferramentas de ambiente de trabalho dedicadas.
-
-## 🛠️ Stack tecnológica
-- **Linguagem:** TypeScript
-- **Framework de frontend:** React 18
-- **Ferramenta de build:** Vite
-- **Estilos:** Tailwind CSS
-- **Ícones:** Lucide React
-- **CRC32:** `crc-32` - verificação de integridade da imagem de firmware, espelha
-  o próprio cálculo de CRC32 do bootloader
-- **Transporte de hardware:** Web Serial API + framing SLCAN (sem dependências
-  nativas, sem servidor backend companheiro)
-
-## 📂 Estrutura do repositório
-
-```
-/
-├── src/
-│   ├── App.tsx                     Componente raiz - estado dos separadores, estado do hardware, CAN
-│   │                                registo de tramas, e os handlers ligados a cada
-│   │                                separador abaixo (incluindo o início/leitura de volta de CAN OTA e
-│   │                                o próprio injetor de tramas do CAN Bus Analyzer)
-│   ├── main.tsx                    Ponto de entrada do Vite/React
-│   ├── i18n.ts                     Configuracao do i18next - en/es/de/fr/it/zh/ja/pt, persistido
-│   │                                em localStorage
-│   ├── index.css                   Ponto de entrada do Tailwind
-│   ├── types.ts                    Tipos TypeScript partilhados (CanFrame, HardwareState,
-│   │                                FlasherState, ExpansionBoardType, ...)
-│   ├── vite-env.d.ts                Declaracoes de tipos ambientais proprias do Vite
-│   ├── *.test.ts                    Testes de Vitest, cada um junto ao módulo que cobre (npm test)
-│   ├── components/
-│   │   ├── Header.tsx               Barra superior: botao ligar/desligar, nome da
-│   │   │                            ferramenta ativa, interruptor sandbox FW v0.0/v0.1
-│   │   ├── Sidebar.tsx              Navegacao esquerda - os 7 separadores descritos neste README
-│   │   ├── ToolCatalog.tsx          Separador sandbox: o catalogo de 25 ferramentas, selecao
-│   │   │                            de ferramenta, controlo de setpoint
-│   │   ├── OledDisplay.tsx          Separador sandbox: pre-visualizacao do ecra de estado OLED
-│   │   ├── SpecsAndBomViewer.tsx    Separador sandbox: navegador de BOM/pinouts
-│   │   ├── ThermalCameraViewer.tsx  Separador sandbox: feed simulado do MLX90640 - 100%
-│   │   │                            Math.random(), sem qualquer trafego CAN (ver
-│   │   │                            "O que e real e o que e uma sandbox" acima)
-│   │   ├── HardwarePanel.tsx        Painel sandbox de controlo de jumpers/LED/placa de expansao,
-│   │   │                            usado dentro dos separadores Control e OLED
-│   │   ├── CanBusAnalyzer.tsx       Separador real: registo de tramas CAN em bruto, injetor
-│   │   │                            de tramas personalizadas, acionadores de comandos predefinidos
-│   │   ├── TraceReplayPanel.tsx     Carrega um rastreio .trc/.asc e reproduz-o no registo
-│   │   ├── NodePickerDialog.tsx     A janela das cabeças de ferramenta: encontrar as cabeças, selecionar uma e libertá-la
-│   │   ├── ConfirmDialog.tsx        A confirmação antes de uma ação que atua sobre a placa
-│   │   ├── FlasherStudio.tsx        Separador real: interface CAN-OTA (principal + slave de
-│   │   │                            expansao) e o explicador da capacidade SWD/JTAG
-│   │   ├── TesterStudio.tsx         Separador real: controlo/telemetria em direto por
-│   │   │                            ferramenta, construido a partir da pasta tester/ abaixo
-│   │   └── tester/
-│   │       ├── ToolPanels.tsx       Um painel por perfil de ferramenta - bytes de comando reais,
-│   │       │                        descodificacao de telemetria real, keepalive de watchdog por ferramenta
-│   │       ├── GlobalPanels.tsx     Global Controls, Expansion Board, F-RAM,
-│   │       │                        Self-Test, Raw Bus Monitor, injetor de Custom Frame
-│   │       ├── ExtrasPanels.tsx     Painéis da caixa negra, funções opcionais, PID do aquecedor, bancada do rack e vista térmica
-│   │       └── shared.tsx           Primitivas de UI partilhadas (Section, Field, classes de botao/input,
-│   │                                safeInt)
-│   ├── data/
-│   │   └── toolsData.ts             Os 25 TOOL_PROFILES - nomes, valores predefinidos, icones para
-│   │                                os separadores sandbox
-│   ├── hooks/
-│   │   ├── useSerialCanBus.ts       Transporte Web Serial + SLCAN - ligar/desligar,
-│   │   │                            TX/RX de tramas, waitForFrame por ID com um buffer rx
-│   │   │                            limitado e um limite de fila de 500 tramas
-│   │   ├── useFlasher.ts            Maquina de estados de CAN-OTA (placa principal + slave de
-│   │   │                            expansao), espelha flasher_protocol.py
-│   │   ├── useTraceReplay.ts        Reproduz um rastreio gravado no registo e nos painéis
-│   │   ├── useConfirmAction.ts      Pede a confirmação antes de uma ação que atua sobre a placa
-│   │   ├── useNodePicker.ts         Encontra as cabeças de ferramenta do barramento e mantém a selecionada
-│   │   ├── usePwa.ts                Cópia sem rede, botão de instalar e aviso de uma versão mais nova
-│   │   └── useKeepalive.ts          Hook de reenvio a intervalo fixo que suporta o keepalive
-│   │                                de watchdog da caixa de selecao ativa de cada ferramenta
-│   ├── lib/
-│   │   ├── flasher.ts               Constantes do protocolo OTA, auxiliares CRC32/HMAC,
-│   │   │                            leitura de manifestos (sem chave de assinatura)
-│   │   ├── traceReplay.ts           Lê rastreios .trc/.asc; o reprodutor com velocidade e pausas
-│   │   ├── boardVersion.ts          Consultas de versão: 0x7F9/0x7FA/0x7E9 e 0x217/0x218 do escravo
-│   │   ├── githubRelease.ts         Imagens da release mais recente do GitHub e a sua transferência
-│   │   ├── firmwareImage.ts         Verificações da imagem, destino do manifesto e versão (com patch)
-│   │   ├── firmwareSignature.ts     Escolhe a assinatura a enviar: a publicada,
-│   │   │                            ou uma chave introduzida para uma gravacao; verificacao sha256
-│   │   ├── quickState.ts            Descodificacao de 0x111 (falha termica, causa de reset)
-│   │   ├── bundledFirmware.ts       Gerado por scripts/sync-firmware.mjs
-│   │   ├── slcan.ts / customFrame.ts / boardConfig.ts / boardTelemetry.ts / toolLimits.ts / simPresets.ts Análise SLCAN, tramas próprias, configuração da placa, o que a placa disse, limites de ferramenta e predefinições do analisador
-│   │   ├── frameFilter.ts / frameQueue.ts / frameRouter.ts / frameBatcher.ts Filtro do monitor de barramento, fila de tramas não reclamadas, encaminhamento das respostas e agrupamento das tramas para o ecrã
-│   │   ├── blackBox.ts / thermalStats.ts / thermalHistory.ts / thermalView.ts / pid.ts Caixa negra, contadores térmicos acumulados e o seu histórico, imagem térmica, tramas do PID do aquecedor
-│   │   ├── nodePicker.ts / multinodeSim.ts Regras da janela das cabeças de ferramenta e um modelo dos nós para a experimentar sem placas
-│   │   ├── rackSim.ts               Simulador do rack de ferramentas (trama versão 2, big-endian)
-│   │   ├── sessionRecord.ts / traceExport.ts / download.ts Registo da sessão guardada (SHA-256 do log), ficheiros de registo e transferências
-│   │   ├── safeOff.ts / keepaliveLoop.ts / confirmController.ts / dangerousActions.ts Desligar os atuadores mantidos ativos e quais as ações que pedem primeiro uma confirmação
-│   │   ├── pwa.ts / serviceWorkerBuild.ts / selfUpdate.ts Cópia sem rede, o texto do service worker e o aviso de uma versão mais nova
-│   │   ├── releaseSignature.ts      Verificação da assinatura de uma versão publicada no navegador
-│   │   ├── generated/               Tabelas e vetores escritos por URTC-COMMON (ferramentas, identificadores, vetores partilhados) e o seu bloqueio
-│   │   └── canIds.ts                Constantes de CAN ID para o Tester Studio - espelha
-│   │                                 tester_config.py byte a byte
-│   └── locales/                     Cadeias da UI - en.json, es.json, de.json, fr.json,
-│                                     it.json, ja.json, zh.json, pt.json
-├── scripts/
-│   ├── bump-version.mjs             Script de subida de versao sem dependencias; legado
-│   │                                 hoje, mantido apenas como referencia - substituido
-│   │                                 por bump_manifest_version.py (ver "Versionamento")
-│   ├── sync-firmware.mjs            Copia os ficheiros da release do URTC (ou uma
-│   │                                  pasta local) para public/firmware/, digests
-│   │                                  verificados - npm run sync-firmware
-│   ├── sw.template.js               Modelo do service worker que a compilação escreve como sw.js
-│   └── sync-firmware.test.mjs       Testes de sync-firmware.mjs
-├── public/
-│   ├── firmware/                    .bin/.elf/.hex incluidos para a aplicacao principal,
-│   │                                  o bootloader principal, a aplicacao do slave de expansao,
-│   │                                  e o bootloader do slave de expansao
-│   ├── _headers                     Cabeçalhos de segurança para anfitriões que leem este ficheiro
-│   └── manifest.webmanifest         Manifesto da aplicação web (nome, ícones) para instalar o Studio
-├── images/
-│   ├── URTC_WEB_STUDIO_BANNER.svg   Banner de logotipo completo (mostrado no topo deste README)
-│   ├── URTC_APP_ICON_NEW.svg        Icone da aplicacao
-│   ├── urtc_custom_icon.svg         Icone da aplicacao, mesma arte
-│   └── urtc_icon.ico                Favicon
-├── index.html                       HTML de entrada do Vite
-├── vite.config.ts                   Configuracao do Vite + plugin do Tailwind
-├── tsconfig.json                    Configuracao do TypeScript
-├── playwright.config.ts             Definições das verificações de ponta a ponta num navegador real (npm run test:e2e)
-├── e2e/                             As verificações de ponta a ponta e o modelo do adaptador e da placa que conduzem
-├── .env.example                     A aplicacao nao le nenhuma variavel
-├── dev.bat / dev.sh                 Instala dependencias + inicia o servidor de desenvolvimento do Vite
-├── build.bat / build.sh             Instala dependencias + produz a build estatica de dist/
-├── build-test.bat / build-test.sh   Verificação sem mudar a versão: tipos, testes e compilação
-├── tools/
-│   ├── ci_validate.py               Validacao de manifesto/CHANGELOG/docs usada pela CI
-│   ├── build_test.py                Verificação sem mudar a versão usada por build-test.sh / .bat
-│   └── _doc_policy.py / _readme_parity.py / _tracked_names.py Verificações partilhadas usadas por ci_validate.py
-├── bump.py                          Comando explícito para subir a versão (compilar nunca a sobe)
-├── bump_manifest_version.py         Subida de versão, iniciada apenas por `bump.py` (package.json + manifesto, ver "Versionamento"); o modo `--sync` também existe para aceitar uma subida nativa anterior
-├── package.json
-├── package-lock.json Versões exatas das dependências (npm ci)
-├── urtc_i18n.lock.json Bloqueio dos ficheiros de idioma gerados a partir do catálogo de URTC-COMMON
-├── CHANGELOG.md                     Histórico de versões e um resumo do trabalho passado
-├── LICENSE
-├── NOTICE                      Aviso de direitos de autor e licença da documentação
-├── README.md                        Este ficheiro
-├── docs/
-│   ├── ARCHITECTURE.md
-│   ├── BUILD_AND_RUN.md
-│   └── INTEGRATION_CONTRACT.md
-└── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md / README_por.md  <- traduções
-```
-
-<!-- urtc-section:heads -->
-## 🧭 Várias cabeças de ferramenta num barramento
-
-O firmware pode fazer várias cabeças de ferramenta partilharem um barramento CAN (a extensão multinó). Vem **desativada por defeito**, e um barramento com uma só cabeça funciona exatamente como antes. A janela **Cabeças** encontra as cabeças, lista cada uma com o seu endereço, ferramenta e número de série, e mostra o seu estado: pronta, selecionada, conflito de endereço, falha retida, no seu bootloader ou perdida. Seleciona uma, o programa pede confirmação e só depois lhe envia alguma coisa; enquanto houver várias cabeças no barramento, um comando é recusado até uma estar selecionada e o ter confirmado. Se a cabeça selecionada se perder, todas as cabeças passam ao estado seguro (uma caixa da janela desativa-o). Só foi testada contra um modelo do barramento, não com placas. Veja `docs/MULTINODE.md` em URTC-COMMON.
-<!-- /urtc-section:heads -->
-
 <!-- urtc-section:compatibility -->
-## 🧩 Compatibilidade
+### Requisitos e compatibilidade
 
 As versões dos programas URTC que funcionam em conjunto, e a versão do protocolo que cada uma fala, constam da tabela de compatibilidade que o URTC-COMMON gera: [docs/COMPATIBILITY.md](https://github.com/JuanenRac/URTC/blob/main/docs/COMPATIBILITY.md).
 <!-- /urtc-section:compatibility -->
 
-## 📜 LICENÇA
+## 🧪 Testes
 
-O URTC Web Studio é (c) 2026 JuanenRac (Electro Hobby 3D). Este aviso deve
-ser incluído em quaisquer distribuições deste projeto ou de trabalhos derivados.
+`npm test` (Vitest) executa 560 testes da lógica pura: análise de SLCAN, emparelhamento de pedidos e respostas, verificações de imagens de firmware e manifestos, assinaturas de release, limites de ferramenta, confirmações, as regras que separam o simulador do barramento real, exportação e reprodução de traços, o seletor de nós, o simulador do suporte, o registo de sessão guardado, a cópia offline, a sincronização do firmware e os oito idiomas da interface. `npm run lint` verifica os tipos do código e `npm run test:e2e` executa 19 verificações de ponta a ponta num Chromium real contra um adaptador e uma placa modelados (`npm run test:coverage` acrescenta um mínimo de cobertura). Os ecrãs e o transporte Web Serial não têm testes unitários próprios; as verificações de ponta a ponta comandam-nos. Nada disto correu contra um adaptador ou uma placa reais.
 
-Este projeto é composto por código-fonte e pela sua própria documentação, disponibilizados
-sob licenças diferentes - cada uma adequada ao que realmente cobre:
+## 🏗️ Compilação e publicação
 
-1. O código-fonte (tudo o que está em `src/`, mais a configuração de
-   Vite/TypeScript que o compila) está disponível sob a **GNU General Public
-   License v3.0 (GPL-3.0-or-later)**. Texto completo em
-   https://www.gnu.org/licenses/gpl-3.0.html.
+### GitHub Pages (desativado até o dono o ativar)
 
-2. A documentação (este README e as suas próprias traduções -
-   `README_spa.md`, `README_ita.md`, `README_fra.md`, `README_deu.md`,
-   `README_zho.md`, `README_jpn.md`) está
-   disponível sob **Creative Commons Attribution-ShareAlike 4.0
-   International (CC BY-SA 4.0)**. Texto completo em
-   https://creativecommons.org/licenses/by-sa/4.0/.
+O repositório pode publicar o site compilado no GitHub Pages (fluxo `.github/workflows/pages.yml`: `npm ci`, verificação de tipos, testes, `npm run build` com o caminho base do projeto e depois `upload-pages-artifact` e `deploy-pages`). **O fluxo está desativado**: os seus dois trabalhos só correm quando a variável do repositório `URTC_PAGES_ENABLED` vale `true` (Settings > Secrets and variables > Actions > Variables), o que o dono faz depois da primeira release oficial assinada do URTC. A compilação executa então `npm run sync-firmware -- --require-official`: usa apenas o firmware da última release oficial (nunca uma pré-release, nunca a etiqueta de reserva de `firmware-release.json`), recusa qualquer ficheiro sem assinatura de release válida e qualquer imagem de aplicação compilada com a chave pública de desenvolvimento, pelo que a página publicada não pode conter imagens da chave de desenvolvimento. O Pages também tem de ser ativado uma vez (Settings > Pages > Source: GitHub Actions); com a variável por definir o fluxo é ignorado. O Web Serial precisa de um navegador baseado em Chromium e de https, que o Pages fornece.
 
-Esta ferramenta é o companheiro baseado no navegador do projeto
-[URTC (Universal Robot Tool Controller)](https://github.com/JuanenRac/URTC)
-- consulte o repositório próprio desse projeto para o firmware da placa, os desenhos
-de hardware e a documentação completa do protocolo contra o qual esta ferramenta
-foi implementada. O firmware do próprio URTC é GPL-3.0-or-later e os seus desenhos de hardware são
-CERN-OHL-S v2; a licença desta ferramenta aqui não se estende a esse projeto
-separado, e vice-versa. Existem também duas alternativas nativas de ambiente de trabalho
-que cobrem o mesmo terreno: [URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER)
-e [URTC Tester](https://github.com/JuanenRac/URTC-TESTER).
+A `version` de `package.json` e a de `urtc.project.json` só mudam com um passo explícito (`python bump.py`, que mantém as duas iguais e escreve a entrada do registo de alterações); `build.bat` / `build.sh`, `npm run build`, `npm run dev`, `npm run lint` e `npm run preview` nunca alteram a versão.
 
-Se construir sobre este projeto, tenha em conta a divisão de licenças: as alterações
-de código devem manter-se GPL-3.0-or-later, os derivados da documentação devem manter-se CC
-BY-SA - cada um com atribuição a este projeto e ao seu autor.
+## 📂 Estrutura do repositório
 
-**Separadores Caixa negra, Funções opcionais, Bancada do rack e Vista térmica (novos, verificados apenas com simulações):** o Tester Studio lê o registador de falhas (`0x1A8` / `0x1A9`) e descarrega-o em CSV ou JSON, automaticamente uma vez por cada erro indicado pela placa quando essa opção está ativa; liga as funções opcionais do firmware (`0x1AE` / `0x1AF`, desligadas por predefinição, após uma confirmação; atuam após o próximo arranque); simula o rack de ferramentas na página, com a identidade de cada cabeça (tipo e número de série); e desenha a imagem de inspeção térmica em falsa cor (uma imagem simulada di-lo). O catálogo de ferramentas vem agora dos perfis de ferramenta partilhados do URTC-COMMON. Nada disto foi experimentado com uma placa real.
+<p align="center">
+  <img src="images/repository-structure.svg" alt="Estrutura do repositório URTC-WEB-STUDIO" width="100%">
+</p>
 
-**Visualizador da caixa negra (novo, verificado só com testes):** o separador Black Box desenha a temperatura medida e o valor pretendido dos segundos gravados antes do erro, com uma linha onde o indicador de erro aparece pela primeira vez, e abre um registo guardado antes (o ficheiro JSON ou CSV que o próprio separador escreve) sem placa ligada; um ficheiro que não é um registo, tem um valor fora do intervalo ou mais de 67 amostras é recusado com o motivo.
+<details>
+<summary>Versão em texto da árvore</summary>
 
-**Cópia sem rede e instalação (novo, verificado só com testes e um navegador):** a compilação escreve um service worker (`sw.js`) e um manifesto de aplicação web; depois da primeira visita por https (ou em localhost) o navegador guarda a página, os seus scripts e o firmware incluído, o cabeçalho diz **Funciona sem rede** e o Studio abre sem ligação (o cabeçalho passa então a dizer **Sem rede**); onde o navegador o oferece, um botão **Instalar** instala o Studio como aplicação. A página e o manifesto do firmware são sempre pedidos primeiro à rede, pelo que quem está ligado recebe os mais recentes; o `version.json` nunca é respondido a partir da cópia; uma versão nova espera que os separadores abertos se fechem antes de assumir. A API do GitHub não é guardada: sem rede não se pode consultar a última release e só se usam as imagens incluídas.
+```text
+URTC-WEB-STUDIO/
+├── src/                                           a aplicação: componentes, hooks, a lógica de CAN, SLCAN e firmware, os oito ficheiros de idioma e as tabelas geradas
+├── docs/                                          arquitetura, compilação e execução, contrato de integração
+├── e2e/                                           verificações de ponta a ponta e o modelo da placa
+├── public/                                        firmware incluído, cabeçalhos, manifesto web
+├── scripts/                                       sincronização do firmware e service worker
+├── tools/                                         verificação de compilação e ferramentas partilhadas
+├── images/                                        faixa e imagens deste README
+├── .github/                                       fluxo de CI e modelos de issues e pull requests
+├── build.sh build.bat                             scripts de compilação
+├── build-test.sh build-test.bat                   scripts de compilação e testes que não alteram nada no repositório
+├── test.sh test.bat                               executam os testes
+├── urtc.project.json                              manifesto: versão, papel, maturidade e comando de compilação
+├── CHANGELOG.md                                   o que mudou em cada versão
+├── SECURITY.md SUPPORT.md LICENSE                 política de segurança, suporte e licença
+├── CONTRIBUTING.md CODE_OF_CONDUCT.md             como contribuir e código de conduta
+├── .gitattributes .gitignore                      definições do Git
+├── dev.sh dev.bat                                 instalar e arrancar o servidor de desenvolvimento
+├── bump.py bump_manifest_version.py               scripts que sobem a versão
+├── index.html                                     página de entrada do Vite
+├── package.json package-lock.json tsconfig.json   pacotes, versões fixadas, TypeScript e Vite
+├── playwright.config.ts vite.config.ts            definições das verificações de ponta a ponta
+├── urtc_i18n.lock.json                            bloqueio dos ficheiros de idioma gerados
+└── NOTICE LICENSE.md                              aviso de direitos de autor e licença da documentação
+```
 
-**Contadores térmicos ao longo do tempo (novo, verificado só com testes e uma placa modelada):** no separador Caixa negra os contadores térmicos de toda a vida (`0x1AA` / `0x1AB`) podem ser lidos de novo a cada 10 s, 30 s, 1 min ou 5 min; cada leitura junta-se a um histórico guardado no navegador que desenha as horas do aquecedor e as falhas ao longo do tempo, pode ser descarregado em CSV e limpo; um contador que desce (outra placa) recomeça o histórico.
+</details>
 
-**Sessão guardada (novo, verificado só com testes e uma placa modelada):** o Monitor de barramento guarda as tramas como um log e um registo que identifica o log pelo seu SHA-256 e pelo seu tamanho, no mesmo formato que o Tester de secretária escreve; **Verificar uma sessão guardada** recebe o registo e o seu log e diz se andam juntos. Mostra que um log não foi editado. Onde o navegador sabe fazer assinaturas Ed25519, o registo leva também uma assinatura feita com uma chave deste navegador (criada na primeira utilização e guardada no navegador): mostra que o registo não foi editado depois de assinado e não diz quem tem a chave. O monitor também pode mostrar só os ID que escrever, ou só as tramas cujos dados mudaram (a taxa e a carga continuam a contar todas as tramas).
+A lista anotada de cada ficheiro de código, uma linha por ficheiro, está em [docs/SOURCE_MAP.md](docs/SOURCE_MAP.md).
 
-**Aviso de versão (novo, verificado só com testes):** a compilação escreve um `version.json` junto da página; a página compilada compara-o uma vez, ao abrir e só com a mesma origem, com a sua própria versão e avisa quando é servida uma superior, com um botão Recarregar. Nada recarrega sozinho, uma versão igual ou anterior não diz nada e um ficheiro em falta ou a falta de rede passam em silêncio.
+## 🗺️ Roteiro e limites conhecidos
 
-**PID do aquecedor (no separador Funções opcionais; novo, verificado só com simulações):** o Tester Studio lê o estado do PID do aquecedor do firmware (`0x1B9` / `0x1BA`: os ganhos em vigor, o estado e a saída do último ciclo de controlo), guarda ganhos (de 0 a 600) e inicia ou cancela o autoajuste por relé, que aquece a ponta em torno do ponto de regulação atual do ferro de soldar (100 a 445 C) e guarda os ganhos encontrados. Guardar ganhos e iniciar o autoajuste pedem confirmação, cancelar não; um ganho que não seja um número de 0 a 600 é recusado antes de enviar o que quer que seja. A função tem de ser ativada antes, entre as funções opcionais; nada disto foi experimentado com uma placa real.
+- Um modo só de escuta e a escolha da velocidade à mão: não é possível entrar num barramento em que nenhuma placa responde.
+- A leitura da imagem térmica não verifica antes se o sensor está pronto nem repete um bloco perdido.
+- Transferir um ficheiro de firmware diretamente da release do GitHub dentro do navegador: o GitHub serve os ficheiros de uma release a partir de um anfitrião sem cabeçalhos CORS, pelo que a transferência pode ser bloqueada (a imagem incluída, ou um ficheiro escolhido do disco com o seu `.manifest.json`, funcionam sempre).
 
-## 🔗 Projetos Relacionados
+## 🌍 Idiomas
+
+O README e os textos existem em inglês, espanhol, francês, italiano, alemão, chinês, japonês e português europeu.
+
+## 🔗 Projetos relacionados
 
 Este projeto faz parte do ecossistema de robótica HYDRA-UMC do mesmo autor (JuanenRac / Electro Hobby 3D). Vale a pena conhecê-los, uma vez que um pedido pode, na verdade, dizer respeito a um destes e não a este repositório.
 
@@ -642,9 +519,20 @@ Este projeto faz parte do ecossistema de robótica HYDRA-UMC do mesmo autor (Jua
 - **[HYDRA-UMC-OPS-AGENT](https://github.com/JuanenRac/HYDRA-UMC-OPS-AGENT)** — coordenador de incidentes de manutenção: um papel edge de baixo privilégio recolhe um snapshot de inventário/saúde higienizado, um papel control-plane apresenta-o só de leitura e pede a um fornecedor de IA que sugira um diagnóstico - nunca aplica um patch nem implanta nada.
 - **[HYDRA-UMC-DEV-SERVER](https://github.com/JuanenRac/HYDRA-UMC-DEV-SERVER)** — host de desenvolvimento reprodutível (Raspberry Pi 5 / CM5) que armazena o código-fonte do ecossistema e executa tarefas limitadas de build/teste sob uma fila durável; um papel de desenvolvimento dedicado, explicitamente não um CM5 operacional.
 
----
+## 📚 Documentação
 
-## 📚 Documentação e Comunidade
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — como a UI, as definições
+  persistidas e a autoridade do transporte externo se mantêm separadas, e porque
+  é que os separadores sandbox têm de expor estados offline/indisponível em vez de
+  apresentar dados simulados como reais.
+- [`docs/BUILD_AND_RUN.md`](docs/BUILD_AND_RUN.md) — o caminho de validação
+  não mutante `build-test.bat`/`.sh` (TypeScript + testes, sem alterações de versão
+  nem de CHANGELOG), `dev.bat`/`.sh` para desenvolvimento local, e porque é que o
+  material de assinatura OTA nunca pertence à configuração do navegador.
+- [`docs/INTEGRATION_CONTRACT.md`](docs/INTEGRATION_CONTRACT.md) — o que este
+  cliente deve fazer perante um esquema desconhecido, uma identidade de destino
+  em falta ou um resultado de API malformado, e porque é que a autoridade real de
+  gravação permanece no servidor ou nas ferramentas de ambiente de trabalho dedicadas.
 
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** — stack tecnológica e diretrizes de codificação para um pull request.
 - **[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)** — as normas de comportamento esperadas nesta comunidade.
@@ -652,8 +540,64 @@ Este projeto faz parte do ecossistema de robótica HYDRA-UMC do mesmo autor (Jua
 - **[SUPPORT.md](SUPPORT.md)** — onde colocar questões e reportar erros.
 - **[LICENSE.md](LICENSE.md)** — a licença própria deste projeto.
 
+## 🤝 Contribuir e comunidade
+
+* Antes de um pull request execute `URTC_CI=1 python tools/ci_validate.py`: tem de passar. Veja [CONTRIBUTING.md](CONTRIBUTING.md) e o [código de conduta](CODE_OF_CONDUCT.md).
+* O README existe em oito idiomas: uma alteração ao texto faz-se nos oito ficheiros, e as secções partilhadas com outros repositórios são escritas por `tools/readme_sections.py` do URTC-COMMON.
+* Uma alteração ao protocolo CAN começa no URTC-COMMON (`spec/can_protocol.json`) e chega a este repositório através da cópia verificada.
+* Não descreva como a funcionar numa placa aquilo que só foi compilado.
+* Comunique uma vulnerabilidade em privado: [SECURITY.md](SECURITY.md). Perguntas, ideias e relatórios: electrohobby3d@gmail.com ([SUPPORT.md](SUPPORT.md)).
+
 ## 👤 AUTOR
 
 **JuanenRac** (Electro Hobby 3D)
 📧 electrohobby3d@gmail.com
 📺 [youtube.com/@electrohobby3d](https://youtube.com/@electrohobby3d)
+
+## 📜 LICENÇA
+
+O URTC Web Studio é (c) 2026 JuanenRac (Electro Hobby 3D). Este aviso deve
+ser incluído em quaisquer distribuições deste projeto ou de trabalhos derivados.
+
+Este projeto é composto por código-fonte e pela sua própria documentação, disponibilizados
+sob licenças diferentes - cada uma adequada ao que realmente cobre:
+
+1. O código-fonte (tudo o que está em `src/`, mais a configuração de
+   Vite/TypeScript que o compila) está disponível sob a **GNU General Public
+   License v3.0 (GPL-3.0-or-later)**. Texto completo em
+   https://www.gnu.org/licenses/gpl-3.0.html.
+
+2. A documentação (este README e as suas próprias traduções -
+   `README_spa.md`, `README_ita.md`, `README_fra.md`, `README_deu.md`,
+   `README_zho.md`, `README_jpn.md`) está
+   disponível sob **Creative Commons Attribution-ShareAlike 4.0
+   International (CC BY-SA 4.0)**. Texto completo em
+   https://creativecommons.org/licenses/by-sa/4.0/.
+
+Esta ferramenta é o companheiro baseado no navegador do projeto
+[URTC (Universal Robot Tool Controller)](https://github.com/JuanenRac/URTC)
+- consulte o repositório próprio desse projeto para o firmware da placa, os desenhos
+de hardware e a documentação completa do protocolo contra o qual esta ferramenta
+foi implementada. O firmware do próprio URTC é GPL-3.0-or-later e os seus desenhos de hardware são
+CERN-OHL-S v2; a licença desta ferramenta aqui não se estende a esse projeto
+separado, e vice-versa. Existem também duas alternativas nativas de ambiente de trabalho
+que cobrem o mesmo terreno: [URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER)
+e [URTC Tester](https://github.com/JuanenRac/URTC-TESTER).
+
+Se construir sobre este projeto, tenha em conta a divisão de licenças: as alterações
+de código devem manter-se GPL-3.0-or-later, os derivados da documentação devem manter-se CC
+BY-SA - cada um com atribuição a este projeto e ao seu autor.
+
+**Separadores Caixa negra, Funções opcionais, Bancada do rack e Vista térmica (novos, verificados apenas com simulações):** o Tester Studio lê o registador de falhas (`0x1A8` / `0x1A9`) e descarrega-o em CSV ou JSON, automaticamente uma vez por cada erro indicado pela placa quando essa opção está ativa; liga as funções opcionais do firmware (`0x1AE` / `0x1AF`, desligadas por predefinição, após uma confirmação; atuam após o próximo arranque); simula o rack de ferramentas na página, com a identidade de cada cabeça (tipo e número de série); e desenha a imagem de inspeção térmica em falsa cor (uma imagem simulada di-lo). O catálogo de ferramentas vem agora dos perfis de ferramenta partilhados do URTC-COMMON. Nada disto foi experimentado com uma placa real.
+
+**Visualizador da caixa negra (novo, verificado só com testes):** o separador Black Box desenha a temperatura medida e o valor pretendido dos segundos gravados antes do erro, com uma linha onde o indicador de erro aparece pela primeira vez, e abre um registo guardado antes (o ficheiro JSON ou CSV que o próprio separador escreve) sem placa ligada; um ficheiro que não é um registo, tem um valor fora do intervalo ou mais de 67 amostras é recusado com o motivo.
+
+**Cópia sem rede e instalação (novo, verificado só com testes e um navegador):** a compilação escreve um service worker (`sw.js`) e um manifesto de aplicação web; depois da primeira visita por https (ou em localhost) o navegador guarda a página, os seus scripts e o firmware incluído, o cabeçalho diz **Funciona sem rede** e o Studio abre sem ligação (o cabeçalho passa então a dizer **Sem rede**); onde o navegador o oferece, um botão **Instalar** instala o Studio como aplicação. A página e o manifesto do firmware são sempre pedidos primeiro à rede, pelo que quem está ligado recebe os mais recentes; o `version.json` nunca é respondido a partir da cópia; uma versão nova espera que os separadores abertos se fechem antes de assumir. A API do GitHub não é guardada: sem rede não se pode consultar a última release e só se usam as imagens incluídas.
+
+**Contadores térmicos ao longo do tempo (novo, verificado só com testes e uma placa modelada):** no separador Caixa negra os contadores térmicos de toda a vida (`0x1AA` / `0x1AB`) podem ser lidos de novo a cada 10 s, 30 s, 1 min ou 5 min; cada leitura junta-se a um histórico guardado no navegador que desenha as horas do aquecedor e as falhas ao longo do tempo, pode ser descarregado em CSV e limpo; um contador que desce (outra placa) recomeça o histórico.
+
+**Sessão guardada (novo, verificado só com testes e uma placa modelada):** o Monitor de barramento guarda as tramas como um log e um registo que identifica o log pelo seu SHA-256 e pelo seu tamanho, no mesmo formato que o Tester de secretária escreve; **Verificar uma sessão guardada** recebe o registo e o seu log e diz se andam juntos. Mostra que um log não foi editado. Onde o navegador sabe fazer assinaturas Ed25519, o registo leva também uma assinatura feita com uma chave deste navegador (criada na primeira utilização e guardada no navegador): mostra que o registo não foi editado depois de assinado e não diz quem tem a chave. O monitor também pode mostrar só os ID que escrever, ou só as tramas cujos dados mudaram (a taxa e a carga continuam a contar todas as tramas).
+
+**Aviso de versão (novo, verificado só com testes):** a compilação escreve um `version.json` junto da página; a página compilada compara-o uma vez, ao abrir e só com a mesma origem, com a sua própria versão e avisa quando é servida uma superior, com um botão Recarregar. Nada recarrega sozinho, uma versão igual ou anterior não diz nada e um ficheiro em falta ou a falta de rede passam em silêncio.
+
+**PID do aquecedor (no separador Funções opcionais; novo, verificado só com simulações):** o Tester Studio lê o estado do PID do aquecedor do firmware (`0x1B9` / `0x1BA`: os ganhos em vigor, o estado e a saída do último ciclo de controlo), guarda ganhos (de 0 a 600) e inicia ou cancela o autoajuste por relé, que aquece a ponta em torno do ponto de regulação atual do ferro de soldar (100 a 445 C) e guarda os ganhos encontrados. Guardar ganhos e iniciar o autoajuste pedem confirmação, cancelar não; um ganho que não seja um número de 0 a 600 é recusado antes de enviar o que quer que seja. A função tem de ser ativada antes, entre as funções opcionais; nada disto foi experimentado com uma placa real.

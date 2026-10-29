@@ -15,22 +15,16 @@
   <a href="README_por.md">🇵🇹 Português</a>
 </p>
 
+### Die wichtigsten Abläufe des URTC-Flashers und -Testers in einem Browser-Tab, über einen USB-CAN-Adapter und Web Serial
 
 <p align="center">
   <img src="https://img.shields.io/badge/Lizenz-GPL%203.0-blue.svg" alt="GPL 3.0 or later">
+  <img src="https://img.shields.io/badge/Tests-560-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
 </p>
 
-
-Ein browserbasierter Begleiter für den **Universal Robot Tool Controller (URTC)** -
-eine React/Vite-Single-Page-App, die mit echter URTC-Hardware (bisher nie mit solcher betrieben) über einen
-USB-CAN-Adapter via der [Web Serial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API)
-spricht, wobei dasselbe SLCAN-Framing und CAN-Protokoll wie bei den beiden
-Desktop-Begleit-Tools verwendet wird, [URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER) und
-[URTC Tester](https://github.com/JuanenRac/URTC-TESTER). Das Ziel ist, die wichtigsten Abläufe dieser beiden Tools in einem einzigen Browser-Tab bereitzustellen, keine vereinfachte Demo davon; volle Funktionsparität ist noch nicht erreicht (siehe „Noch nicht abgedeckt“ weiter unten) - die Tabs Flasher Studio und Tester Studio senden
-und empfangen die echten CAN-Frames, die in `docs/CANBUS.TXT` des
-[URTC](https://github.com/JuanenRac/URTC)-Repository beschrieben sind.
+---
 
 **Ehrlichkeitscheck - was heute wirklich funktioniert:** `npm test` (Vitest) deckt die reine Logik ab: SLCAN-Parsing, Zuordnung von Anfrage und Antwort, Prüfungen von Firmware-Images und Manifesten, Werkzeuggrenzen, Bestätigungen, die Regeln, die den Simulator vom echten Bus trennen, den Trace-Export und die acht Oberflächensprachen. Die Oberflächen und der Web-Serial-Transport selbst haben keine Unit-Tests (die End-to-End-Prüfungen am Ende dieses Absatzes steuern sie gegen eine modellierte Platine), und nichts davon ist in dieser Umgebung gegen eine echte URTC-Platine gelaufen (hier gibt es keinen USB-CAN-Adapter zum Testen): Flasher Studio, Tester Studio und der CAN-Bus-Protokollanalysator sind echter Code, der nur durch diese Tests, die Typprüfung (`npm run lint`) und Code-Durchsicht verifiziert ist. Control/OLED/Specs-BOM/Thermal IR Inspection sind offen als Sandbox-Tabs gekennzeichnet, ohne jeglichen CAN-Verkehr. Siehe `CHANGELOG.md` für das, was bisher genau ausgeliefert wurde. `npm run test:e2e` öffnet außerdem die gebaute Seite in einem echten Browser (Playwright) gegen eine modellierte Platine: So werden die Offline-Kopie, der Verlauf der Thermik-Zähler und die gespeicherte Sitzung geprüft.
 
@@ -44,9 +38,12 @@ und empfangen die echten CAN-Frames, die in `docs/CANBUS.TXT` des
 |---|---|
 | Version | `0.3.7` |
 | Reifegrad | Funktionsfähig |
+| Tests | 560 (`npm test`) |
 | Technik | Web Serial API / TypeScript |
 | Ziel | Ein Webbrowser auf dem PC des Benutzers |
 | Auf echter Hardware | Nur simuliert: gegen Emulatoren, Attrappen oder Simulatoren getestet; für diese Version ist kein Lauf auf echter Hardware vermerkt |
+
+**Springe zu:** [Überblick](#-überblick) · [Architektur](#-architektur) · [Funktionen](#-funktionen) · [Sicherheit](#-sicherheit-und-schutz) · [Schnittstellen](#-schnittstellen) · [Schnellstart](#-schnellstart) · [Tests](#-tests) · [Struktur](#-struktur-des-repositorys) · [Verwandte](#-verwandte-projekte)
 
 <!-- urtc-section:status_web_studio -->
 ## 🚦 Projektstatus
@@ -63,7 +60,18 @@ und empfangen die echten CAN-Frames, die in `docs/CANBUS.TXT` des
 
 <!-- /urtc-section:status_web_studio -->
 
-## 🧭 Was echt ist vs. was eine Sandbox ist
+## 🎯 Überblick
+
+Ein browserbasierter Begleiter für den **Universal Robot Tool Controller (URTC)** -
+eine React/Vite-Single-Page-App, die mit echter URTC-Hardware (bisher nie mit solcher betrieben) über einen
+USB-CAN-Adapter via der [Web Serial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API)
+spricht, wobei dasselbe SLCAN-Framing und CAN-Protokoll wie bei den beiden
+Desktop-Begleit-Tools verwendet wird, [URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER) und
+[URTC Tester](https://github.com/JuanenRac/URTC-TESTER). Das Ziel ist, die wichtigsten Abläufe dieser beiden Tools in einem einzigen Browser-Tab bereitzustellen, keine vereinfachte Demo davon; volle Funktionsparität ist noch nicht erreicht (siehe „Noch nicht abgedeckt“ weiter unten) - die Tabs Flasher Studio und Tester Studio senden
+und empfangen die echten CAN-Frames, die in `docs/CANBUS.TXT` des
+[URTC](https://github.com/JuanenRac/URTC)-Repository beschrieben sind.
+
+### Was echt ist vs. was eine Sandbox ist
 
 Diese App hat zwei Arten von Tabs:
 
@@ -90,42 +98,33 @@ Diese App hat zwei Arten von Tabs:
     MLX9064x-Daten erscheinen nur innerhalb des Panels „Thermal Inspection"
     von Tester Studio, und nur sobald Hardware angeschlossen ist.
 
-## 🔌 Benötigte Hardware
+## 🧩 Rolle in URTC
 
-- Ein USB-CAN-Adapter mit **SLCAN**-Firmware (z. B. ein CANable mit
-  `candlelight`/`slcan`, oder jeder Adapter, der das standardmäßige serielle
-  SLCAN-Protokoll `lawicel` spricht) - dieselbe Adapterklasse, die beide
-  Desktop-Tools über ihren eigenen seriellen Transport unterstützen.
-- Der Bus auf **500 kbit/s** eingestellt. Beim Verbinden probiert die App nacheinander 500, 250, 125 kbit/s und die übrigen Standardraten und behält die erste, bei der eine Platine auf eine Versionsabfrage antwortet; die Rate lässt sich noch nicht von Hand wählen, und ohne antwortende Platine kann man nicht nur mithören.
-- Ein Browser mit Web-Serial-Unterstützung - **Chrome oder Edge**. Firefox und
-  Safari implementieren Web Serial nicht und können sich überhaupt nicht
-  verbinden.
-- Web Serial erfordert entweder einen sicheren Kontext (HTTPS) oder
-  `localhost` - und kann nicht aus einem iframe heraus verwendet werden. Wenn
-  Sie diese App innerhalb eines eingebetteten Frames in der Vorschau
-  betrachten, öffnen Sie sie zuerst in ihrem eigenen Tab.
+URTC-WEB-STUDIO ist die Browser-Version der beiden Desktop-Programme von URTC, URTC-FLASHER und URTC-TESTER: eine React-Seite, die über einen USB-CAN-Adapter mit Web Serial mit einer URTC-Platine spricht, mit derselben SLCAN-Rahmung und demselben CAN-Protokoll (Tabellen und Vektoren werden aus URTC-COMMON erzeugt). Sie bringt deren wichtigste Abläufe in einen Browser-Tab, ohne etwas zu installieren, und überlässt SWD/JTAG, das kein Browser ansteuern kann, dem Desktop-Flasher. Dazu gibt es Sandbox-Tabs, die die 25 Werkzeuge offline erkunden und nichts senden.
 
-## 🛡️ CAN-Frame-Validierung
+## 🏛️ Architektur
 
-Beide Richtungen der SLCAN-Verbindung werden validiert, bevor irgendetwas
-die UI oder die Leitung erreicht (`src/hooks/useSerialCanBus.ts`):
+<p align="center">
+  <img src="images/architecture.svg" alt="Architektur von URTC-WEB-STUDIO: wer es nutzt, was es enthält und wovon es abhängt" width="100%">
+</p>
 
-- **Ausgehend** - `sendFrame()` verweigert die Serialisierung eines
-  Befehls, dessen Kennung außerhalb des 11-Bit-Standard-CAN-Bereichs
-  (`0x000`-`0x7FF`) liegt, dessen Nutzlast 8 Byte überschreitet, oder deren
-  Nutzlast ein Byte außerhalb von `0x00`-`0xFF` enthält. Die UI zeigt
-  "Refusing malformed CAN frame: ..." an, statt ungültigen Text an den
-  seriellen Port zu schreiben.
-- **Eingehend** - `processBuffer()` verlangt eine echte Übereinstimmung
-  mit `t<3-stellige Hex-ID><1-stelliges Hex-DLC 0-8><Hex-Nutzlast>`, bevor
-  eine empfangene SLCAN-Zeile in einen `CanFrame` umgewandelt wird; ein DLC
-  außerhalb von `0`-`8` oder eine Nutzlast, die kürzer als ihre eigene
-  angegebene Länge ist, wird in der Konsole protokolliert und verworfen,
-  statt einem Werkzeug-Panel als `NaN`-Byte übergeben zu werden. Ein
-  optionaler abschließender Adapter-Zeitstempel wird nach einer gültigen
-  Nutzlast weiterhin akzeptiert.
+Wie die Teile dieses Repositorys zusammenpassen: wer es nutzt, was es enthält und wovon es abhängt. Das Bild wird aus `docs/architecture.json` gezeichnet und gegen den Code geprüft.
 
-## ⚡ Flasher Studio - echte Funktionsabdeckung
+### Technologie-Stack
+
+- **Sprache:** TypeScript
+- **Frontend-Framework:** React 18
+- **Build-Tool:** Vite
+- **Styling:** Tailwind CSS
+- **Icons:** Lucide React
+- **CRC32:** `crc-32` - Integritätsprüfung des Firmware-Images, spiegelt die
+  eigene CRC32-Berechnung des Bootloaders
+- **Hardware-Transport:** Web Serial API + SLCAN-Framing (keine nativen
+  Abhängigkeiten, kein begleitender Backend-Server)
+
+## ✨ Funktionen
+
+### Flasher Studio - echte Funktionsabdeckung
 
 Portiert aus dem eigenen `flasher_protocol.py` von `URTC-FLASHER`, gegen
 dieselben CAN-IDs:
@@ -185,7 +184,7 @@ dieselben CAN-IDs:
   / freie Werkzeugkonfiguration (ID-Pins `11111`) / Peripherie-Infos &
   Seriennummer - `0x1A0`-`0x1A7`.
 
-### SWD/JTAG - von einem Browser aus per Design nicht verfügbar
+#### SWD/JTAG - von einem Browser aus per Design nicht verfügbar
 
 Es gibt keine Web-API, die eine SWD/JTAG-Debug-Sonde steuern kann - Web
 Serial spricht nur mit seriell geframten Geräten (wie einem
@@ -198,7 +197,7 @@ lokal ausführen würde, zur Referenz - verwenden Sie dieses Tool direkt für
 die Programmierung des kompletten Chips, Option-Byte/RDP-Prüfungen, oder
 ein vollständiges Flash-Backup vor einer Massenlöschung.
 
-## 🧰 Tester Studio - echte Funktionsabdeckung
+### Tester Studio - echte Funktionsabdeckung
 
 Portiert aus den Panels des eigenen Qt-Quick-Decks von `URTC-TESTER`
 (`assets/qml/TesterDeck.qml`), gegen dieselben CAN-IDs:
@@ -232,6 +231,26 @@ Portiert aus den Panels des eigenen Qt-Quick-Decks von `URTC-TESTER`
   die Platinenversion (`0x7F8`/`0x7F9`) ab, und ein deklarierter kritischer
   Fehler (`0x111` Byte 1) erscheint als Live-Fehlerbanner.
 
+<!-- urtc-section:heads -->
+### Mehrere Werkzeugköpfe an einem Bus
+
+Die Firmware kann mehrere Werkzeugköpfe an einem CAN-Bus betreiben (die Multinode-Erweiterung). Sie ist **standardmäßig aus**, und ein Bus mit einem Kopf arbeitet genau wie bisher. Das Fenster **Köpfe** findet die Köpfe, listet jeden mit Adresse, Werkzeug und Seriennummer und zeigt seinen Zustand: bereit, ausgewählt, Adresskonflikt, Fehler gespeichert, im Bootloader oder verloren. Sie wählen einen aus, das Programm fragt nach einer Bestätigung und sendet erst danach etwas an diesen Kopf; solange mehrere Köpfe am Bus hängen, wird ein Befehl abgelehnt, bis einer ausgewählt ist und es bestätigt hat. Geht der ausgewählte Kopf verloren, wechseln alle Köpfe in ihren sicheren Zustand (ein Kontrollkästchen des Fensters schaltet das ab). Getestet wurde nur gegen ein Modell des Busses, nicht mit Platinen. Siehe `docs/MULTINODE.md` in URTC-COMMON.
+<!-- /urtc-section:heads -->
+
+## 🔒 Sicherheit und Schutz
+
+| Bedrohung | Abwehr |
+|---|---|
+| Ein fehlerhafter Frame erreicht die Leitung oder den Bildschirm | Beide Richtungen der SLCAN-Verbindung werden geprüft: Ein Bezeichner außerhalb von `0x000`-`0x7FF`, Nutzdaten über 8 Bytes oder ein Byte außerhalb von `0x00`-`0xFF` werden vor dem Schreiben abgelehnt, und eine eingehende Zeile, die kein echter SLCAN-Frame ist, wird verworfen |
+| Ein Geheimnis steckt in der Seite | Die App enthält keinen Signaturschlüssel: Flasher Studio sendet nur die Signatur, die der URTC-Build neben jedem Image veröffentlicht hat, sodass die Seite öffentlich gehostet werden kann |
+| Ein falsches oder manipuliertes Firmware-Image | Ein Manifest, dessen `sha256` nicht zur Datei passt, blockiert das Flashen; jedes Image eines offiziellen Releases trägt eine Ed25519-Release-Signatur, die die Seite im Browser prüft, bevor sie das Image sendet |
+| Eine simulierte Antwort wird für echt gehalten | Die Sandbox-Tabs senden nichts und antworten, solange eine Platine verbunden ist, nichts; ihre Frames sind mit SIM markiert, ein abgespielter Trace mit REPLAY |
+| Eine Aktion auf der Platine aus Versehen | Laser, Bohrer, UV-Härtung, Schweißen, Heizungen, Bewegung, Pastenjetting, Schreibzugriffe auf den Platinenspeicher, riskante von Hand eingegebene Frames und ein mit dem öffentlichen Entwicklungsschlüssel signiertes Image verlangen vorher eine Bestätigung |
+| Ein Aktor, der weiterläuft | Jedes Werkzeug mit Firmware-Watchdog wird durch erneutes Senden am Leben gehalten und abgeschaltet, wenn das Panel ersetzt wird, der Tab wechselt, die Platine getrennt oder die Seite geschlossen wird; STOP ALL schaltet alles ab, was die Seite am Leben hält |
+| Eine Seite, die Code von anderswo lädt | Eine Content Security Policy: Skripte nur von der Seite selbst, Verbindungen nur zu sich selbst und zu GitHub |
+
+STOP ALL ist ein Software-Befehl, kein Not-Halt, und keine der obigen Prüfungen ist eine Sicherheitsfunktion.
+
 ### Trennung vom Simulator und Bestätigungen (Software-Prüfungen, keine Sicherheitsfunktionen)
 
 - Die Sandbox-Tabs (Control, OLED, Thermal IR) übertragen nichts. Ihre Frames sind mit SIM markiert, und solange eine Platine verbunden ist, erzeugen sie keine simulierte Antwort. Von den vordefinierten Nachrichten des Protokollanalysators werden an eine verbundene Platine nur einfache Abfragen gesendet; der Rest bleibt simuliert.
@@ -242,13 +261,7 @@ Portiert aus den Panels des eigenen Qt-Quick-Decks von `URTC-TESTER`
 - Meldet die Platine einen kritischen Fehler, nennt das Banner auch den Grund des Schutzes gegen thermisches Durchgehen, sofern die Platine ihn meldet.
 - **Wiedergabe eines aufgezeichneten Traces** (CAN Bus Protocol Analyzer): Eine `.trc`- oder `.asc`-Datei, etwa die vom Raw Bus Monitor exportierte, spielt ihre empfangenen Frames ohne Platine in das Protokoll und die Panels ein, mit 0,25x bis 10x und wahlweise in einer Schleife. Die Frames sind als REPLAY markiert, es wird nichts gesendet, eine Aufzeichnung beantwortet nie eine Anfrage, sie wird nie als Aussage der Platine exportiert, und die Wiedergabe pausiert, solange eine Platine verbunden ist.
 
-### Noch nicht abgedeckt
-
-- Ein reiner Mithörmodus und die manuelle Wahl der Bitrate: Ein Bus, auf dem keine Platine antwortet, lässt sich nicht aufschalten.
-- Das Auslesen des Wärmebilds prüft nicht vorab, ob der Sensor bereit ist, und wiederholt keinen verlorenen Block.
-- Eine Firmware-Datei direkt aus dem GitHub-Release im Browser herunterladen: GitHub liefert Release-Dateien von einem Host ohne CORS-Header aus, der Download kann daher blockiert sein (das mitgelieferte Image oder eine von der Festplatte gewählte Datei mit ihrer `.manifest.json` funktionieren immer).
-
-## 🔐 Sicherheitshinweis: kein Signierschlüssel in dieser App
+### Sicherheitshinweis: kein Signierschlüssel in dieser App
 
 Seit 0.2.3 enthält diese App **keinen** HMAC-SHA256-Signierschlüssel. Der
 URTC-Build signiert jedes Anwendungs-Image selbst (bei Release-Builds mit einem privaten Schlüssel; die veröffentlichten Images verwenden den öffentlichen Entwicklungsschlüssel) und veröffentlicht die Signatur daneben; Flasher
@@ -279,9 +292,45 @@ Manifeste.
 
 Jede Datei eines offiziellen Releases hat eine Release-Signatur (`<Datei>.sig`, Ed25519): Die Synchronisierung prüft sie, wenn sie vorhanden ist, und lehnt eine falsche ab; ein Satz ohne Signaturen (eine Bench-Vorabversion oder ein lokaler Build) braucht `--allow-unsigned`. Die Seite prüft dieselbe Signatur im Browser (Web Crypto), bevor sie ein mitgeliefertes Image oder ein Image aus einem GitHub-Release an eine Platine sendet, und bricht ab, wenn sie ungültig ist.
 
-## 🚀 Erste Schritte
+## 🔌 Schnittstellen
+
+- Ein USB-CAN-Adapter mit **SLCAN**-Firmware (z. B. ein CANable mit
+  `candlelight`/`slcan`, oder jeder Adapter, der das standardmäßige serielle
+  SLCAN-Protokoll `lawicel` spricht) - dieselbe Adapterklasse, die beide
+  Desktop-Tools über ihren eigenen seriellen Transport unterstützen.
+- Der Bus auf **500 kbit/s** eingestellt. Beim Verbinden probiert die App nacheinander 500, 250, 125 kbit/s und die übrigen Standardraten und behält die erste, bei der eine Platine auf eine Versionsabfrage antwortet; die Rate lässt sich noch nicht von Hand wählen, und ohne antwortende Platine kann man nicht nur mithören.
+- Ein Browser mit Web-Serial-Unterstützung - **Chrome oder Edge**. Firefox und
+  Safari implementieren Web Serial nicht und können sich überhaupt nicht
+  verbinden.
+- Web Serial erfordert entweder einen sicheren Kontext (HTTPS) oder
+  `localhost` - und kann nicht aus einem iframe heraus verwendet werden. Wenn
+  Sie diese App innerhalb eines eingebetteten Frames in der Vorschau
+  betrachten, öffnen Sie sie zuerst in ihrem eigenen Tab.
+
+### CAN-Frame-Validierung
+
+Beide Richtungen der SLCAN-Verbindung werden validiert, bevor irgendetwas
+die UI oder die Leitung erreicht (`src/hooks/useSerialCanBus.ts`):
+
+- **Ausgehend** - `sendFrame()` verweigert die Serialisierung eines
+  Befehls, dessen Kennung außerhalb des 11-Bit-Standard-CAN-Bereichs
+  (`0x000`-`0x7FF`) liegt, dessen Nutzlast 8 Byte überschreitet, oder deren
+  Nutzlast ein Byte außerhalb von `0x00`-`0xFF` enthält. Die UI zeigt
+  "Refusing malformed CAN frame: ..." an, statt ungültigen Text an den
+  seriellen Port zu schreiben.
+- **Eingehend** - `processBuffer()` verlangt eine echte Übereinstimmung
+  mit `t<3-stellige Hex-ID><1-stelliges Hex-DLC 0-8><Hex-Nutzlast>`, bevor
+  eine empfangene SLCAN-Zeile in einen `CanFrame` umgewandelt wird; ein DLC
+  außerhalb von `0`-`8` oder eine Nutzlast, die kürzer als ihre eigene
+  angegebene Länge ist, wird in der Konsole protokolliert und verworfen,
+  statt einem Werkzeug-Panel als `NaN`-Byte übergeben zu werden. Ein
+  optionaler abschließender Adapter-Zeitstempel wird nach einer gültigen
+  Nutzlast weiterhin akzeptiert.
+
+## 🚀 Schnellstart
 
 ### Voraussetzungen
+
 - Node.js 20 LTS+
 - npm
 
@@ -324,275 +373,73 @@ Prüfmodus aus.
 
 Die gebaute Seite deklariert eine Content-Security-Policy (Skripte nur von der Seite selbst; Verbindungen nur zu ihr selbst und zu GitHub) und lädt jeden Tab beim ersten Öffnen. `npm run test:e2e` steuert sie in einem echten Chromium gegen eine modellierte Platine; mit einem echten Adapter wurde sie nicht ausprobiert.
 
-### GitHub Pages (ausgeschaltet, bis der Eigentümer es einschaltet)
-
-Das Repository kann die gebaute Seite auf GitHub Pages veröffentlichen (Workflow `.github/workflows/pages.yml`: `npm ci`, Typprüfung, Tests, `npm run build` mit dem Projekt-Basispfad, dann `upload-pages-artifact` und `deploy-pages`). **Der Workflow ist ausgeschaltet**: Beide Jobs laufen nur, wenn die Repository-Variable `URTC_PAGES_ENABLED` auf `true` steht (Settings > Secrets and variables > Actions > Variables), was der Eigentümer nach dem ersten signierten offiziellen Release von URTC setzt. Der Build führt dann `npm run sync-firmware -- --require-official` aus: Er nimmt nur die Firmware des neuesten offiziellen Releases (nie ein Pre-Release, nie das Ersatz-Tag aus `firmware-release.json`), lehnt jede Datei ohne gültige Release-Signatur und jedes Anwendungs-Image ab, das mit dem öffentlichen Entwicklungsschlüssel gebaut wurde; die veröffentlichte Seite kann also keine Images des Entwicklungsschlüssels enthalten. Pages selbst muss einmal aktiviert werden (Settings > Pages > Source: GitHub Actions); ohne die Variable wird der Workflow übersprungen. Web Serial braucht einen Chromium-basierten Browser und https, was Pages bietet.
-
-### Versionierung
-
-`package.json`s `version` (und der passende `version`-Wert in `urtc.project.json`) wird nur vom ausdrücklichen Schritt `python bump.py` erhöht (er führt `bump_manifest_version.py` aus, das die aktuelle Version aus `package.json` liest, erhöht, zurückschreibt, das Manifest synchronisiert und einen knappen CHANGELOG-Eintrag hinzufügt, falls diese Version noch keinen hat). `build.bat`/`build.sh` kompilieren nur und rühren die Version nie an. `npm run build` (`vite build`) allein ist bewusst rein
-kompilierend und rührt die Version nie an - `scripts/bump-version.mjs`
-erledigte diese Aufgabe in einem früheren Design mit `prebuild`-Hook, ist
-heute aber legacy und wird nur noch als Referenz aufbewahrt (siehe dessen
-eigenen Kopfkommentar); `npm run dev`/`lint`/`preview` fassen die Version
-ebenfalls nie an. Das ist keine Semantic Versioning: Es ist ein
-Kilometerzähler auf Basis 10. Die Patch-Ziffer erhöht sich um 1; würde sie 9
-überschreiten, wird sie auf 0 zurückgesetzt und stattdessen die
-Minor-Ziffer erhöht (`0.1.9` -> `0.2.0`, nie `0.1.10`); derselbe Übertrag
-pflanzt sich von Minor zu Major fort. Siehe `CHANGELOG.md` für die
-Versionshistorie und eine Zusammenfassung der bisherigen Arbeit an diesem
-Projekt.
-
-## 📖 Weitere Dokumentation
-
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — wie UI, gespeicherte
-  Einstellungen und die Hoheit über den externen Transport getrennt
-  bleiben, und warum die Sandbox-Tabs Offline-/Nicht-verfügbar-Zustände
-  zeigen müssen, statt simulierte Daten als live darzustellen.
-- [`docs/BUILD_AND_RUN.md`](docs/BUILD_AND_RUN.md) — der nicht-mutierende
-  Prüfpfad `build-test.bat`/`.sh` (TypeScript + Tests, ohne Versions- oder
-  CHANGELOG-Änderung), `dev.bat`/`.sh` für die lokale Entwicklung, und
-  warum OTA-Signiermaterial nie in die Browser-Konfiguration gehört.
-- [`docs/INTEGRATION_CONTRACT.md`](docs/INTEGRATION_CONTRACT.md) — was
-  dieser Client bei einem unbekannten Schema, fehlender Zielidentität oder
-  einem fehlerhaften API-Ergebnis tun muss, und warum die echte
-  Flash-Hoheit serverseitig oder in den dedizierten Desktop-Tools bleibt.
-
-## 🛠️ Technologie-Stack
-- **Sprache:** TypeScript
-- **Frontend-Framework:** React 18
-- **Build-Tool:** Vite
-- **Styling:** Tailwind CSS
-- **Icons:** Lucide React
-- **CRC32:** `crc-32` - Integritätsprüfung des Firmware-Images, spiegelt die
-  eigene CRC32-Berechnung des Bootloaders
-- **Hardware-Transport:** Web Serial API + SLCAN-Framing (keine nativen
-  Abhängigkeiten, kein begleitender Backend-Server)
-
-## 📂 Repository-Struktur
-
-```
-/
-├── src/
-│   ├── App.tsx                     Wurzelkomponente - Tab-Zustand,
-│   │                                Hardware-Zustand, CAN-Frame-Protokollierung,
-│   │                                und die Handler, die in jeden Tab unten
-│   │                                verdrahtet sind (einschließlich CAN-OTA-
-│   │                                Start/Ruecklesung und dem eigenen
-│   │                                Frame-Injektor des CAN Bus Analyzer)
-│   ├── main.tsx                    Vite/React-Einstiegspunkt
-│   ├── i18n.ts                     i18next-Setup - en/es/de/fr/it/zh/ja/pt, in
-│   │                                localStorage persistiert
-│   ├── index.css                   Tailwind-Einstiegspunkt
-│   ├── types.ts                    Gemeinsame TypeScript-Typen (CanFrame,
-│   │                                HardwareState, FlasherState,
-│   │                                ExpansionBoardType, ...)
-│   ├── vite-env.d.ts                Vites eigene ambiente Typdeklarationen
-│   ├── *.test.ts                    Vitest-Tests, jeweils neben dem Modul, das sie abdecken (npm test)
-│   ├── components/
-│   │   ├── Header.tsx               Obere Leiste: Verbinden/Trennen-Button,
-│   │   │                            Name des aktiven Werkzeugs, Sandbox-
-│   │   │                            Umschalter FW v0.0/v0.1
-│   │   ├── Sidebar.tsx              Linke Navigation - die 7 in diesem
-│   │   │                            README beschriebenen Tabs
-│   │   ├── ToolCatalog.tsx          Sandbox-Tab: der 25-Werkzeug-Katalog,
-│   │   │                            Werkzeugauswahl, Sollwertsteuerung
-│   │   ├── OledDisplay.tsx          Sandbox-Tab: Vorschau der
-│   │   │                            OLED-Statusbildschirme
-│   │   ├── SpecsAndBomViewer.tsx    Sandbox-Tab: BOM/Pinout-Browser
-│   │   ├── ThermalCameraViewer.tsx  Sandbox-Tab: simulierter
-│   │   │                            MLX90640-Feed - 100% Math.random(),
-│   │   │                            uberhaupt kein CAN-Verkehr (siehe „Was
-│   │   │                            echt ist vs. was eine Sandbox ist" oben)
-│   │   ├── HardwarePanel.tsx        Sandbox-Steuerpanel fuer
-│   │   │                            Jumper/LED/Erweiterungsplatine, verwendet
-│   │   │                            innerhalb der Tabs Control und OLED
-│   │   ├── CanBusAnalyzer.tsx       Echter Tab: rohes CAN-Frame-Protokoll,
-│   │   │                            benutzerdefinierter Frame-Injektor,
-│   │   │                            voreingestellte Befehlsausloeser
-│   │   ├── TraceReplayPanel.tsx     Lädt einen .trc/.asc-Trace und spielt ihn ins Protokoll ein
-│   │   ├── NodePickerDialog.tsx     Das Fenster der Werkzeugköpfe: Köpfe finden, einen auswählen, ihn freigeben
-│   │   ├── ConfirmDialog.tsx        Die Bestätigung vor einer Aktion, die auf die Platine wirkt
-│   │   ├── FlasherStudio.tsx        Echter Tab: CAN-OTA-UI (Haupt- +
-│   │   │                            Erweiterungs-Slave) und der
-│   │   │                            SWD/JTAG-Faehigkeits-Erklaerer
-│   │   ├── TesterStudio.tsx         Echter Tab: Live-Steuerung/Telemetrie
-│   │   │                            pro Werkzeug, aufgebaut aus dem
-│   │   │                            tester/-Ordner unten
-│   │   └── tester/
-│   │       ├── ToolPanels.tsx       Ein Panel pro Werkzeugprofil - echte
-│   │       │                        Befehlsbytes, echte
-│   │       │                        Telemetrie-Dekodierung, Watchdog-
-│   │       │                        Keepalive pro Werkzeug
-│   │       ├── GlobalPanels.tsx     Global Controls, Expansion Board, F-RAM,
-│   │       │                        Self-Test, Raw Bus Monitor,
-│   │       │                        Custom-Frame-Injektor
-│   │       ├── ExtrasPanels.tsx     Panels für Blackbox, optionale Funktionen, Heizungs-PID, Rack-Prüfstand und Wärmebild
-│   │       └── shared.tsx           Gemeinsame UI-Primitive (Section, Field,
-│   │                                Button-/Input-Klassen, safeInt)
-│   ├── data/
-│   │   └── toolsData.ts             Die 25 TOOL_PROFILES - Namen,
-│   │                                Standardwerte, Icons fuer die
-│   │                                Sandbox-Tabs
-│   ├── hooks/
-│   │   ├── useSerialCanBus.ts       Web Serial + SLCAN-Transport -
-│   │   │                            Verbinden/Trennen, Frame-TX/RX,
-│   │   │                            waitForFrame pro ID mit einem
-│   │   │                            begrenzten Rx-Puffer und einer
-│   │   │                            500-Frame-Warteschlangenbegrenzung
-│   │   ├── useFlasher.ts            CAN-OTA-Zustandsmaschine (Hauptplatine
-│   │   │                            + Erweiterungs-Slave), spiegelt
-│   │   │                            flasher_protocol.py
-│   │   ├── useTraceReplay.ts        Spielt einen aufgezeichneten Trace in Protokoll und Panels ein
-│   │   ├── useConfirmAction.ts      Fragt die Bestätigung vor einer Aktion ab, die auf die Platine wirkt
-│   │   ├── useNodePicker.ts         Findet die Werkzeugköpfe des Busses und hält den ausgewählten
-│   │   ├── usePwa.ts                Offline-Kopie, Installieren-Schaltfläche und Hinweis auf eine neuere Version
-│   │   └── useKeepalive.ts          Hook fuer erneutes Senden mit festem
-│   │                                Intervall, der den Watchdog-Keepalive
-│   │                                der Aktiv-Checkbox jedes Werkzeugs
-│   │                                stuetzt
-│   ├── lib/
-│   │   ├── flasher.ts               OTA-Protokollkonstanten, CRC32/HMAC-Helfer,
-│   │   │                            Manifest-Auswertung (kein Signierschlüssel)
-│   │   ├── traceReplay.ts           Liest .trc/.asc-Traces; der Player mit Tempo und Pausen
-│   │   ├── boardVersion.ts          Versionsabfragen: 0x7F9/0x7FA/0x7E9 und 0x217/0x218 des Slaves
-│   │   ├── githubRelease.ts         Images des neuesten GitHub-Releases und ihr Download
-│   │   ├── firmwareImage.ts         Image-Prüfungen, Manifest-Ziel und Version (mit Patch)
-│   │   ├── firmwareSignature.ts     Wählt die zu sendende Signatur: die veröffent-
-│   │   │                            lichte oder einen einmalig eingegebenen Schlüssel
-│   │   ├── quickState.ts            0x111-Auswertung (Thermikfehler, Reset-Ursache)
-│   │   ├── bundledFirmware.ts       Erzeugt von scripts/sync-firmware.mjs
-│   │   ├── slcan.ts / customFrame.ts / boardConfig.ts / boardTelemetry.ts / toolLimits.ts / simPresets.ts SLCAN-Parsing, eigene Frames, Platinenkonfiguration, was die Platine gesagt hat, Werkzeuggrenzen und Voreinstellungen des Analysators
-│   │   ├── frameFilter.ts / frameQueue.ts / frameRouter.ts / frameBatcher.ts Filter des Bus-Monitors, Warteschlange nicht abgeholter Frames, Weiterleitung der Antworten und Bündelung der Frames für den Bildschirm
-│   │   ├── blackBox.ts / thermalStats.ts / thermalHistory.ts / thermalView.ts / pid.ts Blackbox, Lebensdauer-Thermikzähler und ihr Verlauf, Wärmebild, Frames des Heizungs-PID
-│   │   ├── nodePicker.ts / multinodeSim.ts Regeln des Fensters der Werkzeugköpfe und ein Modell der Knoten, um es ohne Platinen auszuprobieren
-│   │   ├── rackSim.ts               Simulator des Werkzeug-Racks (Frame-Version 2, Big-Endian)
-│   │   ├── sessionRecord.ts / traceExport.ts / download.ts Datensatz der gespeicherten Sitzung (SHA-256 des Logs), Trace-Dateien und Downloads
-│   │   ├── safeOff.ts / keepaliveLoop.ts / confirmController.ts / dangerousActions.ts Abschalten der am Leben gehaltenen Aktoren und welche Aktionen zuerst eine Bestätigung verlangen
-│   │   ├── pwa.ts / serviceWorkerBuild.ts / selfUpdate.ts Offline-Kopie, der Text des Service Workers und der Hinweis auf eine neuere Version
-│   │   ├── releaseSignature.ts      Prüfung der Signatur einer Veröffentlichung im Browser
-│   │   ├── generated/               Von URTC-COMMON geschriebene Tabellen und Vektoren (Werkzeuge, Kennungen, gemeinsame Vektoren) und ihre Sperrdatei
-│   │   └── canIds.ts                CAN-ID-Konstanten fuer Tester Studio -
-│   │                                 spiegelt tester_config.py byte-fuer-byte
-│   └── locales/                     UI-Zeichenketten - en.json, es.json,
-│                                     de.json, fr.json, it.json, ja.json, zh.json, pt.json
-├── scripts/
-│   ├── bump-version.mjs             Abhaengigkeitsfreies Versions-Skript; heute legacy,
-│   │                                 nur als Referenz erhalten - abgeloest durch
-│   │                                 bump_manifest_version.py (siehe "Versionierung")
-│   ├── sync-firmware.mjs            Kopiert die URTC-Release-Dateien (oder einen
-│   │                                  lokalen Ordner) nach public/firmware/,
-│   │                                  Prüfsummen geprüft - npm run sync-firmware
-│   ├── sw.template.js               Vorlage des Service Workers, den der Build als sw.js schreibt
-│   └── sync-firmware.test.mjs       Tests von sync-firmware.mjs
-├── public/
-│   ├── firmware/                    Gebuendelte .bin/.elf/.hex fuer die
-│   │                                  Hauptanwendung, den Haupt-Bootloader,
-│   │                                  die Erweiterungs-Slave-Anwendung, und
-│   │                                  den Erweiterungs-Slave-Bootloader
-│   ├── _headers                     Sicherheits-Header für Hosts, die diese Datei lesen
-│   └── manifest.webmanifest         Web-App-Manifest (Name, Symbole) zum Installieren des Studios
-├── images/
-│   ├── URTC_WEB_STUDIO_BANNER.svg   Vollstaendiges Logo-Banner (oben in
-│   │                                  diesem README gezeigt)
-│   ├── URTC_APP_ICON_NEW.svg        App-Icon
-│   ├── urtc_custom_icon.svg         App-Icon, gleiche Grafik
-│   └── urtc_icon.ico                Favicon
-├── index.html                       Vite-Einstiegs-HTML
-├── vite.config.ts                   Vite + Tailwind-Plugin-Konfiguration
-├── tsconfig.json                    TypeScript-Konfiguration
-├── playwright.config.ts             Einstellungen der End-to-End-Prüfungen in einem echten Browser (npm run test:e2e)
-├── e2e/                             Die End-to-End-Prüfungen und das Modell von Adapter und Platine, das sie steuern
-├── .env.example                     Die App liest keine Variablen
-├── dev.bat / dev.sh                 Installiert Abhaengigkeiten + startet
-│                                     den Vite-Dev-Server
-├── build.bat / build.sh             Installiert Abhaengigkeiten + erzeugt
-├── build-test.bat / build-test.sh   Prüfung ohne Versionsänderung: Typen, Tests und Build
-│                                     den statischen dist/-Build
-├── tools/
-│   ├── ci_validate.py               Manifest-/CHANGELOG-/Doku-Validierung, von der CI genutzt
-│   ├── build_test.py                Prüfung ohne Versionsänderung, die build-test.sh / .bat verwenden
-│   └── _doc_policy.py / _readme_parity.py / _tracked_names.py Gemeinsame Prüfungen, die ci_validate.py verwendet
-├── bump.py                          Ausdrücklicher Befehl zum Erhöhen der Version (Kompilieren erhöht nie)
-├── bump_manifest_version.py         Versionserhöhung, nur vom ausdrücklichen `bump.py` ausgelöst (package.json + Manifest, siehe "Versionierung"); der Modus `--sync` existiert ebenfalls, um eine vorherige native Erhöhung zu übernehmen
-├── package.json
-├── package-lock.json Genaue Versionen der Abhängigkeiten (npm ci)
-├── urtc_i18n.lock.json Sperrdatei der aus dem Katalog von URTC-COMMON erzeugten Sprachdateien
-├── CHANGELOG.md                     Versionshistorie und Zusammenfassung bisheriger Arbeit
-├── LICENSE
-├── NOTICE                      Copyright-Hinweis und Lizenz der Dokumentation
-├── README.md                        Diese Datei
-├── docs/
-│   ├── ARCHITECTURE.md
-│   ├── BUILD_AND_RUN.md
-│   └── INTEGRATION_CONTRACT.md
-└── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md / README_por.md  <- Übersetzungen
-```
-
-<!-- urtc-section:heads -->
-## 🧭 Mehrere Werkzeugköpfe an einem Bus
-
-Die Firmware kann mehrere Werkzeugköpfe an einem CAN-Bus betreiben (die Multinode-Erweiterung). Sie ist **standardmäßig aus**, und ein Bus mit einem Kopf arbeitet genau wie bisher. Das Fenster **Köpfe** findet die Köpfe, listet jeden mit Adresse, Werkzeug und Seriennummer und zeigt seinen Zustand: bereit, ausgewählt, Adresskonflikt, Fehler gespeichert, im Bootloader oder verloren. Sie wählen einen aus, das Programm fragt nach einer Bestätigung und sendet erst danach etwas an diesen Kopf; solange mehrere Köpfe am Bus hängen, wird ein Befehl abgelehnt, bis einer ausgewählt ist und es bestätigt hat. Geht der ausgewählte Kopf verloren, wechseln alle Köpfe in ihren sicheren Zustand (ein Kontrollkästchen des Fensters schaltet das ab). Getestet wurde nur gegen ein Modell des Busses, nicht mit Platinen. Siehe `docs/MULTINODE.md` in URTC-COMMON.
-<!-- /urtc-section:heads -->
-
 <!-- urtc-section:compatibility -->
-## 🧩 Kompatibilität
+### Voraussetzungen und Kompatibilität
 
 Welche Versionen der URTC-Programme zusammenarbeiten und welche Protokollversion jede spricht, steht in der Kompatibilitätstabelle, die URTC-COMMON erzeugt: [docs/COMPATIBILITY.md](https://github.com/JuanenRac/URTC/blob/main/docs/COMPATIBILITY.md).
 <!-- /urtc-section:compatibility -->
 
-## 📜 LIZENZ
+## 🧪 Tests
 
-URTC Web Studio ist (c) 2026 JuanenRac (Electro Hobby 3D). Dieser Hinweis
-muss in allen Verbreitungen dieses Projekts oder abgeleiteten Werken
-enthalten sein.
+`npm test` (Vitest) führt 560 Tests der reinen Logik aus: SLCAN-Parsing, Zuordnung von Anfragen und Antworten, Prüfungen von Firmware-Images und Manifesten, Release-Signaturen, Werkzeuggrenzen, Bestätigungen, die Regeln, die den Simulator vom echten Bus trennen, Trace-Export und -Wiedergabe, die Knotenauswahl, den Rack-Simulator, die gespeicherte Sitzungsaufzeichnung, die Offline-Kopie, die Firmware-Synchronisierung und die acht Oberflächensprachen. `npm run lint` prüft die Typen des Quelltexts, und `npm run test:e2e` führt 19 End-to-End-Prüfungen in einem echten Chromium gegen einen modellierten Adapter und eine modellierte Platine aus (`npm run test:coverage` fügt eine Abdeckungsschwelle hinzu). Die Bildschirme und der Web-Serial-Transport haben keine eigenen Unit-Tests; die End-to-End-Prüfungen steuern sie an. Nichts davon lief gegen einen echten Adapter oder eine echte Platine.
 
-Dieses Projekt besteht aus Quellcode und seiner eigenen Dokumentation, die
-unter verschiedenen Lizenzen verfügbar gemacht werden - jede passend zu
-dem, was sie tatsächlich abdeckt:
+## 🏗️ Build und Veröffentlichung
 
-1. Der Quellcode (alles unter `src/`, plus die Vite/TypeScript-Konfiguration,
-   die ihn baut) ist unter der **GNU General Public License v3.0
-   (GPL-3.0-or-later)** verfügbar. Vollständiger Text unter
-   https://www.gnu.org/licenses/gpl-3.0.html.
+### GitHub Pages (ausgeschaltet, bis der Eigentümer es einschaltet)
 
-2. Die Dokumentation (dieses README und seine eigenen Übersetzungen -
-   `README_spa.md`, `README_ita.md`, `README_fra.md`, `README_deu.md`,
-   `README_zho.md`, `README_jpn.md`) ist
-   unter **Creative Commons Attribution-ShareAlike 4.0 International
-   (CC BY-SA 4.0)** verfügbar. Vollständiger Text unter
-   https://creativecommons.org/licenses/by-sa/4.0/.
+Das Repository kann die gebaute Seite auf GitHub Pages veröffentlichen (Workflow `.github/workflows/pages.yml`: `npm ci`, Typprüfung, Tests, `npm run build` mit dem Projekt-Basispfad, dann `upload-pages-artifact` und `deploy-pages`). **Der Workflow ist ausgeschaltet**: Beide Jobs laufen nur, wenn die Repository-Variable `URTC_PAGES_ENABLED` auf `true` steht (Settings > Secrets and variables > Actions > Variables), was der Eigentümer nach dem ersten signierten offiziellen Release von URTC setzt. Der Build führt dann `npm run sync-firmware -- --require-official` aus: Er nimmt nur die Firmware des neuesten offiziellen Releases (nie ein Pre-Release, nie das Ersatz-Tag aus `firmware-release.json`), lehnt jede Datei ohne gültige Release-Signatur und jedes Anwendungs-Image ab, das mit dem öffentlichen Entwicklungsschlüssel gebaut wurde; die veröffentlichte Seite kann also keine Images des Entwicklungsschlüssels enthalten. Pages selbst muss einmal aktiviert werden (Settings > Pages > Source: GitHub Actions); ohne die Variable wird der Workflow übersprungen. Web Serial braucht einen Chromium-basierten Browser und https, was Pages bietet.
 
-Dieses Tool ist der browserbasierte Begleiter des Projekts
-[URTC (Universal Robot Tool Controller)](https://github.com/JuanenRac/URTC)
-- siehe das eigene Repository dieses Projekts für die
-Platinen-Firmware, Hardware-Designs, und vollständige
-Protokolldokumentation, gegen die dieses Tool implementiert. Die eigene
-Firmware von URTC ist GPL-3.0-or-later und ihre Hardware-Designs sind CERN-OHL-S
-v2; die eigene Lizenz dieses Tools hier erstreckt sich nicht auf dieses
-separate Projekt, und umgekehrt. Es existieren auch 2 native
-Desktop-Alternativen, die denselben Bereich abdecken:
-[URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER) und
-[URTC Tester](https://github.com/JuanenRac/URTC-TESTER).
+Die `version` von `package.json` und die von `urtc.project.json` ändern sich nur durch einen ausdrücklichen Schritt (`python bump.py`, der beide gleich hält und den Eintrag im Changelog schreibt); `build.bat` / `build.sh`, `npm run build`, `npm run dev`, `npm run lint` und `npm run preview` ändern die Version nie.
 
-Wenn Sie auf diesem Projekt aufbauen, denken Sie an die Lizenztrennung:
-Code-Änderungen sollten GPL-3.0-or-later bleiben, Dokumentationsableitungen sollten
-CC BY-SA bleiben - jeweils mit Zuschreibung zurück zu diesem Projekt und
-seinem Autor.
+## 📂 Struktur des Repositorys
 
-**Tabs Blackbox, Optionale Funktionen, Rack-Prüfstand und Wärmebild (neu, nur mit Attrappen geprüft):** Tester Studio liest den Fehlerrekorder (`0x1A8` / `0x1A9`) und lädt ihn als CSV oder JSON herunter, bei eingeschalteter Option automatisch einmal für jeden gemeldeten Fehler; schaltet die optionalen Firmware-Funktionen (`0x1AE` / `0x1AF`, standardmäßig aus, nach einer Bestätigung; wirksam nach dem nächsten Einschalten); simuliert das Werkzeug-Rack auf der Seite, mit der Identität jedes Kopfes (Typ und Seriennummer); und zeichnet das Wärmebild der thermischen Inspektion in Falschfarben (ein simuliertes Bild sagt das). Der Werkzeugkatalog stammt jetzt aus den gemeinsamen Werkzeugprofilen von URTC-COMMON. Nichts davon wurde mit einer echten Platine ausprobiert.
+<p align="center">
+  <img src="images/repository-structure.svg" alt="Struktur des Repositorys URTC-WEB-STUDIO" width="100%">
+</p>
 
-**Black-Box-Anzeige (neu, nur mit Tests geprüft):** Der Tab Black Box zeichnet die gemessene Temperatur und den Sollwert der aufgezeichneten Sekunden vor dem Fehler, mit einer Linie dort, wo das Fehlerflag zum ersten Mal erscheint, und öffnet einen früher gespeicherten Datensatz (die JSON- oder CSV-Datei, die der Tab selbst schreibt) ohne angeschlossene Platine; eine Datei, die kein Datensatz ist, einen Wert außerhalb des Bereichs oder mehr als 67 Messwerte enthält, wird mit Begründung abgelehnt.
+<details>
+<summary>Textversion des Baums</summary>
 
-**Offline-Kopie und Installation (neu, nur mit Tests und einem Browser geprüft):** Der Build schreibt einen Service Worker (`sw.js`) und ein Web-App-Manifest; nach dem ersten Besuch über https (oder auf localhost) speichert der Browser die Seite, ihre Skripte und die mitgelieferte Firmware, die Kopfzeile zeigt **Offline nutzbar**, und das Studio öffnet sich ohne Netzwerk (die Kopfzeile zeigt dann **Offline**); wo der Browser es anbietet, installiert die Schaltfläche **Installieren** das Studio als Anwendung. Die Seite und das Firmware-Manifest werden immer zuerst aus dem Netz geholt, sodass wer online ist die neuesten erhält; `version.json` wird nie aus der Kopie beantwortet; eine neue Version wartet, bis die offenen Tabs geschlossen sind, bevor sie übernimmt. Die GitHub-API wird nicht gespeichert: ohne Netz lässt sich die neueste Release nicht abfragen, es werden nur die mitgelieferten Images verwendet.
+```text
+URTC-WEB-STUDIO/
+├── src/                                           die App: Komponenten, Hooks, die CAN-, SLCAN- und Firmware-Logik, die acht Sprachdateien und erzeugte Tabellen
+├── docs/                                          Architektur, Build und Betrieb, Integrationsvertrag
+├── e2e/                                           End-to-End-Prüfungen und das Modell der Platine
+├── public/                                        mitgeliefertes Firmware, Header, Web-Manifest
+├── scripts/                                       Firmware-Synchronisierung und Service Worker
+├── tools/                                         Build-Prüfung und gemeinsame Werkzeuge
+├── images/                                        Banner und Bilder dieses READMEs
+├── .github/                                       CI-Workflow sowie Vorlagen für Issues und Pull Requests
+├── build.sh build.bat                             Build-Skripte
+├── build-test.sh build-test.bat                   Build- und Testskripte, die im Repository nichts ändern
+├── test.sh test.bat                               führen die Tests aus
+├── urtc.project.json                              Manifest: Version, Rolle, Reifegrad und Build-Befehl
+├── CHANGELOG.md                                   was sich in jeder Version geändert hat
+├── SECURITY.md SUPPORT.md LICENSE                 Sicherheitsrichtlinie, Support und Lizenz
+├── CONTRIBUTING.md CODE_OF_CONDUCT.md             wie man mitwirkt, und der Verhaltenskodex
+├── .gitattributes .gitignore                      Git-Einstellungen
+├── dev.sh dev.bat                                 installieren und den Entwicklungsserver starten
+├── bump.py bump_manifest_version.py               Skripte, die die Version erhöhen
+├── index.html                                     Einstiegsseite von Vite
+├── package.json package-lock.json tsconfig.json   Pakete, feste Versionen, TypeScript und Vite
+├── playwright.config.ts vite.config.ts            Einstellungen der End-to-End-Prüfungen
+├── urtc_i18n.lock.json                            Sperre der erzeugten Sprachdateien
+└── NOTICE LICENSE.md                              Urheberrechtshinweis und Dokumentationslizenz
+```
 
-**Thermik-Zähler im Zeitverlauf (neu, nur mit Tests und einer modellierten Platine geprüft):** Im Tab Blackbox können die Thermik-Zähler über die Lebensdauer (`0x1AA` / `0x1AB`) alle 10 s, 30 s, 1 min oder 5 min erneut gelesen werden; jede Messung kommt in einen im Browser gespeicherten Verlauf, der die Heizstunden und die Fehler über die Zeit zeichnet, als CSV heruntergeladen und gelöscht werden kann; sinkt ein Zähler (andere Platine), beginnt der Verlauf neu.
+</details>
 
-**Gespeicherte Sitzung (neu, nur mit Tests und einer modellierten Platine geprüft):** Der Bus-Monitor speichert die Frames als Log und als Datensatz, der das Log über seinen SHA-256 und seine Größe benennt, im selben Format wie der Desktop-Tester; **Gespeicherte Sitzung prüfen** nimmt den Datensatz und sein Log und sagt, ob sie zusammengehören. Es zeigt, dass ein Log nicht bearbeitet wurde. Wo der Browser Ed25519-Signaturen erzeugen kann, trägt der Datensatz außerdem eine Signatur mit einem Schlüssel dieses Browsers (beim ersten Gebrauch erzeugt und im Browser gespeichert): Sie zeigt, dass der Datensatz nach dem Signieren nicht bearbeitet wurde, und sagt nicht, wer den Schlüssel besitzt. Der Monitor kann außerdem nur die eingegebenen IDs oder nur Frames mit geänderten Daten zeigen (Rate und Last zählen weiter jeden Frame).
+Die kommentierte Liste jeder Quelldatei, eine Zeile je Datei, steht in [docs/SOURCE_MAP.md](docs/SOURCE_MAP.md).
 
-**Versionshinweis (neu, nur mit Tests geprüft):** Der Build schreibt eine `version.json` neben die Seite; die gebaute Seite vergleicht sie beim Öffnen einmal und nur über denselben Ursprung mit ihrer eigenen Version und meldet, wenn eine höhere ausgeliefert wird, mit einer Schaltfläche zum Neuladen. Nichts lädt von selbst neu, eine gleiche oder ältere Version meldet nichts, und eine fehlende Datei oder fehlendes Netz bleiben stumm.
+## 🗺️ Roadmap und bekannte Grenzen
 
-**Heizer-PID (im Tab Optionale Funktionen; neu, nur mit Attrappen geprüft):** Tester Studio liest den Zustand des Heizer-PID der Firmware (`0x1B9` / `0x1BA`: die gültigen Verstärkungen, den Zustand und den Ausgang des letzten Regelzyklus), speichert Verstärkungen (0 bis 600) und startet oder bricht den Relais-Autotune ab, der die Spitze um den aktuellen Sollwert des Lötkolbens (100 bis 445 C) heizt und die gefundenen Verstärkungen speichert. Verstärkungen speichern und den Autotune starten verlangen eine Bestätigung, das Abbrechen nicht; eine Verstärkung, die keine Zahl von 0 bis 600 ist, wird vor dem Senden abgelehnt. Die Funktion muss vorher bei den optionalen Funktionen eingeschaltet werden; nichts davon wurde mit einer echten Platine ausprobiert.
+- Ein reiner Mithörmodus und die manuelle Wahl der Bitrate: Ein Bus, auf dem keine Platine antwortet, lässt sich nicht aufschalten.
+- Das Auslesen des Wärmebilds prüft nicht vorab, ob der Sensor bereit ist, und wiederholt keinen verlorenen Block.
+- Eine Firmware-Datei direkt aus dem GitHub-Release im Browser herunterladen: GitHub liefert Release-Dateien von einem Host ohne CORS-Header aus, der Download kann daher blockiert sein (das mitgelieferte Image oder eine von der Festplatte gewählte Datei mit ihrer `.manifest.json` funktionieren immer).
+
+## 🌍 Sprachen
+
+README und Texte gibt es auf Englisch, Spanisch, Französisch, Italienisch, Deutsch, Chinesisch, Japanisch und europäischem Portugiesisch.
 
 ## 🔗 Verwandte Projekte
 
@@ -687,9 +534,20 @@ Dieses Projekt ist Teil des HYDRA-UMC-Robotik-Ökosystems desselben Autors (Juan
 - **[HYDRA-UMC-OPS-AGENT](https://github.com/JuanenRac/HYDRA-UMC-OPS-AGENT)** — Wartungsvorfall-Koordinator: eine Edge-Rolle mit niedrigem Privileg sammelt einen bereinigten Inventar-/Gesundheits-Snapshot, eine Control-Plane-Rolle rendert ihn schreibgeschützt und bittet einen KI-Anbieter um einen Diagnosevorschlag - wendet nie einen Patch an und stellt nie etwas bereit.
 - **[HYDRA-UMC-DEV-SERVER](https://github.com/JuanenRac/HYDRA-UMC-DEV-SERVER)** — reproduzierbarer Entwicklungshost (Raspberry Pi 5 / CM5), der den Quellcode des Ökosystems vorhält und begrenzte Build-/Test-Aufgaben über eine dauerhafte Warteschlange ausführt; eine dedizierte Entwicklerrolle, ausdrücklich kein operativer CM5.
 
----
+## 📚 Dokumentation
 
-## 📚 Dokumentation & Community
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — wie UI, gespeicherte
+  Einstellungen und die Hoheit über den externen Transport getrennt
+  bleiben, und warum die Sandbox-Tabs Offline-/Nicht-verfügbar-Zustände
+  zeigen müssen, statt simulierte Daten als live darzustellen.
+- [`docs/BUILD_AND_RUN.md`](docs/BUILD_AND_RUN.md) — der nicht-mutierende
+  Prüfpfad `build-test.bat`/`.sh` (TypeScript + Tests, ohne Versions- oder
+  CHANGELOG-Änderung), `dev.bat`/`.sh` für die lokale Entwicklung, und
+  warum OTA-Signiermaterial nie in die Browser-Konfiguration gehört.
+- [`docs/INTEGRATION_CONTRACT.md`](docs/INTEGRATION_CONTRACT.md) — was
+  dieser Client bei einem unbekannten Schema, fehlender Zielidentität oder
+  einem fehlerhaften API-Ergebnis tun muss, und warum die echte
+  Flash-Hoheit serverseitig oder in den dedizierten Desktop-Tools bleibt.
 
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** — Technologie-Stack und Coding-Richtlinien für einen Pull Request.
 - **[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)** — die in dieser Community erwarteten Verhaltensstandards.
@@ -697,8 +555,69 @@ Dieses Projekt ist Teil des HYDRA-UMC-Robotik-Ökosystems desselben Autors (Juan
 - **[SUPPORT.md](SUPPORT.md)** — wo man Fragen stellt und Fehler meldet.
 - **[LICENSE.md](LICENSE.md)** — die eigene Lizenz dieses Projekts.
 
+## 🤝 Mitwirken und Community
+
+* Führe vor einem Pull Request `URTC_CI=1 python tools/ci_validate.py` aus: es muss bestehen. Siehe [CONTRIBUTING.md](CONTRIBUTING.md) und den [Verhaltenskodex](CODE_OF_CONDUCT.md).
+* Das README gibt es in acht Sprachen: Eine Textänderung wird in allen acht Dateien vorgenommen, und die mit anderen Repositorys geteilten Abschnitte schreibt `tools/readme_sections.py` von URTC-COMMON.
+* Eine Änderung am CAN-Protokoll beginnt in URTC-COMMON (`spec/can_protocol.json`) und gelangt über die geprüfte Kopie in dieses Repository.
+* Beschreibe nichts als auf einer Platine funktionierend, was nur gebaut wurde.
+* Melde eine Schwachstelle privat: [SECURITY.md](SECURITY.md). Fragen, Ideen und Meldungen: electrohobby3d@gmail.com ([SUPPORT.md](SUPPORT.md)).
+
 ## 👤 AUTOR
 
 **JuanenRac** (Electro Hobby 3D)
 📧 electrohobby3d@gmail.com
 📺 [youtube.com/@electrohobby3d](https://youtube.com/@electrohobby3d)
+
+## 📜 LIZENZ
+
+URTC Web Studio ist (c) 2026 JuanenRac (Electro Hobby 3D). Dieser Hinweis
+muss in allen Verbreitungen dieses Projekts oder abgeleiteten Werken
+enthalten sein.
+
+Dieses Projekt besteht aus Quellcode und seiner eigenen Dokumentation, die
+unter verschiedenen Lizenzen verfügbar gemacht werden - jede passend zu
+dem, was sie tatsächlich abdeckt:
+
+1. Der Quellcode (alles unter `src/`, plus die Vite/TypeScript-Konfiguration,
+   die ihn baut) ist unter der **GNU General Public License v3.0
+   (GPL-3.0-or-later)** verfügbar. Vollständiger Text unter
+   https://www.gnu.org/licenses/gpl-3.0.html.
+
+2. Die Dokumentation (dieses README und seine eigenen Übersetzungen -
+   `README_spa.md`, `README_ita.md`, `README_fra.md`, `README_deu.md`,
+   `README_zho.md`, `README_jpn.md`) ist
+   unter **Creative Commons Attribution-ShareAlike 4.0 International
+   (CC BY-SA 4.0)** verfügbar. Vollständiger Text unter
+   https://creativecommons.org/licenses/by-sa/4.0/.
+
+Dieses Tool ist der browserbasierte Begleiter des Projekts
+[URTC (Universal Robot Tool Controller)](https://github.com/JuanenRac/URTC)
+- siehe das eigene Repository dieses Projekts für die
+Platinen-Firmware, Hardware-Designs, und vollständige
+Protokolldokumentation, gegen die dieses Tool implementiert. Die eigene
+Firmware von URTC ist GPL-3.0-or-later und ihre Hardware-Designs sind CERN-OHL-S
+v2; die eigene Lizenz dieses Tools hier erstreckt sich nicht auf dieses
+separate Projekt, und umgekehrt. Es existieren auch 2 native
+Desktop-Alternativen, die denselben Bereich abdecken:
+[URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER) und
+[URTC Tester](https://github.com/JuanenRac/URTC-TESTER).
+
+Wenn Sie auf diesem Projekt aufbauen, denken Sie an die Lizenztrennung:
+Code-Änderungen sollten GPL-3.0-or-later bleiben, Dokumentationsableitungen sollten
+CC BY-SA bleiben - jeweils mit Zuschreibung zurück zu diesem Projekt und
+seinem Autor.
+
+**Tabs Blackbox, Optionale Funktionen, Rack-Prüfstand und Wärmebild (neu, nur mit Attrappen geprüft):** Tester Studio liest den Fehlerrekorder (`0x1A8` / `0x1A9`) und lädt ihn als CSV oder JSON herunter, bei eingeschalteter Option automatisch einmal für jeden gemeldeten Fehler; schaltet die optionalen Firmware-Funktionen (`0x1AE` / `0x1AF`, standardmäßig aus, nach einer Bestätigung; wirksam nach dem nächsten Einschalten); simuliert das Werkzeug-Rack auf der Seite, mit der Identität jedes Kopfes (Typ und Seriennummer); und zeichnet das Wärmebild der thermischen Inspektion in Falschfarben (ein simuliertes Bild sagt das). Der Werkzeugkatalog stammt jetzt aus den gemeinsamen Werkzeugprofilen von URTC-COMMON. Nichts davon wurde mit einer echten Platine ausprobiert.
+
+**Black-Box-Anzeige (neu, nur mit Tests geprüft):** Der Tab Black Box zeichnet die gemessene Temperatur und den Sollwert der aufgezeichneten Sekunden vor dem Fehler, mit einer Linie dort, wo das Fehlerflag zum ersten Mal erscheint, und öffnet einen früher gespeicherten Datensatz (die JSON- oder CSV-Datei, die der Tab selbst schreibt) ohne angeschlossene Platine; eine Datei, die kein Datensatz ist, einen Wert außerhalb des Bereichs oder mehr als 67 Messwerte enthält, wird mit Begründung abgelehnt.
+
+**Offline-Kopie und Installation (neu, nur mit Tests und einem Browser geprüft):** Der Build schreibt einen Service Worker (`sw.js`) und ein Web-App-Manifest; nach dem ersten Besuch über https (oder auf localhost) speichert der Browser die Seite, ihre Skripte und die mitgelieferte Firmware, die Kopfzeile zeigt **Offline nutzbar**, und das Studio öffnet sich ohne Netzwerk (die Kopfzeile zeigt dann **Offline**); wo der Browser es anbietet, installiert die Schaltfläche **Installieren** das Studio als Anwendung. Die Seite und das Firmware-Manifest werden immer zuerst aus dem Netz geholt, sodass wer online ist die neuesten erhält; `version.json` wird nie aus der Kopie beantwortet; eine neue Version wartet, bis die offenen Tabs geschlossen sind, bevor sie übernimmt. Die GitHub-API wird nicht gespeichert: ohne Netz lässt sich die neueste Release nicht abfragen, es werden nur die mitgelieferten Images verwendet.
+
+**Thermik-Zähler im Zeitverlauf (neu, nur mit Tests und einer modellierten Platine geprüft):** Im Tab Blackbox können die Thermik-Zähler über die Lebensdauer (`0x1AA` / `0x1AB`) alle 10 s, 30 s, 1 min oder 5 min erneut gelesen werden; jede Messung kommt in einen im Browser gespeicherten Verlauf, der die Heizstunden und die Fehler über die Zeit zeichnet, als CSV heruntergeladen und gelöscht werden kann; sinkt ein Zähler (andere Platine), beginnt der Verlauf neu.
+
+**Gespeicherte Sitzung (neu, nur mit Tests und einer modellierten Platine geprüft):** Der Bus-Monitor speichert die Frames als Log und als Datensatz, der das Log über seinen SHA-256 und seine Größe benennt, im selben Format wie der Desktop-Tester; **Gespeicherte Sitzung prüfen** nimmt den Datensatz und sein Log und sagt, ob sie zusammengehören. Es zeigt, dass ein Log nicht bearbeitet wurde. Wo der Browser Ed25519-Signaturen erzeugen kann, trägt der Datensatz außerdem eine Signatur mit einem Schlüssel dieses Browsers (beim ersten Gebrauch erzeugt und im Browser gespeichert): Sie zeigt, dass der Datensatz nach dem Signieren nicht bearbeitet wurde, und sagt nicht, wer den Schlüssel besitzt. Der Monitor kann außerdem nur die eingegebenen IDs oder nur Frames mit geänderten Daten zeigen (Rate und Last zählen weiter jeden Frame).
+
+**Versionshinweis (neu, nur mit Tests geprüft):** Der Build schreibt eine `version.json` neben die Seite; die gebaute Seite vergleicht sie beim Öffnen einmal und nur über denselben Ursprung mit ihrer eigenen Version und meldet, wenn eine höhere ausgeliefert wird, mit einer Schaltfläche zum Neuladen. Nichts lädt von selbst neu, eine gleiche oder ältere Version meldet nichts, und eine fehlende Datei oder fehlendes Netz bleiben stumm.
+
+**Heizer-PID (im Tab Optionale Funktionen; neu, nur mit Attrappen geprüft):** Tester Studio liest den Zustand des Heizer-PID der Firmware (`0x1B9` / `0x1BA`: die gültigen Verstärkungen, den Zustand und den Ausgang des letzten Regelzyklus), speichert Verstärkungen (0 bis 600) und startet oder bricht den Relais-Autotune ab, der die Spitze um den aktuellen Sollwert des Lötkolbens (100 bis 445 C) heizt und die gefundenen Verstärkungen speichert. Verstärkungen speichern und den Autotune starten verlangen eine Bestätigung, das Abbrechen nicht; eine Verstärkung, die keine Zahl von 0 bis 600 ist, wird vor dem Senden abgelehnt. Die Funktion muss vorher bei den optionalen Funktionen eingeschaltet werden; nichts davon wurde mit einer echten Platine ausprobiert.

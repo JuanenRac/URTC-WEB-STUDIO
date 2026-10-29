@@ -15,23 +15,17 @@
   <a href="README_por.md">🇵🇹 Português</a>
 </p>
 
+### URTC 刷写器和测试器的主要工作流程，放进浏览器标签页，通过 USB-CAN 适配器和 Web Serial 使用
 
 <p align="center">
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
+  <img src="https://img.shields.io/badge/Tests-560-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
 </p>
 
-
-一个基于浏览器的**通用机器人工具控制器（URTC）**配套工具——一个 React/Vite
-单页应用，通过 [Web Serial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API)，
-经由 USB-CAN 适配器与真实的 URTC 硬件通信（但从未在真实硬件上运行过），使用与两款桌面配套工具
-[URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER) 和
-[URTC Tester](https://github.com/JuanenRac/URTC-TESTER) 相同的 SLCAN 帧格式和
-CAN 协议。目标是把这两款工具的主要工作流集中到单个浏览器标签页内，而非它们的简化演示版；尚未达到完全对等（见下文“尚未覆盖”）——Flasher Studio 和 Tester Studio 选项卡发送和接收的正是
-[URTC 固件仓库](https://github.com/JuanenRac/URTC) `docs/CANBUS.TXT` 中所描述
-的真实 CAN 帧。
+---
 
 **诚实检查——今天真正能运行的部分：** `npm test`（Vitest）覆盖纯逻辑：SLCAN 解析、请求与应答的匹配、固件镜像和清单检查、工具限值、确认对话框、将模拟器与真实总线隔离的规则、追踪导出以及八种界面语言。界面和 Web Serial 传输本身没有单元测试（本段末尾的端到端检查会针对建模的板子驱动它们），而且在本环境中这些都没有对真实的 URTC 板子运行过（这里没有可用于测试的 USB-CAN 适配器）：Flasher Studio、Tester Studio 和 CAN 总线协议分析器是真实代码，仅由这些测试、类型检查（`npm run lint`）和代码审查验证。Control/OLED/Specs-BOM/Thermal IR Inspection 是明确标注的沙盒选项卡，没有任何 CAN 流量。迄今已交付的确切内容请参阅 `CHANGELOG.md`。 `npm run test:e2e` 还会在真实浏览器（Playwright）中打开构建好的页面，并对接建模的板子：离线副本、热计数历史和已保存的会话都以此方式检查。
 
@@ -45,9 +39,12 @@ CAN 协议。目标是把这两款工具的主要工作流集中到单个浏览�
 |---|---|
 | 版本 | `0.3.7` |
 | 成熟度 | 可用 |
+| 测试 | 560 (`npm test`) |
 | 技术栈 | Web Serial API / TypeScript |
 | 目标 | 使用者电脑上的网页浏览器 |
 | 真实硬件 | 仅模拟：使用模拟器、替身或仿真测试；此版本没有在真实硬件上运行的记录 |
+
+**跳转到：** [概述](#-概述) · [架构](#-架构) · [功能](#-功能) · [安全](#-安全与防护) · [接口](#-接口) · [快速开始](#-快速开始) · [测试](#-测试) · [结构](#-仓库结构) · [相关项目](#-相关项目)
 
 <!-- urtc-section:status_web_studio -->
 ## 🚦 项目状态
@@ -64,7 +61,18 @@ CAN 协议。目标是把这两款工具的主要工作流集中到单个浏览�
 
 <!-- /urtc-section:status_web_studio -->
 
-## 🧭 什么是真实的，什么是沙盒
+## 🎯 概述
+
+一个基于浏览器的**通用机器人工具控制器（URTC）**配套工具——一个 React/Vite
+单页应用，通过 [Web Serial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API)，
+经由 USB-CAN 适配器与真实的 URTC 硬件通信（但从未在真实硬件上运行过），使用与两款桌面配套工具
+[URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER) 和
+[URTC Tester](https://github.com/JuanenRac/URTC-TESTER) 相同的 SLCAN 帧格式和
+CAN 协议。目标是把这两款工具的主要工作流集中到单个浏览器标签页内，而非它们的简化演示版；尚未达到完全对等（见下文“尚未覆盖”）——Flasher Studio 和 Tester Studio 选项卡发送和接收的正是
+[URTC 固件仓库](https://github.com/JuanenRac/URTC) `docs/CANBUS.TXT` 中所描述
+的真实 CAN 帧。
+
+### 什么是真实的，什么是沙盒
 
 本应用有两类选项卡：
 
@@ -86,36 +94,32 @@ CAN 协议。目标是把这两款工具的主要工作流集中到单个浏览�
     MLX9064x 数据只会出现在 Tester Studio 的“热成像检测”面板内,并且只有
     在硬件已连接的情况下才会出现。
 
-## 🔌 你需要的硬件
+## 🧩 在 URTC 中的角色
 
-- 一个运行 **SLCAN** 固件的 USB-CAN 适配器（例如运行
-  `candlelight`/`slcan` 的 CANable,或任何支持标准 `lawicel` SLCAN 串口
-  协议的适配器）——这与两款桌面工具通过各自的串口传输方式所支持的适配器
-  类型相同。
-- 总线设置为 **500 kbit/s**。连接时，应用会依次尝试 500、250、125 kbit/s 及其他标准速率，并保留第一个有板子应答版本查询的速率；目前还不能手动选择速率，也不能在没有板子应答时仅作监听。
-- 一款支持 Web Serial 的浏览器——**Chrome 或 Edge**。Firefox 和 Safari
-  未实现 Web Serial,将完全无法连接。
-- Web Serial 需要安全上下文（HTTPS）或 `localhost`——并且不能在 iframe
-  内使用。如果你正在一个嵌入式框架内预览本应用,请先在其自身的标签页中
-  打开它。
+URTC-WEB-STUDIO 是 URTC 两个桌面程序 URTC-FLASHER 和 URTC-TESTER 的浏览器版本：一个 React 页面，通过 USB-CAN 适配器和 Web Serial 与 URTC 板通信，使用相同的 SLCAN 帧格式和相同的 CAN 协议（其表格和向量由 URTC-COMMON 生成）。它把二者的主要工作流程带进浏览器标签页，无需安装任何东西，并把浏览器无法驱动的 SWD/JTAG 留给桌面刷写器。它还有沙盒标签页，可离线浏览 25 种工具，不发送任何数据。
 
-## 🛡️ CAN 帧验证
+## 🏛️ 架构
 
-SLCAN 链路的两个方向都会在任何数据到达 UI 或总线之前被验证
-（`src/hooks/useSerialCanBus.ts`）：
+<p align="center">
+  <img src="images/architecture.svg" alt="URTC-WEB-STUDIO 的架构：谁在使用、包含什么、依赖什么" width="100%">
+</p>
 
-- **发送方向** - 如果命令的标识符超出 11 位标准 CAN 范围
-  （`0x000`-`0x7FF`）、负载超过 8 字节，或负载中有字节超出
-  `0x00`-`0xFF`，`sendFrame()` 就拒绝将其序列化。UI 会显示
-  “Refusing malformed CAN frame: ...”，而不会将无效文本写入串口。
-- **接收方向** - `processBuffer()` 要求收到的 SLCAN 行必须真实匹配
-  `t<3 位十六进制 ID><1 位十六进制 DLC 0-8><十六进制负载>`
-  才会转换为 `CanFrame`；DLC 超出 `0`-`8` 范围，或负载长度短于
-  其声明长度时，会记录到控制台并被丢弃，而不会以 `NaN`
-  字节的形式交给工具面板。有效负载之后可选的适配器时间戳
-  仍然会被接受。
+本仓库各部分如何协作：谁在使用它、它包含什么、它依赖什么。图片由 `docs/architecture.json` 绘制，并与代码核对。
 
-## ⚡ Flasher Studio ——真实功能覆盖
+### 技术栈
+
+- **语言：** TypeScript
+- **前端框架：** React 18
+- **构建工具：** Vite
+- **样式：** Tailwind CSS
+- **图标：** Lucide React
+- **CRC32：** `crc-32`——固件镜像完整性检查,镜像引导程序自身的 CRC32 计算
+- **硬件传输：** Web Serial API + SLCAN 帧格式（无原生依赖,无配套后端
+  服务器）
+
+## ✨ 功能
+
+### Flasher Studio ——真实功能覆盖
 
 从 `URTC-FLASHER` 自身的 `flasher_protocol.py` 移植而来,针对相同的
 CAN ID：
@@ -156,7 +160,7 @@ CAN ID：
 - **板卡配置**：扩展板类型 / MLX9064x 传感器变体 / 自由工具配置（ID
   引脚 `11111`）/ 外设信息与序列号——`0x1A0`-`0x1A7`。
 
-### SWD/JTAG ——按设计,无法从浏览器中使用
+#### SWD/JTAG ——按设计,无法从浏览器中使用
 
 没有任何 Web API 可以驱动一个 SWD/JTAG 调试探针——Web Serial 只能与
 串行帧设备（如 USB-CAN 适配器）通信,而不能与探针自身的协议通信,
@@ -166,7 +170,7 @@ SWD/JTAG 选项卡说明了桌面版 `URTC Flasher` 工具在本地会运行的�
 仅供参考——请直接使用该工具进行完整芯片编程、选项字节/RDP 检查,或在
 批量擦除之前进行完整闪存备份。
 
-## 🧰 Tester Studio ——真实功能覆盖
+### Tester Studio ——真实功能覆盖
 
 从 `URTC-TESTER` 自身的 Qt Quick 面板
 (`assets/qml/TesterDeck.qml`) 移植而来,针对相同的 CAN ID：
@@ -193,6 +197,26 @@ SWD/JTAG 选项卡说明了桌面版 `URTC Flasher` 工具在本地会运行的�
   （`0x7F8`/`0x7F9`）,声明的严重错误（`0x111` 字节 1）会以一条实时
   故障横幅显示出来。
 
+<!-- urtc-section:heads -->
+### 一条总线上的多个工具头
+
+固件可以让多个工具头共用一条 CAN 总线（多节点扩展）。它**默认关闭**，只有一个工具头的总线与以前完全一样地工作。**工具头**窗口会查找工具头，列出每个工具头的地址、工具和序列号，并显示其状态：就绪、已选择、地址冲突、故障已锁定、处于引导程序或已丢失。您选择一个后，程序会先请您确认，之后才向该工具头发送任何内容；只要总线上有多个工具头，在选中一个并得到它的确认之前，命令都会被拒绝。如果所选工具头丢失，所有工具头都会进入安全状态（窗口中的复选框可关闭此行为）。目前只针对总线模型测试过，没有在电路板上试过。参见 URTC-COMMON 中的 `docs/MULTINODE.md`。
+<!-- /urtc-section:heads -->
+
+## 🔒 安全与防护
+
+| 威胁 | 防御 |
+|---|---|
+| 格式错误的帧到达总线或屏幕 | SLCAN 链路的两个方向都会校验：超出 `0x000`-`0x7FF` 的标识符、超过 8 字节的载荷或超出 `0x00`-`0xFF` 的字节会在写出前被拒绝，收到的不是真正 SLCAN 帧的行会被丢弃 |
+| 页面里带着机密 | 应用不含任何签名密钥：Flasher Studio 只发送 URTC 构建在每个镜像旁发布的签名，所以页面可以公开托管 |
+| 错误或被篡改的固件镜像 | 清单的 `sha256` 与文件不符会阻止刷写；正式发布版的每个镜像都带有 Ed25519 发布签名，页面在发送镜像前于浏览器中核对 |
+| 把模拟的应答当成真实的 | 沙盒标签页不发送任何数据，连接板子时也不做任何应答；它们的帧标为 SIM，回放的轨迹标为 REPLAY |
+| 误对板子执行操作 | 激光、钻头、紫外固化、焊接、加热器、运动、锡膏喷射、写入板子存储器、有风险的手输帧以及用公开开发密钥签名的镜像，都会先要求确认 |
+| 执行器一直在运转 | 每个带固件看门狗的工具靠重发保持存活，并在面板被替换、切换标签页、断开板子或关闭页面时关闭；STOP ALL 会关闭页面保持存活的一切 |
+| 页面从别处加载代码 | 内容安全策略：脚本只来自页面本身，连接只到自身和 GitHub |
+
+STOP ALL 是软件命令，不是紧急停止，以上检查都不是安全功能。
+
 ### 模拟器隔离与确认（软件检查，并非安全功能）
 
 - 沙盒选项卡（Control、OLED、Thermal IR）不会发送任何内容。它们的帧带有 SIM 标记，并且在已连接板子时不会产生模拟应答。协议分析器的预定义消息中，只有简单查询会发送给已连接的板子；其余仍为模拟。
@@ -203,13 +227,7 @@ SWD/JTAG 选项卡说明了桌面版 `URTC Flasher` 工具在本地会运行的�
 - 当电路板报告严重错误时，如果电路板给出了原因，横幅还会显示热失控保护的原因。
 - **回放已录制的跟踪**（CAN Bus Protocol Analyzer）：`.trc` 或 `.asc` 文件（例如 Raw Bus Monitor 导出的文件）中接收到的帧，可在没有开发板的情况下回放到日志和各面板，速度 0.25x 至 10x，也可循环。这些帧标记为 REPLAY，不会发送任何内容，录制内容绝不会应答请求，也绝不会被导出为开发板所说的内容，并且只要连接了开发板，回放就会暂停。
 
-### 尚未覆盖
-
-- 仅监听模式和手动选择比特率：无法接入没有任何板子应答的总线。
-- 读取热成像图像时不会先检查传感器是否就绪，也不会重试丢失的数据块。
-- 在浏览器中直接从 GitHub 发布版本下载固件文件：GitHub 从不带 CORS 头的主机提供发布版本的文件，因此下载可能被阻止（内置镜像，或从磁盘选择的文件连同其 `.manifest.json`，始终可用）。
-
-## 🔐 安全说明：本应用不包含签名密钥
+### 安全说明：本应用不包含签名密钥
 
 自 0.2.3 起，本应用**不**包含任何 HMAC-SHA256 签名密钥。URTC 构建会自行为
 每个应用镜像签名（仅发布版本使用私钥；已发布的镜像使用公开的开发密钥），并把签名发布在镜像旁边；Flasher
@@ -233,9 +251,39 @@ Studio 只负责传送该签名——与桌面版 `URTC Flasher` 相同的模式
 
 正式发布的每个文件都有发布签名（`<文件>.sig`，Ed25519）：同步时若签名存在会进行验证并拒绝错误的签名；没有签名的文件集（试验台预发布版或本地构建）需要 `--allow-unsigned`。页面在把内置镜像或 GitHub 发布的镜像发送到板子之前，会在浏览器中（Web Crypto）验证同一个签名，签名无效则停止。
 
+## 🔌 接口
+
+- 一个运行 **SLCAN** 固件的 USB-CAN 适配器（例如运行
+  `candlelight`/`slcan` 的 CANable,或任何支持标准 `lawicel` SLCAN 串口
+  协议的适配器）——这与两款桌面工具通过各自的串口传输方式所支持的适配器
+  类型相同。
+- 总线设置为 **500 kbit/s**。连接时，应用会依次尝试 500、250、125 kbit/s 及其他标准速率，并保留第一个有板子应答版本查询的速率；目前还不能手动选择速率，也不能在没有板子应答时仅作监听。
+- 一款支持 Web Serial 的浏览器——**Chrome 或 Edge**。Firefox 和 Safari
+  未实现 Web Serial,将完全无法连接。
+- Web Serial 需要安全上下文（HTTPS）或 `localhost`——并且不能在 iframe
+  内使用。如果你正在一个嵌入式框架内预览本应用,请先在其自身的标签页中
+  打开它。
+
+### CAN 帧验证
+
+SLCAN 链路的两个方向都会在任何数据到达 UI 或总线之前被验证
+（`src/hooks/useSerialCanBus.ts`）：
+
+- **发送方向** - 如果命令的标识符超出 11 位标准 CAN 范围
+  （`0x000`-`0x7FF`）、负载超过 8 字节，或负载中有字节超出
+  `0x00`-`0xFF`，`sendFrame()` 就拒绝将其序列化。UI 会显示
+  “Refusing malformed CAN frame: ...”，而不会将无效文本写入串口。
+- **接收方向** - `processBuffer()` 要求收到的 SLCAN 行必须真实匹配
+  `t<3 位十六进制 ID><1 位十六进制 DLC 0-8><十六进制负载>`
+  才会转换为 `CanFrame`；DLC 超出 `0`-`8` 范围，或负载长度短于
+  其声明长度时，会记录到控制台并被丢弃，而不会以 `NaN`
+  字节的形式交给工具面板。有效负载之后可选的适配器时间戳
+  仍然会被接受。
+
 ## 🚀 快速开始
 
 ### 前置条件
+
 - Node.js 20 LTS+
 - npm
 
@@ -275,239 +323,73 @@ npm run preview
 
 构建出的页面声明了内容安全策略（脚本只来自页面本身；连接只指向页面本身和 GitHub），并在首次打开每个标签页时才加载它。`npm run test:e2e` 会在真实的 Chromium 中针对建模的板子驱动它；尚未配合真实适配器试用过。
 
-### GitHub Pages（所有者启用前保持关闭）
-
-本仓库可以把构建好的站点发布到 GitHub Pages（工作流 `.github/workflows/pages.yml`：`npm ci`、类型检查、测试、带项目基础路径的 `npm run build`，然后是 `upload-pages-artifact` 和 `deploy-pages`）。**该工作流目前处于关闭状态**：只有当仓库变量 `URTC_PAGES_ENABLED` 为 `true`（Settings > Secrets and variables > Actions > Variables）时，两个作业才会运行，所有者在 URTC 的第一个已签名正式发布之后设置它。此时构建会执行 `npm run sync-firmware -- --require-official`：只取最新正式发布的固件（绝不使用预发布版本，也不使用 `firmware-release.json` 的备用标签），拒绝任何没有有效发布签名的文件，以及任何用公开开发密钥构建的应用镜像，因此发布的页面不可能带有开发密钥的镜像。Pages 本身也需要启用一次（Settings > Pages > Source: GitHub Actions）；变量未设置时工作流会被跳过。Web Serial 需要基于 Chromium 的浏览器和 https，Pages 提供 https。
-
-### 版本管理
-
-`package.json` 的 `version`（以及 `urtc.project.json` 中对应的 `version`）只会由显式步骤 `python bump.py` 递增（它运行 `bump_manifest_version.py`，从 `package.json` 读取当前版本，递增后写回，同步清单文件，并在该版本尚无 CHANGELOG 条目时补充一条简要条目）。`build.bat`/`build.sh` 只做编译，绝不触碰版本号。`npm run build`
-（`vite build`）本身刻意只做编译，绝不触碰版本号——`scripts/bump-version.mjs`
-在早期采用 `prebuild` 钩子的设计中承担过这项工作，但如今已是遗留脚本，
-仅作参考保留（见其自身文件头注释）；`npm run dev`/`lint`/`preview` 同样
-绝不会触碰版本号。这不是语义化版本控制：它是一个十进制里程表。补丁位
-加一；一旦它会超过 9，就重置为 0，并改为将次版本位加一
-（`0.1.9` -> `0.2.0`，绝不会是 `0.1.10`）；同样的进位会从次版本级联到
-主版本。版本历史以及本项目过往工作的摘要见 `CHANGELOG.md`。
-
-## 📖 更多文档
-
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) —— UI、持久化设置与外部传输权威
-  如何保持分离，以及为什么沙盒标签页必须展示离线/不可用状态，
-  而不能将模拟数据当作真实数据展示。
-- [`docs/BUILD_AND_RUN.md`](docs/BUILD_AND_RUN.md) —— 非破坏性验证路径
-  `build-test.bat`/`.sh`（TypeScript + 测试，不会修改版本或 CHANGELOG）、
-  用于本地开发的 `dev.bat`/`.sh`，以及为什么 OTA 签名材料
-  绝不属于浏览器配置。
-- [`docs/INTEGRATION_CONTRACT.md`](docs/INTEGRATION_CONTRACT.md) —— 本客户端遇到
-  未知模式、缺失目标身份或格式错误的 API 结果时应如何处理，
-  以及为什么真实的烧录权限保留在服务器端或专用桌面工具中。
-
-## 🛠️ 技术栈
-- **语言：** TypeScript
-- **前端框架：** React 18
-- **构建工具：** Vite
-- **样式：** Tailwind CSS
-- **图标：** Lucide React
-- **CRC32：** `crc-32`——固件镜像完整性检查,镜像引导程序自身的 CRC32 计算
-- **硬件传输：** Web Serial API + SLCAN 帧格式（无原生依赖,无配套后端
-  服务器）
-
-## 📂 仓库结构
-
-```
-/
-├── src/
-│   ├── App.tsx                     根组件——选项卡状态、硬件状态、CAN
-│   │                                帧日志记录,以及下方每个选项卡所接入
-│   │                                的处理程序（包括 CAN OTA 启动/读回,
-│   │                                以及 CAN 总线分析器自身的帧注入器）
-│   ├── main.tsx                    Vite/React 入口点
-│   ├── i18n.ts                     i18next 配置——en/es/de/fr/it/zh/ja/pt,
-│   │                                持久化到 localStorage
-│   ├── index.css                   Tailwind 入口点
-│   ├── types.ts                    共享的 TypeScript 类型（CanFrame、
-│   │                                HardwareState、FlasherState、
-│   │                                ExpansionBoardType 等）
-│   ├── vite-env.d.ts                Vite 自身的环境类型声明
-│   ├── *.test.ts                    Vitest 测试，每个都放在它所覆盖的模块旁边（npm test）
-│   ├── components/
-│   │   ├── Header.tsx               顶部栏：连接/断开按钮、当前工具
-│   │   │                            名称、FW v0.0/v0.1 沙盒切换开关
-│   │   ├── Sidebar.tsx              左侧导航——本 README 中描述的 7 个
-│   │   │                            选项卡
-│   │   ├── ToolCatalog.tsx          沙盒选项卡：25 种工具目录、工具
-│   │   │                            选择、设定值控制
-│   │   ├── OledDisplay.tsx          沙盒选项卡：OLED 状态屏幕预览
-│   │   ├── SpecsAndBomViewer.tsx    沙盒选项卡：BOM/引脚定义浏览器
-│   │   ├── ThermalCameraViewer.tsx  沙盒选项卡：模拟的 MLX90640 画面——
-│   │   │                            100% Math.random(),完全没有 CAN
-│   │   │                            流量（见上方“什么是真实的,什么是
-│   │   │                            沙盒”）
-│   │   ├── HardwarePanel.tsx        沙盒跳线/LED/扩展板控制面板,在
-│   │   │                            控制和 OLED 选项卡内使用
-│   │   ├── CanBusAnalyzer.tsx       真实选项卡：原始 CAN 帧日志、自定义
-│   │   │                            帧注入器、预设指令触发器
-│   │   ├── TraceReplayPanel.tsx     加载 .trc/.asc 跟踪并回放到日志
-│   │   ├── NodePickerDialog.tsx     工具头窗口：查找工具头、选择一个并释放它
-│   │   ├── ConfirmDialog.tsx        对开发板执行操作之前的确认
-│   │   ├── FlasherStudio.tsx        真实选项卡：CAN-OTA 界面（主板 +
-│   │   │                            扩展从属）以及 SWD/JTAG 能力说明
-│   │   ├── TesterStudio.tsx         真实选项卡：逐工具实时控制/遥测,
-│   │   │                            由下方的 tester/ 文件夹构建
-│   │   └── tester/
-│   │       ├── ToolPanels.tsx       每种工具配置文件一个面板——真实指令
-│   │       │                        字节、真实遥测解码、逐工具看门狗
-│   │       │                        保活
-│   │       ├── GlobalPanels.tsx     全局控制、扩展板、F-RAM、自检、
-│   │       │                        原始总线监视器、自定义帧注入器
-│   │       ├── ExtrasPanels.tsx     黑匣子、可选功能、加热器 PID、机架试验台和热成像视图面板
-│   │       └── shared.tsx           共享的 UI 基础组件（Section、
-│   │                                Field、按钮/输入框样式、safeInt）
-│   ├── data/
-│   │   └── toolsData.ts             25 个 TOOL_PROFILES——名称、默认值、
-│   │                                沙盒选项卡的图标
-│   ├── hooks/
-│   │   ├── useSerialCanBus.ts       Web Serial + SLCAN 传输——连接/断开、
-│   │   │                            帧收发、带有限接收缓冲区和 500 帧
-│   │   │                            队列上限的逐 ID waitForFrame
-│   │   ├── useFlasher.ts            CAN-OTA 状态机（主板 + 扩展从属）,
-│   │   │                            镜像 flasher_protocol.py
-│   │   ├── useTraceReplay.ts        把已录制的跟踪回放到日志和各面板
-│   │   ├── useConfirmAction.ts      在对开发板执行操作之前请求确认
-│   │   ├── useNodePicker.ts         查找总线上的工具头并保持所选的那一个
-│   │   ├── usePwa.ts                离线副本、安装按钮以及有新版本的提示
-│   │   └── useKeepalive.ts          固定间隔重发钩子,支撑每个工具的
-│   │                                活动复选框看门狗保活
-│   ├── lib/
-│   │   ├── flasher.ts               OTA 协议常量、CRC32/HMAC 辅助函数、
-│   │   │                            清单解析（不含签名密钥）
-│   │   ├── traceReplay.ts           读取 .trc/.asc 跟踪；带速度和暂停的播放器
-│   │   ├── boardVersion.ts          版本查询：0x7F9/0x7FA/0x7E9 以及从属板的 0x217/0x218
-│   │   ├── githubRelease.ts         最新 GitHub 发布版本的镜像及其下载
-│   │   ├── firmwareImage.ts         镜像检查、清单目标与版本（含补丁号）
-│   │   ├── firmwareSignature.ts     选择要发送的签名：已发布的签名，或为单次
-│   │   │                            刷写输入的密钥；sha256 检查
-│   │   ├── quickState.ts            0x111 解码（热故障、复位原因）
-│   │   ├── bundledFirmware.ts       由 scripts/sync-firmware.mjs 生成
-│   │   ├── slcan.ts / customFrame.ts / boardConfig.ts / boardTelemetry.ts / toolLimits.ts / simPresets.ts SLCAN 解析、自定义帧、开发板配置、开发板所说的内容、工具限值和分析器预设
-│   │   ├── frameFilter.ts / frameQueue.ts / frameRouter.ts / frameBatcher.ts 总线监视器的过滤器、未被认领帧的队列、应答的路由以及为屏幕批量处理帧
-│   │   ├── blackBox.ts / thermalStats.ts / thermalHistory.ts / thermalView.ts / pid.ts 黑匣子、累计热计数及其历史、热成像图、加热器 PID 帧
-│   │   ├── nodePicker.ts / multinodeSim.ts 工具头窗口的规则，以及无需开发板即可试用的节点模型
-│   │   ├── rackSim.ts               工具机架模拟器（帧版本 2，大端）
-│   │   ├── sessionRecord.ts / traceExport.ts / download.ts 已保存会话的记录（日志的 SHA-256）、轨迹文件和下载
-│   │   ├── safeOff.ts / keepaliveLoop.ts / confirmController.ts / dangerousActions.ts 关闭保持活动的执行器，以及哪些操作需要先确认
-│   │   ├── pwa.ts / serviceWorkerBuild.ts / selfUpdate.ts 离线副本、service worker 的文本以及有新版本的提示
-│   │   ├── releaseSignature.ts      在浏览器中检查发布版本的签名
-│   │   ├── generated/               由 URTC-COMMON 写出的表和向量（工具、标识符、共享向量）及其锁定文件
-│   │   └── canIds.ts                Tester Studio 的 CAN ID 常量——逐字节
-│   │                                 镜像 tester_config.py
-│   └── locales/                     界面字符串——en.json、es.json、
-│                                     de.json、fr.json、it.json、
-│                                     zh.json、ja.json、pt.json
-├── scripts/
-│   ├── bump-version.mjs             无依赖的版本递增脚本;如今已是
-│   │                                 遗留脚本,仅作参考 - 已由 bump_manifest_version.py
-│   │                                 取代（见上方“版本管理”）
-│   ├── sync-firmware.mjs            将 URTC 发布版本文件（或本地文件夹）复制到
-│   │                                 public/firmware/，校验摘要 - npm run sync-firmware
-│   ├── sw.template.js               构建时写成 sw.js 的 service worker 模板
-│   └── sync-firmware.test.mjs       sync-firmware.mjs 的测试
-├── public/
-│   ├── firmware/                    主应用程序、主引导程序、扩展从属
-│   │                                  应用程序,以及扩展从属引导程序的
-│   │                                  打包 .bin/.elf/.hex 文件
-│   ├── _headers                     供读取此文件的主机使用的安全头
-│   └── manifest.webmanifest         用于安装 Studio 的网页应用清单（名称、图标）
-├── images/
-│   ├── URTC_WEB_STUDIO_BANNER.svg   完整的 Logo 横幅（显示在本 README
-│   │                                顶部）
-│   ├── URTC_APP_ICON_NEW.svg        应用图标
-│   ├── urtc_custom_icon.svg         应用图标,相同的图稿
-│   └── urtc_icon.ico                网站图标
-├── index.html                       Vite 入口 HTML
-├── vite.config.ts                   Vite + Tailwind 插件配置
-├── tsconfig.json                    TypeScript 配置
-├── playwright.config.ts             真实浏览器中端到端检查的设置（npm run test:e2e）
-├── e2e/                             端到端检查，以及它们所驱动的适配器与开发板的模型
-├── .env.example                     应用不读取任何环境变量
-├── dev.bat / dev.sh                 安装依赖 + 启动 Vite 开发服务器
-├── build.bat / build.sh             安装依赖 + 生成静态 dist/ 构建
-├── build-test.bat / build-test.sh   不改版本号的检查：类型、测试和构建
-├── tools/
-│   ├── ci_validate.py               CI 使用的 manifest/CHANGELOG/docs 校验
-│   ├── build_test.py                build-test.sh / .bat 使用的不改版本号的检查
-│   └── _doc_policy.py / _readme_parity.py / _tracked_names.py ci_validate.py 使用的共享检查
-├── bump.py                          显式的版本递增命令（编译从不递增）
-├── bump_manifest_version.py         仅由 `bump.py` 触发的版本递增（package.json + 清单，见“版本管理”）；也存在 `--sync` 模式用于接受一次先前的原生递增
-├── package.json
-├── package-lock.json 依赖的确切版本（npm ci）
-├── urtc_i18n.lock.json 由 URTC-COMMON 目录生成的语言文件的锁定文件
-├── CHANGELOG.md                     版本历史与过往工作摘要
-├── LICENSE
-├── NOTICE                      版权声明和文档许可证
-├── README.md                        本文件
-├── docs/
-│   ├── ARCHITECTURE.md
-│   ├── BUILD_AND_RUN.md
-│   └── INTEGRATION_CONTRACT.md
-└── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md / README_por.md  <- 翻译
-```
-
-<!-- urtc-section:heads -->
-## 🧭 一条总线上的多个工具头
-
-固件可以让多个工具头共用一条 CAN 总线（多节点扩展）。它**默认关闭**，只有一个工具头的总线与以前完全一样地工作。**工具头**窗口会查找工具头，列出每个工具头的地址、工具和序列号，并显示其状态：就绪、已选择、地址冲突、故障已锁定、处于引导程序或已丢失。您选择一个后，程序会先请您确认，之后才向该工具头发送任何内容；只要总线上有多个工具头，在选中一个并得到它的确认之前，命令都会被拒绝。如果所选工具头丢失，所有工具头都会进入安全状态（窗口中的复选框可关闭此行为）。目前只针对总线模型测试过，没有在电路板上试过。参见 URTC-COMMON 中的 `docs/MULTINODE.md`。
-<!-- /urtc-section:heads -->
-
 <!-- urtc-section:compatibility -->
-## 🧩 兼容性
+### 要求与兼容性
 
 哪些版本的 URTC 程序可以配合使用、各自使用哪个协议版本，列在 URTC-COMMON 生成的兼容性表中：[docs/COMPATIBILITY.md](https://github.com/JuanenRac/URTC/blob/main/docs/COMPATIBILITY.md)。
 <!-- /urtc-section:compatibility -->
 
-## 📜 许可证
+## 🧪 测试
 
-URTC Web Studio 版权所有 (c) 2026 JuanenRac（Electro Hobby 3D）。分发本项目
-或其衍生作品时必须包含此声明。
+`npm test`（Vitest）运行 560 个纯逻辑测试：SLCAN 解析、请求与应答的匹配、固件镜像和清单检查、发布签名、工具限值、确认、把模拟器与真实总线分开的规则、轨迹的导出和回放、节点选择器、机架模拟器、保存的会话记录、离线副本、固件同步以及八种界面语言。`npm run lint` 检查源码类型，`npm run test:e2e` 在真实的 Chromium 中针对建模的适配器和板子运行 19 个端到端检查（`npm run test:coverage` 增加覆盖率下限）。界面和 Web Serial 传输没有自己的单元测试，由端到端检查来驱动它们。这一切都没有针对真实的适配器或板子运行过。
 
-本项目由源代码及其自身的文档组成,两者依据不同的许可证提供——各自适合
-其实际所涵盖的内容：
+## 🏗️ 构建与发布
 
-1. 源代码（`src/` 下的一切,加上构建它的 Vite/TypeScript 配置）依据
-   **GNU 通用公共许可证 v3.0（GPL-3.0-or-later）** 提供。完整文本见
-   https://www.gnu.org/licenses/gpl-3.0.html。
+### GitHub Pages（所有者启用前保持关闭）
 
-2. 文档（本 README 及其自身的翻译版本——`README_spa.md`、`README_ita.md`、
-   `README_fra.md`、`README_deu.md`、`README_zho.md`、`README_jpn.md`）
-   依据 **知识共享 署名-相同方式共享 4.0 国际许可协议（CC BY-SA 4.0）**
-   提供。完整文本见 https://creativecommons.org/licenses/by-sa/4.0/。
+本仓库可以把构建好的站点发布到 GitHub Pages（工作流 `.github/workflows/pages.yml`：`npm ci`、类型检查、测试、带项目基础路径的 `npm run build`，然后是 `upload-pages-artifact` 和 `deploy-pages`）。**该工作流目前处于关闭状态**：只有当仓库变量 `URTC_PAGES_ENABLED` 为 `true`（Settings > Secrets and variables > Actions > Variables）时，两个作业才会运行，所有者在 URTC 的第一个已签名正式发布之后设置它。此时构建会执行 `npm run sync-firmware -- --require-official`：只取最新正式发布的固件（绝不使用预发布版本，也不使用 `firmware-release.json` 的备用标签），拒绝任何没有有效发布签名的文件，以及任何用公开开发密钥构建的应用镜像，因此发布的页面不可能带有开发密钥的镜像。Pages 本身也需要启用一次（Settings > Pages > Source: GitHub Actions）；变量未设置时工作流会被跳过。Web Serial 需要基于 Chromium 的浏览器和 https，Pages 提供 https。
 
-本工具是 [URTC（Universal Robot Tool Controller）](https://github.com/JuanenRac/URTC)
-项目的浏览器端配套工具——本工具所对接的板卡固件、硬件设计和完整协议
-文档见该项目自身的仓库。URTC 自身的固件为 GPL-3.0-or-later,其硬件设计为
-CERN-OHL-S v2;本工具自身的许可证并不延伸至那个独立的项目,反之亦然。
-两款覆盖相同功能范围的桌面原生替代方案也存在：
-[URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER) 和
-[URTC Tester](https://github.com/JuanenRac/URTC-TESTER)。
+`package.json` 的 `version` 与 `urtc.project.json` 的 `version` 只会通过明确的步骤（`python bump.py`，它让两者保持一致并写入变更日志条目）改变；`build.bat` / `build.sh`、`npm run build`、`npm run dev`、`npm run lint` 和 `npm run preview` 从不改变版本。
 
-如果你基于本项目进行开发,请留意这种许可证划分：代码更改应保持
-GPL-3.0-or-later,文档衍生品应保持 CC BY-SA——每一项都需附带指向本项目及其
-作者的署名。
+## 📂 仓库结构
 
-**黑匣子、可选功能、机架试验台和热像标签页(新增,仅用模拟对象检查):** Tester Studio 读取故障记录器(`0x1A8` / `0x1A9`)并下载为 CSV 或 JSON,该选项开启时,板卡每报告一次错误就自动读取一次;可在确认后切换固件的可选功能(`0x1AE` / `0x1AF`,默认关闭,下次上电后生效);在页面中模拟工具机架,并带有每个工具头的身份(类型和序列号);并以伪彩色绘制热检测图像(模拟图像会明确标注)。工具目录现在来自 URTC-COMMON 的共享工具配置。这些都没有在真实板卡上试过。
+<p align="center">
+  <img src="images/repository-structure.svg" alt="URTC-WEB-STUDIO 的仓库结构" width="100%">
+</p>
 
-**黑匣子查看器（新增，仅用测试验证）：** Black Box 选项卡会绘制错误发生前所记录那几秒的测量温度和设定值，并在错误标志首次出现的位置画一条线；无需连接开发板即可打开之前保存的记录（该选项卡自己写出的 JSON 或 CSV 文件）；不是记录、含有超出范围的值或超过 67 个采样的文件会被拒绝并给出原因。
+<details>
+<summary>目录树的文本版</summary>
 
-**离线副本与安装（新增，仅用测试和浏览器验证）：** 构建时会写出 service worker（`sw.js`）和 Web 应用清单；首次通过 https（或在 localhost）访问后，浏览器会保存页面、其脚本和随附的固件，页眉显示 **可离线使用**，Studio 无需网络即可打开（此时页眉显示 **离线**）；浏览器支持时，**安装** 按钮可将 Studio 安装为应用。页面和固件清单总是先向网络请求，因此在线时会得到最新的；`version.json` 从不由副本回答；新版本会等到已打开的标签页关闭后才接管。GitHub API 不会被保存：没有网络时无法查询最新发布，只使用随附的镜像。
+```text
+URTC-WEB-STUDIO/
+├── src/                                           应用：组件、hooks、CAN、SLCAN 和固件逻辑、八个语言文件和生成的表格
+├── docs/                                          架构、构建与运行、集成约定
+├── e2e/                                           端到端检查和板子的模型
+├── public/                                        内置固件、响应头、Web 清单
+├── scripts/                                       固件同步和 service worker
+├── tools/                                         构建检查和共用工具
+├── images/                                        横幅和本 README 的图片
+├── .github/                                       CI 工作流以及 Issue 和 Pull Request 模板
+├── build.sh build.bat                             构建脚本
+├── build-test.sh build-test.bat                   构建并测试的脚本，不会修改仓库内容
+├── test.sh test.bat                               运行测试
+├── urtc.project.json                              清单：版本、角色、成熟度和构建命令
+├── CHANGELOG.md                                   每个版本的变更
+├── SECURITY.md SUPPORT.md LICENSE                 安全政策、支持和许可证
+├── CONTRIBUTING.md CODE_OF_CONDUCT.md             如何参与贡献和行为准则
+├── .gitattributes .gitignore                      Git 设置
+├── dev.sh dev.bat                                 安装并启动开发服务器
+├── bump.py bump_manifest_version.py               提升版本号的脚本
+├── index.html                                     Vite 入口页
+├── package.json package-lock.json tsconfig.json   软件包、锁定的版本、TypeScript 和 Vite
+├── playwright.config.ts vite.config.ts            端到端检查的设置
+├── urtc_i18n.lock.json                            生成语言文件的锁文件
+└── NOTICE LICENSE.md                              版权声明和文档许可证
+```
 
-**热计数随时间变化（新增，仅用测试和建模的板子验证）：** 在黑匣子标签页中，累计热计数（`0x1AA` / `0x1AB`）可每 10 秒、30 秒、1 分钟或 5 分钟重新读取；每次读取都会加入保存在浏览器中的历史，绘出加热器小时数和故障随时间的变化，可下载为 CSV 并清除；计数下降（换了另一块板）时历史会重新开始。
+</details>
 
-**已保存的会话（新增，仅用测试和建模的板子验证）：** 总线监视器将帧保存为日志，以及按 SHA-256 和大小标识该日志的记录，格式与桌面版测试器相同；**校验已保存的会话** 读取记录及其日志，并说明二者是否匹配。它证明日志未被编辑。如果浏览器能够生成 Ed25519 签名，记录还会带有用此浏览器的密钥（首次使用时生成并保存在浏览器中）作出的签名：它表明记录在签名后未被编辑，但不说明谁持有该密钥。 监视器还可以只显示您输入的 ID，或只显示数据发生变化的帧（速率和负载仍统计每一帧）。
+每个源文件的带注释清单（每个文件一行）见 [docs/SOURCE_MAP.md](docs/SOURCE_MAP.md)。
 
-**版本提示（新增，仅用测试验证）：** 构建时会在页面旁写出 `version.json`；已构建的页面在打开时仅比较一次，且只在同源范围内与自身版本对比，若所提供的版本更高，就会提示并给出“刷新”按钮。页面不会自动刷新，版本相同或更旧时不提示，文件缺失或没有网络时也保持静默。
+## 🗺️ 路线图与已知限制
 
-**加热器 PID（在“可选功能”标签页中；新增，仅用模拟验证）:** Tester Studio 读取固件加热器 PID 的状态（`0x1B9` / `0x1BA`: 当前生效的增益、状态和上一个控制周期的输出），保存增益（0 到 600），并启动或取消继电器式自整定；自整定会在烙铁当前设定温度（100 到 445 C）附近加热烙铁头，并保存找到的增益。保存增益和启动自整定需要确认，取消则不需要；不是 0 到 600 之间数字的增益会在发送任何内容之前被拒绝。须先在可选功能中打开该功能；以上内容都没有在真实电路板上试过。
+- 仅监听模式和手动选择比特率：无法接入没有任何板子应答的总线。
+- 读取热成像图像时不会先检查传感器是否就绪，也不会重试丢失的数据块。
+- 在浏览器中直接从 GitHub 发布版本下载固件文件：GitHub 从不带 CORS 头的主机提供发布版本的文件，因此下载可能被阻止（内置镜像，或从磁盘选择的文件连同其 `.manifest.json`，始终可用）。
+
+## 🌍 语言
+
+README 和文本提供英语、西班牙语、法语、意大利语、德语、汉语、日语和欧洲葡萄牙语版本。
 
 ## 🔗 相关项目
 
@@ -602,9 +484,18 @@ GPL-3.0-or-later,文档衍生品应保持 CC BY-SA——每一项都需附带指
 - **[HYDRA-UMC-OPS-AGENT](https://github.com/JuanenRac/HYDRA-UMC-OPS-AGENT)** — 维护事件协调器：一个低权限的边缘角色采集经过脱敏的库存/健康快照，一个控制面角色以只读方式渲染它，并请求某个 AI 提供方给出诊断建议——从不应用补丁，也从不部署任何内容。
 - **[HYDRA-UMC-DEV-SERVER](https://github.com/JuanenRac/HYDRA-UMC-DEV-SERVER)** — 可复现的开发主机（Raspberry Pi 5 / CM5），保存整个生态系统的源代码，并在持久队列下运行有界的构建/测试任务；这是专用的开发角色，明确区别于运行中的 CM5。
 
----
+## 📚 文档
 
-## 📚 文档与社区
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) —— UI、持久化设置与外部传输权威
+  如何保持分离，以及为什么沙盒标签页必须展示离线/不可用状态，
+  而不能将模拟数据当作真实数据展示。
+- [`docs/BUILD_AND_RUN.md`](docs/BUILD_AND_RUN.md) —— 非破坏性验证路径
+  `build-test.bat`/`.sh`（TypeScript + 测试，不会修改版本或 CHANGELOG）、
+  用于本地开发的 `dev.bat`/`.sh`，以及为什么 OTA 签名材料
+  绝不属于浏览器配置。
+- [`docs/INTEGRATION_CONTRACT.md`](docs/INTEGRATION_CONTRACT.md) —— 本客户端遇到
+  未知模式、缺失目标身份或格式错误的 API 结果时应如何处理，
+  以及为什么真实的烧录权限保留在服务器端或专用桌面工具中。
 
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** —— 提交 Pull Request 所需的技术栈和编码规范。
 - **[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)** —— 本社区所期望的行为准则。
@@ -612,8 +503,59 @@ GPL-3.0-or-later,文档衍生品应保持 CC BY-SA——每一项都需附带指
 - **[SUPPORT.md](SUPPORT.md)** —— 在哪里提问和报告缺陷。
 - **[LICENSE.md](LICENSE.md)** —— 本项目自身的许可证。
 
+## 🤝 参与贡献与社区
+
+* 提交 Pull Request 之前请运行 `URTC_CI=1 python tools/ci_validate.py`：必须通过。参见 [CONTRIBUTING.md](CONTRIBUTING.md) 和[行为准则](CODE_OF_CONDUCT.md)。
+* README 有八种语言：修改文字时要同步修改全部八个文件，与其他仓库共用的章节由 URTC-COMMON 的 `tools/readme_sections.py` 写入。
+* 对 CAN 协议的修改从 URTC-COMMON（`spec/can_protocol.json`）开始，并通过经过核对的副本进入本仓库。
+* 不要把仅仅构建过的东西描述为已在板子上运行。
+* 请私下报告漏洞：[SECURITY.md](SECURITY.md)。问题、想法和报告：electrohobby3d@gmail.com（[SUPPORT.md](SUPPORT.md)）。
+
 ## 👤 作者
 
 **JuanenRac**（Electro Hobby 3D）
 📧 electrohobby3d@gmail.com
 📺 [youtube.com/@electrohobby3d](https://youtube.com/@electrohobby3d)
+
+## 📜 许可证
+
+URTC Web Studio 版权所有 (c) 2026 JuanenRac（Electro Hobby 3D）。分发本项目
+或其衍生作品时必须包含此声明。
+
+本项目由源代码及其自身的文档组成,两者依据不同的许可证提供——各自适合
+其实际所涵盖的内容：
+
+1. 源代码（`src/` 下的一切,加上构建它的 Vite/TypeScript 配置）依据
+   **GNU 通用公共许可证 v3.0（GPL-3.0-or-later）** 提供。完整文本见
+   https://www.gnu.org/licenses/gpl-3.0.html。
+
+2. 文档（本 README 及其自身的翻译版本——`README_spa.md`、`README_ita.md`、
+   `README_fra.md`、`README_deu.md`、`README_zho.md`、`README_jpn.md`）
+   依据 **知识共享 署名-相同方式共享 4.0 国际许可协议（CC BY-SA 4.0）**
+   提供。完整文本见 https://creativecommons.org/licenses/by-sa/4.0/。
+
+本工具是 [URTC（Universal Robot Tool Controller）](https://github.com/JuanenRac/URTC)
+项目的浏览器端配套工具——本工具所对接的板卡固件、硬件设计和完整协议
+文档见该项目自身的仓库。URTC 自身的固件为 GPL-3.0-or-later,其硬件设计为
+CERN-OHL-S v2;本工具自身的许可证并不延伸至那个独立的项目,反之亦然。
+两款覆盖相同功能范围的桌面原生替代方案也存在：
+[URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER) 和
+[URTC Tester](https://github.com/JuanenRac/URTC-TESTER)。
+
+如果你基于本项目进行开发,请留意这种许可证划分：代码更改应保持
+GPL-3.0-or-later,文档衍生品应保持 CC BY-SA——每一项都需附带指向本项目及其
+作者的署名。
+
+**黑匣子、可选功能、机架试验台和热像标签页(新增,仅用模拟对象检查):** Tester Studio 读取故障记录器(`0x1A8` / `0x1A9`)并下载为 CSV 或 JSON,该选项开启时,板卡每报告一次错误就自动读取一次;可在确认后切换固件的可选功能(`0x1AE` / `0x1AF`,默认关闭,下次上电后生效);在页面中模拟工具机架,并带有每个工具头的身份(类型和序列号);并以伪彩色绘制热检测图像(模拟图像会明确标注)。工具目录现在来自 URTC-COMMON 的共享工具配置。这些都没有在真实板卡上试过。
+
+**黑匣子查看器（新增，仅用测试验证）：** Black Box 选项卡会绘制错误发生前所记录那几秒的测量温度和设定值，并在错误标志首次出现的位置画一条线；无需连接开发板即可打开之前保存的记录（该选项卡自己写出的 JSON 或 CSV 文件）；不是记录、含有超出范围的值或超过 67 个采样的文件会被拒绝并给出原因。
+
+**离线副本与安装（新增，仅用测试和浏览器验证）：** 构建时会写出 service worker（`sw.js`）和 Web 应用清单；首次通过 https（或在 localhost）访问后，浏览器会保存页面、其脚本和随附的固件，页眉显示 **可离线使用**，Studio 无需网络即可打开（此时页眉显示 **离线**）；浏览器支持时，**安装** 按钮可将 Studio 安装为应用。页面和固件清单总是先向网络请求，因此在线时会得到最新的；`version.json` 从不由副本回答；新版本会等到已打开的标签页关闭后才接管。GitHub API 不会被保存：没有网络时无法查询最新发布，只使用随附的镜像。
+
+**热计数随时间变化（新增，仅用测试和建模的板子验证）：** 在黑匣子标签页中，累计热计数（`0x1AA` / `0x1AB`）可每 10 秒、30 秒、1 分钟或 5 分钟重新读取；每次读取都会加入保存在浏览器中的历史，绘出加热器小时数和故障随时间的变化，可下载为 CSV 并清除；计数下降（换了另一块板）时历史会重新开始。
+
+**已保存的会话（新增，仅用测试和建模的板子验证）：** 总线监视器将帧保存为日志，以及按 SHA-256 和大小标识该日志的记录，格式与桌面版测试器相同；**校验已保存的会话** 读取记录及其日志，并说明二者是否匹配。它证明日志未被编辑。如果浏览器能够生成 Ed25519 签名，记录还会带有用此浏览器的密钥（首次使用时生成并保存在浏览器中）作出的签名：它表明记录在签名后未被编辑，但不说明谁持有该密钥。 监视器还可以只显示您输入的 ID，或只显示数据发生变化的帧（速率和负载仍统计每一帧）。
+
+**版本提示（新增，仅用测试验证）：** 构建时会在页面旁写出 `version.json`；已构建的页面在打开时仅比较一次，且只在同源范围内与自身版本对比，若所提供的版本更高，就会提示并给出“刷新”按钮。页面不会自动刷新，版本相同或更旧时不提示，文件缺失或没有网络时也保持静默。
+
+**加热器 PID（在“可选功能”标签页中；新增，仅用模拟验证）:** Tester Studio 读取固件加热器 PID 的状态（`0x1B9` / `0x1BA`: 当前生效的增益、状态和上一个控制周期的输出），保存增益（0 到 600），并启动或取消继电器式自整定；自整定会在烙铁当前设定温度（100 到 445 C）附近加热烙铁头，并保存找到的增益。保存增益和启动自整定需要确认，取消则不需要；不是 0 到 600 之间数字的增益会在发送任何内容之前被拒绝。须先在可选功能中打开该功能；以上内容都没有在真实电路板上试过。

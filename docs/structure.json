@@ -1,0 +1,398 @@
+{
+  "repo": "URTC-WEB-STUDIO",
+  "ecosystem": "urtc",
+  "svg": "en",
+  "cards": [
+    {
+      "name": "src/",
+      "span": 3,
+      "accent": "a",
+      "tree": {
+        "en": "the app: components, hooks, the CAN, SLCAN and firmware logic, the eight language files, generated tables",
+        "es": "la aplicación: componentes, hooks, la lógica de CAN, SLCAN y firmware, los ocho archivos de idioma y las tablas generadas",
+        "de": "die App: Komponenten, Hooks, die CAN-, SLCAN- und Firmware-Logik, die acht Sprachdateien und erzeugte Tabellen",
+        "fr": "l'application : composants, hooks, la logique CAN, SLCAN et firmware, les huit fichiers de langue et les tableaux générés",
+        "it": "l'app: componenti, hook, la logica CAN, SLCAN e firmware, gli otto file di lingua e le tabelle generate",
+        "zh": "应用：组件、hooks、CAN、SLCAN 和固件逻辑、八个语言文件和生成的表格",
+        "ja": "アプリ：コンポーネント、フック、CAN・SLCAN・ファームウェアのロジック、8 つの言語ファイル、生成された表",
+        "pt": "a aplicação: componentes, hooks, a lógica de CAN, SLCAN e firmware, os oito ficheiros de idioma e as tabelas geradas"
+      },
+      "rows": [
+        {
+          "name": "components/",
+          "desc": {
+            "en": "tabs, Flasher Studio, Tester Studio",
+            "es": "pestañas, Flasher Studio, Tester Studio",
+            "de": "Tabs, Flasher Studio, Tester Studio",
+            "fr": "onglets, Flasher Studio, Tester Studio",
+            "it": "schede, Flasher Studio, Tester Studio",
+            "zh": "标签页、Flasher Studio、Tester Studio",
+            "ja": "タブ、Flasher Studio、Tester Studio",
+            "pt": "separadores, Flasher Studio, Tester Studio"
+          }
+        },
+        {
+          "name": "hooks/",
+          "desc": {
+            "en": "Web Serial transport and flasher",
+            "es": "transporte Web Serial y flasheador",
+            "de": "Web-Serial-Transport und Flasher",
+            "fr": "transport Web Serial et flasheur",
+            "it": "trasporto Web Serial e flasher",
+            "zh": "Web Serial 传输和刷写器",
+            "ja": "Web Serial のトランスポートとフラッシャー",
+            "pt": "transporte Web Serial e gravador"
+          }
+        },
+        {
+          "name": "lib/",
+          "desc": {
+            "en": "protocol, images, signatures, traces",
+            "es": "protocolo, imágenes, firmas, trazas",
+            "de": "Protokoll, Images, Signaturen, Traces",
+            "fr": "protocole, images, signatures, traces",
+            "it": "protocollo, immagini, firme, tracce",
+            "zh": "协议、镜像、签名、轨迹",
+            "ja": "プロトコル、イメージ、署名、トレース",
+            "pt": "protocolo, imagens, assinaturas, traços"
+          }
+        },
+        {
+          "name": "locales/",
+          "desc": {
+            "en": "the eight languages",
+            "es": "los ocho idiomas",
+            "de": "die acht Sprachen",
+            "fr": "les huit langues",
+            "it": "le otto lingue",
+            "zh": "八种语言",
+            "ja": "8 言語",
+            "pt": "os oito idiomas"
+          }
+        }
+      ]
+    },
+    {
+      "name": "docs/ e2e/ public/ scripts/",
+      "kind": "group",
+      "span": 3,
+      "columns": 2,
+      "rows": [
+        {
+          "name": "docs/",
+          "desc": {
+            "en": "architecture, build and run, integration contract",
+            "es": "arquitectura, compilación y ejecución, contrato de integración",
+            "de": "Architektur, Build und Betrieb, Integrationsvertrag",
+            "fr": "architecture, compilation et exécution, contrat d'intégration",
+            "it": "architettura, compilazione ed esecuzione, contratto di integrazione",
+            "zh": "架构、构建与运行、集成约定",
+            "ja": "アーキテクチャ、ビルドと実行、統合契約",
+            "pt": "arquitetura, compilação e execução, contrato de integração"
+          }
+        },
+        {
+          "name": "e2e/",
+          "desc": {
+            "en": "end-to-end checks and the model of the board",
+            "es": "comprobaciones de extremo a extremo y el modelo de la placa",
+            "de": "End-to-End-Prüfungen und das Modell der Platine",
+            "fr": "contrôles de bout en bout et le modèle de la carte",
+            "it": "controlli end-to-end e il modello della scheda",
+            "zh": "端到端检查和板子的模型",
+            "ja": "エンドツーエンド検査とボードのモデル",
+            "pt": "verificações de ponta a ponta e o modelo da placa"
+          }
+        },
+        {
+          "name": "public/",
+          "desc": {
+            "en": "bundled firmware, headers, web manifest",
+            "es": "firmware incluido, cabeceras, manifiesto web",
+            "de": "mitgeliefertes Firmware, Header, Web-Manifest",
+            "fr": "firmware inclus, en-têtes, manifeste web",
+            "it": "firmware incluso, header, manifesto web",
+            "zh": "内置固件、响应头、Web 清单",
+            "ja": "同梱ファームウェア、ヘッダー、Web マニフェスト",
+            "pt": "firmware incluído, cabeçalhos, manifesto web"
+          }
+        },
+        {
+          "name": "scripts/",
+          "desc": {
+            "en": "firmware sync and service worker",
+            "es": "sincronización del firmware y service worker",
+            "de": "Firmware-Synchronisierung und Service Worker",
+            "fr": "synchronisation du firmware et service worker",
+            "it": "sincronizzazione del firmware e service worker",
+            "zh": "固件同步和 service worker",
+            "ja": "ファームウェア同期とサービスワーカー",
+            "pt": "sincronização do firmware e service worker"
+          }
+        },
+        {
+          "name": "tools/",
+          "desc": {
+            "en": "build check and shared tools",
+            "es": "comprobación de compilación y herramientas compartidas",
+            "de": "Build-Prüfung und gemeinsame Werkzeuge",
+            "fr": "contrôle de compilation et outils partagés",
+            "it": "controllo di compilazione e strumenti condivisi",
+            "zh": "构建检查和共用工具",
+            "ja": "ビルド検査と共有ツール",
+            "pt": "verificação de compilação e ferramentas partilhadas"
+          }
+        },
+        {
+          "name": "images/",
+          "desc": {
+            "en": "banner and the pictures of this README",
+            "es": "banner e imágenes de este README",
+            "de": "Banner und Bilder dieses READMEs",
+            "fr": "bannière et images de ce README",
+            "it": "banner e immagini di questo README",
+            "zh": "横幅和本 README 的图片",
+            "ja": "バナーとこの README の画像",
+            "pt": "faixa e imagens deste README"
+          }
+        },
+        {
+          "name": ".github/",
+          "desc": {
+            "en": "CI workflow, issue and pull-request templates",
+            "es": "flujo de CI y plantillas de issues y pull requests",
+            "de": "CI-Workflow sowie Vorlagen für Issues und Pull Requests",
+            "fr": "workflow de CI et modèles d'issues et de pull requests",
+            "it": "workflow di CI e modelli per issue e pull request",
+            "zh": "CI 工作流以及 Issue 和 Pull Request 模板",
+            "ja": "CI ワークフローと Issue・プルリクエストのテンプレート",
+            "pt": "fluxo de CI e modelos de issues e pull requests"
+          }
+        }
+      ]
+    },
+    {
+      "name": {
+        "en": "Files at the root",
+        "es": "Archivos de la raíz",
+        "de": "Dateien im Wurzelverzeichnis",
+        "fr": "Fichiers à la racine",
+        "it": "File nella radice",
+        "zh": "根目录文件",
+        "ja": "ルートのファイル",
+        "pt": "Ficheiros na raiz"
+      },
+      "kind": "group",
+      "span": 3,
+      "columns": 2,
+      "rows": [
+        {
+          "name": "build.sh  build.bat",
+          "desc": {
+            "en": "build scripts",
+            "es": "scripts de compilación",
+            "de": "Build-Skripte",
+            "fr": "scripts de compilation",
+            "it": "script di compilazione",
+            "zh": "构建脚本",
+            "ja": "ビルドスクリプト",
+            "pt": "scripts de compilação"
+          },
+          "tree_name": "build.sh build.bat"
+        },
+        {
+          "name": "build-test.sh  build-test.bat",
+          "desc": {
+            "en": "build and test scripts that change nothing in the repository",
+            "es": "scripts de compilación y pruebas que no cambian nada en el repositorio",
+            "de": "Build- und Testskripte, die im Repository nichts ändern",
+            "fr": "scripts de compilation et de test qui ne changent rien dans le dépôt",
+            "it": "script di compilazione e test che non cambiano nulla nel repository",
+            "zh": "构建并测试的脚本，不会修改仓库内容",
+            "ja": "リポジトリを変更しないビルド・テストのスクリプト",
+            "pt": "scripts de compilação e testes que não alteram nada no repositório"
+          },
+          "tree_name": "build-test.sh build-test.bat"
+        },
+        {
+          "name": "test.sh  test.bat",
+          "desc": {
+            "en": "run the tests",
+            "es": "ejecutan las pruebas",
+            "de": "führen die Tests aus",
+            "fr": "lancent les tests",
+            "it": "eseguono i test",
+            "zh": "运行测试",
+            "ja": "テストを実行",
+            "pt": "executam os testes"
+          },
+          "tree_name": "test.sh test.bat"
+        },
+        {
+          "name": "urtc.project.json",
+          "desc": {
+            "en": "manifest: version, role, maturity and build command",
+            "es": "manifiesto: versión, papel, madurez y comando de compilación",
+            "de": "Manifest: Version, Rolle, Reifegrad und Build-Befehl",
+            "fr": "manifeste : version, rôle, maturité et commande de compilation",
+            "it": "manifesto: versione, ruolo, maturità e comando di compilazione",
+            "zh": "清单：版本、角色、成熟度和构建命令",
+            "ja": "マニフェスト：バージョン、役割、成熟度、ビルドコマンド",
+            "pt": "manifesto: versão, papel, maturidade e comando de compilação"
+          }
+        },
+        {
+          "name": "CHANGELOG.md",
+          "desc": {
+            "en": "what changed in each version",
+            "es": "qué cambió en cada versión",
+            "de": "was sich in jeder Version geändert hat",
+            "fr": "ce qui a changé à chaque version",
+            "it": "che cosa è cambiato in ogni versione",
+            "zh": "每个版本的变更",
+            "ja": "各バージョンの変更内容",
+            "pt": "o que mudou em cada versão"
+          }
+        },
+        {
+          "name": "SECURITY.md  SUPPORT.md  LICENSE",
+          "desc": {
+            "en": "security policy, support and license",
+            "es": "política de seguridad, soporte y licencia",
+            "de": "Sicherheitsrichtlinie, Support und Lizenz",
+            "fr": "politique de sécurité, assistance et licence",
+            "it": "politica di sicurezza, supporto e licenza",
+            "zh": "安全政策、支持和许可证",
+            "ja": "セキュリティポリシー、サポート、ライセンス",
+            "pt": "política de segurança, suporte e licença"
+          },
+          "tree_name": "SECURITY.md SUPPORT.md LICENSE"
+        },
+        {
+          "name": "CONTRIBUTING.md  CODE_OF_CONDUCT.md",
+          "desc": {
+            "en": "how to contribute and the code of conduct",
+            "es": "cómo contribuir y código de conducta",
+            "de": "wie man mitwirkt, und der Verhaltenskodex",
+            "fr": "comment contribuer et code de conduite",
+            "it": "come contribuire e codice di condotta",
+            "zh": "如何参与贡献和行为准则",
+            "ja": "貢献方法と行動規範",
+            "pt": "como contribuir e código de conduta"
+          },
+          "tree_name": "CONTRIBUTING.md CODE_OF_CONDUCT.md"
+        },
+        {
+          "name": ".gitattributes  .gitignore",
+          "desc": {
+            "en": "Git settings",
+            "es": "ajustes de Git",
+            "de": "Git-Einstellungen",
+            "fr": "réglages Git",
+            "it": "impostazioni di Git",
+            "zh": "Git 设置",
+            "ja": "Git の設定",
+            "pt": "definições do Git"
+          },
+          "tree_name": ".gitattributes .gitignore"
+        },
+        {
+          "name": "dev.sh  dev.bat",
+          "tree_name": "dev.sh dev.bat",
+          "desc": {
+            "en": "install and start the dev server",
+            "es": "instalar y arrancar el servidor de desarrollo",
+            "de": "installieren und den Entwicklungsserver starten",
+            "fr": "installer et lancer le serveur de développement",
+            "it": "installare e avviare il server di sviluppo",
+            "zh": "安装并启动开发服务器",
+            "ja": "インストールして開発サーバーを起動",
+            "pt": "instalar e arrancar o servidor de desenvolvimento"
+          }
+        },
+        {
+          "name": "bump.py  bump_manifest_version.py",
+          "desc": {
+            "en": "scripts that raise the version",
+            "es": "scripts que suben la versión",
+            "de": "Skripte, die die Version erhöhen",
+            "fr": "scripts qui augmentent la version",
+            "it": "script che alzano la versione",
+            "zh": "提升版本号的脚本",
+            "ja": "バージョンを上げるスクリプト",
+            "pt": "scripts que sobem a versão"
+          },
+          "tree_name": "bump.py bump_manifest_version.py"
+        },
+        {
+          "name": "index.html",
+          "desc": {
+            "en": "Vite entry page",
+            "es": "página de entrada de Vite",
+            "de": "Einstiegsseite von Vite",
+            "fr": "page d'entrée de Vite",
+            "it": "pagina di ingresso di Vite",
+            "zh": "Vite 入口页",
+            "ja": "Vite のエントリーページ",
+            "pt": "página de entrada do Vite"
+          }
+        },
+        {
+          "name": "package.json  package-lock.json  tsconfig.json",
+          "tree_name": "package.json package-lock.json tsconfig.json",
+          "desc": {
+            "en": "packages, locked versions, TypeScript",
+            "es": "paquetes, versiones fijadas, TypeScript y Vite",
+            "de": "Pakete, feste Versionen, TypeScript und Vite",
+            "fr": "paquets, versions figées, TypeScript et Vite",
+            "it": "pacchetti, versioni bloccate, TypeScript e Vite",
+            "zh": "软件包、锁定的版本、TypeScript 和 Vite",
+            "ja": "パッケージ、固定バージョン、TypeScript、Vite",
+            "pt": "pacotes, versões fixadas, TypeScript e Vite"
+          }
+        },
+        {
+          "name": "playwright.config.ts  vite.config.ts",
+          "tree_name": "playwright.config.ts vite.config.ts",
+          "desc": {
+            "en": "Vite and end-to-end settings",
+            "es": "ajustes de las comprobaciones de extremo a extremo",
+            "de": "Einstellungen der End-to-End-Prüfungen",
+            "fr": "réglages des contrôles de bout en bout",
+            "it": "impostazioni dei controlli end-to-end",
+            "zh": "端到端检查的设置",
+            "ja": "エンドツーエンド検査の設定",
+            "pt": "definições das verificações de ponta a ponta"
+          }
+        },
+        {
+          "name": "urtc_i18n.lock.json",
+          "desc": {
+            "en": "lock of the generated language files",
+            "es": "bloqueo de los archivos de idioma generados",
+            "de": "Sperre der erzeugten Sprachdateien",
+            "fr": "verrou des fichiers de langue générés",
+            "it": "blocco dei file di lingua generati",
+            "zh": "生成语言文件的锁文件",
+            "ja": "生成された言語ファイルのロック",
+            "pt": "bloqueio dos ficheiros de idioma gerados"
+          }
+        },
+        {
+          "name": "NOTICE  LICENSE.md",
+          "tree_name": "NOTICE LICENSE.md",
+          "desc": {
+            "en": "copyright notice and documentation license",
+            "es": "aviso de copyright y licencia de la documentación",
+            "de": "Urheberrechtshinweis und Dokumentationslizenz",
+            "fr": "avis de droit d'auteur et licence de la documentation",
+            "it": "avviso di copyright e licenza della documentazione",
+            "zh": "版权声明和文档许可证",
+            "ja": "著作権表示とドキュメントのライセンス",
+            "pt": "aviso de direitos de autor e licença da documentação"
+          }
+        }
+      ]
+    }
+  ]
+}
