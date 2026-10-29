@@ -36,7 +36,7 @@
 
 | | |
 |---|---|
-| Versión | `0.3.7` |
+| Versión | `0.3.8` |
 | Madurez | Funcional |
 | Tests | 577 (`npm test`) |
 | Tecnología | Web Serial API / TypeScript |

@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented here.
 
-## [Unreleased]
+## [0.3.8] - The frames of the tools in one place, the firmware file names from the spec and the universal README
 
 - **The name of a firmware image is read with the shared rule:** the list of images of a release and the check of which image fits which board take the board, the kind and the sidecar names from `generated/firmwareNames.ts` (written from the same specification as the other programs) instead of a pattern of their own; a test covers the rule.
 - **The commands of the tool panels are built by pure functions:** `src/lib/toolFrames.ts` makes the data bytes of the soldering iron, drill, inspection ring, laser, fan, UV lamp, electromagnet, hot air and paste jetting commands (and their stop frames), keeping every value inside its field instead of wrapping it around, and the panels call them instead of building the bytes inline; each one has a test with the expected bytes.
