@@ -150,3 +150,25 @@ export const VERIFY_FAIL_CODES: readonly number[] = [0x01, 0x02, 0x03, 0x04, 0x0
 // it gets its own 400ms margin instead of reusing the 150/250 ratio blindly.
 export const KEEPALIVE_INTERVAL_MS = 150;
 export const LAYERFAN_KEEPALIVE_INTERVAL_MS = 400;
+
+// --- Names of this app that differ from the shared ones ---
+// Every identifier above is the generated one (generated/urtcCanIds.ts, copied from URTC-COMMON). These are the ones the
+// app calls by another name, kept on purpose because the panels and the tests read them that way; the table is what a
+// reader looks at to translate (canIdAliases.test.ts fails when a name is renamed here without being listed).
+export const CAN_NAME_ALIASES: Readonly<Record<string, string>> = {
+  CAN_ID_STATUS_LED_CMD: "CAN_ID_GLOBAL_STATUS",
+  CAN_ID_SOLDER_FEEDER_QUERY: "CAN_ID_SOLDER_FEEDER_POS",
+  CAN_ID_3DP_THERMAL_MOTION: "CAN_ID_PRINTER_THERMAL_MOTION",
+  CAN_ID_3DP_LAYERFAN_CMD: "CAN_ID_PRINTER_LAYERFAN_CMD",
+  CAN_ID_3DP_HOTEND_TELEMETRY: "CAN_ID_PRINTER_HOTEND_TELEMETRY",
+  CAN_ID_3DP_LAYERFAN_TELEMETRY: "CAN_ID_PRINTER_LAYERFAN_RPM",
+  CAN_ID_3DP_HOTENDFAN_CMD: "CAN_ID_PRINTER_HOTENDFAN_CMD",
+  CAN_ID_3DP_HOTENDFAN_TELEMETRY: "CAN_ID_PRINTER_HOTENDFAN_RPM",
+  CAN_ID_WELD_SPOT_CMD: "CAN_ID_SPOT_WELD_CMD",
+  CAN_ID_WELD_ULTRASONIC_CMD: "CAN_ID_ULTRASONIC_WELD_CMD",
+  CAN_ID_FLYING_PROBE_ADS_CONFIG: "CAN_ID_ADS1115_CONFIG",
+  CAN_ID_FLYING_PROBE_ADS_TRIGGER: "CAN_ID_ADS1115_TRIGGER",
+  CAN_ID_FLYING_PROBE_ADS_RESULT: "CAN_ID_ADS1115_RESULT",
+  CAN_ID_THERMAL_RAW_CHUNK_RESP: "CAN_ID_THERMAL_RAW_CHUNK",
+  CAN_ID_THERMAL_CAL_CHUNK_RESP: "CAN_ID_THERMAL_CAL_CHUNK",
+};

@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-560-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-577-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
@@ -39,7 +39,7 @@
 |---|---|
 | バージョン | `0.3.7` |
 | 成熟度 | 機能する |
-| テスト | 560 (`npm test`) |
+| テスト | 577 (`npm test`) |
 | 技術 | Web Serial API / TypeScript |
 | 対象 | 利用者の PC 上の Web ブラウザー |
 | 実機での確認 | シミュレーションのみ：エミュレーター、模擬部品、シミュレーターで試験済み。このバージョンについて実機での動作記録はありません |
@@ -370,7 +370,7 @@ npm run preview
 
 ## 🧪 テスト
 
-`npm test`（Vitest）は純粋なロジックの 560 件を実行します：SLCAN の解析、要求と応答の対応付け、ファームウェアイメージとマニフェストの検査、リリース署名、ツールの上限、確認、シミュレーターを実バスから分けるルール、トレースのエクスポートと再生、ノードピッカー、ラックシミュレーター、保存されたセッション記録、オフラインコピー、ファームウェアの同期、8 つの画面言語です。`npm run lint` はソースの型を検査し、`npm run test:e2e` は実際の Chromium でモデル化したアダプターとボードに対して 19 件のエンドツーエンド検査を実行します（`npm run test:coverage` はカバレッジ下限を加えます）。画面と Web Serial のトランスポートには独自のユニットテストがなく、エンドツーエンド検査がそれらを動かします。実際のアダプターやボードでは一度も動かしていません。
+`npm test`（Vitest）は純粋なロジックの 577 件を実行します：SLCAN の解析、要求と応答の対応付け、ファームウェアイメージとマニフェストの検査、リリース署名、ツールの上限、確認、シミュレーターを実バスから分けるルール、トレースのエクスポートと再生、ノードピッカー、ラックシミュレーター、保存されたセッション記録、オフラインコピー、ファームウェアの同期、8 つの画面言語です。`npm run lint` はソースの型を検査し、`npm run test:e2e` は実際の Chromium でモデル化したアダプターとボードに対して 19 件のエンドツーエンド検査を実行します（`npm run test:coverage` はカバレッジ下限を加えます）。画面と Web Serial のトランスポートには独自のユニットテストがなく、エンドツーエンド検査がそれらを動かします。実際のアダプターやボードでは一度も動かしていません。
 
 ## 🏗️ ビルドとリリース
 

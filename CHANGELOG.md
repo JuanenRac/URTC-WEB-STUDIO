@@ -8,6 +8,7 @@ All notable changes to this project are documented here.
 - **The layout of the README is checked in the CI:** the validator runs `tools/universal_readme_check.py` and lists, as a warning, what differs from the universal layout of the README.
 - **Project status is the second section of the README,** right after At a glance, in the eight languages.
 - **The full CI runs every night:** a scheduled workflow runs the complete baseline again on the default branch and opens (or updates) one issue when it fails, so a change in a runner image, a toolchain or a pinned dependency is found the next day instead of with the next unrelated change. The workflow also starts when the firmware repository announces a new release of its images.
+- **The names this app gives to CAN identifiers are listed and held by a test:** the 15 identifiers called by another name than the shared one (for example the printer ones with a `3DP` prefix) are in one table, `CAN_NAME_ALIASES`, and a test fails when a name is changed without being listed, points at an identifier that does not exist, or carries another value. The number of tests is current (577).
 
 ## [0.3.7] - Filter of the Raw Bus Monitor and the Studio works offline and can be installed
 
