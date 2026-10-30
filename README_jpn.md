@@ -433,6 +433,7 @@ URTC-WEB-STUDIO/
 ├── index.html                                     Vite のエントリーページ
 ├── package.json package-lock.json tsconfig.json   パッケージ、固定バージョン、TypeScript、Vite
 ├── playwright.config.ts vite.config.ts            エンドツーエンド検査の設定
+├── playwright.screenshots.config.ts               README のスクリーンショット用 Playwright 設定
 ├── urtc_i18n.lock.json                            生成された言語ファイルのロック
 └── NOTICE LICENSE.md                              著作権表示とドキュメントのライセンス
 ```

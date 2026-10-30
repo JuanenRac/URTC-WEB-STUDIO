@@ -366,6 +366,20 @@
           }
         },
         {
+          "name": "playwright.screenshots.config.ts",
+          "tree_name": "playwright.screenshots.config.ts",
+          "desc": {
+            "en": "Playwright settings of the screenshots of the README",
+            "es": "Ajustes de Playwright para las capturas del README",
+            "de": "Playwright-Einstellungen für die Screenshots des README",
+            "fr": "Réglages Playwright pour les captures du README",
+            "it": "Impostazioni Playwright per le schermate del README",
+            "ja": "README のスクリーンショット用 Playwright 設定",
+            "zh": "README 屏幕截图使用的 Playwright 设置",
+            "pt": "Definições do Playwright para as capturas do README"
+          }
+        },
+        {
           "name": "urtc_i18n.lock.json",
           "desc": {
             "en": "lock of the generated language files",

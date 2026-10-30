@@ -436,6 +436,7 @@ URTC-WEB-STUDIO/
 ├── index.html                                     page d'entrée de Vite
 ├── package.json package-lock.json tsconfig.json   paquets, versions figées, TypeScript et Vite
 ├── playwright.config.ts vite.config.ts            réglages des contrôles de bout en bout
+├── playwright.screenshots.config.ts               Réglages Playwright pour les captures du README
 ├── urtc_i18n.lock.json                            verrou des fichiers de langue générés
 └── NOTICE LICENSE.md                              avis de droit d'auteur et licence de la documentation
 ```

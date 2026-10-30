@@ -394,6 +394,7 @@ URTC-WEB-STUDIO/
 ├── index.html                                     Vite 入口页
 ├── package.json package-lock.json tsconfig.json   软件包、锁定的版本、TypeScript 和 Vite
 ├── playwright.config.ts vite.config.ts            端到端检查的设置
+├── playwright.screenshots.config.ts               README 屏幕截图使用的 Playwright 设置
 ├── urtc_i18n.lock.json                            生成语言文件的锁文件
 └── NOTICE LICENSE.md                              版权声明和文档许可证
 ```

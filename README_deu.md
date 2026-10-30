@@ -444,6 +444,7 @@ URTC-WEB-STUDIO/
 ├── index.html                                     Einstiegsseite von Vite
 ├── package.json package-lock.json tsconfig.json   Pakete, feste Versionen, TypeScript und Vite
 ├── playwright.config.ts vite.config.ts            Einstellungen der End-to-End-Prüfungen
+├── playwright.screenshots.config.ts               Playwright-Einstellungen für die Screenshots des README
 ├── urtc_i18n.lock.json                            Sperre der erzeugten Sprachdateien
 └── NOTICE LICENSE.md                              Urheberrechtshinweis und Dokumentationslizenz
 ```
