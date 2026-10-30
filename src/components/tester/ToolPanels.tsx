@@ -25,11 +25,11 @@ import {
   KEEPALIVE_INTERVAL_MS, LAYERFAN_KEEPALIVE_INTERVAL_MS
 } from '../../lib/canIds';
 import {
-  MAX_HEATER_SETPOINT_C, MAX_MOTION_STEPS, AOI_STROBE_MIN_MS, AOI_STROBE_MAX_MS, PASTE_PULSE_MIN_MS, PASTE_PULSE_MAX_MS, stepsToBytes, configWordToBytes, isConfigWord
+  MAX_HEATER_SETPOINT_C, MAX_MOTION_STEPS, AOI_STROBE_MIN_MS, AOI_STROBE_MAX_MS, PASTE_PULSE_MIN_MS, PASTE_PULSE_MAX_MS, configWordToBytes, isConfigWord
 } from '../../lib/toolLimits';
 import {
   aoiRingCommand, drillCommand, drillStop, electromagnetCommand, hotAirCommand, hotAirOff, laserCommand, laserOff, pasteJettingConfig, pasteJettingPulse,
-  powerByte, powerOff, solderOff, solderSetpoint,
+  motionMove, motionStop, powerByte, powerOff, solderOff, solderSetpoint, thermalMotionCommand, weldFire,
 } from '../../lib/toolFrames';
 
 export interface ToolCtx {
@@ -101,7 +101,7 @@ export const SolderingIronPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
           <Field label={t('testertool.steps_label', 'Steps')}>
             <input type="number" min={1} max={MAX_MOTION_STEPS} value={steps} onChange={(e) => setSteps(safeInt(e.target.value, 1, 1, MAX_MOTION_STEPS))} className={inputCls} />
           </Field>
-          <button className={btnPrimaryCls} onClick={async () => { if (await confirm('motion')) ctx.sendFrame(CAN_ID_MOTION_CMD, [dir === 'fwd' ? 1 : 0, ...stepsToBytes(steps)], 'Move feeder'); }}>{t('testertool.move', 'Move')}</button>
+          <button className={btnPrimaryCls} onClick={async () => { if (await confirm('motion')) ctx.sendFrame(CAN_ID_MOTION_CMD, motionMove(dir === 'fwd', steps), 'Move feeder'); }}>{t('testertool.move', 'Move')}</button>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-xs text-slate-400">{t('testertool.position_label', 'Position:')} <span className="font-mono text-slate-200">{position ?? '--'}</span></span>
@@ -131,8 +131,8 @@ export const MotionPanel: React.FC<{ ctx: ToolCtx; cmdId: number; label: string 
         <Field label={t('testertool.steps_label', 'Steps')}>
           <input type="number" min={1} max={MAX_MOTION_STEPS} value={steps} onChange={(e) => setSteps(safeInt(e.target.value, 1, 1, MAX_MOTION_STEPS))} className={inputCls} />
         </Field>
-        <button className={btnPrimaryCls} onClick={async () => { if (await confirm('motion')) ctx.sendFrame(cmdId, [dir === 'fwd' ? 1 : 0, ...stepsToBytes(steps)], `Move (${label})`); }}>{t('testertool.move', 'Move')}</button>
-        <button className={btnCls} onClick={() => ctx.sendFrame(cmdId, [dir === 'fwd' ? 1 : 0, 0, 0, 0, 0], `Stop (${label})`)}>{t('testertool.stop', 'Stop')}</button>
+        <button className={btnPrimaryCls} onClick={async () => { if (await confirm('motion')) ctx.sendFrame(cmdId, motionMove(dir === 'fwd', steps), `Move (${label})`); }}>{t('testertool.move', 'Move')}</button>
+        <button className={btnCls} onClick={() => ctx.sendFrame(cmdId, motionStop(dir === 'fwd'), `Stop (${label})`)}>{t('testertool.stop', 'Stop')}</button>
       </div>
     </Section>
   );
@@ -256,7 +256,7 @@ export const Printer3DPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   // The heater setpoint travels in every frame: an "off" or a one-off extruder move must not (re)arm the heater, so it sends 0 unless the heater is switched on.
   const sendThermalMotion = (steps: number, temp: number = nozzleActive ? nozzleTemp : 0) => ctx.sendFrame(
     CAN_ID_3DP_THERMAL_MOTION,
-    [(temp >> 8) & 0xFF, temp & 0xFF, extDir === 'fwd' ? 1 : 0, (steps >> 16) & 0xFF, (steps >> 8) & 0xFF, steps & 0xFF],
+    thermalMotionCommand(temp, extDir === 'fwd', steps),
     '3D printer nozzle+extruder command'
   );
   useKeepalive(nozzleActive, KEEPALIVE_INTERVAL_MS, () => sendThermalMotion(0, nozzleTemp), () => setNozzleActive(false), () => sendThermalMotion(0, 0));
@@ -356,7 +356,7 @@ export const WeldPanel: React.FC<{ ctx: ToolCtx; cmdId: number; label: string; g
   const fire = async () => {
     if (!(await confirm('weld'))) return;
     const clamped = Math.max(1, Math.min(WELD_PULSE_MAX_MS, ms));
-    ctx.sendFrame(cmdId, [1, (clamped >> 8) & 0xFF, clamped & 0xFF], `${label} fire ${clamped}ms`);
+    ctx.sendFrame(cmdId, weldFire(clamped, WELD_PULSE_MAX_MS), `${label} fire ${clamped}ms`);
   };
   return (
     <Section title={`${label} (0x${cmdId.toString(16)})`} subtitle={gated ? t('testertool.weld_subtitle_gated', 'Requires the contact sensor to be satisfied (firmware-side gate).') : t('testertool.weld_subtitle_ungated', 'No contact-sensor gate.')}>

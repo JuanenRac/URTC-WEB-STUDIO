@@ -4,6 +4,7 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The frames of the remaining panels and of the firmware update are built by pure functions with tests:** the status LED and ring (`statusLedCommand`), the SPI passthrough, the write of the optional functions, the nozzle and extruder frame of the 3D printer head, the weld pulse and the stepper moves live in `toolFrames.ts`, and the update frames (START_UPDATE, the four signature chunks, the image data frames and END_UPDATE) in the new `flashFrames.ts`; the panels and the update hook use them, a value that does not fit its field is brought to the nearest one that does, and 11 new tests hold the bytes.
 - **The rack bench reads the answer of the rack:** the simulated rack answers every order with its reply frame (an acknowledgement, or a refusal with the reason), `rackSim.ts` writes and reads that frame (`encodeRackReply`, `parseRackReply`), the bench panel says the reason in the language of the page (eight languages), a command held back for coming too soon is now a refusal with its reason as in the firmware, and the shared scenarios check the reply of every step byte for byte.
 
 ## [0.3.8] - The frames of the tools in one place, the firmware file names from the spec and the universal README

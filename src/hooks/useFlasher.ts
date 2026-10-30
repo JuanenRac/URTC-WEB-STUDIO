@@ -13,9 +13,10 @@ import {
   ENTER_BOOTLOADER_MAGIC, AUTHORIZE_DOWNGRADE_MAGIC,
   THIS_HARDWARE_ID, SLAVE_HARDWARE_ID, FLASH_PAGE_SIZE, SLAVE_DATA_PACING_MS,
   APP_MAX_SIZE, SLAVE_APP_MAX_SIZE,
-  packUInt32BE, packUInt16BE, unpackUInt32BE, getCrc32, isLastPartialPage, readbackChunkLength,
+  packUInt32BE, unpackUInt32BE, getCrc32, isLastPartialPage, readbackChunkLength,
   minorField, formatVersion
 } from '../lib/flasher';
+import { dataChunkData, endUpdateData, hmacChunkData, startUpdateData } from '../lib/flashFrames';
 import { queryMainVersion, querySlaveVersion, querySlaveApplicationVersion, BoardVersionInfo, SlaveVersionInfo, SlaveAppVersionInfo } from '../lib/boardVersion';
 import { CAN_ID_ERASE_FRAM, CAN_ID_FRAM_STATE_RESP, ERASE_FRAM_MAGIC, VERIFY_FAIL_CODES } from '../lib/canIds';
 
@@ -170,7 +171,7 @@ export function useFlasher(serialCan: SerialCanBus) {
     checkCancelled();
 
     serialCan.flushFrames(CAN_ID_STATUS); // only statuses sent after START_UPDATE count
-    await serialCan.sendFrame(CAN_ID_START_UPDATE, [...packUInt32BE(data.length), ...packUInt32BE(THIS_HARDWARE_ID)], 'START_UPDATE (size + HardwareID)');
+    await serialCan.sendFrame(CAN_ID_START_UPDATE, startUpdateData(data.length, THIS_HARDWARE_ID), 'START_UPDATE (size + HardwareID)');
     // ERASING (0x02) arrives first and RECEIVING (0x03) when the erase is done (up to a couple of seconds later): the first is not a refusal, only 0x03 starts the transfer.
     let receiving = false;
     const startDeadline = Date.now() + 5000;
@@ -187,7 +188,7 @@ export function useFlasher(serialCan: SerialCanBus) {
     appendLog(t('flasher.log_hmac_sending', 'Sending HMAC-SHA256 signature (4 chunks)...'));
     for (let i = 0; i < 4; i++) {
       checkCancelled();
-      await serialCan.sendFrame(CAN_ID_HMAC_CHUNK, Array.from(signature.slice(i * 8, (i + 1) * 8)), `HMAC chunk ${i + 1}/4`);
+      await serialCan.sendFrame(CAN_ID_HMAC_CHUNK, hmacChunkData(signature, i), `HMAC chunk ${i + 1}/4`);
       await new Promise(r => setTimeout(r, 10));
     }
 
@@ -212,9 +213,7 @@ export function useFlasher(serialCan: SerialCanBus) {
         // Array.from(pageData.slice(...)) - a 112KB image walks this loop up
         // to ~14000 times, and slice()+Array.from() each allocate a whole
         // extra array per chunk for no benefit over reading bytes directly.
-        const end = Math.min(i + 8, pageData.length);
-        const chunk: number[] = [];
-        for (let j = i; j < end; j++) chunk.push(pageData[j]);
+        const chunk = dataChunkData(pageData, i);
         // the last frame of the image keeps its real length (DLC): padding it made the board count bytes that are not in the image
         await serialCan.sendFrame(CAN_ID_DATA, chunk, `Data page ${pageIndex}, offset ${offset + i}`);
         await new Promise(r => setTimeout(r, 2));
@@ -251,7 +250,7 @@ export function useFlasher(serialCan: SerialCanBus) {
 
     await serialCan.sendFrame(
       CAN_ID_END_UPDATE,
-      [...packUInt32BE(crc32), ...packUInt16BE(opts.reportMajor), ...packUInt16BE(minorField(opts.reportMinor, opts.reportPatch, sendPatch))],
+      endUpdateData(crc32, opts.reportMajor, minorField(opts.reportMinor, opts.reportPatch, sendPatch)),
       'END_UPDATE (CRC32 + declared version)'
     );
 
@@ -325,7 +324,7 @@ export function useFlasher(serialCan: SerialCanBus) {
     );
     checkCancelled();
 
-    await serialCan.sendFrame(CAN_ID_SLAVE_START_UPDATE, [...packUInt32BE(data.length), ...packUInt32BE(SLAVE_HARDWARE_ID)], 'Slave START_UPDATE (size + HardwareID)');
+    await serialCan.sendFrame(CAN_ID_SLAVE_START_UPDATE, startUpdateData(data.length, SLAVE_HARDWARE_ID), 'Slave START_UPDATE (size + HardwareID)');
 
     const startDeadline = Date.now() + 5000;
     let receiving = false;
@@ -340,7 +339,7 @@ export function useFlasher(serialCan: SerialCanBus) {
     appendLog(t('flasher.log_hmac_sending', 'Sending HMAC-SHA256 signature (4 chunks)...'));
     for (let i = 0; i < 4; i++) {
       checkCancelled();
-      await serialCan.sendFrame(CAN_ID_SLAVE_HMAC_CHUNK, Array.from(signature.slice(i * 8, (i + 1) * 8)), `Slave HMAC chunk ${i + 1}/4`);
+      await serialCan.sendFrame(CAN_ID_SLAVE_HMAC_CHUNK, hmacChunkData(signature, i), `Slave HMAC chunk ${i + 1}/4`);
       await new Promise(r => setTimeout(r, 10));
     }
 
@@ -369,7 +368,7 @@ export function useFlasher(serialCan: SerialCanBus) {
 
     setFlasherState(prev => ({ ...prev, mode: 'verifying', progress: 85, statusText: t('flasher.status_slave_verifying', '3/5: Transfer complete. Verifying...'), log: [...prev.log, t('flasher.log_slave_all_data_sent', 'All data sent. Sending END_UPDATE.')] }));
 
-    await serialCan.sendFrame(CAN_ID_SLAVE_END_UPDATE, [...packUInt32BE(crc32), ...packUInt16BE(opts.reportMajor), ...packUInt16BE(minorField(opts.reportMinor, opts.reportPatch, sendPatch))], 'Slave END_UPDATE (CRC32 + declared version)');
+    await serialCan.sendFrame(CAN_ID_SLAVE_END_UPDATE, endUpdateData(crc32, opts.reportMajor, minorField(opts.reportMinor, opts.reportPatch, sendPatch)), 'Slave END_UPDATE (CRC32 + declared version)');
 
     setFlasherState(prev => ({ ...prev, mode: 'flashing', progress: 95, statusText: t('flasher.status_copying_backup', '4/5: Copying verified backup into main slot...') }));
 

@@ -4,6 +4,7 @@ import { Section, Field, inputCls, btnCls, btnPrimaryCls, safeInt } from './shar
 import { ToolCtx } from './ToolPanels';
 import { useConfirmAction } from '../../hooks/useConfirmAction';
 import { downloadBlob } from '../../lib/download';
+import { featuresWrite } from '../../lib/toolFrames';
 import { CAN_ID_SET_FEATURES, CAN_ID_FEATURES_RESP, CAN_ID_PID_CONFIG, CAN_ID_PID_STATE_RESP } from '../../lib/canIds';
 import { PID_ACTION_AUTOTUNE_ABORT, PID_ACTION_AUTOTUNE_START, PID_ACTION_QUERY, PID_ACTION_SET_GAINS, PID_STATE_KEYS, decodePidState, encodePidConfig } from '../../lib/pid';
 import {
@@ -19,7 +20,6 @@ import {
   ThermalFrame, assembleThermal, syntheticThermalFrame, thermalChunkCount, thermalRegionStats, thermalRgb,
 } from '../../lib/thermalView';
 
-const FEATURES_MAGIC = [0x46, 0x45, 0x41, 0x54];
 const FEATURE_BITS: Array<[number, string]> = [[1, 'feature_motion_ramps'], [2, 'feature_health_profile'], [4, 'feature_hsi_autotrim'], [8, 'feature_thermal_pid']];
 
 async function collectFrames(ctx: ToolCtx, requestId: number, data: number[], answerId: number, wanted: number, timeoutMs: number, description: string): Promise<number[][] | null> {
@@ -244,7 +244,7 @@ export const FeaturesPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   const query = async () => { const r = await ctx.request(CAN_ID_FEATURES_RESP, [], CAN_ID_FEATURES_RESP, 1000, 'Query optional functions'); show(r?.data); };
   const write = async () => {
     if (!(await confirm('program_config'))) return;
-    const r = await ctx.request(CAN_ID_SET_FEATURES, [...FEATURES_MAGIC, mask & 0x0F], CAN_ID_FEATURES_RESP, 1000, 'Write optional functions');
+    const r = await ctx.request(CAN_ID_SET_FEATURES, featuresWrite(mask), CAN_ID_FEATURES_RESP, 1000, 'Write optional functions');
     show(r?.data);
   };
 

@@ -10,6 +10,7 @@ import { FrameFilter } from '../../lib/frameFilter';
 import { checkSession, manifestJson, sessionFileNames, sessionLogText, sessionManifest, signedManifest } from '../../lib/sessionRecord';
 import { loadOrCreateKey } from '../../lib/recordSigning';
 import { parseCustomFrame, customFrameErrorText } from '../../lib/customFrame';
+import { spiPassthrough, statusLedCommand } from '../../lib/toolFrames';
 import { Section, Field, inputCls, btnCls, btnPrimaryCls, safeInt } from './shared';
 import { ToolCtx } from './ToolPanels';
 import {
@@ -33,11 +34,7 @@ export const GlobalControlsPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   const [ringOn, setRingOn] = useState(false);
 
   const send = () => {
-    const oledByte = oledMode === 'standard' ? 0x00 : oledMode === 'night' ? 0x01 : 0x0F;
-    ctx.sendFrame(CAN_ID_STATUS_LED_CMD, [
-      statusColor.r, statusColor.g, statusColor.b, oledByte,
-      ringColor.r, ringColor.g, ringColor.b, ringOn ? 1 : 0
-    ], 'Global status/ring LED + OLED mode');
+    ctx.sendFrame(CAN_ID_STATUS_LED_CMD, statusLedCommand(statusColor, oledMode, ringColor, ringOn), 'Global status/ring LED + OLED mode');
   };
 
   return (
@@ -92,7 +89,7 @@ export const ExpansionBoardPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
 
   const sendSpi = async () => {
     const bytes = txHex.trim().split(/\s+/).filter(Boolean).map(h => parseInt(h, 16)).slice(0, 7);
-    const resp = await ctx.request(CAN_ID_EXPANSION_SPI_REQ, [bytes.length, ...bytes], CAN_ID_EXPANSION_SPI_RESP, 1000, 'Expansion SPI passthrough');
+    const resp = await ctx.request(CAN_ID_EXPANSION_SPI_REQ, spiPassthrough(bytes), CAN_ID_EXPANSION_SPI_RESP, 1000, 'Expansion SPI passthrough');
     if (resp) {
       const n = resp.data[0];
       setSpiResult(resp.data.slice(1, 1 + n).map(b => b.toString(16).padStart(2, '0').toUpperCase()).join(' '));
