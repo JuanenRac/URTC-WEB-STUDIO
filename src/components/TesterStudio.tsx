@@ -13,7 +13,7 @@ import {
   PasteJettingPanel, ThermalInspectionPanel, NoHandlerPanel
 } from './tester/ToolPanels';
 import { CAN_ID_WELD_SPOT_CMD, CAN_ID_WELD_ULTRASONIC_CMD } from '../lib/canIds';
-import { BlackBoxPanel, FeaturesPanel, PidPanel, RackBenchPanel, ThermalViewPanel } from './tester/ExtrasPanels';
+import { BlackBoxPanel, EvidenceHistoryPanel, FeaturesPanel, PidPanel, RackBenchPanel, ThermalViewPanel } from './tester/ExtrasPanels';
 
 interface TesterStudioProps {
   /** What the real board reported (0x111). The tool panels follow this, never the sandbox. */
@@ -28,7 +28,7 @@ interface TesterStudioProps {
   subscribeAll: (cb: (f: CanFrame) => void) => () => void;
 }
 
-type SubTab = 'tool' | 'global' | 'expansion' | 'fram' | 'blackbox' | 'features' | 'rack' | 'thermal' | 'selftest' | 'bus' | 'custom';
+type SubTab = 'tool' | 'global' | 'expansion' | 'fram' | 'blackbox' | 'features' | 'rack' | 'evidence' | 'thermal' | 'selftest' | 'bus' | 'custom';
 
 export const TesterStudio: React.FC<TesterStudioProps> = ({
   boardStatus, canFrames, isConnected,
@@ -113,6 +113,7 @@ export const TesterStudio: React.FC<TesterStudioProps> = ({
     { id: 'blackbox', label: t('tester.tab_blackbox', 'Black Box') },
     { id: 'features', label: t('tester.tab_features', 'Optional Functions') },
     { id: 'rack', label: t('tester.tab_rack', 'Rack Bench') },
+    { id: 'evidence', label: t('tester.tab_evidence', 'Evidence') },
     { id: 'thermal', label: t('tester.tab_thermal', 'Thermal View') },
     { id: 'selftest', label: t('tester.tab_selftest', 'Self-Test') },
     { id: 'bus', label: t('tester.tab_bus', 'Bus Monitor') },
@@ -184,6 +185,7 @@ export const TesterStudio: React.FC<TesterStudioProps> = ({
       {subTab === 'blackbox' && <BlackBoxPanel ctx={ctx} systemError={isConnected && boardStatus.systemError} />}
       {subTab === 'features' && <><FeaturesPanel ctx={ctx} /><PidPanel ctx={ctx} /></>}
       {subTab === 'rack' && <RackBenchPanel />}
+      {subTab === 'evidence' && <EvidenceHistoryPanel />}
       {subTab === 'thermal' && <ThermalViewPanel ctx={ctx} />}
       {subTab === 'selftest' && (toolId !== null ? <SelfTestPanel ctx={ctx} activeToolId={toolId} /> : <div className="text-xs text-amber-300 p-4">{t('tester.selftest_needs_tool', 'The self-test needs the board to report its tool first. Use the Detect button.')}</div>)}
       {subTab === 'bus' && <BusMonitorPanel ctx={ctx} subscribeAll={subscribeAll} />}

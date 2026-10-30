@@ -5,6 +5,7 @@ import { ToolCtx } from './ToolPanels';
 import { useConfirmAction } from '../../hooks/useConfirmAction';
 import { downloadBlob } from '../../lib/download';
 import { featuresWrite } from '../../lib/toolFrames';
+import { EVIDENCE_KINDS, EVIDENCE_OUTCOMES, EvidenceEntry, evidenceCsv, evidenceRow, parseEvidenceFile, selectEvidence, summarizeEvidence } from '../../lib/evidenceHistory';
 import { CAN_ID_SET_FEATURES, CAN_ID_FEATURES_RESP, CAN_ID_PID_CONFIG, CAN_ID_PID_STATE_RESP } from '../../lib/canIds';
 import { PID_ACTION_AUTOTUNE_ABORT, PID_ACTION_AUTOTUNE_START, PID_ACTION_QUERY, PID_ACTION_SET_GAINS, PID_STATE_KEYS, decodePidState, encodePidConfig } from '../../lib/pid';
 import {
@@ -438,6 +439,95 @@ export const ThermalViewPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
       {simulated && <div className="text-xs text-amber-300 mt-2">{t('testerextras.thermal_banner_sim', 'SIMULATED image: no board was read')}</div>}
       {stats && <div className="text-xs text-slate-300 font-mono mt-2">{t('testerextras.thermal_stats', 'min {{min}} C, max {{max}} C, mean {{mean}} C', { min: stats.minimum.toFixed(1), max: stats.maximum.toFixed(1), mean: stats.mean.toFixed(1) })}</div>}
       {message && <div className="text-xs text-red-300 mt-2">{message}</div>}
+    </Section>
+  );
+};
+
+
+// ---- History of the evidence (the records the flasher, the tester and the updater write) ----
+const EVIDENCE_FILE_LIMIT = 500;
+const EVIDENCE_SIZE_LIMIT = 8_000_000;
+
+export const EvidenceHistoryPanel: React.FC = () => {
+  const { t } = useTranslation();
+  const [entries, setEntries] = useState<EvidenceEntry[]>([]);
+  const [kind, setKind] = useState('');
+  const [outcome, setOutcome] = useState('');
+  const [text, setText] = useState('');
+  const [onlyInvalid, setOnlyInvalid] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const load = async (files: FileList | null) => {
+    if (!files) return;
+    setBusy(true);
+    const all: EvidenceEntry[] = [];
+    for (const file of Array.from(files).slice(0, EVIDENCE_FILE_LIMIT)) {
+      if (file.size > EVIDENCE_SIZE_LIMIT) { all.push({ file: file.name, line: 0, record: {}, problems: [`the file is bigger than ${EVIDENCE_SIZE_LIMIT} bytes and was not read`], valid: false, time: '' }); continue; }
+      all.push(...await parseEvidenceFile(file.name, await file.text()));
+    }
+    setEntries(all);
+    setBusy(false);
+  };
+
+  const shown = selectEvidence(entries, { kind: kind || undefined, outcome: outcome || undefined, text: text || undefined, onlyInvalid });
+  const summary = summarizeEvidence(entries);
+  const stamp = () => new Date().toISOString().replace(/[-:]/g, '').slice(0, 15);
+
+  return (
+    <Section title={t('testerextras.evidence_title', 'History of the evidence')} subtitle={t('testerextras.evidence_subtitle', 'The records (urtc-evidence/1) that the flasher, the tester and the updater write: each one is checked and the list shows the newest first. Nothing is uploaded: the files are read in this page.')}>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+        <Field label={t('testerextras.evidence_choose', 'Choose the evidence files (.json, .jsonl)')}><input type="file" multiple accept=".json,.jsonl,application/json" disabled={busy} onChange={(e) => { void load(e.target.files); }} className={inputCls} /></Field>
+        <Field label={t('testerextras.evidence_kind', 'Kind')}>
+          <select value={kind} onChange={(e) => setKind(e.target.value)} className={inputCls}>
+            <option value="">{t('testerextras.evidence_all', 'all')}</option>
+            {EVIDENCE_KINDS.map(k => <option key={k} value={k}>{k}</option>)}
+          </select>
+        </Field>
+        <Field label={t('testerextras.evidence_outcome', 'Outcome')}>
+          <select value={outcome} onChange={(e) => setOutcome(e.target.value)} className={inputCls}>
+            <option value="">{t('testerextras.evidence_all', 'all')}</option>
+            {EVIDENCE_OUTCOMES.map(o => <option key={o} value={o}>{o}</option>)}
+          </select>
+        </Field>
+        <Field label={t('testerextras.evidence_search', 'Search')}><input type="text" value={text} onChange={(e) => setText(e.target.value)} className={inputCls} /></Field>
+      </div>
+      <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer mb-3">
+        <input type="checkbox" checked={onlyInvalid} onChange={(e) => setOnlyInvalid(e.target.checked)} className="accent-purple-500" /> {t('testerextras.evidence_only_invalid', 'Only the records that are not valid')}
+      </label>
+      <div className="text-xs text-slate-300 font-mono mb-2">{t('testerextras.evidence_summary', '{{records}} records, {{valid}} valid, {{invalid}} not valid', { records: summary.records, valid: summary.valid, invalid: summary.invalid })}</div>
+      <div className="flex gap-3 mb-3">
+        <button className={btnCls} disabled={shown.length === 0} onClick={() => downloadBlob(new Blob([evidenceCsv(shown)], { type: 'text/csv' }), `urtc_evidence_history_${stamp()}.csv`)}>{t('testerextras.evidence_csv', 'Download the list (CSV)')}</button>
+      </div>
+      {shown.length === 0
+        ? <div className="text-xs text-slate-500">{t('testerextras.evidence_empty', 'No records')}</div>
+        : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-[11px] font-mono text-slate-300">
+              <thead>
+                <tr className="text-left text-slate-500">
+                  <th className="pr-3">{t('testerextras.evidence_col_time', 'Time (UTC)')}</th><th className="pr-3">{t('testerextras.evidence_kind', 'Kind')}</th><th className="pr-3">{t('testerextras.evidence_outcome', 'Outcome')}</th>
+                  <th className="pr-3">{t('testerextras.evidence_col_tool', 'Tool')}</th><th className="pr-3">{t('testerextras.evidence_col_subject', 'Board')}</th><th className="pr-3">{t('testerextras.evidence_col_versions', 'Versions')}</th>
+                  <th>{t('testerextras.evidence_col_file', 'File')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {shown.map((entry, index) => {
+                  const row = evidenceRow(entry);
+                  return (
+                    <React.Fragment key={`${entry.file}:${entry.line}:${index}`}>
+                      <tr className={entry.valid ? '' : 'text-red-400'}>
+                        <td className="pr-3">{row.time || '-'}</td><td className="pr-3">{row.kind || '-'}</td><td className="pr-3">{row.outcome || '-'}</td><td className="pr-3">{row.tool || '-'}</td>
+                        <td className="pr-3">{row.subject}</td><td className="pr-3">{row.versionAfter ? `${row.versionBefore || '?'} -> ${row.versionAfter}` : row.versionBefore}</td>
+                        <td>{row.file}{entry.valid ? '' : ` [${t('testerextras.evidence_not_valid', 'NOT VALID')}]`}</td>
+                      </tr>
+                      {entry.problems.map(problem => <tr key={problem} className="text-red-400"><td colSpan={7} className="pl-4">{problem}</td></tr>)}
+                    </React.Fragment>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
     </Section>
   );
 };
