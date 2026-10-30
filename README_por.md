@@ -121,6 +121,27 @@ Como as partes deste repositório se encaixam: quem o usa, o que contém e de qu
 - **Transporte de hardware:** Web Serial API + framing SLCAN (sem dependências
   nativas, sem servidor backend companheiro)
 
+## 🖼️ Capturas de ecrã
+
+<!-- urtc-shots -->
+Capturadas a 1920×1080 numa bancada de testes, com dados de exemplo e sem qualquer instalação real por trás.
+
+<table>
+<tr>
+<td width="50%" valign="top"><img src="images/screenshots/control.png" alt="Matriz de ferramentas e controlo: os 25 perfis de ferramenta do firmware com os seus jumpers e os controlos da ferramenta selecionada (separador de simulador: não envia nada para o barramento)." width="100%"><br><sub>Matriz de ferramentas e controlo: os 25 perfis de ferramenta do firmware com os seus jumpers e os controlos da ferramenta selecionada (separador de simulador: não envia nada para o barramento).</sub></td>
+<td width="50%" valign="top"><img src="images/screenshots/oled.png" alt="OLED e monitor de hardware: o ecrã de estado da ferramenta, os cinco jumpers de identificação, o LED de estado e o anel de 8 LED (separador de simulador)." width="100%"><br><sub>OLED e monitor de hardware: o ecrã de estado da ferramenta, os cinco jumpers de identificação, o LED de estado e o anel de 8 LED (separador de simulador).</sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="images/screenshots/flasher.png" alt="Flasher: o mapa de flash da placa, a imagem e o seu manifesto prontos a enviar e as opções de uma atualização CAN-OTA (placa modelada; não se envia nada)." width="100%"><br><sub>Flasher: o mapa de flash da placa, a imagem e o seu manifesto prontos a enviar e as opções de uma atualização CAN-OTA (placa modelada; não se envia nada).</sub></td>
+<td width="50%" valign="top"><img src="images/screenshots/thermal.png" alt="Inspeção térmica: uma imagem em falsa cor de uma matriz de infravermelhos de 32×24 com um ponto quente simulado (separador de simulador)." width="100%"><br><sub>Inspeção térmica: uma imagem em falsa cor de uma matriz de infravermelhos de 32×24 com um ponto quente simulado (separador de simulador).</sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="images/screenshots/tester.png" alt="Diagnóstico do testador: a caixa negra e os contadores térmicos ao longo do tempo, lidos de uma placa modelada." width="100%"><br><sub>Diagnóstico do testador: a caixa negra e os contadores térmicos ao longo do tempo, lidos de uma placa modelada.</sub></td>
+<td width="50%"></td>
+</tr>
+</table>
+<!-- /urtc-shots -->
+
 ## ✨ Funcionalidades
 
 ### Flasher Studio - cobertura real de funcionalidades

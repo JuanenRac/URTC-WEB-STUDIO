@@ -121,6 +121,27 @@ How the parts of this repository fit together: who uses it, what it holds and wh
 - **Hardware transport:** Web Serial API + SLCAN framing (no native
   dependencies, no companion backend server)
 
+## 🖼️ Screenshots
+
+<!-- urtc-shots -->
+Captured at 1920×1080 on a test bench, with sample data and no real installation behind them.
+
+<table>
+<tr>
+<td width="50%" valign="top"><img src="images/screenshots/control.png" alt="Tool matrix and control: the 25 tool profiles of the firmware with their jumpers, and the controls of the selected tool (a simulator tab: it sends nothing to the bus)." width="100%"><br><sub>Tool matrix and control: the 25 tool profiles of the firmware with their jumpers, and the controls of the selected tool (a simulator tab: it sends nothing to the bus).</sub></td>
+<td width="50%" valign="top"><img src="images/screenshots/oled.png" alt="OLED and hardware monitor: the status screen of the tool, the five identification jumpers, the status LED and the 8-LED ring (a simulator tab)." width="100%"><br><sub>OLED and hardware monitor: the status screen of the tool, the five identification jumpers, the status LED and the 8-LED ring (a simulator tab).</sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="images/screenshots/flasher.png" alt="Flasher: the flash map of the board, the image and its manifest ready to send, and the options of a CAN-OTA update (modelled board; nothing is sent)." width="100%"><br><sub>Flasher: the flash map of the board, the image and its manifest ready to send, and the options of a CAN-OTA update (modelled board; nothing is sent).</sub></td>
+<td width="50%" valign="top"><img src="images/screenshots/thermal.png" alt="Thermal inspection: a false-colour image of a 32×24 infrared array with a simulated hot spot (a simulator tab)." width="100%"><br><sub>Thermal inspection: a false-colour image of a 32×24 infrared array with a simulated hot spot (a simulator tab).</sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="images/screenshots/tester.png" alt="Tester diagnostics: the black box and the thermal counters over time, read from a modelled board." width="100%"><br><sub>Tester diagnostics: the black box and the thermal counters over time, read from a modelled board.</sub></td>
+<td width="50%"></td>
+</tr>
+</table>
+<!-- /urtc-shots -->
+
 ## ✨ Features
 
 ### Flasher Studio - real feature coverage

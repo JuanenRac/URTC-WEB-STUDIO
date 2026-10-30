@@ -117,6 +117,27 @@ URTC-WEB-STUDIO 是 URTC 两个桌面程序 URTC-FLASHER 和 URTC-TESTER 的浏�
 - **硬件传输：** Web Serial API + SLCAN 帧格式（无原生依赖,无配套后端
   服务器）
 
+## 🖼️ 屏幕截图
+
+<!-- urtc-shots -->
+在测试台上以 1920×1080 截取，使用示例数据，背后没有真实的安装。
+
+<table>
+<tr>
+<td width="50%" valign="top"><img src="images/screenshots/control.png" alt="工具矩阵与控制：固件的 25 个工具配置及其跳线，以及所选工具的控件（模拟器标签页：不会向总线发送任何内容）。" width="100%"><br><sub>工具矩阵与控制：固件的 25 个工具配置及其跳线，以及所选工具的控件（模拟器标签页：不会向总线发送任何内容）。</sub></td>
+<td width="50%" valign="top"><img src="images/screenshots/oled.png" alt="OLED 与硬件监视器：工具的状态屏幕、五个识别跳线、状态 LED 和 8 灯环（模拟器标签页）。" width="100%"><br><sub>OLED 与硬件监视器：工具的状态屏幕、五个识别跳线、状态 LED 和 8 灯环（模拟器标签页）。</sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="images/screenshots/flasher.png" alt="刷写器：电路板的闪存映射、准备发送的映像及其清单，以及 CAN-OTA 更新的选项（模拟电路板，不发送任何内容）。" width="100%"><br><sub>刷写器：电路板的闪存映射、准备发送的映像及其清单，以及 CAN-OTA 更新的选项（模拟电路板，不发送任何内容）。</sub></td>
+<td width="50%" valign="top"><img src="images/screenshots/thermal.png" alt="热成像检查：32×24 红外阵列的伪彩色图像，带有一个模拟的热点（模拟器标签页）。" width="100%"><br><sub>热成像检查：32×24 红外阵列的伪彩色图像，带有一个模拟的热点（模拟器标签页）。</sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="images/screenshots/tester.png" alt="测试器诊断：黑匣子和随时间变化的热计数器，读取自模拟电路板。" width="100%"><br><sub>测试器诊断：黑匣子和随时间变化的热计数器，读取自模拟电路板。</sub></td>
+<td width="50%"></td>
+</tr>
+</table>
+<!-- /urtc-shots -->
+
 ## ✨ 功能
 
 ### Flasher Studio ——真实功能覆盖

@@ -120,6 +120,27 @@ Cómo encajan las partes de este repositorio: quién lo usa, qué contiene y de 
 - **Transporte de hardware:** Web Serial API + framing SLCAN (sin dependencias
   nativas, sin servidor backend compañero)
 
+## 🖼️ Capturas de pantalla
+
+<!-- urtc-shots -->
+Capturadas a 1920×1080 en un banco de pruebas, con datos de ejemplo y sin ninguna instalación real detrás.
+
+<table>
+<tr>
+<td width="50%" valign="top"><img src="images/screenshots/control.png" alt="Matriz de herramientas y control: los 25 perfiles de herramienta del firmware con sus puentes, y los controles de la herramienta seleccionada (pestaña de simulador: no envía nada al bus)." width="100%"><br><sub>Matriz de herramientas y control: los 25 perfiles de herramienta del firmware con sus puentes, y los controles de la herramienta seleccionada (pestaña de simulador: no envía nada al bus).</sub></td>
+<td width="50%" valign="top"><img src="images/screenshots/oled.png" alt="OLED y monitor de hardware: la pantalla de estado de la herramienta, los cinco puentes de identificación, el LED de estado y el anillo de 8 LED (pestaña de simulador)." width="100%"><br><sub>OLED y monitor de hardware: la pantalla de estado de la herramienta, los cinco puentes de identificación, el LED de estado y el anillo de 8 LED (pestaña de simulador).</sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="images/screenshots/flasher.png" alt="Flasher: el mapa de flash de la placa, la imagen y su manifiesto listos para enviar, y las opciones de una actualización CAN-OTA (placa modelada; no se envía nada)." width="100%"><br><sub>Flasher: el mapa de flash de la placa, la imagen y su manifiesto listos para enviar, y las opciones de una actualización CAN-OTA (placa modelada; no se envía nada).</sub></td>
+<td width="50%" valign="top"><img src="images/screenshots/thermal.png" alt="Inspección térmica: una imagen en falso color de una matriz infrarroja de 32×24 con un punto caliente simulado (pestaña de simulador)." width="100%"><br><sub>Inspección térmica: una imagen en falso color de una matriz infrarroja de 32×24 con un punto caliente simulado (pestaña de simulador).</sub></td>
+</tr>
+<tr>
+<td width="50%" valign="top"><img src="images/screenshots/tester.png" alt="Diagnóstico del tester: la caja negra y los contadores térmicos a lo largo del tiempo, leídos de una placa modelada." width="100%"><br><sub>Diagnóstico del tester: la caja negra y los contadores térmicos a lo largo del tiempo, leídos de una placa modelada.</sub></td>
+<td width="50%"></td>
+</tr>
+</table>
+<!-- /urtc-shots -->
+
 ## ✨ Funciones
 
 ### Flasher Studio - cobertura real de funcionalidades
