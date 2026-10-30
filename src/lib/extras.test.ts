@@ -5,7 +5,8 @@ import {
   BLACK_BOX_CHUNK_COUNT, BlackBoxError, FaultTrigger, blackBoxCsv, blackBoxJson, blackBoxRows, chunkRequest, joinFrames, parseBlackBox, triggerIndex,
 } from "./blackBox";
 import {
-  RACK_COMMAND_MIN_INTERVAL_MS, RACK_PREHEAT_MAX_MS, SimulatedRack, encodeRackFrame, encodeSetPreheat, parseRackFrame, unitKey, validateSetPreheat, verifySlot,
+  RACK_CMD_ACK, RACK_CMD_NACK, RACK_COMMAND_MIN_INTERVAL_MS, RACK_PREHEAT_MAX_MS, RACK_REPLY_REASONS, SimulatedRack, encodeRackFrame, encodeRackReply, encodeSetPreheat, parseRackFrame, parseRackReply,
+  unitKey, validateSetPreheat, verifySlot,
 } from "./rackSim";
 import {
   ThermalError, assembleThermal, decodeThermalChunk, syntheticThermalFrame, thermalChunkCount, thermalColor, thermalRegionStats, thermalRgb, thermalScale,
@@ -91,6 +92,8 @@ describe("the rack simulator", () => {
         expect(reply.action === "set_target" || reply.action === "safe_state" ? reply.action : "none").toBe(step.action);
         expect(reply.kind === "ack").toBe(Boolean(step.ack));
         if (step.action !== "none") expect([reply.toolId, reply.targetC]).toEqual([step.tool, step.temp]);
+        // the answer to the sender, byte for byte as the rack firmware writes it (nothing: nobody is told)
+        expect(reply.frame.map((b: number) => b.toString(16).padStart(2, "0")).join("").toUpperCase()).toBe(step.reply);
       }
     });
   }
@@ -126,7 +129,7 @@ describe("the rack simulator", () => {
     rack.setSlot(1, 19, 6);
     expect(rack.receive(encodeSetPreheat(1, 0, 200), 1000).action).toBe("set_target");
     const held = rack.receive(encodeSetPreheat(2, 0, 210), 1050);
-    expect([held.kind, held.action, held.detail]).toEqual(["none", "none", "throttled"]);
+    expect([held.kind, held.action, held.detail, held.reason]).toEqual(["nack", "none", "throttled", "held_rate"]);
     expect(rack.slots[0].targetC).toBe(200);
     expect(rack.receive(encodeSetPreheat(2, 0, 210), 1100).action).toBe("set_target");
     expect(rack.receive(encodeSetPreheat(2, 0, 210), 1110).detail).toBe("retransmission already applied");
@@ -135,6 +138,41 @@ describe("the rack simulator", () => {
     rack.commandMinIntervalMs = 0;
     expect(rack.receive(encodeSetPreheat(3, 0, 220), 1122).action).toBe("set_target");
     expect(new SimulatedRack().commandMinIntervalMs).toBe(RACK_COMMAND_MIN_INTERVAL_MS);
+  });
+  it("writes and reads the reply of the rack, and refuses what is not one", () => {
+    for (const [i, reason] of RACK_REPLY_REASONS.entries()) {
+      const frame = encodeRackReply(9, 1, 3, reason);
+      const parsed = parseRackReply(frame);
+      expect(parsed).toEqual({ ack: i < 2, cmd: 1, tool: 3, code: i, reason, seq: 9 });
+      expect(frame[3]).toBe(i < 2 ? RACK_CMD_ACK : RACK_CMD_NACK);
+    }
+    const good = encodeRackReply(1, 1, 0, "applied");
+    expect(parseRackReply(good.slice(0, -1))).toBeNull();
+    expect(parseRackReply(encodeRackFrame(1, RACK_CMD_ACK, [1, 0]))).toBeNull();
+    expect(parseRackReply(encodeRackFrame(1, RACK_CMD_ACK, [1, 0, 4]))).toBeNull();        // an acknowledgement that carries a refusal code
+    expect(parseRackReply(encodeRackFrame(1, RACK_CMD_NACK, [1, 0, 0]))).toBeNull();       // a refusal that carries an acknowledgement code
+    expect(parseRackReply(encodeRackFrame(1, RACK_CMD_NACK, [1, 0, RACK_REPLY_REASONS.length]))).toBeNull();
+    expect(parseRackReply(encodeRackFrame(1, 1, [1, 0, 0]))).toBeNull();
+    expect(parseRackReply([])).toBeNull();
+  });
+  it("tells why a command was refused, with the frame a program reads", () => {
+    const rack = new SimulatedRack();
+    const reasons = (payload: number[]) => {
+      const reply = rack.receive(encodeRackFrame(5, 1, payload), 0);
+      const parsed = parseRackReply(reply.frame);
+      expect(parsed?.reason).toBe(reply.reason);
+      expect(parsed?.seq).toBe(5);
+      return reply.reason;
+    };
+    expect(reasons([0, 1, 145])).toBe("temp_out_of_range");
+    expect(reasons([6, 0, 100])).toBe("not_heatable");
+    expect(reasons([31, 0, 0])).toBe("tool_absent");
+    expect(reasons([27, 0, 0])).toBe("tool_invalid");
+    expect(reasons([0, 1])).toBe("wrong_length");
+    const unknown = rack.receive(encodeRackFrame(6, 0x40, [1]), 10);
+    expect([unknown.kind, unknown.reason, parseRackReply(unknown.frame)?.tool]).toEqual(["nack", "unknown_command", 0xFF]);
+    expect(rack.receive(encodeRackFrame(7, 1, []), 20).reason).toBe("wrong_length");
+    expect(rack.receive([0xA5, 1, 2], 30).frame).toEqual([]);                                  // noise gets no answer
   });
   it("identifies a head by its type and serial number", () => {
     const rack = new SimulatedRack();

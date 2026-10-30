@@ -13,7 +13,7 @@ import {
 import { CAN_ID_THERMAL_STATS_QUERY, CAN_ID_THERMAL_STATS_RESP } from '../../lib/generated/urtcCanIds';
 import { parseThermalStats, thermalFaultTextKey } from '../../lib/thermalStats';
 import { ThermalSample, addSample, faultsAdded, loadHistory, sampleOf, saveHistory, thermalHistoryChart, thermalHistoryCsv } from '../../lib/thermalHistory';
-import { SimulatedRack, RACK_COMMAND_MIN_INTERVAL_MS, encodeSetPreheat, unitKey } from '../../lib/rackSim';
+import { SimulatedRack, RACK_COMMAND_MIN_INTERVAL_MS, encodeSetPreheat, parseRackReply, unitKey } from '../../lib/rackSim';
 import {
   THERMAL_CALIBRATED_CHUNK_ID, THERMAL_CALIBRATED_REQUEST_ID, THERMAL_FRAMES_PER_CHUNK, THERMAL_STATUS_ID, THERMAL_TRIGGER_ID,
   ThermalFrame, assembleThermal, syntheticThermalFrame, thermalChunkCount, thermalRegionStats, thermalRgb,
@@ -335,7 +335,17 @@ export const RackBenchPanel: React.FC = () => {
     rackRef.current.commandMinIntervalMs = minInterval;
     const reply = rackRef.current.receive(encodeSetPreheat(clock.current.seq, tool, target), clock.current.now);
     if (reply.detail === 'throttled') return t('testerextras.rack_throttled', 'command held back: the minimum interval has not passed');
-    return `${reply.kind.toUpperCase()}${reply.action !== 'none' ? ` ${reply.action}` : ''}${reply.detail ? ` (${reply.detail})` : ''}`;
+    // the reason is read back from the reply frame, as a program that listens to the rack would read it
+    const parsed = parseRackReply(reply.frame);
+    const words: Record<string, string> = {
+      applied: t('testerextras.rack_reply_applied', 'applied'), repeat: t('testerextras.rack_reply_repeat', 'already applied (repeat)'),
+      wrong_length: t('testerextras.rack_reply_wrong_length', 'refused: wrong data length'), tool_absent: t('testerextras.rack_reply_tool_absent', 'refused: the slot holds no tool'),
+      temp_out_of_range: t('testerextras.rack_reply_temp_out_of_range', 'refused: temperature above the limit'), tool_invalid: t('testerextras.rack_reply_tool_invalid', 'refused: not a valid tool number'),
+      not_heatable: t('testerextras.rack_reply_not_heatable', 'refused: this tool has no heater'), held_rate: t('testerextras.rack_reply_held_rate', 'held: too soon after the previous command, send it again later'),
+      unknown_command: t('testerextras.rack_reply_unknown_command', 'refused: the rack does not know this command'),
+    };
+    const said = parsed ? ` - ${words[parsed.reason]}` : '';
+    return `${reply.kind.toUpperCase()}${reply.action !== 'none' ? ` ${reply.action}` : ''}${reply.detail ? ` (${reply.detail})` : ''}${said}`;
   });
   const wait = () => act(() => {
     clock.current.now += Math.max(0, advance);

@@ -62,7 +62,45 @@ export function validateSetPreheat(payload: number[]): { status: RackCommandStat
 export const RACK_COMMAND_MIN_INTERVAL_MS = 20;
 
 export interface RackSlot { occupied: boolean; toolId: number; serial: number; targetC: number }
-export interface RackReply { kind: 'ack' | 'nack' | 'none'; action: 'none' | 'set_target' | 'safe_state'; toolId: number | null; targetC: number | null; detail: string }
+
+export const RACK_CMD_ACK = 0x81;
+export const RACK_CMD_NACK = 0x82;
+export const RACK_REPLY_PAYLOAD_LEN = 3;
+export const RACK_REPLY_TOOL_NONE = 0xFF;
+/** The reason the rack tells the sender, in the order of the codes of the firmware (the first two are acknowledgements, the rest refusals). */
+export const RACK_REPLY_REASONS = ['applied', 'repeat', 'wrong_length', 'tool_absent', 'temp_out_of_range', 'tool_invalid', 'not_heatable', 'held_rate', 'unknown_command'] as const;
+export type RackReplyReason = typeof RACK_REPLY_REASONS[number];
+const isAcknowledgement = (reason: RackReplyReason) => reason === 'applied' || reason === 'repeat';
+const REASON_OF_STATUS: Record<Exclude<RackCommandStatus, 'ok'>, RackReplyReason> = {
+  wrong_payload_len: 'wrong_length', tool_id_absent: 'tool_absent', temp_out_of_range: 'temp_out_of_range', tool_id_invalid: 'tool_invalid', tool_not_heatable: 'not_heatable',
+};
+
+/** The frame that tells the sender what became of its command: an acknowledgement (0x81) for applied and repeat, a refusal (0x82) with the reason otherwise. */
+export function encodeRackReply(seq: number, cmd: number, tool: number, reason: RackReplyReason): number[] {
+  return encodeRackFrame(seq, isAcknowledgement(reason) ? RACK_CMD_ACK : RACK_CMD_NACK, [cmd & 0xFF, tool & 0xFF, RACK_REPLY_REASONS.indexOf(reason)]);
+}
+
+export interface ParsedRackReply { ack: boolean; cmd: number; tool: number; code: number; reason: RackReplyReason; seq: number }
+
+/** The reply a rack sent, or null when the bytes are not a well-formed one (the right command, the exact payload length, a code that exists and agrees with the command). */
+export function parseRackReply(buf: number[]): ParsedRackReply | null {
+  const { frame } = parseRackFrame(buf);
+  if (!frame || (frame.cmd !== RACK_CMD_ACK && frame.cmd !== RACK_CMD_NACK) || frame.payload.length !== RACK_REPLY_PAYLOAD_LEN) return null;
+  const code = frame.payload[2];
+  if (code >= RACK_REPLY_REASONS.length) return null;
+  const reason = RACK_REPLY_REASONS[code];
+  const ack = frame.cmd === RACK_CMD_ACK;
+  if (ack !== isAcknowledgement(reason)) return null;
+  return { ack, cmd: frame.payload[0], tool: frame.payload[1], code, reason, seq: frame.seq };
+}
+
+export interface RackReply {
+  kind: 'ack' | 'nack' | 'none'; action: 'none' | 'set_target' | 'safe_state'; toolId: number | null; targetC: number | null; detail: string;
+  /** Why the command was applied or refused ('' when nobody is told). */
+  reason: RackReplyReason | '';
+  /** The reply frame of a serial command (empty when nobody is told). */
+  frame: number[];
+}
 
 /** The unit key of a slot: the tool type plus the serial number, or null when the serial is unknown. */
 export const unitKey = (s: RackSlot) => (s.occupied && s.serial ? `${s.toolId}:${s.serial}` : null);
@@ -114,45 +152,54 @@ export class SimulatedRack {
 
   receive(buf: number[], nowMs: number): RackReply {
     const { status, frame } = parseRackFrame(buf);
-    if (!frame) return { kind: 'none', action: 'none', toolId: null, targetC: null, detail: `frame refused: ${status}` };
+    if (!frame) return { kind: 'none', action: 'none', toolId: null, targetC: null, detail: `frame refused: ${status}`, reason: '', frame: [] };
     this.tick(nowMs);
     this.lastRxMs = nowMs;
-    if (frame.cmd !== RACK_CMD_SET_PREHEAT) return { kind: 'none', action: 'none', toolId: null, targetC: null, detail: 'command not acted on' };
+    if (frame.cmd !== RACK_CMD_SET_PREHEAT) {
+      return { kind: 'nack', action: 'none', toolId: null, targetC: null, detail: 'command not acted on', reason: 'unknown_command', frame: encodeRackReply(frame.seq, frame.cmd, RACK_REPLY_TOOL_NONE, 'unknown_command') };
+    }
+    if (frame.payload.length === 0) {
+      return { kind: 'nack', action: 'none', toolId: null, targetC: null, detail: 'wrong_payload_len', reason: 'wrong_length', frame: encodeRackReply(frame.seq, RACK_CMD_SET_PREHEAT, RACK_REPLY_TOOL_NONE, 'wrong_length') };
+    }
     return this.setPreheat(frame.seq, frame.payload, nowMs);
   }
 
   private setPreheat(seq: number, payload: number[], nowMs: number): RackReply {
+    /** The reply with its reason and the frame that carries it. */
+    const told = (kind: RackReply['kind'], action: RackReply['action'], toolId: number | null, targetC: number | null, detail: string, reason: RackReplyReason): RackReply =>
+      ({ kind, action, toolId, targetC, detail, reason, frame: encodeRackReply(seq, RACK_CMD_SET_PREHEAT, payload[0], reason) });
     const { status, tool, target } = validateSetPreheat(payload);
     if (status !== 'ok') {
+      const reason = REASON_OF_STATUS[status];
       if (payload.length >= 1 && payload[0] <= RACK_TOOL_ID_LAST) {
         const slot = this.find(payload[0]);
         if (slot !== null) this.slots[slot].targetC = 0;
-        return { kind: 'nack', action: 'safe_state', toolId: payload[0], targetC: 0, detail: status };
+        return told('nack', 'safe_state', payload[0], 0, status, reason);
       }
-      return { kind: 'nack', action: 'none', toolId: null, targetC: null, detail: status };
+      return told('nack', 'none', null, null, status, reason);
     }
     const prev = this.lastSeq.get(tool);
     if (prev !== undefined) {
       const d = (seq - prev) & 0xFF;
-      if (d === 0 || d >= 128) return { kind: 'ack', action: 'none', toolId: tool, targetC: null, detail: 'retransmission already applied' };
+      if (d === 0 || d >= 128) return told('ack', 'none', tool, null, 'retransmission already applied', 'repeat');
     }
     // a command that would be applied is held back when the same tool had one accepted less than the interval ago (a flood): nothing changes, no acknowledgement,
     // and its sequence is not spent; a refusal above (a safe state) and a retransmission are never held back
     const lastCommand = this.lastCommandMs.get(tool);
     if (this.commandMinIntervalMs > 0 && lastCommand !== undefined && ((nowMs - lastCommand) >>> 0) < this.commandMinIntervalMs) {
-      return { kind: 'none', action: 'none', toolId: tool, targetC: null, detail: 'throttled' };
+      return told('nack', 'none', tool, null, 'throttled', 'held_rate');
     }
     this.lastCommandMs.set(tool, nowMs);
     this.lastSeq.set(tool, seq);
     const slot = this.find(tool);
-    if (slot === null) return { kind: 'ack', action: 'none', toolId: tool, targetC: target, detail: 'tool not racked: target not applied' };
+    if (slot === null) return told('ack', 'none', tool, target, 'tool not racked: target not applied', 'applied');
     if (this.expired.has(slot)) {
       if (target === 0) this.expired.delete(slot);
-      else return { kind: 'ack', action: 'none', toolId: tool, targetC: target, detail: 'pre-heat limit reached: send 0 or swap the tool' };
+      else return told('ack', 'none', tool, target, 'pre-heat limit reached: send 0 or swap the tool', 'applied');
     }
     if (target > 0 && this.slots[slot].targetC === 0) this.startedMs.set(slot, nowMs);
     this.slots[slot].targetC = target;
-    return { kind: 'ack', action: 'set_target', toolId: tool, targetC: target, detail: '' };
+    return told('ack', 'set_target', tool, target, '', 'applied');
   }
 }
 

@@ -2,6 +2,10 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+- **The rack bench reads the answer of the rack:** the simulated rack answers every order with its reply frame (an acknowledgement, or a refusal with the reason), `rackSim.ts` writes and reads that frame (`encodeRackReply`, `parseRackReply`), the bench panel says the reason in the language of the page (eight languages), a command held back for coming too soon is now a refusal with its reason as in the firmware, and the shared scenarios check the reply of every step byte for byte.
+
 ## [0.3.8] - The frames of the tools in one place, the firmware file names from the spec and the universal README
 
 - **The name of a firmware image is read with the shared rule:** the list of images of a release and the check of which image fits which board take the board, the kind and the sidecar names from `generated/firmwareNames.ts` (written from the same specification as the other programs) instead of a pattern of their own; a test covers the rule.
