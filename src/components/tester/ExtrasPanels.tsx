@@ -1,11 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Section, Field, inputCls, btnCls, btnPrimaryCls, safeInt } from './shared';
 import { ToolCtx } from './ToolPanels';
 import { useConfirmAction } from '../../hooks/useConfirmAction';
 import { downloadBlob } from '../../lib/download';
 import { featuresWrite } from '../../lib/toolFrames';
-import { EVIDENCE_KINDS, EVIDENCE_OUTCOMES, EvidenceEntry, evidenceCsv, evidenceRow, parseEvidenceFile, selectEvidence, summarizeEvidence } from '../../lib/evidenceHistory';
+import { EVIDENCE_KINDS, EVIDENCE_OUTCOMES, EvidenceEntry, evidenceCsv, evidenceRow, parseEvidenceFile, selectEvidence, signatureView, summarizeEvidence } from '../../lib/evidenceHistory';
+import { formatTrustStore, loadTrustText, parseTrustStore, saveTrustText } from '../../lib/trustStore';
 import { CAN_ID_SET_FEATURES, CAN_ID_FEATURES_RESP, CAN_ID_PID_CONFIG, CAN_ID_PID_STATE_RESP } from '../../lib/canIds';
 import { PID_ACTION_AUTOTUNE_ABORT, PID_ACTION_AUTOTUNE_START, PID_ACTION_QUERY, PID_ACTION_SET_GAINS, PID_STATE_KEYS, decodePidState, encodePidConfig } from '../../lib/pid';
 import {
@@ -456,6 +457,14 @@ export const EvidenceHistoryPanel: React.FC = () => {
   const [text, setText] = useState('');
   const [onlyInvalid, setOnlyInvalid] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [trustText, setTrustText] = useState(() => loadTrustText());
+  const [trustKept, setTrustKept] = useState(true);
+  const trust = useMemo(() => parseTrustStore(trustText), [trustText]);
+  // only what reads as alias=public key is kept in this browser: a line that is anything else is never written
+  const onTrustChange = (value: string) => {
+    setTrustText(value);
+    setTrustKept(saveTrustText(formatTrustStore(parseTrustStore(value).store)));
+  };
 
   const load = async (files: FileList | null) => {
     if (!files) return;
@@ -491,6 +500,21 @@ export const EvidenceHistoryPanel: React.FC = () => {
         </Field>
         <Field label={t('testerextras.evidence_search', 'Search')}><input type="text" value={text} onChange={(e) => setText(e.target.value)} className={inputCls} /></Field>
       </div>
+      <details className="mb-3 text-xs" data-testid="evidence-trust">
+        <summary className="cursor-pointer text-slate-400">{t('testerextras.evidence_trust_label', 'Trusted keys (one per line: alias=public key in hexadecimal)')}</summary>
+        <textarea
+          value={trustText}
+          onChange={(e) => onTrustChange(e.target.value)}
+          rows={4}
+          spellCheck={false}
+          aria-label={t('testerextras.evidence_trust_label', 'Trusted keys (one per line: alias=public key in hexadecimal)')}
+          className={`${inputCls} font-mono mt-2`}
+          placeholder="Ana=d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a"
+        />
+        <p className="text-[11px] text-slate-500 mt-1">{t('testerextras.evidence_trust_hint', 'Public keys only, never a private key.')}</p>
+        {trust.problems > 0 && <p className="text-[11px] text-amber-300 mt-1" role="alert">{t('testerextras.evidence_trust_problems', '{{count}} line(s) were not read as alias=public key and were left out', { count: trust.problems })}</p>}
+        {!trustKept && <p className="text-[11px] text-amber-300 mt-1" role="alert">{t('testerextras.evidence_trust_not_saved', 'This browser would not keep the list')}</p>}
+      </details>
       <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer mb-3">
         <input type="checkbox" checked={onlyInvalid} onChange={(e) => setOnlyInvalid(e.target.checked)} className="accent-purple-500" /> {t('testerextras.evidence_only_invalid', 'Only the records that are not valid')}
       </label>
@@ -518,7 +542,7 @@ export const EvidenceHistoryPanel: React.FC = () => {
                       <tr className={entry.valid ? '' : 'text-red-400'}>
                         <td className="pr-3">{row.time || '-'}</td><td className="pr-3">{row.kind || '-'}</td><td className="pr-3">{row.outcome || '-'}</td><td className="pr-3">{row.tool || '-'}</td>
                         <td className="pr-3">{row.subject}</td><td className="pr-3">{row.versionAfter ? `${row.versionBefore || '?'} -> ${row.versionAfter}` : row.versionBefore}</td>
-                        <td>{row.file}{entry.valid ? '' : ` [${t('testerextras.evidence_not_valid', 'NOT VALID')}]`}{entry.signature === 'unsigned' ? '' : ` [${t(`testerextras.evidence_sig_${entry.signature}`, entry.signature)}]`}</td>
+                        <td>{row.file}{entry.valid ? '' : ` [${t('testerextras.evidence_not_valid', 'NOT VALID')}]`}{(() => { const view = signatureView(entry, trust.store); return view.state === 'unsigned' ? '' : ` [${t(`testerextras.evidence_sig_${view.state}`, view.state, { alias: view.alias })}]`; })()}</td>
                       </tr>
                       {entry.problems.map(problem => <tr key={problem} className="text-red-400"><td colSpan={7} className="pl-4">{problem}</td></tr>)}
                     </React.Fragment>

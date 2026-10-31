@@ -1,17 +1,17 @@
 {
   "format": 1,
-  "urtc_common_version": "0.1.2",
+  "urtc_common_version": "0.1.3",
   "catalog": "spec/i18n/catalog/web-studio.json",
-  "catalog_sha256": "63e1197add142ea803ca6e1cbd0d4695c743b5213696cdd3fc9b759981a1d383",
+  "catalog_sha256": "b5e83fd8fdc04a474909f80db046bad2d55a7268be91b6c9f207e9cad0112f77",
   "files": {
-    "src/locales/de.json": "3776dec80ce41bbbd5eab7965c8035edd735a0f7c5a2052b6c3334429959abb4",
-    "src/locales/en.json": "b551dfd0b726a62f5a55171e7a754207f8a034f58b9473ab4ec095f511d6bd9f",
-    "src/locales/es.json": "4908a2db7ac56f54f02537d7b8449600b418cc47d81c4ba72ed305dd8f7bbd9c",
-    "src/locales/fr.json": "6fd9bceef1704eb3900463e6329248c6c46442944dc4aaff2ba032e2789f4573",
+    "src/locales/de.json": "d598390ace5e1ae63c78d928584c0ad59eef05a004a27a1c520c5874e7e65cc4",
+    "src/locales/en.json": "373f6e1c4677bd8f39799aa759242b3d8880ac969ea56705fde94df6e9f72e47",
+    "src/locales/es.json": "d446c69271e047294593e58273378521cf51748fab56e866b45f7392c658538d",
+    "src/locales/fr.json": "9621ad2e7d1db7fd5776be037808d7eadd7a13057c6705c446a233465be459fd",
     "src/locales/generated.test.ts": "b235c660d2e4b721264ea1f80a61d74517363d08bd0455f21d0c49b551bfb808",
-    "src/locales/it.json": "00e8ae4c2282d8e2af8f07d45001c6c93869f6b7fed1a424862ce7483d9573d4",
-    "src/locales/ja.json": "0721e9d7c0b16d0c396dfbf0387a5de5873d873e8a68a816d736bd448fd550df",
-    "src/locales/pt.json": "cb56900ae9980a28054f188b5342202b4a75c707ec32947def7a45e9415f2b38",
-    "src/locales/zh.json": "0067db52baa940b7b18f971992747ff0f9484d8e346cb780fa65e2bb5b80962f"
+    "src/locales/it.json": "87de8ddac1d6637a3f53eb6170effa444ed77549d4568747344450b223153e01",
+    "src/locales/ja.json": "143ea964ead9fd63be397b7e39449fd7cc90ff72b56580248fec1c7f26f07be0",
+    "src/locales/pt.json": "9f91d7cfa72682d91fea2f5c890c7d3b9e4568cc5d375b1d8cea54233d09416a",
+    "src/locales/zh.json": "3c9a6724c4aa24fab59448cd238e7393075a7d26ce5db6c83a1a467345afcff1"
   }
 }

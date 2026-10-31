@@ -2,6 +2,10 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+- **The Evidence tab keeps a list of trusted keys:** a box under "Trusted keys" takes one `alias=public key` per line (64 hexadecimal digits; an alias is 1 to 40 letters, digits, spaces or `._@-`, the same rules as the common code). Only public keys are kept, in this browser's storage and nowhere else (a line that is not a public key is left out, counted and never written; a browser that will not keep the list says so). With a list, a good signature shows as "signed by <alias>" when its key is listed and "valid signature, unknown key" when it is not (that only warns); a signature that fails, a record that fails its own check and a record that is not signed are never changed by the list. The texts are in the eight languages (Portuguese of Portugal); unit tests hold the reading of the list, the storage and the states, and an end-to-end check signs nothing but reads a record signed in Python.
+
 ## [0.4.1] - The table of the trace viewer is virtualized and reachable by keyboard, the viewer reads more formats (candump and JSONL) and the Evidence tab checks the optional signature of a record
 
 - **The table of the trace viewer is virtualized:** only the rows in view (and a few more above and below) are drawn, each with a fixed height, so a selection of up to 200,000 frames scrolls without freezing the page; the old limit of 1,000 drawn rows is gone (the downloads always held the whole selection). The table takes the keyboard (arrow keys, Page Up, Page Down, Home, End), says its size and the position of every row to a screen reader, announces the chosen row, and its column headers are buttons that sort. A test holds the reading, filtering and sorting of 100,000 frames to a few seconds, and an end-to-end check in a real browser draws 30,000 frames and moves through them with the keyboard.

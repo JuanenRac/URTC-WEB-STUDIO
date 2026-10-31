@@ -198,3 +198,18 @@ export function evidenceCsv(entries: EvidenceEntry[]): string {
   const columns = ['time', 'kind', 'outcome', 'tool', 'subject', 'versionBefore', 'versionAfter', 'artifacts', 'valid', 'file'] as const;
   return [columns.join(','), ...entries.map(e => { const row = evidenceRow(e); return columns.map(c => csvCell(row[c])).join(','); })].join('\n') + '\n';
 }
+
+export type SignatureView = { state: EvidenceEntry['signature'] | 'trusted' | 'unknown_key'; alias: string };
+
+/**
+ * What to say about the signature of an entry, given the trust store (alias to public key). Without a store (or with an empty one) it is the state of the
+ * entry as it was; with one, a good signature is `trusted` (the alias says whose) when its key is in the store and `unknown_key` when it is not. A signature
+ * that fails, one that could not be checked and a record that is not signed are never changed by the store.
+ */
+export function signatureView(entry: EvidenceEntry, store: { [alias: string]: string } = {}): SignatureView {
+  if (entry.signature !== 'valid' || Object.keys(store).length === 0) return { state: entry.signature, alias: '' };
+  const block = entry.record.signature;
+  const key = block !== null && typeof block === 'object' && !Array.isArray(block) && typeof block.public_key === 'string' ? block.public_key.toLowerCase() : '';
+  const alias = Object.keys(store).sort().find(name => store[name] === key) ?? '';
+  return alias ? { state: 'trusted', alias } : { state: 'unknown_key', alias: '' };
+}
