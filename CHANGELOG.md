@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented here.
 
-## [Unreleased]
+## [0.3.9] - A history of the evidence in the tester, the frames of the remaining panels and of the firmware update built by pure functions with tests, a rack bench that reads the answer of the rack and the names of Chinese and Japanese in their own language
 
 - **The lights of Project status follow the evidence of the manifest:** the manifest says how far the repository has been shown to work (`evidence`: `host-test`, `simulator`, `bench` or `field`) and the validator fails when a light is above what that evidence and the maturity allow (`tools/status_lights.py`), so a green that never ran on real hardware cannot come back.
 - **A history of the evidence in the tester:** the new Evidence tab reads the records (`urtc-evidence/1`) that the flasher, the tester and the updater write, from the files the person chooses (nothing is uploaded), checks each one with the same rules and the same digest as the common code (a test holds the digest to the value Python computes), and lists them newest first with filters for the kind, the outcome and a text, a summary, the problem of every record that is not valid and a CSV download; the page is in the eight languages.

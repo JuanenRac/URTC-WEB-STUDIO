@@ -37,7 +37,7 @@
 
 | | |
 |---|---|
-| Version | `0.3.8` |
+| Version | `0.3.9` |
 | Maturity | Functional |
 | Tests | 613 (`npm test`) |
 | Stack | Web Serial API / TypeScript |
