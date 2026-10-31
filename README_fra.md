@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Licence-GPL%203.0-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-619-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-792-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
 </p>
@@ -38,7 +38,7 @@
 |---|---|
 | Version | `0.3.9` |
 | Maturité | Fonctionnel |
-| Tests | 619 (`npm test`) |
+| Tests | 792 (`npm test`) |
 | Technologie | Web Serial API / TypeScript |
 | Cible | Un navigateur web sur le PC de l'utilisateur |
 | Sur matériel réel | Simulé seulement : testé avec des émulateurs, des doubles de test ou des simulateurs ; aucune exécution sur du matériel réel n'est consignée pour cette version |
@@ -255,6 +255,8 @@ Porté depuis les panneaux du propre deck Qt Quick d'`URTC-TESTER`
 
 - **Banc du rack avec réponses.** Le rack simulé répond à chaque ordre par sa trame de réponse (un acquittement, ou un refus avec le motif) ; `rackSim.ts` l'écrit et la lit (`encodeRackReply`, `parseRackReply`), le panneau du banc dit le motif dans la langue de la page et une commande retenue pour être arrivée trop tôt est un refus avec son motif, comme dans le firmware.
 
+- **Onglet Traces CAN.** Il ouvre une trace enregistrée (`.trc` ou `.asc`) et liste ses trames nommées d'après la spécification (`canTrace.ts`, avec les mêmes schémas que les panneaux) : les refus et les défauts sont marqués, ainsi que les trames trop courtes, en double, dans le désordre ou suivies d'un long silence ; le tableau filtre par identifiant, type, nœud, résultat, temps et texte, une ligne de temps montre où sont les refus et la sélection s'enregistre en CSV ou en JSON. Le fichier est lu dans la page (rien n'est envoyé, rien de ce qu'il contient n'est exécuté), jusqu'à 5 Mo et 200 000 trames ; la page existe en huit langues.
+
 <!-- urtc-section:heads -->
 ### Plusieurs têtes d'outil sur un bus
 
@@ -400,7 +402,7 @@ Les versions des programmes URTC qui fonctionnent ensemble, et la version du pro
 
 ## 🧪 Tests
 
-`npm test` (Vitest) exécute 619 tests de la logique pure : analyse SLCAN, appariement des requêtes et réponses, contrôles des images de firmware et des manifestes, signatures de release, limites d'outil, confirmations, les règles qui séparent le simulateur du vrai bus, export et relecture de traces, le sélecteur de nœuds, le simulateur de râtelier, l'enregistrement de session sauvegardé, la copie hors ligne, la synchronisation du firmware et les huit langues de l'interface. `npm run lint` vérifie les types du code et `npm run test:e2e` exécute 19 contrôles de bout en bout dans un vrai Chromium face à un adaptateur et une carte modélisés (`npm run test:coverage` ajoute un plancher de couverture). Les écrans et le transport Web Serial n'ont pas de tests unitaires propres ; les contrôles de bout en bout les pilotent. Rien de tout cela n'a tourné contre un vrai adaptateur ou une vraie carte.
+`npm test` (Vitest) exécute 792 tests de la logique pure : analyse SLCAN, appariement des requêtes et réponses, contrôles des images de firmware et des manifestes, signatures de release, limites d'outil, confirmations, les règles qui séparent le simulateur du vrai bus, export et relecture de traces, le sélecteur de nœuds, le simulateur de râtelier, l'enregistrement de session sauvegardé, la copie hors ligne, la synchronisation du firmware et les huit langues de l'interface. `npm run lint` vérifie les types du code et `npm run test:e2e` exécute 21 contrôles de bout en bout dans un vrai Chromium face à un adaptateur et une carte modélisés (`npm run test:coverage` ajoute un plancher de couverture). Les écrans et le transport Web Serial n'ont pas de tests unitaires propres ; les contrôles de bout en bout les pilotent. Rien de tout cela n'a tourné contre un vrai adaptateur ou une vraie carte.
 
 ## 🏗️ Compilation et publication
 
@@ -496,6 +498,7 @@ URTC est fait de dépôts indépendants, chacun avec sa version, ses tests et so
   changement de version ni de CHANGELOG), `dev.bat`/`.sh` pour le
   développement local, et pourquoi le matériel de signature OTA n'a jamais
   sa place dans la configuration du navigateur.
+- [`docs/TRACE_VIEWER.md`](docs/TRACE_VIEWER.md) — ce que lit l'onglet Traces CAN, comment il nomme et marque chaque trame, ses limites et le CSV et le JSON qu'il écrit.
 - [`docs/INTEGRATION_CONTRACT.md`](docs/INTEGRATION_CONTRACT.md) — ce que
   ce client doit faire face à un schéma inconnu, une identité de cible
   manquante ou un résultat d'API malformé, et pourquoi l'autorité réelle de

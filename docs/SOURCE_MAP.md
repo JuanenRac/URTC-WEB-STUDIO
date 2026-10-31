@@ -45,6 +45,7 @@ Every file of the repository with a line on what it does: the annotated tree tha
 │   │       ├── GlobalPanels.tsx     Global Controls, Expansion Board, F-RAM,
 │   │       │                        Self-Test, Raw Bus Monitor, Custom Frame injector
 │   │       ├── ExtrasPanels.tsx     Black Box, optional functions, heater PID, rack bench and thermal view panels
+│   │       ├── TraceViewerPanel.tsx The CAN Traces tab: opens a .trc/.asc trace, filters, timeline, CSV and JSON of the selection
 │   │       └── shared.tsx           Shared UI primitives (Section, Field, button/input
 │   │                                classes, safeInt)
 │   ├── data/
@@ -66,6 +67,7 @@ Every file of the repository with a line on what it does: the annotated tree tha
 │   │   ├── flasher.ts               OTA protocol constants, CRC32/HMAC helpers,
 │   │   │                            manifest parsing (no signing key)
 │   │   ├── traceReplay.ts           Reads .trc/.asc traces; the player with speed and pauses
+│   │   ├── canTrace.ts              The trace viewer: names every frame with the specification layouts, marks refusals and odd frames, filters, sorts, CSV/JSON
 │   │   ├── boardVersion.ts          Version queries: 0x7F9/0x7FA/0x7E9 and the slave's 0x217/0x218
 │   │   ├── githubRelease.ts         Images of the newest GitHub release and their download
 │   │   ├── firmwareImage.ts         Image checks, manifest target and version (with patch)
@@ -132,6 +134,7 @@ Every file of the repository with a line on what it does: the annotated tree tha
 ├── docs/
 │   ├── ARCHITECTURE.md
 │   ├── BUILD_AND_RUN.md
-│   └── INTEGRATION_CONTRACT.md
+│   ├── INTEGRATION_CONTRACT.md
+│   └── TRACE_VIEWER.md
 └── README_spa.md / README_ita.md / README_fra.md / README_deu.md / README_zho.md / README_jpn.md / README_por.md  <- translations
 ```

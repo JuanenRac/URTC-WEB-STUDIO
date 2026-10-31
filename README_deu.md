@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Lizenz-GPL%203.0-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-619-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-792-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
 </p>
@@ -38,7 +38,7 @@
 |---|---|
 | Version | `0.3.9` |
 | Reifegrad | Funktionsfähig |
-| Tests | 619 (`npm test`) |
+| Tests | 792 (`npm test`) |
 | Technik | Web Serial API / TypeScript |
 | Ziel | Ein Webbrowser auf dem PC des Benutzers |
 | Auf echter Hardware | Nur simuliert: gegen Emulatoren, Attrappen oder Simulatoren getestet; für diese Version ist kein Lauf auf echter Hardware vermerkt |
@@ -258,6 +258,8 @@ Portiert aus den Panels des eigenen Qt-Quick-Decks von `URTC-TESTER`
 
 - **Rack-Werkbank mit Antworten.** Das simulierte Rack beantwortet jeden Befehl mit seinem Antwortframe (eine Quittung oder eine Ablehnung mit Grund); `rackSim.ts` schreibt und liest ihn (`encodeRackReply`, `parseRackReply`), das Werkbank-Panel nennt den Grund in der Sprache der Seite, und ein wegen zu frühen Eintreffens zurückgehaltener Befehl ist wie in der Firmware eine Ablehnung mit Grund.
 
+- **Reiter CAN-Traces.** Er öffnet eine aufgezeichnete Trace-Datei (`.trc` oder `.asc`) und listet ihre Frames, benannt nach der Spezifikation (`canTrace.ts`, mit denselben Layouts wie die Panels): Ablehnungen und Fehler werden markiert, ebenso zu kurze, doppelte, nicht in der Reihenfolge liegende Frames und solche nach einer langen Pause; die Tabelle filtert nach Kennung, Typ, Knoten, Ergebnis, Zeit und Text, eine Zeitleiste zeigt, wo die Ablehnungen liegen, und die Auswahl lässt sich als CSV oder JSON speichern. Die Datei wird auf der Seite gelesen (nichts wird hochgeladen, nichts darin wird ausgeführt), bis zu 5 MB und 200.000 Frames; die Seite gibt es in den acht Sprachen.
+
 <!-- urtc-section:heads -->
 ### Mehrere Werkzeugköpfe an einem Bus
 
@@ -408,7 +410,7 @@ Welche Versionen der URTC-Programme zusammenarbeiten und welche Protokollversion
 
 ## 🧪 Tests
 
-`npm test` (Vitest) führt 619 Tests der reinen Logik aus: SLCAN-Parsing, Zuordnung von Anfragen und Antworten, Prüfungen von Firmware-Images und Manifesten, Release-Signaturen, Werkzeuggrenzen, Bestätigungen, die Regeln, die den Simulator vom echten Bus trennen, Trace-Export und -Wiedergabe, die Knotenauswahl, den Rack-Simulator, die gespeicherte Sitzungsaufzeichnung, die Offline-Kopie, die Firmware-Synchronisierung und die acht Oberflächensprachen. `npm run lint` prüft die Typen des Quelltexts, und `npm run test:e2e` führt 19 End-to-End-Prüfungen in einem echten Chromium gegen einen modellierten Adapter und eine modellierte Platine aus (`npm run test:coverage` fügt eine Abdeckungsschwelle hinzu). Die Bildschirme und der Web-Serial-Transport haben keine eigenen Unit-Tests; die End-to-End-Prüfungen steuern sie an. Nichts davon lief gegen einen echten Adapter oder eine echte Platine.
+`npm test` (Vitest) führt 792 Tests der reinen Logik aus: SLCAN-Parsing, Zuordnung von Anfragen und Antworten, Prüfungen von Firmware-Images und Manifesten, Release-Signaturen, Werkzeuggrenzen, Bestätigungen, die Regeln, die den Simulator vom echten Bus trennen, Trace-Export und -Wiedergabe, die Knotenauswahl, den Rack-Simulator, die gespeicherte Sitzungsaufzeichnung, die Offline-Kopie, die Firmware-Synchronisierung und die acht Oberflächensprachen. `npm run lint` prüft die Typen des Quelltexts, und `npm run test:e2e` führt 21 End-to-End-Prüfungen in einem echten Chromium gegen einen modellierten Adapter und eine modellierte Platine aus (`npm run test:coverage` fügt eine Abdeckungsschwelle hinzu). Die Bildschirme und der Web-Serial-Transport haben keine eigenen Unit-Tests; die End-to-End-Prüfungen steuern sie an. Nichts davon lief gegen einen echten Adapter oder eine echte Platine.
 
 ## 🏗️ Build und Veröffentlichung
 
@@ -503,6 +505,7 @@ URTC besteht aus unabhängigen Repositories mit jeweils eigener Version, eigenen
   Prüfpfad `build-test.bat`/`.sh` (TypeScript + Tests, ohne Versions- oder
   CHANGELOG-Änderung), `dev.bat`/`.sh` für die lokale Entwicklung, und
   warum OTA-Signiermaterial nie in die Browser-Konfiguration gehört.
+- [`docs/TRACE_VIEWER.md`](docs/TRACE_VIEWER.md) — was der Reiter CAN-Traces liest, wie er jeden Frame benennt und markiert, seine Grenzen und das CSV und JSON, das er schreibt.
 - [`docs/INTEGRATION_CONTRACT.md`](docs/INTEGRATION_CONTRACT.md) — was
   dieser Client bei einem unbekannten Schema, fehlender Zielidentität oder
   einem fehlerhaften API-Ergebnis tun muss, und warum die echte

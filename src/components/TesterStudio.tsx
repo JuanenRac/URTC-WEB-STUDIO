@@ -13,6 +13,7 @@ import {
   PasteJettingPanel, ThermalInspectionPanel, NoHandlerPanel
 } from './tester/ToolPanels';
 import { CAN_ID_WELD_SPOT_CMD, CAN_ID_WELD_ULTRASONIC_CMD } from '../lib/canIds';
+import { TraceViewerPanel } from './tester/TraceViewerPanel';
 import { BlackBoxPanel, EvidenceHistoryPanel, FeaturesPanel, PidPanel, RackBenchPanel, ThermalViewPanel } from './tester/ExtrasPanels';
 
 interface TesterStudioProps {
@@ -28,7 +29,7 @@ interface TesterStudioProps {
   subscribeAll: (cb: (f: CanFrame) => void) => () => void;
 }
 
-type SubTab = 'tool' | 'global' | 'expansion' | 'fram' | 'blackbox' | 'features' | 'rack' | 'evidence' | 'thermal' | 'selftest' | 'bus' | 'custom';
+type SubTab = 'tool' | 'global' | 'expansion' | 'fram' | 'blackbox' | 'features' | 'rack' | 'evidence' | 'traces' | 'thermal' | 'selftest' | 'bus' | 'custom';
 
 export const TesterStudio: React.FC<TesterStudioProps> = ({
   boardStatus, canFrames, isConnected,
@@ -114,6 +115,7 @@ export const TesterStudio: React.FC<TesterStudioProps> = ({
     { id: 'features', label: t('tester.tab_features', 'Optional Functions') },
     { id: 'rack', label: t('tester.tab_rack', 'Rack Bench') },
     { id: 'evidence', label: t('tester.tab_evidence', 'Evidence') },
+    { id: 'traces', label: t('tester.tab_traces', 'CAN Traces') },
     { id: 'thermal', label: t('tester.tab_thermal', 'Thermal View') },
     { id: 'selftest', label: t('tester.tab_selftest', 'Self-Test') },
     { id: 'bus', label: t('tester.tab_bus', 'Bus Monitor') },
@@ -186,6 +188,7 @@ export const TesterStudio: React.FC<TesterStudioProps> = ({
       {subTab === 'features' && <><FeaturesPanel ctx={ctx} /><PidPanel ctx={ctx} /></>}
       {subTab === 'rack' && <RackBenchPanel />}
       {subTab === 'evidence' && <EvidenceHistoryPanel />}
+      {subTab === 'traces' && <TraceViewerPanel />}
       {subTab === 'thermal' && <ThermalViewPanel ctx={ctx} />}
       {subTab === 'selftest' && (toolId !== null ? <SelfTestPanel ctx={ctx} activeToolId={toolId} /> : <div className="text-xs text-amber-300 p-4">{t('tester.selftest_needs_tool', 'The self-test needs the board to report its tool first. Use the Detect button.')}</div>)}
       {subTab === 'bus' && <BusMonitorPanel ctx={ctx} subscribeAll={subscribeAll} />}

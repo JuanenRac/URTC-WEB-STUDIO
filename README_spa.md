@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Licencia-GPL%203.0-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-619-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-792-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
 </p>
@@ -38,7 +38,7 @@
 |---|---|
 | Versión | `0.3.9` |
 | Madurez | Funcional |
-| Tests | 619 (`npm test`) |
+| Tests | 792 (`npm test`) |
 | Tecnología | Web Serial API / TypeScript |
 | Destino | Un navegador web en el PC del usuario |
 | En hardware real | Solo simulado: probado con emuladores, dobles de prueba o simuladores; no consta ninguna ejecución en hardware real para esta versión |
@@ -250,6 +250,8 @@ Portado desde los paneles del propio deck Qt Quick de `URTC-TESTER`
 
 - **Banco del rack con respuestas.** El rack simulado responde a cada orden con su trama de respuesta (un acuse, o un rechazo con el motivo); `rackSim.ts` la escribe y la lee (`encodeRackReply`, `parseRackReply`), el panel del banco dice el motivo en el idioma de la página y una orden retenida por llegar demasiado pronto es un rechazo con su motivo, como en el firmware.
 
+- **Pestaña Trazas CAN.** Abre una traza grabada (`.trc` o `.asc`) y lista sus tramas nombradas con la especificación (`canTrace.ts`, con los mismos esquemas que los paneles): se marcan los rechazos y los fallos, y también las tramas demasiado cortas, duplicadas, desordenadas o seguidas de un silencio largo; la tabla filtra por identificador, tipo, nodo, resultado, tiempo y texto, una línea de tiempo muestra dónde están los rechazos y la selección se guarda como CSV o JSON. El fichero se lee en la página (no se sube nada y nada de lo que contiene se ejecuta), hasta 5 MB y 200.000 tramas; la página está en los ocho idiomas.
+
 <!-- urtc-section:heads -->
 ### Varios cabezales en un bus
 
@@ -392,7 +394,7 @@ Qué versiones de los programas de URTC funcionan juntas, y qué versión del pr
 
 ## 🧪 Pruebas
 
-`npm test` (Vitest) ejecuta 619 pruebas de la lógica pura: análisis de SLCAN, emparejamiento de peticiones y respuestas, comprobaciones de imágenes de firmware y manifiestos, firmas de release, límites de herramienta, confirmaciones, las reglas que separan el simulador del bus real, exportación y reproducción de trazas, el selector de nodos, el simulador del rack, el registro de sesión guardado, la copia sin conexión, la sincronización del firmware y los ocho idiomas de la interfaz. `npm run lint` comprueba los tipos del código y `npm run test:e2e` ejecuta 19 comprobaciones de extremo a extremo en un Chromium real contra un adaptador y una placa modelados (`npm run test:coverage` añade un mínimo de cobertura). Las pantallas y el transporte Web Serial no tienen pruebas unitarias propias; las comprobaciones de extremo a extremo los manejan. Nada de esto se ha ejecutado contra un adaptador o una placa reales.
+`npm test` (Vitest) ejecuta 792 pruebas de la lógica pura: análisis de SLCAN, emparejamiento de peticiones y respuestas, comprobaciones de imágenes de firmware y manifiestos, firmas de release, límites de herramienta, confirmaciones, las reglas que separan el simulador del bus real, exportación y reproducción de trazas, el selector de nodos, el simulador del rack, el registro de sesión guardado, la copia sin conexión, la sincronización del firmware y los ocho idiomas de la interfaz. `npm run lint` comprueba los tipos del código y `npm run test:e2e` ejecuta 21 comprobaciones de extremo a extremo en un Chromium real contra un adaptador y una placa modelados (`npm run test:coverage` añade un mínimo de cobertura). Las pantallas y el transporte Web Serial no tienen pruebas unitarias propias; las comprobaciones de extremo a extremo los manejan. Nada de esto se ha ejecutado contra un adaptador o una placa reales.
 
 ## 🏗️ Compilación y publicación
 
@@ -489,6 +491,7 @@ URTC se compone de repositorios independientes, cada uno con su versión, sus pr
   cambios de versión ni CHANGELOG), `dev.bat`/`.sh` para desarrollo local,
   y por qué el material de firma OTA nunca pertenece a la configuración
   del navegador.
+- [`docs/TRACE_VIEWER.md`](docs/TRACE_VIEWER.md) — qué lee la pestaña Trazas CAN, cómo nombra y marca cada trama, sus límites y el CSV y el JSON que escribe.
 - [`docs/INTEGRATION_CONTRACT.md`](docs/INTEGRATION_CONTRACT.md) — qué debe
   hacer este cliente ante un esquema desconocido, una identidad de destino
   ausente o un resultado de API malformado, y por qué la autoridad real de

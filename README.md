@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-619-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-792-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
@@ -39,7 +39,7 @@
 |---|---|
 | Version | `0.3.9` |
 | Maturity | Functional |
-| Tests | 619 (`npm test`) |
+| Tests | 792 (`npm test`) |
 | Stack | Web Serial API / TypeScript |
 | Target | A web browser on the user's PC |
 | On real hardware | Simulated only: tested against emulators, fakes or simulators; no run on real hardware is recorded for this version |
@@ -248,6 +248,8 @@ Ported from the panels of `URTC-TESTER`'s own Qt Quick deck
 
 - **Rack bench with replies.** The simulated rack answers every order with its reply frame (an acknowledgement, or a refusal with the reason); `rackSim.ts` writes and reads it (`encodeRackReply`, `parseRackReply`), the bench panel says the reason in the language of the page and a command held back for coming too soon is a refusal with its reason, as in the firmware.
 
+- **CAN Traces tab.** It opens a recorded trace (`.trc` or `.asc`) and lists its frames named with the specification (`canTrace.ts`, with the same layouts as the panels): refusals and faults are marked, and so are frames that are too short, duplicated, out of order or followed by a long silence; the table filters by identifier, type, node, result, time and text, a timeline shows where the refusals are, and the selection is saved as CSV or JSON. The file is read in the page (nothing is uploaded, nothing in it is run), up to 5 MB and 200,000 frames; the page is in the eight languages.
+
 <!-- urtc-section:heads -->
 ### Several tool heads on one bus
 
@@ -388,7 +390,7 @@ Which versions of the URTC programs work together, and which protocol version ea
 
 ## 🧪 Testing
 
-`npm test` (Vitest) runs 619 tests of the pure logic: SLCAN parsing, request and answer matching, firmware image and manifest checks, release signatures, tool limits, confirmations, the rules that keep the simulator apart from the real bus, trace export and replay, the node picker, the rack simulator, the saved session record, the offline copy, the sync of the firmware and the eight interface languages. `npm run lint` type-checks the sources and `npm run test:e2e` runs 19 end-to-end checks in a real Chromium against a modelled adapter and board (`npm run test:coverage` adds a coverage floor). The screens and the Web Serial transport have no unit tests of their own; the end-to-end checks drive them. None of it has run against a real adapter or board.
+`npm test` (Vitest) runs 792 tests of the pure logic: SLCAN parsing, request and answer matching, firmware image and manifest checks, release signatures, tool limits, confirmations, the rules that keep the simulator apart from the real bus, trace export and replay, the node picker, the rack simulator, the saved session record, the offline copy, the sync of the firmware and the eight interface languages. `npm run lint` type-checks the sources and `npm run test:e2e` runs 21 end-to-end checks in a real Chromium against a modelled adapter and board (`npm run test:coverage` adds a coverage floor). The screens and the Web Serial transport have no unit tests of their own; the end-to-end checks drive them. None of it has run against a real adapter or board.
 
 ## 🏗️ Build & Release
 
@@ -483,6 +485,7 @@ URTC is made of independent repositories, each with its own version, tests and R
   `build-test.bat`/`.sh` validation path (TypeScript + tests, no version or
   CHANGELOG changes), `dev.bat`/`.sh` for local development, and why OTA
   signing material never belongs in browser configuration.
+- [`docs/TRACE_VIEWER.md`](docs/TRACE_VIEWER.md) — what the CAN Traces tab reads, how it names and marks each frame, its limits and the CSV and JSON it writes.
 - [`docs/INTEGRATION_CONTRACT.md`](docs/INTEGRATION_CONTRACT.md) — what this
   client must do with an unknown schema, missing target identity, or a
   malformed API result, and why real flash authority stays server-side or

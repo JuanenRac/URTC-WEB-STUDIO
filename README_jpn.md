@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-619-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-792-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
@@ -39,7 +39,7 @@
 |---|---|
 | バージョン | `0.3.9` |
 | 成熟度 | 機能する |
-| テスト | 619 (`npm test`) |
+| テスト | 792 (`npm test`) |
 | 技術 | Web Serial API / TypeScript |
 | 対象 | 利用者の PC 上の Web ブラウザー |
 | 実機での確認 | シミュレーションのみ：エミュレーター、模擬部品、シミュレーターで試験済み。このバージョンについて実機での動作記録はありません |
@@ -254,6 +254,8 @@ SWD/JTAG デバッグプローブを駆動できる Web API は存在しませ�
 
 - **応答付きのラック試験台。** シミュレートされたラックは、すべての命令に応答フレーム（確認応答、または理由付きの拒否）で答えます。`rackSim.ts` がそれを書き込み・読み取り（`encodeRackReply`、`parseRackReply`）、試験台パネルは理由をページの言語で伝え、早すぎて保留されたコマンドはファームウェアと同じく理由付きの拒否になります。
 
+- **CAN トレースタブ。** 記録したトレース(`.trc` または `.asc`)を開き、仕様に従って名前を付けたフレームを一覧にします(`canTrace.ts`、パネルと同じレイアウトを使用)。拒否と障害に印が付き、短すぎる・重複した・順序が違う・長い無通信の後に来たフレームにも印が付きます。表は識別子、種類、ノード、結果、時間、テキストで絞り込め、タイムラインで拒否の位置が分かり、選択範囲は CSV または JSON で保存できます。ファイルはページ内で読み込まれ(何もアップロードされず、内容が実行されることもありません)、上限は 5 MB・200,000 フレームで、ページは 8 言語に対応しています。
+
 <!-- urtc-section:heads -->
 ### 1本のバスに複数のツールヘッド
 
@@ -397,7 +399,7 @@ npm run preview
 
 ## 🧪 テスト
 
-`npm test`（Vitest）は純粋なロジックの 619 件を実行します：SLCAN の解析、要求と応答の対応付け、ファームウェアイメージとマニフェストの検査、リリース署名、ツールの上限、確認、シミュレーターを実バスから分けるルール、トレースのエクスポートと再生、ノードピッカー、ラックシミュレーター、保存されたセッション記録、オフラインコピー、ファームウェアの同期、8 つの画面言語です。`npm run lint` はソースの型を検査し、`npm run test:e2e` は実際の Chromium でモデル化したアダプターとボードに対して 19 件のエンドツーエンド検査を実行します（`npm run test:coverage` はカバレッジ下限を加えます）。画面と Web Serial のトランスポートには独自のユニットテストがなく、エンドツーエンド検査がそれらを動かします。実際のアダプターやボードでは一度も動かしていません。
+`npm test`（Vitest）は純粋なロジックの 792 件を実行します：SLCAN の解析、要求と応答の対応付け、ファームウェアイメージとマニフェストの検査、リリース署名、ツールの上限、確認、シミュレーターを実バスから分けるルール、トレースのエクスポートと再生、ノードピッカー、ラックシミュレーター、保存されたセッション記録、オフラインコピー、ファームウェアの同期、8 つの画面言語です。`npm run lint` はソースの型を検査し、`npm run test:e2e` は実際の Chromium でモデル化したアダプターとボードに対して 21 件のエンドツーエンド検査を実行します（`npm run test:coverage` はカバレッジ下限を加えます）。画面と Web Serial のトランスポートには独自のユニットテストがなく、エンドツーエンド検査がそれらを動かします。実際のアダプターやボードでは一度も動かしていません。
 
 ## 🏗️ ビルドとリリース
 
@@ -492,6 +494,7 @@ URTC は独立したリポジトリで構成され、それぞれに固有のバ
   `build-test.bat`/`.sh`（TypeScript + テスト、バージョンや CHANGELOG の変更なし）、
   ローカル開発用の `dev.bat`/`.sh`、そして OTA 署名素材がブラウザ設定に
   決して含まれてはならない理由。
+- [`docs/TRACE_VIEWER.md`](docs/TRACE_VIEWER.md) —— CAN トレースタブが読むもの、各フレームの名前付けと印付けの方法、その上限、書き出す CSV と JSON。
 - [`docs/INTEGRATION_CONTRACT.md`](docs/INTEGRATION_CONTRACT.md) —— 本クライアントが未知の
   スキーマ、不明なターゲット識別子、不正な API 結果に対してどう対処すべきか、
   そして実際のフラッシュ権限がサーバー側または専用のデスクトップツールに

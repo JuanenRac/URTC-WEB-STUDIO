@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-619-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-792-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
@@ -39,7 +39,7 @@
 |---|---|
 | 版本 | `0.3.9` |
 | 成熟度 | 可用 |
-| 测试 | 619 (`npm test`) |
+| 测试 | 792 (`npm test`) |
 | 技术栈 | Web Serial API / TypeScript |
 | 目标 | 使用者电脑上的网页浏览器 |
 | 真实硬件 | 仅模拟：使用模拟器、替身或仿真测试；此版本没有在真实硬件上运行的记录 |
@@ -224,6 +224,8 @@ SWD/JTAG 选项卡说明了桌面版 `URTC Flasher` 工具在本地会运行的�
 
 - **带应答的机架试验台。** 模拟机架用应答帧回答每条命令（确认，或带原因的拒绝）；`rackSim.ts` 负责写出和读取（`encodeRackReply`、`parseRackReply`），试验台面板用页面的语言说明原因，因来得太早而被暂缓的命令与固件一样是带原因的拒绝。
 
+- **CAN 轨迹标签页。** 打开已录制的轨迹(`.trc` 或 `.asc`),按规范为每一帧命名并列出(`canTrace.ts`,与各面板使用相同的布局):拒绝和故障会被标记,过短、重复、乱序或紧随长时间静默的帧也会被标记;表格可按标识符、类型、节点、结果、时间和文本筛选,时间线显示拒绝出现的位置,所选内容可保存为 CSV 或 JSON。文件在页面内读取(不会上传任何内容,其中的内容也不会被执行),上限为 5 MB 和 200,000 帧;页面提供八种语言。
+
 <!-- urtc-section:heads -->
 ### 一条总线上的多个工具头
 
@@ -358,7 +360,7 @@ npm run preview
 
 ## 🧪 测试
 
-`npm test`（Vitest）运行 619 个纯逻辑测试：SLCAN 解析、请求与应答的匹配、固件镜像和清单检查、发布签名、工具限值、确认、把模拟器与真实总线分开的规则、轨迹的导出和回放、节点选择器、机架模拟器、保存的会话记录、离线副本、固件同步以及八种界面语言。`npm run lint` 检查源码类型，`npm run test:e2e` 在真实的 Chromium 中针对建模的适配器和板子运行 19 个端到端检查（`npm run test:coverage` 增加覆盖率下限）。界面和 Web Serial 传输没有自己的单元测试，由端到端检查来驱动它们。这一切都没有针对真实的适配器或板子运行过。
+`npm test`（Vitest）运行 792 个纯逻辑测试：SLCAN 解析、请求与应答的匹配、固件镜像和清单检查、发布签名、工具限值、确认、把模拟器与真实总线分开的规则、轨迹的导出和回放、节点选择器、机架模拟器、保存的会话记录、离线副本、固件同步以及八种界面语言。`npm run lint` 检查源码类型，`npm run test:e2e` 在真实的 Chromium 中针对建模的适配器和板子运行 21 个端到端检查（`npm run test:coverage` 增加覆盖率下限）。界面和 Web Serial 传输没有自己的单元测试，由端到端检查来驱动它们。这一切都没有针对真实的适配器或板子运行过。
 
 ## 🏗️ 构建与发布
 
@@ -452,6 +454,7 @@ URTC 由相互独立的仓库组成，每个仓库都有自己的版本、测试
   `build-test.bat`/`.sh`（TypeScript + 测试，不会修改版本或 CHANGELOG）、
   用于本地开发的 `dev.bat`/`.sh`，以及为什么 OTA 签名材料
   绝不属于浏览器配置。
+- [`docs/TRACE_VIEWER.md`](docs/TRACE_VIEWER.md) —— CAN 轨迹标签页读取什么、如何命名和标记每一帧、它的限制以及它写出的 CSV 和 JSON。
 - [`docs/INTEGRATION_CONTRACT.md`](docs/INTEGRATION_CONTRACT.md) —— 本客户端遇到
   未知模式、缺失目标身份或格式错误的 API 结果时应如何处理，
   以及为什么真实的烧录权限保留在服务器端或专用桌面工具中。

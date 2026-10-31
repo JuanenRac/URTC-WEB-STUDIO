@@ -2,6 +2,10 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+- **A CAN Traces tab in the Tester Studio:** it opens a recorded trace (`.trc` or `.asc`, the formats the studio writes) and names every frame with the layouts of the common specification, including the multinode frames and the free tool mode (`0x1A2`, `0x1A3`); it marks refusals (a failed verification, an invalid free tool answer, the refusal of a rack reply on the identifier the person names) and faults, and the frames that are too short, duplicated, out of order or after a long silence (the limits are boxes of the page). The table filters by identifier, type, direction, node, result, mark, time range and text, sorts on every column, shows a timeline, and the selection is saved as CSV or JSON with the same bytes every time (a text cell a spreadsheet could read as a formula is quoted). The file is read in the page, nothing is uploaded, nothing in it is run, a file over 5 MB is not read and frames after the 200,000th are counted and left out; the page is in the eight languages. `docs/TRACE_VIEWER.md` describes it; 166 new unit tests (against the vectors of the specification) and two end-to-end checks hold it.
+
 ## [0.3.9] - A history of the evidence in the tester, the frames of the remaining panels and of the firmware update built by pure functions with tests, a rack bench that reads the answer of the rack and the names of Chinese and Japanese in their own language
 
 - **The lights of Project status follow the evidence of the manifest:** the manifest says how far the repository has been shown to work (`evidence`: `host-test`, `simulator`, `bench` or `field`) and the validator fails when a light is above what that evidence and the maturity allow (`tools/status_lights.py`), so a green that never ran on real hardware cannot come back.

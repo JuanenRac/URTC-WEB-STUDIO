@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-619-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-792-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
@@ -39,7 +39,7 @@
 |---|---|
 | Versão | `0.3.9` |
 | Maturidade | Funcional |
-| Testes | 619 (`npm test`) |
+| Testes | 792 (`npm test`) |
 | Tecnologia | Web Serial API / TypeScript |
 | Destino | Um navegador web no PC do utilizador |
 | Em hardware real | Só simulado: testado com emuladores, dublês de teste ou simuladores; não há registo de execução em hardware real para esta versão |
@@ -251,6 +251,8 @@ Portado a partir dos painéis do próprio deck Qt Quick do `URTC-TESTER`
 
 - **Bancada do rack com respostas.** O rack simulado responde a cada ordem com a sua trama de resposta (uma confirmação, ou uma recusa com o motivo); o `rackSim.ts` escreve-a e lê-a (`encodeRackReply`, `parseRackReply`), o painel da bancada diz o motivo na língua da página e um comando retido por chegar cedo demais é uma recusa com o seu motivo, como no firmware.
 
+- **Separador Traços CAN.** Abre um traço gravado (`.trc` ou `.asc`) e lista as suas tramas nomeadas com a especificação (`canTrace.ts`, com os mesmos esquemas que os painéis): as recusas e as falhas são marcadas, tal como as tramas demasiado curtas, duplicadas, fora de ordem ou seguidas de um silêncio longo; a tabela filtra por identificador, tipo, nó, resultado, tempo e texto, uma linha de tempo mostra onde estão as recusas e a seleção é guardada em CSV ou JSON. O ficheiro é lido na página (nada é enviado e nada do que contém é executado), até 5 MB e 200.000 tramas; a página existe em oito idiomas.
+
 <!-- urtc-section:heads -->
 ### Várias cabeças de ferramenta num barramento
 
@@ -393,7 +395,7 @@ As versões dos programas URTC que funcionam em conjunto, e a versão do protoco
 
 ## 🧪 Testes
 
-`npm test` (Vitest) executa 619 testes da lógica pura: análise de SLCAN, emparelhamento de pedidos e respostas, verificações de imagens de firmware e manifestos, assinaturas de release, limites de ferramenta, confirmações, as regras que separam o simulador do barramento real, exportação e reprodução de traços, o seletor de nós, o simulador do suporte, o registo de sessão guardado, a cópia offline, a sincronização do firmware e os oito idiomas da interface. `npm run lint` verifica os tipos do código e `npm run test:e2e` executa 19 verificações de ponta a ponta num Chromium real contra um adaptador e uma placa modelados (`npm run test:coverage` acrescenta um mínimo de cobertura). Os ecrãs e o transporte Web Serial não têm testes unitários próprios; as verificações de ponta a ponta comandam-nos. Nada disto correu contra um adaptador ou uma placa reais.
+`npm test` (Vitest) executa 792 testes da lógica pura: análise de SLCAN, emparelhamento de pedidos e respostas, verificações de imagens de firmware e manifestos, assinaturas de release, limites de ferramenta, confirmações, as regras que separam o simulador do barramento real, exportação e reprodução de traços, o seletor de nós, o simulador do suporte, o registo de sessão guardado, a cópia offline, a sincronização do firmware e os oito idiomas da interface. `npm run lint` verifica os tipos do código e `npm run test:e2e` executa 21 verificações de ponta a ponta num Chromium real contra um adaptador e uma placa modelados (`npm run test:coverage` acrescenta um mínimo de cobertura). Os ecrãs e o transporte Web Serial não têm testes unitários próprios; as verificações de ponta a ponta comandam-nos. Nada disto correu contra um adaptador ou uma placa reais.
 
 ## 🏗️ Compilação e publicação
 
@@ -488,6 +490,7 @@ O URTC é feito de repositórios independentes, cada um com a sua versão, os se
   não mutante `build-test.bat`/`.sh` (TypeScript + testes, sem alterações de versão
   nem de CHANGELOG), `dev.bat`/`.sh` para desenvolvimento local, e porque é que o
   material de assinatura OTA nunca pertence à configuração do navegador.
+- [`docs/TRACE_VIEWER.md`](docs/TRACE_VIEWER.md) — o que o separador Traços CAN lê, como nomeia e marca cada trama, os seus limites e o CSV e o JSON que escreve.
 - [`docs/INTEGRATION_CONTRACT.md`](docs/INTEGRATION_CONTRACT.md) — o que este
   cliente deve fazer perante um esquema desconhecido, uma identidade de destino
   em falta ou um resultado de API malformado, e porque é que a autoridade real de
