@@ -5,7 +5,7 @@
 
 import {
   LAYOUTS, dlcAllows, decode, mnSplitId, STATUS_ERROR, STATUS_VERIFY_FAIL, STATUS_VERIFY_OK,
-  MN_STATE_CONFLICT, MN_STATE_FAULT, type Layout,
+  MN_STATE_CONFLICT, MN_STATE_FAULT, RACK_ID_REPLY, type Layout,
 } from './generated/urtcCanIds';
 import { RACK_REPLY_REASONS } from './rackSim';
 import { TOOL_NAMES } from './canIds';
@@ -25,7 +25,7 @@ export interface TraceSettings {
   duplicateWindowMs: number;
   /** A silence longer than this before a frame is marked as a gap. */
   gapMs: number;
-  /** Identifiers a scenario or a bench uses to carry the reply of the rack (three bytes: command, tool, reason code). The spec does not fix one. */
+  /** Identifiers, besides the standard one (0x261, RACK_ID_REPLY), that a bench used to carry the reply of the rack (three bytes: command, tool, reason code). Advanced: empty by default. */
   rackReplyIds: number[];
 }
 
@@ -119,16 +119,16 @@ export function decodeTraceFrame(id: number, data: number[], declaredDlc: number
   const split = mnSplitId(id);
   const node = split && split[1] !== null ? split[1] : null;
 
-  if (settings.rackReplyIds.includes(id) && !LAYOUTS_BY_ID.has(id)) {
+  if (id === RACK_ID_REPLY || (settings.rackReplyIds.includes(id) && !LAYOUTS_BY_ID.has(id))) {   // 0x261 has a layout in the specification but is read as the reply, with its reason
     if (data.length !== 3) {
       if (!anomalies.includes('short_dlc') && data.length < 3) anomalies.push('short_dlc'); else if (data.length > 3) anomalies.push('bad_length');
       return { name: 'rack_reply', type: 'reply', node, tool: null, result: 'malformed', anomalies, summary: 'a reply of the rack has three bytes' };
     }
     const code = data[2];
     const reason = RACK_REPLY_REASONS[code];
-    if (!reason) return { name: 'rack_reply', type: 'reply', node, tool: null, result: 'malformed', anomalies, summary: `cmd=${data[0]} tool=${data[1]} reason code ${code} is not defined` };
+    if (!reason) return { name: 'rack_reply', type: 'reply', node, tool: null, result: 'malformed', anomalies, summary: `command=${data[0]} tool=${data[1]} reason code ${code} is not defined` };
     const accepted = code < 2;
-    return { name: 'rack_reply', type: 'reply', node, tool: data[1] <= 24 ? data[1] : null, result: accepted ? 'ok' : 'refused', anomalies, summary: `cmd=${data[0]} tool=${data[1]} reason=${reason}` };
+    return { name: 'rack_reply', type: 'reply', node, tool: data[1] <= 24 ? data[1] : null, result: accepted ? 'ok' : 'refused', anomalies, summary: `command=${data[0]} tool=${data[1]} reason=${reason}` };
   }
 
   // The frames of an addressed range (one identifier per node) are described once, at the base of the range.

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import vectors from "./canConformance.vectors.json";
-import { LAYOUTS, dlcAllows } from "./generated/urtcCanIds";
-import { encodeRackReply } from "./rackSim";
+import { LAYOUTS, RACK_ID_REPLY, dlcAllows } from "./generated/urtcCanIds";
+import { RACK_REPLY_REASONS, encodeRackReply } from "./rackSim";
 import { toAscTrace, toTrcTrace } from "./traceExport";
 import {
   DEFAULT_TRACE_SETTINGS, MAX_LINE_CHARS, MAX_LISTED_PROBLEMS, MAX_TRACE_BYTES, MAX_TRACE_ROWS, TRACE_CSV_COLUMNS,
@@ -21,9 +21,10 @@ describe("reading the frames with the layouts of the specification", () => {
     const out = decodeTraceFrame(Number.parseInt(v.frame.id, 16), data, data.length, layout.role === "request" ? "Tx" : "Rx");
     if (dlcAllows(layout.dlc, data.length)) {
       expect(out.name).toBe(v.layout);
-      expect(out.type).toBe(layout.role);
+      expect(out.type).toBe(v.layout === "rack_reply" ? "reply" : layout.role);   // the reply of the rack is its own type of line
       for (const [key, value] of Object.entries(v.fields as Record<string, unknown>)) {
-        if (typeof value === "number") expect(out.summary).toContain(`${key}=${value}`);
+        if (v.layout === "rack_reply" && key === "reason") expect(out.summary).toContain(`reason=${RACK_REPLY_REASONS[value as number]}`);   // the reason is told by name
+        else if (typeof value === "number") expect(out.summary).toContain(`${key}=${value}`);
       }
     }
   });
@@ -75,7 +76,31 @@ describe("reading the frames with the layouts of the specification", () => {
     });
   });
 
-  describe("the reply of the rack on an identifier the bench names", () => {
+  describe("the reply of the rack on the standard identifier 0x261", () => {
+    const reply = (reason: Parameters<typeof encodeRackReply>[3]) => encodeRackReply(3, 1, 10, reason).slice(5, 8);
+    it("is read with no setting at all: an acknowledgement, and a refusal with its reason", () => {
+      expect(RACK_ID_REPLY).toBe(0x261);
+      expect(decodeTraceFrame(0x261, reply("applied"), 3, "Rx")).toMatchObject({ type: "reply", name: "rack_reply", result: "ok", tool: 10 });
+      expect(decodeTraceFrame(0x261, reply("repeat"), 3, "Rx").result).toBe("ok");
+      for (const reason of ["wrong_length", "tool_absent", "temp_out_of_range", "tool_invalid", "not_heatable", "held_rate", "unknown_command"] as const) {
+        const out = decodeTraceFrame(0x261, reply(reason), 3, "Rx");
+        expect(out.result).toBe("refused");
+        expect(out.summary).toContain(`reason=${reason}`);
+      }
+    });
+    it("is malformed when it does not have three bytes or carries a code that does not exist", () => {
+      expect(decodeTraceFrame(0x261, [1, 10, 9], 3, "Rx").result).toBe("malformed");
+      expect(decodeTraceFrame(0x261, [1, 10, 255], 3, "Rx").result).toBe("malformed");
+      expect(decodeTraceFrame(0x261, [1, 10], 2, "Rx")).toMatchObject({ result: "malformed", anomalies: ["short_dlc"] });
+      expect(decodeTraceFrame(0x261, [1, 10, 0, 0], 4, "Rx")).toMatchObject({ result: "malformed", anomalies: ["bad_length"] });
+    });
+    it("is not taken for anything else: the order 0x260 is a request with its own layout and the free identifier next to the reply stays unknown", () => {
+      expect(decodeTraceFrame(0x260, [0, 0, 250, 4, 0, 0, 0, 0], 8, "Tx")).toMatchObject({ type: "request", name: "rack_set_preheat", result: "info" });
+      expect(decodeTraceFrame(0x262, reply("applied"), 3, "Rx").type).toBe("unknown");
+    });
+  });
+
+  describe("the reply of the rack on an identifier the bench names (advanced)", () => {
     const reply = (reason: Parameters<typeof encodeRackReply>[3]) => encodeRackReply(3, 1, 10, reason).slice(5, 8);
     const settings = { rackReplyIds: [0x300] };
     it("reads an acknowledgement and a refusal with its reason", () => {
@@ -83,6 +108,9 @@ describe("reading the frames with the layouts of the specification", () => {
       const refused = decodeTraceFrame(0x300, reply("temp_out_of_range"), 3, "Rx", settings);
       expect(refused.result).toBe("refused");
       expect(refused.summary).toContain("reason=temp_out_of_range");
+    });
+    it("still reads the standard identifier when another one is named", () => {
+      expect(decodeTraceFrame(0x261, reply("held_rate"), 3, "Rx", settings)).toMatchObject({ type: "reply", result: "refused" });
     });
     it("does not read it when no identifier is named, and refuses a code that does not exist", () => {
       expect(decodeTraceFrame(0x300, reply("held_rate"), 3, "Rx").type).toBe("unknown");

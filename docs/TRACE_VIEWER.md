@@ -53,7 +53,9 @@ An identifier that has both a request and an answer (such as `0x1A3`) is read as
 
 ### The reply of the rack
 
-The reply of the rack to a command is three bytes (the command answered, the tool, the code of the reason, as in `rackSim.ts`), but the specification does not fix a CAN identifier for it (a scenario of the simulated bus names the identifier it uses). So the page has a box, **Identifiers of rack replies**, empty by default: the identifiers typed there are read as rack replies and a code other than *applied* or *repeat* is a refusal with its reason (`temp_out_of_range`, `held_rate`, ...). Nothing is guessed when the box is empty.
+The reply of the rack to a command has its own CAN identifier in the specification, `0x261`, and is three bytes (the command answered, the tool, the code of the reason, as in `rackSim.ts`). The page reads every frame on `0x261` as a rack reply with no setting: a code other than *applied* or *repeat* is a refusal with its reason (`temp_out_of_range`, `held_rate`, ...), a frame that does not have three bytes or has a code that does not exist is malformed, the order `0x260` is read as a request with its layout (`rack_set_preheat`: tool, target, sequence), and the identifier next to the reply stays *unknown*.
+
+Under **Advanced** there is a box, **Other identifiers of rack replies**, empty by default. It is only for a trace recorded with a bench that sent the reply with another identifier: the identifiers typed there are read the same way, in addition to `0x261`.
 
 ### Marks
 

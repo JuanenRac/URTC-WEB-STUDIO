@@ -101,8 +101,14 @@ export const TraceViewerPanel: React.FC = () => {
           </Field>
           <Field label={t('traceview.gap_ms', 'Mark a silence longer than (ms)')}><input type="number" min={0} value={gapMs} onChange={(e) => setGapMs(e.target.value)} className={inputCls} /></Field>
           <Field label={t('traceview.dup_ms', 'Duplicate window (ms)')}><input type="number" min={0} value={dupMs} onChange={(e) => setDupMs(e.target.value)} className={inputCls} /></Field>
-          <Field label={t('traceview.rack_ids', 'Identifiers of rack replies (hex)')}><input type="text" value={rackIds} onChange={(e) => setRackIds(e.target.value)} className={inputCls} placeholder="0x300" /></Field>
         </div>
+        <details className="mb-3 text-xs" data-testid="trace-advanced">
+          <summary className="cursor-pointer text-slate-400">{t('traceview.advanced', 'Advanced')}</summary>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-2">
+            <Field label={t('traceview.rack_ids', 'Other identifiers of rack replies (hex)')}><input type="text" value={rackIds} onChange={(e) => setRackIds(e.target.value)} className={inputCls} placeholder="0x3F0" /></Field>
+          </div>
+          <p className="text-[11px] text-slate-500 mt-2">{t('traceview.advanced_hint', 'The reply of the rack is read on 0x261 without any setting. Name other identifiers here only to read a trace recorded with a bench that sends the reply with another one.')}</p>
+        </details>
         <p className="text-[11px] text-slate-500 mb-3">{t('traceview.limits', 'Limits: {{mb}} MB and {{rows}} frames per file; what is over the limit is not read and is counted.', { mb: MAX_TRACE_BYTES / (1024 * 1024), rows: MAX_TRACE_ROWS })}</p>
 
         {tooBig && <div className="text-xs text-red-400 mb-3" role="alert">{tooBig}</div>}
