@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Licenza-GPL%203.0-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-613-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-619-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
 </p>
@@ -38,7 +38,7 @@
 |---|---|
 | Versione | `0.3.9` |
 | Maturità | Funzionale |
-| Test | 613 (`npm test`) |
+| Test | 619 (`npm test`) |
 | Tecnologia | Web Serial API / TypeScript |
 | Destinazione | Un browser web sul PC dell'utente |
 | Su hardware reale | Solo simulato: provato con emulatori, test double o simulatori; per questa versione non risulta alcuna esecuzione su hardware reale |
@@ -246,6 +246,12 @@ Portato dai pannelli del deck Qt Quick di `URTC-TESTER`
   versione scheda (`0x7F8`/`0x7F9`), e un errore critico dichiarato (`0x111` byte
   1) appare come banner di guasto dal vivo.
 
+- **Scheda Evidenze.** Legge i record (`urtc-evidence/1`) che scrivono il flasher, il tester e l'updater, dai file scelti dalla persona (non si carica nulla), controlla ciascuno con le stesse regole e lo stesso digest del codice comune e li elenca dal più recente, con filtri per tipo, risultato e testo, un riepilogo, il problema di ogni record non valido e un download CSV; la pagina è nelle otto lingue.
+
+- **Frame costruiti da funzioni pure.** I frame dei pannelli (LED e anello di stato, passthrough SPI, funzioni opzionali, ugello ed estrusore della testa per stampante 3D, impulso di saldatura, movimenti del motore passo-passo) sono costruiti in `toolFrames.ts` e quelli dell'aggiornamento del firmware (START_UPDATE, i quattro blocchi di firma, i frame di dati dell'immagine e END_UPDATE) in `flashFrames.ts`; un valore che non sta nel suo campo viene portato al più vicino che ci sta, e i test fissano i byte.
+
+- **Banco del rack con risposte.** Il rack simulato risponde a ogni ordine con il suo frame di risposta (una conferma, o un rifiuto con il motivo); `rackSim.ts` lo scrive e lo legge (`encodeRackReply`, `parseRackReply`), il pannello del banco dice il motivo nella lingua della pagina e un comando trattenuto perché troppo presto è un rifiuto con il suo motivo, come nel firmware.
+
 <!-- urtc-section:heads -->
 ### Più teste utensile su un bus
 
@@ -384,12 +390,12 @@ La pagina compilata dichiara una content security policy (script solo dalla pagi
 <!-- urtc-section:compatibility -->
 ### Requisiti e compatibilità
 
-Quali versioni dei programmi URTC funzionano insieme, e quale versione del protocollo parla ciascuna, è elencato nella tabella di compatibilità generata da URTC-COMMON: [docs/COMPATIBILITY.md](https://github.com/JuanenRac/URTC/blob/main/docs/COMPATIBILITY.md).
+Quali versioni dei programmi URTC funzionano insieme, e quale versione del protocollo parla ciascuna, è elencato nella tabella di compatibilità generata da URTC-COMMON: [docs/COMPATIBILITY.md](https://github.com/JuanenRac/URTC/blob/main/docs/COMPATIBILITY.md). Le note di una versione dei repository che includono `tools/changelog_section.py` (il firmware, il flasher, il tester e l'updater) sono la sezione del CHANGELOG di quella versione seguita da questa tabella: `python tools/changelog_section.py VERSION --compat`.
 <!-- /urtc-section:compatibility -->
 
 ## 🧪 Test
 
-`npm test` (Vitest) esegue 613 test della logica pura: parsing SLCAN, abbinamento di richieste e risposte, controlli di immagini firmware e manifesti, firme di release, limiti degli utensili, conferme, le regole che separano il simulatore dal bus reale, esportazione e riproduzione di tracce, il selettore dei nodi, il simulatore del rack, la registrazione di sessione salvata, la copia offline, la sincronizzazione del firmware e le otto lingue dell'interfaccia. `npm run lint` controlla i tipi del codice e `npm run test:e2e` esegue 19 controlli end-to-end in un vero Chromium contro un adattatore e una scheda modellati (`npm run test:coverage` aggiunge una soglia di copertura). Le schermate e il trasporto Web Serial non hanno test unitari propri; i controlli end-to-end li pilotano. Niente di tutto questo è girato contro un vero adattatore o una vera scheda.
+`npm test` (Vitest) esegue 619 test della logica pura: parsing SLCAN, abbinamento di richieste e risposte, controlli di immagini firmware e manifesti, firme di release, limiti degli utensili, conferme, le regole che separano il simulatore dal bus reale, esportazione e riproduzione di tracce, il selettore dei nodi, il simulatore del rack, la registrazione di sessione salvata, la copia offline, la sincronizzazione del firmware e le otto lingue dell'interfaccia. `npm run lint` controlla i tipi del codice e `npm run test:e2e` esegue 19 controlli end-to-end in un vero Chromium contro un adattatore e una scheda modellati (`npm run test:coverage` aggiunge una soglia di copertura). Le schermate e il trasporto Web Serial non hanno test unitari propri; i controlli end-to-end li pilotano. Niente di tutto questo è girato contro un vero adattatore o una vera scheda.
 
 ## 🏗️ Compilazione e rilascio
 
@@ -448,7 +454,7 @@ L'elenco annotato di ogni file sorgente, una riga per file, è in [docs/SOURCE_M
 
 ## 🌍 Lingue
 
-Il README e i testi esistono in inglese, spagnolo, francese, italiano, tedesco, cinese, giapponese e portoghese europeo.
+Il README e i testi esistono in inglese, spagnolo, francese, italiano, tedesco, cinese, giapponese e portoghese europeo. I nomi del cinese e del giapponese nell'elenco delle lingue sono scritti nella loro lingua, come quelli delle altre lingue dell'elenco.
 
 ## 🔗 Progetti correlati
 

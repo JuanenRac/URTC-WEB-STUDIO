@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-613-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-619-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
@@ -39,7 +39,7 @@
 |---|---|
 | Versão | `0.3.9` |
 | Maturidade | Funcional |
-| Testes | 613 (`npm test`) |
+| Testes | 619 (`npm test`) |
 | Tecnologia | Web Serial API / TypeScript |
 | Destino | Um navegador web no PC do utilizador |
 | Em hardware real | Só simulado: testado com emuladores, dublês de teste ou simuladores; não há registo de execução em hardware real para esta versão |
@@ -245,6 +245,12 @@ Portado a partir dos painéis do próprio deck Qt Quick do `URTC-TESTER`
   versão da placa (`0x7F8`/`0x7F9`), e um erro crítico declarado (`0x111` byte 1)
   surge como um banner de falha em direto.
 
+- **Separador Evidências.** Lê os registos (`urtc-evidence/1`) que o flasher, o tester e o updater escrevem, dos ficheiros que a pessoa escolhe (não se carrega nada), verifica cada um com as mesmas regras e o mesmo resumo que o código comum e lista-os do mais recente para o mais antigo, com filtros por tipo, resultado e texto, um resumo, o problema de cada registo inválido e uma transferência em CSV; a página está nos oito idiomas.
+
+- **Tramas construídas por funções puras.** As tramas dos painéis (LED e anel de estado, passagem SPI, funções opcionais, bico e extrusor da cabeça de impressora 3D, pulso de soldadura, movimentos do motor de passo) são construídas em `toolFrames.ts` e as da atualização do firmware (START_UPDATE, os quatro blocos de assinatura, as tramas de dados da imagem e END_UPDATE) em `flashFrames.ts`; um valor que não cabe no seu campo é levado ao mais próximo que caiba, e os testes fixam os bytes.
+
+- **Bancada do rack com respostas.** O rack simulado responde a cada ordem com a sua trama de resposta (uma confirmação, ou uma recusa com o motivo); o `rackSim.ts` escreve-a e lê-a (`encodeRackReply`, `parseRackReply`), o painel da bancada diz o motivo na língua da página e um comando retido por chegar cedo demais é uma recusa com o seu motivo, como no firmware.
+
 <!-- urtc-section:heads -->
 ### Várias cabeças de ferramenta num barramento
 
@@ -382,12 +388,12 @@ A página compilada declara uma política de segurança de conteúdo (scripts s�
 <!-- urtc-section:compatibility -->
 ### Requisitos e compatibilidade
 
-As versões dos programas URTC que funcionam em conjunto, e a versão do protocolo que cada uma fala, constam da tabela de compatibilidade que o URTC-COMMON gera: [docs/COMPATIBILITY.md](https://github.com/JuanenRac/URTC/blob/main/docs/COMPATIBILITY.md).
+As versões dos programas URTC que funcionam em conjunto, e a versão do protocolo que cada uma fala, constam da tabela de compatibilidade que o URTC-COMMON gera: [docs/COMPATIBILITY.md](https://github.com/JuanenRac/URTC/blob/main/docs/COMPATIBILITY.md). As notas de uma versão dos repositórios que incluem `tools/changelog_section.py` (o firmware, o flasher, o tester e o updater) são a secção do CHANGELOG dessa versão seguida desta tabela: `python tools/changelog_section.py VERSION --compat`.
 <!-- /urtc-section:compatibility -->
 
 ## 🧪 Testes
 
-`npm test` (Vitest) executa 613 testes da lógica pura: análise de SLCAN, emparelhamento de pedidos e respostas, verificações de imagens de firmware e manifestos, assinaturas de release, limites de ferramenta, confirmações, as regras que separam o simulador do barramento real, exportação e reprodução de traços, o seletor de nós, o simulador do suporte, o registo de sessão guardado, a cópia offline, a sincronização do firmware e os oito idiomas da interface. `npm run lint` verifica os tipos do código e `npm run test:e2e` executa 19 verificações de ponta a ponta num Chromium real contra um adaptador e uma placa modelados (`npm run test:coverage` acrescenta um mínimo de cobertura). Os ecrãs e o transporte Web Serial não têm testes unitários próprios; as verificações de ponta a ponta comandam-nos. Nada disto correu contra um adaptador ou uma placa reais.
+`npm test` (Vitest) executa 619 testes da lógica pura: análise de SLCAN, emparelhamento de pedidos e respostas, verificações de imagens de firmware e manifestos, assinaturas de release, limites de ferramenta, confirmações, as regras que separam o simulador do barramento real, exportação e reprodução de traços, o seletor de nós, o simulador do suporte, o registo de sessão guardado, a cópia offline, a sincronização do firmware e os oito idiomas da interface. `npm run lint` verifica os tipos do código e `npm run test:e2e` executa 19 verificações de ponta a ponta num Chromium real contra um adaptador e uma placa modelados (`npm run test:coverage` acrescenta um mínimo de cobertura). Os ecrãs e o transporte Web Serial não têm testes unitários próprios; as verificações de ponta a ponta comandam-nos. Nada disto correu contra um adaptador ou uma placa reais.
 
 ## 🏗️ Compilação e publicação
 
@@ -446,7 +452,7 @@ A lista anotada de cada ficheiro de código, uma linha por ficheiro, está em [d
 
 ## 🌍 Idiomas
 
-O README e os textos existem em inglês, espanhol, francês, italiano, alemão, chinês, japonês e português europeu.
+O README e os textos existem em inglês, espanhol, francês, italiano, alemão, chinês, japonês e português europeu. Os nomes do chinês e do japonês na lista de idiomas estão escritos na sua própria língua, como os dos outros idiomas da lista.
 
 ## 🔗 Projetos relacionados
 

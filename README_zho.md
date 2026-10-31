@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-613-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-619-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
@@ -39,7 +39,7 @@
 |---|---|
 | 版本 | `0.3.9` |
 | 成熟度 | 可用 |
-| 测试 | 613 (`npm test`) |
+| 测试 | 619 (`npm test`) |
 | 技术栈 | Web Serial API / TypeScript |
 | 目标 | 使用者电脑上的网页浏览器 |
 | 真实硬件 | 仅模拟：使用模拟器、替身或仿真测试；此版本没有在真实硬件上运行的记录 |
@@ -218,6 +218,12 @@ SWD/JTAG 选项卡说明了桌面版 `URTC Flasher` 工具在本地会运行的�
   （`0x7F8`/`0x7F9`）,声明的严重错误（`0x111` 字节 1）会以一条实时
   故障横幅显示出来。
 
+- **证据标签页。** 它从用户选择的文件中读取刷写器、测试器和更新器写入的记录（`urtc-evidence/1`，不会上传任何内容），用与公共代码相同的规则和相同的摘要逐条检查，并按最新在前列出；提供按类型、结果和文本筛选、汇总、每条无效记录的问题以及 CSV 下载；页面支持八种语言。
+
+- **由纯函数构建的帧。** 各面板的帧（状态 LED 与灯环、SPI 透传、可选功能、3D 打印头的喷嘴与挤出机、焊接脉冲、步进电机移动）在 `toolFrames.ts` 中构建，固件更新的帧（START_UPDATE、四个签名块、镜像数据帧和 END_UPDATE）在 `flashFrames.ts` 中构建；放不进字段的值会被调整到能放进的最接近的值，测试锁定了这些字节。
+
+- **带应答的机架试验台。** 模拟机架用应答帧回答每条命令（确认，或带原因的拒绝）；`rackSim.ts` 负责写出和读取（`encodeRackReply`、`parseRackReply`），试验台面板用页面的语言说明原因，因来得太早而被暂缓的命令与固件一样是带原因的拒绝。
+
 <!-- urtc-section:heads -->
 ### 一条总线上的多个工具头
 
@@ -347,12 +353,12 @@ npm run preview
 <!-- urtc-section:compatibility -->
 ### 要求与兼容性
 
-哪些版本的 URTC 程序可以配合使用、各自使用哪个协议版本，列在 URTC-COMMON 生成的兼容性表中：[docs/COMPATIBILITY.md](https://github.com/JuanenRac/URTC/blob/main/docs/COMPATIBILITY.md)。
+哪些版本的 URTC 程序可以配合使用、各自使用哪个协议版本，列在 URTC-COMMON 生成的兼容性表中：[docs/COMPATIBILITY.md](https://github.com/JuanenRac/URTC/blob/main/docs/COMPATIBILITY.md)。带有 `tools/changelog_section.py` 的仓库（固件、刷写器、测试器和更新器）的发布说明，就是该版本的 CHANGELOG 小节后面接上这张表：`python tools/changelog_section.py VERSION --compat`。
 <!-- /urtc-section:compatibility -->
 
 ## 🧪 测试
 
-`npm test`（Vitest）运行 613 个纯逻辑测试：SLCAN 解析、请求与应答的匹配、固件镜像和清单检查、发布签名、工具限值、确认、把模拟器与真实总线分开的规则、轨迹的导出和回放、节点选择器、机架模拟器、保存的会话记录、离线副本、固件同步以及八种界面语言。`npm run lint` 检查源码类型，`npm run test:e2e` 在真实的 Chromium 中针对建模的适配器和板子运行 19 个端到端检查（`npm run test:coverage` 增加覆盖率下限）。界面和 Web Serial 传输没有自己的单元测试，由端到端检查来驱动它们。这一切都没有针对真实的适配器或板子运行过。
+`npm test`（Vitest）运行 619 个纯逻辑测试：SLCAN 解析、请求与应答的匹配、固件镜像和清单检查、发布签名、工具限值、确认、把模拟器与真实总线分开的规则、轨迹的导出和回放、节点选择器、机架模拟器、保存的会话记录、离线副本、固件同步以及八种界面语言。`npm run lint` 检查源码类型，`npm run test:e2e` 在真实的 Chromium 中针对建模的适配器和板子运行 19 个端到端检查（`npm run test:coverage` 增加覆盖率下限）。界面和 Web Serial 传输没有自己的单元测试，由端到端检查来驱动它们。这一切都没有针对真实的适配器或板子运行过。
 
 ## 🏗️ 构建与发布
 
@@ -411,7 +417,7 @@ URTC-WEB-STUDIO/
 
 ## 🌍 语言
 
-README 和文本提供英语、西班牙语、法语、意大利语、德语、汉语、日语和欧洲葡萄牙语版本。
+README 和文本提供英语、西班牙语、法语、意大利语、德语、汉语、日语和欧洲葡萄牙语版本。 语言列表中中文和日文的名称与列表中其他语言一样，使用其自身的语言书写。
 
 ## 🔗 相关项目
 
