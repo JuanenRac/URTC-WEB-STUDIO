@@ -462,7 +462,7 @@ export const EvidenceHistoryPanel: React.FC = () => {
     setBusy(true);
     const all: EvidenceEntry[] = [];
     for (const file of Array.from(files).slice(0, EVIDENCE_FILE_LIMIT)) {
-      if (file.size > EVIDENCE_SIZE_LIMIT) { all.push({ file: file.name, line: 0, record: {}, problems: [`the file is bigger than ${EVIDENCE_SIZE_LIMIT} bytes and was not read`], valid: false, time: '' }); continue; }
+      if (file.size > EVIDENCE_SIZE_LIMIT) { all.push({ file: file.name, line: 0, record: {}, problems: [`the file is bigger than ${EVIDENCE_SIZE_LIMIT} bytes and was not read`], valid: false, time: '', signature: 'unsigned' }); continue; }
       all.push(...await parseEvidenceFile(file.name, await file.text()));
     }
     setEntries(all);
@@ -518,7 +518,7 @@ export const EvidenceHistoryPanel: React.FC = () => {
                       <tr className={entry.valid ? '' : 'text-red-400'}>
                         <td className="pr-3">{row.time || '-'}</td><td className="pr-3">{row.kind || '-'}</td><td className="pr-3">{row.outcome || '-'}</td><td className="pr-3">{row.tool || '-'}</td>
                         <td className="pr-3">{row.subject}</td><td className="pr-3">{row.versionAfter ? `${row.versionBefore || '?'} -> ${row.versionAfter}` : row.versionBefore}</td>
-                        <td>{row.file}{entry.valid ? '' : ` [${t('testerextras.evidence_not_valid', 'NOT VALID')}]`}</td>
+                        <td>{row.file}{entry.valid ? '' : ` [${t('testerextras.evidence_not_valid', 'NOT VALID')}]`}{entry.signature === 'unsigned' ? '' : ` [${t(`testerextras.evidence_sig_${entry.signature}`, entry.signature)}]`}</td>
                       </tr>
                       {entry.problems.map(problem => <tr key={problem} className="text-red-400"><td colSpan={7} className="pl-4">{problem}</td></tr>)}
                     </React.Fragment>

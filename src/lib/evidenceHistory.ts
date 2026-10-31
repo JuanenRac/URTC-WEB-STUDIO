@@ -6,10 +6,15 @@
  * valid, with what is wrong, and never trusted. Nothing here touches the network or changes a file.
  */
 
+import { checkSignature } from './recordSigning';
+
 export const EVIDENCE_FORMAT = 'urtc-evidence/1';
 export const EVIDENCE_KINDS = ['flash', 'test', 'install', 'session'] as const;
+export const EVIDENCE_SIGNATURE_KIND = 'evidence';
 export const EVIDENCE_OUTCOMES = ['pass', 'fail', 'error', 'skipped'] as const;
-const FIELDS = ['format', 'kind', 'outcome', 'timestamp_utc', 'tool', 'tool_version', 'operator', 'subject', 'transport', 'artifacts', 'detail', 'evidence_sha256'];
+const FIELDS = ['format', 'kind', 'outcome', 'timestamp_utc', 'tool', 'tool_version', 'operator', 'subject', 'transport', 'artifacts', 'detail', 'evidence_sha256', 'signature'];
+const SIGNATURE_FIELDS = ['algorithm', 'key_id', 'public_key', 'signature'];
+const SIGNATURE_SHAPES: { [key: string]: RegExp } = { algorithm: /^Ed25519$/, key_id: /^[0-9a-f]{16}$/, public_key: /^[0-9a-f]{64}$/, signature: /^[0-9a-f]{128}$/ };
 const SUBJECT_FIELDS = ['name', 'hardware_id', 'version_before', 'version_after', 'commit_before', 'commit_after', 'key_id'];
 const TRANSPORT_FIELDS = ['adapter', 'bus', 'bitrate'];
 const ARTIFACT_FIELDS = ['name', 'sha256', 'bytes'];
@@ -31,6 +36,8 @@ export interface EvidenceEntry {
   problems: string[];
   valid: boolean;
   time: string;
+  /** `unsigned`, `valid`, `invalid`, or `unchecked` when this browser cannot verify Ed25519. A record that fails its own check is never `valid`. */
+  signature: 'unsigned' | 'valid' | 'invalid' | 'unchecked';
 }
 
 /** The text a digest is made of: the record without its own digest, keys sorted at every level, no spaces (the same text the common code hashes). */
@@ -49,7 +56,7 @@ async function sha256Hex(text: string): Promise<string> {
 
 export async function evidenceDigest(record: { [key: string]: Json }): Promise<string> {
   const body: { [key: string]: Json } = {};
-  for (const key of Object.keys(record)) if (key !== 'evidence_sha256') body[key] = record[key];
+  for (const key of Object.keys(record)) if (key !== 'evidence_sha256' && key !== 'signature') body[key] = record[key];
   return sha256Hex(canonicalJson(body));
 }
 
@@ -95,21 +102,35 @@ export async function verifyEvidence(record: unknown): Promise<string[]> {
       });
     }
   }
+  if ('signature' in r) {
+    const block = r.signature;
+    const ok = block !== null && typeof block === 'object' && !Array.isArray(block) && Object.keys(block).length === SIGNATURE_FIELDS.length
+      && SIGNATURE_FIELDS.every(key => typeof (block as { [key: string]: Json })[key] === 'string' && SIGNATURE_SHAPES[key].test((block as { [key: string]: string })[key]));
+    if (!ok) problems.push('signature is not a well formed Ed25519 block');
+  }
   const declared = r.evidence_sha256;
   if (!(typeof declared === 'string' && SHA256.test(declared))) problems.push('evidence_sha256 must be 64 lowercase hexadecimal digits');
   else if (problems.length === 0 && declared !== await evidenceDigest(r)) problems.push('evidence_sha256 does not match the record (edited after it was written?)');
   return problems;
 }
 
+async function signatureOf(record: { [key: string]: Json }, valid: boolean): Promise<EvidenceEntry['signature']> {
+  if (!('signature' in record)) return 'unsigned';
+  if (!valid) return 'invalid';
+  const check = await checkSignature(record.signature, EVIDENCE_SIGNATURE_KIND, String(record.evidence_sha256));
+  return check.state === 'absent' ? 'unsigned' : check.state;
+}
+
 async function entryOf(file: string, line: number, text: string): Promise<EvidenceEntry> {
   let parsed: unknown;
   try { parsed = JSON.parse(text); } catch (error) {
-    return { file, line, record: {}, problems: [`not JSON: ${error instanceof Error ? error.message : String(error)}`], valid: false, time: '' };
+    return { file, line, record: {}, problems: [`not JSON: ${error instanceof Error ? error.message : String(error)}`], valid: false, time: '', signature: 'unsigned' };
   }
-  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) return { file, line, record: {}, problems: ['a record is a JSON object'], valid: false, time: '' };
+  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) return { file, line, record: {}, problems: ['a record is a JSON object'], valid: false, time: '', signature: 'unsigned' };
   const record = parsed as { [key: string]: Json };
   const problems = await verifyEvidence(record);
-  return { file, line, record, problems, valid: problems.length === 0, time: typeof record.timestamp_utc === 'string' ? record.timestamp_utc : '' };
+  const valid = problems.length === 0;
+  return { file, line, record, problems, valid, time: typeof record.timestamp_utc === 'string' ? record.timestamp_utc : '', signature: await signatureOf(record, valid) };
 }
 
 /** The records of one file: a `.jsonl` file holds one per line, anything else one in all. */

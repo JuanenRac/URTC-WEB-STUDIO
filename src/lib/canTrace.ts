@@ -1,5 +1,5 @@
 // The trace viewer: reads a recorded CAN trace (the PCAN-View .trc and Vector .asc files that lib/traceExport.ts writes and
-// that the tester records), names every frame with the layouts of the specification (generated/urtcCanIds.ts), marks the
+// that the tester records, the log of SocketCAN's candump, and the rows of the viewer's own JSON export, one per line or as a document), names every frame with the layouts of the specification (generated/urtcCanIds.ts), marks the
 // refusals and the odd things in the recording, filters and sorts the rows, and writes the selection as CSV or JSON.
 // Pure functions only: no React, no clock, no network and nothing in the file is ever run, it is only read as text.
 
@@ -14,8 +14,10 @@ import { TOOL_NAMES } from './canIds';
 export const MAX_TRACE_BYTES = 5 * 1024 * 1024;
 /** Most frames the viewer keeps; the lines after them are counted and left out. */
 export const MAX_TRACE_ROWS = 200_000;
-/** A line longer than this is not a frame of any of the two formats and is not looked at. */
+/** A line longer than this is not a frame of any of the formats and is not looked at. */
 export const MAX_LINE_CHARS = 200;
+/** The format name of the JSON export of the viewer; it reads it back. */
+export const TRACE_JSON_FORMAT = 'urtc-trace-view/1';
 /** How many refused lines are listed one by one (all of them are counted). */
 export const MAX_LISTED_PROBLEMS = 50;
 
@@ -69,8 +71,12 @@ export interface TraceRow {
 
 export interface TraceProblem { line: number; reason: string }
 
+/** The formats the reader knows (see docs/TRACE_VIEWER.md): PCAN-View, Vector, candump (`-L` log or the `-ta` screen format), JSON lines and the viewer's own JSON export. */
+export type TraceFormat = 'trc' | 'asc' | 'candump' | 'jsonl' | 'json';
+
 export interface TraceLoad {
-  format: 'trc' | 'asc' | 'unknown';
+  /** The format of the first frame of the file; a line of another format is refused (`mixed_format`), never mixed in. */
+  format: TraceFormat | 'unknown';
   rows: TraceRow[];
   /** Lines that looked like a frame and were refused (the first MAX_LISTED_PROBLEMS are listed). */
   problems: TraceProblem[];
@@ -177,13 +183,68 @@ export function decodeTraceFrame(id: number, data: number[], declaredDlc: number
 
 function bytesOf(text: string): number[] | null {
   const compact = text.replace(/\s+/g, '');
-  if (compact.length % 2 !== 0) return null;
+  if (compact.length % 2 !== 0 || !/^[0-9A-Fa-f]*$/.test(compact)) return null;
   const out: number[] = [];
   for (let i = 0; i < compact.length; i += 2) out.push(parseInt(compact.slice(i, i + 2), 16));
   return out;
 }
 
-/** Reads the text of a .trc or .asc file. Both directions are kept, in the order of the file, and nothing is sorted. */
+// candump -L (the log): `(1436509052.249713) can0 123#DEADBEEF`, `123#R` for a remote frame and `123##<flags><data>` for CAN FD.
+const CANDUMP_LOG = /^\s*\(([0-9]+(?:\.[0-9]+)?)\)\s+\S+\s+([0-9A-Fa-f]+)(#{1,2})(R[0-9]?|[0-9A-Fa-f]*)\s*$/;
+// candump on the screen: `  can0  123   [3]  11 22 33`, with the time in front only when it was asked for (`-ta`): `(1436509052.249713)  can0  123   [3]  11 22 33`.
+const CANDUMP_SCREEN = /^\s*(?:\(([0-9]+(?:\.[0-9]+)?)\)\s+)?[A-Za-z][\w.-]*\s+([0-9A-Fa-f]+)\s+\[(\d+)\]\s*([0-9A-Fa-f ]*)$/;
+
+/** One frame as the text of a file says it, before it is checked. */
+interface RawFrame { timeMs: number; direction: string; idText: string; dlcText: string; dataText: string }
+type LineRead = { format: TraceFormat; frame: RawFrame } | { problem: string };
+
+const idTextOf = (value: unknown): string | null =>
+  typeof value === 'number' && Number.isInteger(value) && value >= 0 ? value.toString(16) : typeof value === 'string' ? value.trim().replace(/^0x/i, '') : null;
+
+/** The row of a JSON export or a JSON line: `time_ms`, `direction`, `id`, `dlc` and `data` (all required, nothing else is read). */
+function rawFromJsonRow(value: unknown, format: TraceFormat): LineRead {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return { problem: 'bad_json' };
+  const o = value as Record<string, unknown>;
+  const idText = idTextOf(o.id);
+  if (typeof o.time_ms !== 'number' || idText === null || typeof o.dlc !== 'number' || !Number.isInteger(o.dlc) || o.dlc < 0 || typeof o.data !== 'string') return { problem: 'bad_fields' };
+  if (o.direction !== 'Rx' && o.direction !== 'Tx') return { problem: 'bad_direction' };
+  return { format, frame: { timeMs: o.time_ms, direction: o.direction, idText, dlcText: String(o.dlc), dataText: o.data } };
+}
+
+/** What one line of a file is: a frame of one of the formats, or the reason it cannot be read. Never throws. */
+function readLine(raw: string): LineRead {
+  const trc = TRC_ROW.exec(raw);
+  if (trc) return { format: 'trc', frame: { timeMs: parseFloat(trc[1]), direction: trc[2], idText: trc[3], dlcText: trc[4], dataText: trc[5] } };
+  const asc = ASC_ROW.exec(raw);
+  if (asc) return { format: 'asc', frame: { timeMs: parseFloat(asc[1]) * 1000, direction: asc[3], idText: asc[2], dlcText: asc[4], dataText: asc[5] } };
+  const log = CANDUMP_LOG.exec(raw);
+  if (log) {
+    if (log[3] === '##') return { problem: 'can_fd' };
+    if (log[4].startsWith('R')) return { problem: 'remote_frame' };
+    // candump does not say the direction: every frame is a received one
+    return { format: 'candump', frame: { timeMs: parseFloat(log[1]) * 1000, direction: 'Rx', idText: log[2], dlcText: String(Math.floor(log[4].length / 2)), dataText: log[4] } };
+  }
+  const screen = CANDUMP_SCREEN.exec(raw);
+  if (screen) {
+    if (screen[1] === undefined) return { problem: 'no_timestamp' };
+    return { format: 'candump', frame: { timeMs: parseFloat(screen[1]) * 1000, direction: 'Rx', idText: screen[2], dlcText: screen[3], dataText: screen[4] } };
+  }
+  if (raw.trimStart().startsWith('{')) {
+    try { return rawFromJsonRow(JSON.parse(raw), 'jsonl'); } catch { return { problem: 'bad_json' }; }
+  }
+  return { problem: 'not_a_frame' };
+}
+
+/** The viewer's own JSON export (`urtc-trace-view/1`, a document): its rows, or null when the text is not that document. */
+function exportRows(text: string): unknown[] | null {
+  if (!/^\s*\{\s*\n/.test(text.slice(0, 40)) || !text.includes(TRACE_JSON_FORMAT)) return null;
+  try {
+    const doc = JSON.parse(text) as { format?: unknown; rows?: unknown };
+    return doc.format === TRACE_JSON_FORMAT && Array.isArray(doc.rows) ? doc.rows : null;
+  } catch { return null; }
+}
+
+/** Reads the text of a trace file: .trc, .asc, a candump log, JSON lines or the JSON export of the viewer. Both directions are kept, in the order of the file, and nothing is sorted. */
 export function parseCanTrace(text: string, settings: TraceSettings = DEFAULT_TRACE_SETTINGS): TraceLoad {
   const load: TraceLoad = { format: 'unknown', rows: [], problems: [], problemCount: 0, omitted: 0, tooBig: false };
   if (text.length > MAX_TRACE_BYTES) { load.tooBig = true; return load; }
@@ -191,41 +252,41 @@ export function parseCanTrace(text: string, settings: TraceSettings = DEFAULT_TR
     load.problemCount++;
     if (load.problems.length < MAX_LISTED_PROBLEMS) load.problems.push({ line, reason });
   };
-  const lines = text.split(/\r?\n/);
   let origin: number | null = null;
-  for (let n = 0; n < lines.length; n++) {
-    const raw = lines[n];
-    const line = n + 1;
-    if (raw.trim() === '' || raw.startsWith(';') || ASC_META.test(raw.slice(0, 40))) continue;
-    if (raw.length > MAX_LINE_CHARS) { problem(line, 'line_too_long'); continue; }
-    let timeMs: number; let direction: string; let idText: string; let dlcText: string; let dataText: string;
-    const trc = TRC_ROW.exec(raw);
-    if (trc) {
-      if (load.format === 'unknown') load.format = 'trc';
-      timeMs = parseFloat(trc[1]);
-      [direction, idText, dlcText, dataText] = [trc[2], trc[3], trc[4], trc[5]];
-    } else {
-      const asc = ASC_ROW.exec(raw);
-      if (!asc) { problem(line, 'not_a_frame'); continue; }
-      if (load.format === 'unknown') load.format = 'asc';
-      timeMs = parseFloat(asc[1]) * 1000;
-      [idText, direction, dlcText, dataText] = [asc[2], asc[3], asc[4], asc[5]];
-    }
+  const take = (line: number, read: LineRead) => {
+    if ('problem' in read) { problem(line, read.problem); return; }
+    if (load.format === 'unknown') load.format = read.format;
+    else if (load.format !== read.format) { problem(line, 'mixed_format'); return; }
+    const { timeMs, direction, idText, dlcText, dataText } = read.frame;
     const data = bytesOf(dataText);
     const dlc = parseInt(dlcText, 10);
-    const id = idText.length <= 8 ? parseInt(idText, 16) : Number.NaN;
-    if (!Number.isFinite(timeMs)) { problem(line, 'bad_time'); continue; }
-    if (!(id >= 0 && id <= 0x7ff)) { problem(line, 'id_out_of_range'); continue; }
-    if (!(dlc <= 8)) { problem(line, 'dlc_out_of_range'); continue; }
-    if (data === null) { problem(line, 'bad_data'); continue; }
-    if (data.length > dlc) { problem(line, 'data_longer_than_dlc'); continue; }
-    if (load.rows.length >= MAX_TRACE_ROWS) { load.omitted++; continue; }
+    const id = /^[0-9A-Fa-f]{1,8}$/.test(idText) ? parseInt(idText, 16) : Number.NaN;
+    if (!Number.isFinite(timeMs)) { problem(line, 'bad_time'); return; }
+    if (!(id >= 0 && id <= 0x7ff)) { problem(line, 'id_out_of_range'); return; }
+    if (!(dlc <= 8)) { problem(line, 'dlc_out_of_range'); return; }
+    if (data === null) { problem(line, 'bad_data'); return; }
+    if (data.length > dlc) { problem(line, 'data_longer_than_dlc'); return; }
+    if (load.rows.length >= MAX_TRACE_ROWS) { load.omitted++; return; }
     if (origin === null) origin = timeMs;
     const d = decodeTraceFrame(id, data, dlc, direction as TraceDirection, settings);
     load.rows.push({
       index: load.rows.length + 1, line, timeMs: timeMs - origin, direction: direction as TraceDirection, id, idHex: formatId(id), dlc, data, dataHex: bytesHex(data),
       name: d.name, type: d.type, node: d.node, tool: d.tool, result: d.result, anomalies: d.anomalies, summary: d.summary,
     });
+  };
+
+  const exported = exportRows(text);
+  if (exported) {
+    // a document, not lines: the "line" of a row is its position in the list
+    exported.forEach((row, n) => take(n + 1, rawFromJsonRow(row, 'json')));
+  } else {
+    const lines = text.split(/\r?\n/);
+    for (let n = 0; n < lines.length; n++) {
+      const raw = lines[n];
+      if (raw.trim() === '' || raw.startsWith(';') || ASC_META.test(raw.slice(0, 40))) continue;
+      if (raw.length > MAX_LINE_CHARS) { problem(n + 1, 'line_too_long'); continue; }
+      take(n + 1, readLine(raw));
+    }
   }
   markSequenceAnomalies(load.rows, settings);
   return load;
@@ -379,8 +440,6 @@ export function rowFields(r: TraceRow): Array<string | number | null> {
 export function traceCsv(rows: TraceRow[]): string {
   return [TRACE_CSV_COLUMNS.join(','), ...rows.map((r) => rowFields(r).map(csvCell).join(','))].join('\n') + '\n';
 }
-
-export const TRACE_JSON_FORMAT = 'urtc-trace-view/1';
 
 /** The rows as JSON with a fixed order of keys. `source` is the name of the file read, cut to 120 characters. */
 export function traceJson(rows: TraceRow[], source = ''): string {

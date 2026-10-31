@@ -86,3 +86,39 @@ describe('the history of the files', () => {
     expect(summarizeEvidence([])).toMatchObject({ records: 0, first: '', last: '' });
   });
 });
+
+// The record TEST signed with the key of RFC 8032 test 1 by the common code in Python (record_signing.sign_evidence): the digest does not change.
+const SIGNATURE = {
+  algorithm: 'Ed25519', key_id: '21fe31dfa154a261', public_key: 'd75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a',
+  signature: '431933761ae9a09daae3657c18ee8d628d51fd2a948446a8253af68e80908e06fb70f84291614559887ce4af5ee85c7818230424364ca3344dfa20c23a090101',
+};
+
+describe('the signature of a record', () => {
+  it('does not change the digest and does not make a record not valid', async () => {
+    const signed = { ...TEST, signature: SIGNATURE };
+    expect(await evidenceDigest(signed)).toBe(TEST.evidence_sha256);
+    expect(await verifyEvidence(signed)).toEqual([]);
+  });
+  it('is checked against the digest: the one Python made is valid', async () => {
+    const [entry] = await parseEvidenceFile('t.json', JSON.stringify({ ...TEST, signature: SIGNATURE }));
+    expect(entry.valid).toBe(true);
+    expect(entry.signature).toBe('valid');
+  });
+  it('is invalid when it belongs to another digest, and a record without one is unsigned', async () => {
+    const other = { ...FLASH, signature: SIGNATURE };
+    const [entry] = await parseEvidenceFile('f.json', JSON.stringify(other));
+    expect(entry.valid).toBe(true);
+    expect(entry.signature).toBe('invalid');
+    expect((await parseEvidenceFile('u.json', JSON.stringify(TEST)))[0].signature).toBe('unsigned');
+  });
+  it('is never valid on a record that fails its own check', async () => {
+    const [entry] = await parseEvidenceFile('e.json', JSON.stringify({ ...TEST, outcome: 'pass', signature: SIGNATURE }));
+    expect(entry.valid).toBe(false);
+    expect(entry.signature).toBe('invalid');
+  });
+  it('makes the record not valid when the block is malformed', async () => {
+    for (const block of [null, [], 'x', {}, { ...SIGNATURE, extra: 1 }, { ...SIGNATURE, signature: 'ab' }, { ...SIGNATURE, algorithm: 'RSA' }]) {
+      expect((await verifyEvidence({ ...TEST, signature: block })).some(p => p.includes('signature'))).toBe(true);
+    }
+  });
+});

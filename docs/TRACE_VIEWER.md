@@ -6,28 +6,45 @@ The file is read as text in the page. Nothing is uploaded, nothing in it is run,
 
 ## What it reads
 
-The two trace formats the studio and the tester already write and the replay reads:
+Five formats, told apart line by line. The first frame decides the format of the file; a line of another format after it is **refused** (`mixed_format`), because the time bases differ (a `.trc` counts milliseconds, a candump log counts seconds since 1970) and mixing them would give times that mean nothing.
 
-* PEAK PCAN-View text traces (`.trc`, file version 1.1);
-* Vector ASCII traces (`.asc`).
+| Format | What a frame looks like | Notes |
+|---|---|---|
+| PEAK PCAN-View text trace (`.trc`, file version 1.1) | `     1)        10.0  Rx  01A3  2  1F 06` | the format the studio and the tester write and the replay reads |
+| Vector ASCII trace (`.asc`) | `   0.0100 1 1A3 Rx d 2 1F 06` | seconds, converted to milliseconds |
+| candump log (`candump -L`, usually a `.log` file) | `(1436509052.260000) can0 1A3#1F06` | the time is seconds since 1970 (shown from the first frame); the interface name is not used (a log of several interfaces is read as one bus); candump does not record the direction, so every frame is a received one |
+| candump on the screen with the time (`candump -ta`) | `(1436509052.260000)  can0  1A3   [2]  1F 06` | the same; without `-ta` the line has no time and is refused (`no_timestamp`) |
+| JSON lines (`.jsonl`) | `{"time_ms":10,"direction":"Rx","id":"0x1A3","dlc":2,"data":"1F 06"}` | one object per line; all five keys are required, `id` is a hexadecimal text (with or without `0x`) or a whole number, `direction` is `Rx` or `Tx`; other keys are ignored |
+| The JSON the viewer exports (`urtc-trace-view/1`) | a document with a `rows` list | its rows are read back the same way as the JSON lines (the "line" of a frame is its position in the list); the other keys of a row (`name`, `result` ...) are recomputed, never trusted |
+
+None of the programs of the family writes a trace as JSON lines on its own today: that format is the way to bring a trace in from another tool, or the rows of the export of this page, one per line.
 
 Both directions are kept (`Tx` and `Rx`) and the order of the file is kept: a frame whose time is older than the one before is not sorted away but marked. A line that is not a frame (a header, a comment, an event line) is skipped; a line that looks like a frame and cannot be read is counted and listed with the reason.
 
 | Reason | Meaning |
 |---|---|
-| `not_a_frame` | the line matches none of the two formats |
+| `not_a_frame` | the line matches none of the formats |
 | `line_too_long` | more than 200 characters |
 | `bad_time` | the time is not a number |
-| `id_out_of_range` | an identifier above `0x7FF` (the bus has 11-bit identifiers) |
+| `id_out_of_range` | an identifier above `0x7FF` (the bus has 11-bit identifiers; a candump extended identifier of eight digits lands here) |
 | `dlc_out_of_range` | a length above 8 |
 | `bad_data` | the data bytes are not whole hexadecimal bytes |
 | `data_longer_than_dlc` | more data bytes than the length says |
+| `remote_frame` | a candump remote frame (`123#R`): it has no data and the viewer does not read it |
+| `can_fd` | a candump CAN FD frame (`123##`): this bus is classic CAN |
+| `no_timestamp` | a candump screen line without a time |
+| `bad_json` | a JSON line that cannot be read, or is not an object |
+| `bad_fields` | a JSON frame without `time_ms`, `id`, `dlc` and `data` of the right type |
+| `bad_direction` | a JSON frame whose direction is not `Rx` or `Tx` |
+| `mixed_format` | a line of another format than the first frame of the file |
 
-A frame with **fewer** data bytes than its length says is kept and marked `short_dlc`, because that is a fact about the recording.
+A frame with **fewer** data bytes than its length says is kept and marked `short_dlc`, because that is a fact about the recording. A refused line is never drawn in the table and never hidden: the page says how many there were and lists the first fifty with their line number and reason.
 
 ### Limits
 
-5 MB per file and 200,000 frames. A bigger file is not read (the page says so); frames after the 200,000th are counted and left out. The table draws the first 1,000 frames of the selection; the CSV and JSON downloads hold the whole selection.
+5 MB per file and 200,000 frames. A bigger file is not read (the page says so); frames after the 200,000th are counted and left out. The table is **virtualized**: only the rows in view (and a few more above and below) are in the page, each with a fixed height, so a selection of 200,000 frames scrolls as smoothly as one of 50 and the page does not freeze; the CSV and JSON downloads hold the whole selection.
+
+**Keyboard and screen reader.** The table is one control (`role="grid"`) that takes the focus; the arrow keys, Page Up, Page Down, Home and End move the chosen row (the table scrolls to keep it in view) and a click chooses a row. The table says how many rows it has (`aria-rowcount`), every row says its position (`aria-rowindex`), the chosen row is `aria-selected` and named as the active descendant, and a status line announces "Row N of M" as it moves. The headers of the columns are buttons that sort. Limit: the layout is a fixed-width table that scrolls sideways on a narrow screen, and the rows do not wrap, so a long field is cut (its full text is in the tooltip and in the downloads).
 
 ## What it says about each frame
 
@@ -79,6 +96,6 @@ CSV (`index,line,time_ms,direction,id,dlc,data,name,type,node,tool,result,anomal
 
 ## Where it is, and what it does not show
 
-* `src/lib/canTrace.ts`: the reader, the decoding, the marks, the filters and the export (pure functions); `src/lib/canTrace.test.ts` holds them against the vectors of the specification; `src/components/tester/TraceViewerPanel.tsx` is the page; `e2e/traces.e2e.ts` drives it in a browser.
+* `src/lib/canTrace.ts`: the reader, the decoding, the marks, the filters and the export (pure functions); `src/lib/canTrace.test.ts` holds them against the vectors of the specification; `src/lib/traceWindow.ts` is the arithmetic of the virtual table (which rows to draw, where the keys move); `src/components/tester/TraceViewerPanel.tsx` is the page; `e2e/traces.e2e.ts` drives it in a browser.
 * The traces it was tested with are made by the studio's own exporter and by hand. It has not been tried with a file from a real adapter or from another tool, and the formats are the recognizable shape of the PCAN-View and Vector files, not guaranteed byte-identical to what each vendor writes.
 * A recording says what was on the bus, not why: a `duplicate` or a `gap` can be the way a node works as much as a fault.

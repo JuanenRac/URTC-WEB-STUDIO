@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+- **The table of the trace viewer is virtualized:** only the rows in view (and a few more above and below) are drawn, each with a fixed height, so a selection of up to 200,000 frames scrolls without freezing the page; the old limit of 1,000 drawn rows is gone (the downloads always held the whole selection). The table takes the keyboard (arrow keys, Page Up, Page Down, Home, End), says its size and the position of every row to a screen reader, announces the chosen row, and its column headers are buttons that sort. A test holds the reading, filtering and sorting of 100,000 frames to a few seconds, and an end-to-end check in a real browser draws 30,000 frames and moves through them with the keyboard.
+- **The trace viewer reads more formats:** the log of `candump -L` (and the screen format with `-ta`), JSON lines with the keys of its own JSON export, and that export itself as a document. A remote frame, a CAN FD frame, an extended identifier, a line without a time, a JSON line that is not a frame and a line of another format than the first frame are counted and listed with the reason, never hidden. `docs/TRACE_VIEWER.md` documents each format and its limits.
+- **The Evidence tab accepts the optional signature of a record:** a record signed with `record_signing` (Ed25519 over its digest) is no longer listed as not valid because of the extra field; its digest is unchanged, the signature is checked in the page (WebCrypto) and the list says whether it matches, does not match or could not be checked in this browser. A record that fails its own check is never shown as validly signed.
+
 ## [0.4.0] - The trace viewer reads the reply of the rack on 0x261 with no setting and a CAN Traces tab joins the Tester Studio
 
 - **The trace viewer reads the reply of the rack on `0x261` with no setting:** the specification fixes that identifier for it, so the box of identifiers of rack replies is no longer needed; it moves under **Advanced** as "Other identifiers of rack replies" (empty by default, for a trace recorded with a bench that used another identifier). The texts are in the eight languages (Portuguese of Portugal), the shared protocol copy and the conformance vectors carry the rack frames, and tests cover every reason, the malformed frames and the neighbouring identifiers.

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { downloadBlob } from '../../lib/download';
 import {
@@ -6,10 +6,17 @@ import {
   sortRows, summarizeRows, timelineBuckets, traceCsv, traceJson,
   type TraceAnomaly, type TraceDirection, type TraceFilter, type TraceResult, type TraceRow, type TraceSortKey, type TraceType,
 } from '../../lib/canTrace';
+import { LIST_KEYS, moveActive, rowWindow, scrollTopToShow, type ListKey } from '../../lib/traceWindow';
 import { Field, Section, btnCls, inputCls } from './shared';
 
-/** Rows drawn at once: the table of a large file would freeze the page, and the downloads always hold the whole selection. */
-const RENDER_LIMIT = 1000;
+/** The table draws only the rows in view (plus a few more above and below), so a file of 200,000 frames does not freeze the page. Every row has this height. */
+const ROW_HEIGHT = 24;
+/** Height of the scrolling box of the table, and of its header row, in pixels. */
+const VIEW_HEIGHT = 384;
+const HEAD_HEIGHT = 28;
+/** Width of each column in pixels (a fixed layout: the columns do not move while the rows change as the table scrolls). */
+const COLUMNS = [64, 104, 56, 64, 48, 180, 210, 90, 56, 90, 130, 420];
+const TABLE_WIDTH = COLUMNS.reduce((sum, width) => sum + width, 0);
 const TIMELINE_BUCKETS = 60;
 
 const rowClass = (r: TraceRow): string =>
@@ -35,6 +42,9 @@ export const TraceViewerPanel: React.FC = () => {
   const [search, setSearch] = useState('');
   const [sortKey, setSortKey] = useState<TraceSortKey>('index');
   const [descending, setDescending] = useState(false);
+  const [scrollTop, setScrollTop] = useState(0);
+  const [active, setActive] = useState(-1);
+  const box = useRef<HTMLDivElement>(null);
 
   const number = (value: string, fallback: number) => (value.trim() !== '' && Number.isFinite(Number(value)) && Number(value) >= 0 ? Number(value) : fallback);
   const settings = useMemo(() => ({
@@ -64,7 +74,13 @@ export const TraceViewerPanel: React.FC = () => {
   const summary = useMemo(() => summarizeRows(load.rows), [load.rows]);
   const buckets = useMemo(() => timelineBuckets(selected, TIMELINE_BUCKETS), [selected]);
   const nodes = useMemo(() => [...new Set(load.rows.map((r) => r.node).filter((n): n is number => n !== null))].sort((a, b) => a - b), [load.rows]);
-  const peak = Math.max(1, ...buckets.map((b) => b.count));
+  const peak = buckets.reduce((most, b) => Math.max(most, b.count), 1);
+  // a new selection starts at the top, with no row chosen
+  useEffect(() => {
+    setActive(-1);
+    setScrollTop(0);
+    if (box.current) box.current.scrollTop = 0;
+  }, [selected]);
   const stamp = () => new Date().toISOString().replace(/[-:]/g, '').slice(0, 15);
 
   const onFile = async (file: File | undefined) => {
@@ -83,21 +99,40 @@ export const TraceViewerPanel: React.FC = () => {
     if (key === sortKey) setDescending(!descending); else { setSortKey(key); setDescending(false); }
   };
   const head = (key: TraceSortKey, label: string) => (
-    <th className="pr-3 cursor-pointer select-none" onClick={() => sortBy(key)} aria-sort={sortKey === key ? (descending ? 'descending' : 'ascending') : 'none'}>
-      {label}{sortKey === key ? (descending ? ' v' : ' ^') : ''}
+    <th role="columnheader" className="pr-3 select-none" aria-sort={sortKey === key ? (descending ? 'descending' : 'ascending') : 'none'}>
+      <button type="button" className="font-mono text-left hover:text-slate-300 focus-visible:outline focus-visible:outline-1 focus-visible:outline-cyan-400" onClick={() => sortBy(key)} aria-label={t('traceview.sort_by', 'Sort by {{column}}', { column: label })}>
+        {label}{sortKey === key ? (descending ? ' v' : ' ^') : ''}
+      </button>
     </th>
   );
+  const plainHead = (label: string) => <th role="columnheader" className="pr-3">{label}</th>;
 
   const reset = () => { setIds(''); setType(''); setDirection(''); setResult(''); setNode(''); setMark(''); setFromMs(''); setToMs(''); setSearch(''); };
   const all = t('traceview.all', 'all');
-  const shown = selected.slice(0, RENDER_LIMIT);
+  const win = rowWindow(selected.length, scrollTop, VIEW_HEIGHT, ROW_HEIGHT);
+  const shown = selected.slice(win.start, win.end);
+  const pageRows = Math.max(1, Math.floor((VIEW_HEIGHT - HEAD_HEIGHT) / ROW_HEIGHT) - 1);
+
+  const choose = (index: number) => {
+    setActive(index);
+    const el = box.current;
+    if (el && index >= 0) {
+      const next = scrollTopToShow(index, el.scrollTop, VIEW_HEIGHT - HEAD_HEIGHT, ROW_HEIGHT);
+      if (next !== el.scrollTop) { el.scrollTop = next; setScrollTop(next); }
+    }
+  };
+  const onKeyDown = (e: React.KeyboardEvent) => {
+    if (!(LIST_KEYS as readonly string[]).includes(e.key) || e.altKey || e.ctrlKey || e.metaKey) return;
+    e.preventDefault();
+    choose(moveActive(active, e.key as ListKey, selected.length, pageRows));
+  };
 
   return (
     <Section title={t('traceview.title', 'CAN traces')} subtitle={t('traceview.subtitle', 'Open a recorded trace (.trc or .asc): every frame is named with the specification, refusals and odd frames are marked, and the selection can be saved as CSV or JSON. The file is read in this page and nothing is uploaded; nothing in it is run.')}>
       <div data-testid="trace-viewer">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
           <Field label={t('traceview.choose', 'Choose a trace file (.trc, .asc)')}>
-            <input type="file" accept=".trc,.asc,text/plain" className={inputCls} onChange={(e) => { void onFile(e.target.files?.[0]); e.target.value = ''; }} />
+            <input type="file" accept=".trc,.asc,.log,.jsonl,.json,text/plain,application/json" className={inputCls} onChange={(e) => { void onFile(e.target.files?.[0]); e.target.value = ''; }} />
           </Field>
           <Field label={t('traceview.gap_ms', 'Mark a silence longer than (ms)')}><input type="number" min={0} value={gapMs} onChange={(e) => setGapMs(e.target.value)} className={inputCls} /></Field>
           <Field label={t('traceview.dup_ms', 'Duplicate window (ms)')}><input type="number" min={0} value={dupMs} onChange={(e) => setDupMs(e.target.value)} className={inputCls} /></Field>
@@ -196,29 +231,66 @@ export const TraceViewerPanel: React.FC = () => {
               <button className={btnCls} disabled={selected.length === 0} onClick={() => downloadBlob(new Blob([traceCsv(selected)], { type: 'text/csv' }), `urtc_trace_view_${stamp()}.csv`)}>{t('traceview.csv', 'Download the selection (CSV)')}</button>
               <button className={btnCls} disabled={selected.length === 0} onClick={() => downloadBlob(new Blob([traceJson(selected, fileName)], { type: 'application/json' }), `urtc_trace_view_${stamp()}.json`)}>{t('traceview.json', 'Download the selection (JSON)')}</button>
             </div>
-            {selected.length > shown.length && <div className="text-[11px] text-slate-500 mb-2">{t('traceview.showing', 'Showing the first {{shown}} of {{total}} selected frames; the downloads hold all of them.', { shown: shown.length, total: selected.length })}</div>}
+            <p className="text-[11px] text-slate-500 mb-2">
+              {t('traceview.format_read', 'Format read: {{format}}', { format: load.format })}{' - '}{t('traceview.keys_hint', 'Only the rows in view are drawn. Click the table, then use the arrow keys, Page Up, Page Down, Home and End to move through the rows.')}
+            </p>
+            <div className="sr-only" role="status" aria-live="polite">{active >= 0 ? t('traceview.row_status', 'Row {{row}} of {{total}}', { row: active + 1, total: selected.length }) : ''}</div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-[11px] font-mono text-slate-300">
-                <thead>
-                  <tr className="text-left text-slate-500">
-                    {head('index', '#')}{head('time', t('traceview.col_time', 'Time (ms)'))}<th className="pr-3">{t('traceview.f_direction', 'Direction')}</th>
-                    {head('id', t('traceview.col_id', 'ID'))}{head('dlc', t('traceview.col_dlc', 'DLC'))}<th className="pr-3">{t('traceview.col_data', 'Data')}</th>
+            <div
+              ref={box}
+              role="grid"
+              tabIndex={0}
+              aria-label={t('traceview.grid_label', 'Frames of the trace')}
+              aria-rowcount={selected.length + 1}
+              aria-colcount={COLUMNS.length}
+              aria-activedescendant={active >= 0 ? `trace-row-${selected[active]?.index}` : undefined}
+              data-testid="trace-grid"
+              onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
+              onKeyDown={onKeyDown}
+              className="overflow-auto border border-slate-800 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-400"
+              style={{ height: VIEW_HEIGHT }}
+            >
+              <table role="presentation" className="text-[11px] font-mono text-slate-300" style={{ width: TABLE_WIDTH, tableLayout: 'fixed' }}>
+                <colgroup>{COLUMNS.map((width, i) => <col key={i} style={{ width }} />)}</colgroup>
+                <thead className="sticky top-0 bg-slate-900 z-10">
+                  <tr role="row" aria-rowindex={1} className="text-left text-slate-500" style={{ height: HEAD_HEIGHT }}>
+                    {head('index', '#')}{head('time', t('traceview.col_time', 'Time (ms)'))}{plainHead(t('traceview.f_direction', 'Direction'))}
+                    {head('id', t('traceview.col_id', 'ID'))}{head('dlc', t('traceview.col_dlc', 'DLC'))}{plainHead(t('traceview.col_data', 'Data'))}
                     {head('name', t('traceview.col_name', 'Name'))}{head('type', t('traceview.f_type', 'Type'))}{head('node', t('traceview.f_node', 'Node'))}
-                    {head('result', t('traceview.f_result', 'Result'))}<th className="pr-3">{t('traceview.f_mark', 'Mark')}</th><th>{t('traceview.col_summary', 'Fields')}</th>
+                    {head('result', t('traceview.f_result', 'Result'))}{plainHead(t('traceview.f_mark', 'Mark'))}{plainHead(t('traceview.col_summary', 'Fields'))}
                   </tr>
                 </thead>
                 <tbody>
-                  {shown.map((r) => (
-                    <tr key={r.index} className={rowClass(r)}>
-                      <td className="pr-3">{r.index}</td><td className="pr-3">{r.timeMs.toFixed(3)}</td><td className="pr-3">{r.direction}</td><td className="pr-3">{r.idHex}</td>
-                      <td className="pr-3">{r.dlc}</td><td className="pr-3">{r.dataHex || '-'}</td><td className="pr-3">{r.name || '-'}</td>
-                      <td className="pr-3">{t(`traceview.type_${r.type}`, r.type)}</td><td className="pr-3">{r.node ?? '-'}</td>
-                      <td className="pr-3">{t(`traceview.result_${r.result}`, r.result)}</td>
-                      <td className="pr-3">{r.anomalies.map((a) => t(`traceview.anomaly_${a}`, a)).join(', ') || '-'}</td>
-                      <td>{r.summary}</td>
-                    </tr>
-                  ))}
+                  {win.topPad > 0 && <tr aria-hidden="true" style={{ height: win.topPad }}><td colSpan={COLUMNS.length} /></tr>}
+                  {shown.map((r, i) => {
+                    const position = win.start + i;
+                    return (
+                      <tr
+                        key={r.index}
+                        id={`trace-row-${r.index}`}
+                        role="row"
+                        aria-rowindex={position + 2}
+                        aria-selected={position === active}
+                        onClick={() => choose(position)}
+                        className={`${rowClass(r)} ${position === active ? 'bg-slate-800' : ''}`}
+                        style={{ height: ROW_HEIGHT }}
+                      >
+                        <td role="gridcell" className="pr-3 whitespace-nowrap overflow-hidden">{r.index}</td>
+                        <td role="gridcell" className="pr-3 whitespace-nowrap overflow-hidden">{r.timeMs.toFixed(3)}</td>
+                        <td role="gridcell" className="pr-3">{r.direction}</td>
+                        <td role="gridcell" className="pr-3">{r.idHex}</td>
+                        <td role="gridcell" className="pr-3">{r.dlc}</td>
+                        <td role="gridcell" className="pr-3 whitespace-nowrap overflow-hidden text-ellipsis" title={r.dataHex}>{r.dataHex || '-'}</td>
+                        <td role="gridcell" className="pr-3 whitespace-nowrap overflow-hidden text-ellipsis" title={r.name}>{r.name || '-'}</td>
+                        <td role="gridcell" className="pr-3 whitespace-nowrap overflow-hidden">{t(`traceview.type_${r.type}`, r.type)}</td>
+                        <td role="gridcell" className="pr-3">{r.node ?? '-'}</td>
+                        <td role="gridcell" className="pr-3 whitespace-nowrap overflow-hidden">{t(`traceview.result_${r.result}`, r.result)}</td>
+                        <td role="gridcell" className="pr-3 whitespace-nowrap overflow-hidden text-ellipsis">{r.anomalies.map((a) => t(`traceview.anomaly_${a}`, a)).join(', ') || '-'}</td>
+                        <td role="gridcell" className="whitespace-nowrap overflow-hidden text-ellipsis" title={r.summary}>{r.summary}</td>
+                      </tr>
+                    );
+                  })}
+                  {win.bottomPad > 0 && <tr aria-hidden="true" style={{ height: win.bottomPad }}><td colSpan={COLUMNS.length} /></tr>}
                 </tbody>
               </table>
             </div>

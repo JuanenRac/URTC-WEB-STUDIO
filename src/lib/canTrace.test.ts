@@ -351,3 +351,91 @@ describe("export", () => {
     expect(csvCell(null)).toBe("");
   });
 });
+
+describe("more trace formats", () => {
+  const dump = (...lines: string[]) => lines.join("\n") + "\n";
+
+  it("reads the log of candump -L, with the time as the first frame's offset", () => {
+    const load = parseCanTrace(dump(
+      "(1436509052.250000) can0 1A2#06",
+      "(1436509052.260000) can0 1A3#1F06",
+      "(1436509052.750000) can0 7F5#0502",
+    ));
+    expect(load.format).toBe("candump");
+    expect(load.problemCount).toBe(0);
+    expect(load.rows.map((r) => [r.direction, r.idHex, r.dlc, r.dataHex])).toEqual([
+      ["Rx", "0x1A2", 1, "06"], ["Rx", "0x1A3", 2, "1F 06"], ["Rx", "0x7F5", 2, "05 02"],
+    ]);
+    expect(load.rows.map((r) => Math.round(r.timeMs))).toEqual([0, 10, 500]);
+    expect(load.rows[2].result).toBe("refused");
+  });
+
+  it("reads the screen format of candump when it carries the time (-ta), and refuses it when it does not", () => {
+    const load = parseCanTrace(dump(
+      "(1436509052.250000)  can0  1A3   [2]  1F 06",
+      "  can0  1A3   [2]  1F 06",
+    ));
+    expect(load.format).toBe("candump");
+    expect(load.rows).toHaveLength(1);
+    expect(load.problems).toEqual([{ line: 2, reason: "no_timestamp" }]);
+  });
+
+  it("counts remote frames, CAN FD frames and extended identifiers instead of hiding them", () => {
+    const load = parseCanTrace(dump(
+      "(1.000000) can0 110#00",
+      "(1.100000) can0 110#R",
+      "(1.200000) can0 110##1AABB",
+      "(1.300000) can0 1FFFFFFF#AA",
+      "(1.400000) can0 110#0",
+      "(1.500000) can0 110#ZZ",
+    ));
+    expect(load.rows).toHaveLength(1);
+    expect(load.problems.map((p) => [p.line, p.reason])).toEqual([[2, "remote_frame"], [3, "can_fd"], [4, "id_out_of_range"], [5, "bad_data"], [6, "not_a_frame"]]);
+  });
+
+  it("reads JSON lines with the keys of the JSON export", () => {
+    const load = parseCanTrace(dump(
+      '{"time_ms":0,"direction":"Tx","id":"0x1A2","dlc":1,"data":"06"}',
+      '{"time_ms":10.5,"direction":"Rx","id":419,"dlc":2,"data":"1F 06"}',
+      '{"time_ms":500,"direction":"Rx","id":"7F5","dlc":2,"data":"0502","extra":"ignored"}',
+    ));
+    expect(load.format).toBe("jsonl");
+    expect(load.problemCount).toBe(0);
+    expect(load.rows.map((r) => [r.direction, r.idHex, r.dataHex])).toEqual([["Tx", "0x1A2", "06"], ["Rx", "0x1A3", "1F 06"], ["Rx", "0x7F5", "05 02"]]);
+    expect(load.rows.map((r) => r.timeMs)).toEqual([0, 10.5, 500]);
+  });
+
+  it("counts a JSON line that is not a frame, with the reason", () => {
+    const load = parseCanTrace(dump(
+      '{"time_ms":0,"direction":"Rx","id":"110","dlc":0,"data":""}',
+      "{not json",
+      "[1,2]",
+      '{"time_ms":"0","direction":"Rx","id":"110","dlc":0,"data":""}',
+      '{"time_ms":1,"direction":"up","id":"110","dlc":0,"data":""}',
+      '{"time_ms":1,"direction":"Rx","id":"110","dlc":1,"data":"ZZ"}',
+      '{"time_ms":1,"direction":"Rx","id":"110","dlc":1,"data":"0A0B"}',
+    ));
+    expect(load.rows).toHaveLength(1);
+    expect(load.problems.map((p) => [p.line, p.reason])).toEqual([
+      [2, "bad_json"], [3, "not_a_frame"], [4, "bad_fields"], [5, "bad_direction"], [6, "bad_data"], [7, "data_longer_than_dlc"],
+    ]);
+  });
+
+  it("reads back the JSON export of the viewer, row by row", () => {
+    const first = parseCanTrace(toTrcTrace([
+      { timestamp: "10:00:00.000", direction: "Tx" as const, idHex: "0x1A2", dlc: 1, dataHex: "06" },
+      { timestamp: "10:00:00.010", direction: "Rx" as const, idHex: "0x1A3", dlc: 2, dataHex: "1F 06" },
+    ], new Date(2000, 0, 1)));
+    const again = parseCanTrace(traceJson(first.rows, "a.trc"));
+    expect(again.format).toBe("json");
+    expect(again.problemCount).toBe(0);
+    expect(again.rows.map((r) => [r.direction, r.idHex, r.dataHex, r.timeMs, r.name])).toEqual(first.rows.map((r) => [r.direction, r.idHex, r.dataHex, r.timeMs, r.name]));
+  });
+
+  it("refuses a line of another format than the first frame, and says so", () => {
+    const load = parseCanTrace(dump("     1)         0.0  Rx  0110  0", "(1.000000) can0 110#", "     3)         2.0  Rx  0110  0"));
+    expect(load.format).toBe("trc");
+    expect(load.rows).toHaveLength(2);
+    expect(load.problems).toEqual([{ line: 2, reason: "mixed_format" }]);
+  });
+});
