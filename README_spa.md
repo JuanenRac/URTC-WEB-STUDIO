@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Licencia-GPL%203.0-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-577-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-613-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
 </p>
@@ -38,7 +38,7 @@
 |---|---|
 | Versión | `0.3.8` |
 | Madurez | Funcional |
-| Tests | 577 (`npm test`) |
+| Tests | 613 (`npm test`) |
 | Tecnología | Web Serial API / TypeScript |
 | Destino | Un navegador web en el PC del usuario |
 | En hardware real | Solo simulado: probado con emuladores, dobles de prueba o simuladores; no consta ninguna ejecución en hardware real para esta versión |
@@ -386,7 +386,7 @@ Qué versiones de los programas de URTC funcionan juntas, y qué versión del pr
 
 ## 🧪 Pruebas
 
-`npm test` (Vitest) ejecuta 577 pruebas de la lógica pura: análisis de SLCAN, emparejamiento de peticiones y respuestas, comprobaciones de imágenes de firmware y manifiestos, firmas de release, límites de herramienta, confirmaciones, las reglas que separan el simulador del bus real, exportación y reproducción de trazas, el selector de nodos, el simulador del rack, el registro de sesión guardado, la copia sin conexión, la sincronización del firmware y los ocho idiomas de la interfaz. `npm run lint` comprueba los tipos del código y `npm run test:e2e` ejecuta 19 comprobaciones de extremo a extremo en un Chromium real contra un adaptador y una placa modelados (`npm run test:coverage` añade un mínimo de cobertura). Las pantallas y el transporte Web Serial no tienen pruebas unitarias propias; las comprobaciones de extremo a extremo los manejan. Nada de esto se ha ejecutado contra un adaptador o una placa reales.
+`npm test` (Vitest) ejecuta 613 pruebas de la lógica pura: análisis de SLCAN, emparejamiento de peticiones y respuestas, comprobaciones de imágenes de firmware y manifiestos, firmas de release, límites de herramienta, confirmaciones, las reglas que separan el simulador del bus real, exportación y reproducción de trazas, el selector de nodos, el simulador del rack, el registro de sesión guardado, la copia sin conexión, la sincronización del firmware y los ocho idiomas de la interfaz. `npm run lint` comprueba los tipos del código y `npm run test:e2e` ejecuta 19 comprobaciones de extremo a extremo en un Chromium real contra un adaptador y una placa modelados (`npm run test:coverage` añade un mínimo de cobertura). Las pantallas y el transporte Web Serial no tienen pruebas unitarias propias; las comprobaciones de extremo a extremo los manejan. Nada de esto se ha ejecutado contra un adaptador o una placa reales.
 
 ## 🏗️ Compilación y publicación
 

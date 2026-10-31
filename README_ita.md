@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Licenza-GPL%203.0-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-577-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-613-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
 </p>
@@ -38,7 +38,7 @@
 |---|---|
 | Versione | `0.3.8` |
 | Maturità | Funzionale |
-| Test | 577 (`npm test`) |
+| Test | 613 (`npm test`) |
 | Tecnologia | Web Serial API / TypeScript |
 | Destinazione | Un browser web sul PC dell'utente |
 | Su hardware reale | Solo simulato: provato con emulatori, test double o simulatori; per questa versione non risulta alcuna esecuzione su hardware reale |
@@ -389,7 +389,7 @@ Quali versioni dei programmi URTC funzionano insieme, e quale versione del proto
 
 ## 🧪 Test
 
-`npm test` (Vitest) esegue 577 test della logica pura: parsing SLCAN, abbinamento di richieste e risposte, controlli di immagini firmware e manifesti, firme di release, limiti degli utensili, conferme, le regole che separano il simulatore dal bus reale, esportazione e riproduzione di tracce, il selettore dei nodi, il simulatore del rack, la registrazione di sessione salvata, la copia offline, la sincronizzazione del firmware e le otto lingue dell'interfaccia. `npm run lint` controlla i tipi del codice e `npm run test:e2e` esegue 19 controlli end-to-end in un vero Chromium contro un adattatore e una scheda modellati (`npm run test:coverage` aggiunge una soglia di copertura). Le schermate e il trasporto Web Serial non hanno test unitari propri; i controlli end-to-end li pilotano. Niente di tutto questo è girato contro un vero adattatore o una vera scheda.
+`npm test` (Vitest) esegue 613 test della logica pura: parsing SLCAN, abbinamento di richieste e risposte, controlli di immagini firmware e manifesti, firme di release, limiti degli utensili, conferme, le regole che separano il simulatore dal bus reale, esportazione e riproduzione di tracce, il selettore dei nodi, il simulatore del rack, la registrazione di sessione salvata, la copia offline, la sincronizzazione del firmware e le otto lingue dell'interfaccia. `npm run lint` controlla i tipi del codice e `npm run test:e2e` esegue 19 controlli end-to-end in un vero Chromium contro un adattatore e una scheda modellati (`npm run test:coverage` aggiunge una soglia di copertura). Le schermate e il trasporto Web Serial non hanno test unitari propri; i controlli end-to-end li pilotano. Niente di tutto questo è girato contro un vero adattatore o una vera scheda.
 
 ## 🏗️ Compilazione e rilascio
 

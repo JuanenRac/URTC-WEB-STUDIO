@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-577-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-613-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
@@ -39,7 +39,7 @@
 |---|---|
 | Version | `0.3.8` |
 | Maturity | Functional |
-| Tests | 577 (`npm test`) |
+| Tests | 613 (`npm test`) |
 | Stack | Web Serial API / TypeScript |
 | Target | A web browser on the user's PC |
 | On real hardware | Simulated only: tested against emulators, fakes or simulators; no run on real hardware is recorded for this version |
@@ -382,7 +382,7 @@ Which versions of the URTC programs work together, and which protocol version ea
 
 ## 🧪 Testing
 
-`npm test` (Vitest) runs 577 tests of the pure logic: SLCAN parsing, request and answer matching, firmware image and manifest checks, release signatures, tool limits, confirmations, the rules that keep the simulator apart from the real bus, trace export and replay, the node picker, the rack simulator, the saved session record, the offline copy, the sync of the firmware and the eight interface languages. `npm run lint` type-checks the sources and `npm run test:e2e` runs 19 end-to-end checks in a real Chromium against a modelled adapter and board (`npm run test:coverage` adds a coverage floor). The screens and the Web Serial transport have no unit tests of their own; the end-to-end checks drive them. None of it has run against a real adapter or board.
+`npm test` (Vitest) runs 613 tests of the pure logic: SLCAN parsing, request and answer matching, firmware image and manifest checks, release signatures, tool limits, confirmations, the rules that keep the simulator apart from the real bus, trace export and replay, the node picker, the rack simulator, the saved session record, the offline copy, the sync of the firmware and the eight interface languages. `npm run lint` type-checks the sources and `npm run test:e2e` runs 19 end-to-end checks in a real Chromium against a modelled adapter and board (`npm run test:coverage` adds a coverage floor). The screens and the Web Serial transport have no unit tests of their own; the end-to-end checks drive them. None of it has run against a real adapter or board.
 
 ## 🏗️ Build & Release
 
