@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented here.
 
-## [Unreleased]
+## [0.4.1] - The table of the trace viewer is virtualized and reachable by keyboard, the viewer reads more formats (candump and JSONL) and the Evidence tab checks the optional signature of a record
 
 - **The table of the trace viewer is virtualized:** only the rows in view (and a few more above and below) are drawn, each with a fixed height, so a selection of up to 200,000 frames scrolls without freezing the page; the old limit of 1,000 drawn rows is gone (the downloads always held the whole selection). The table takes the keyboard (arrow keys, Page Up, Page Down, Home, End), says its size and the position of every row to a screen reader, announces the chosen row, and its column headers are buttons that sort. A test holds the reading, filtering and sorting of 100,000 frames to a few seconds, and an end-to-end check in a real browser draws 30,000 frames and moves through them with the keyboard.
 - **The trace viewer reads more formats:** the log of `candump -L` (and the screen format with `-ta`), JSON lines with the keys of its own JSON export, and that export itself as a document. A remote frame, a CAN FD frame, an extended identifier, a line without a time, a JSON line that is not a frame and a line of another format than the first frame are counted and listed with the reason, never hidden. `docs/TRACE_VIEWER.md` documents each format and its limits.
