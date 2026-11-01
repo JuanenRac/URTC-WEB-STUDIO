@@ -111,7 +111,7 @@ Come si incastrano le parti di questo repository: chi lo usa, che cosa contiene 
 ### Stack tecnologico
 
 - **Linguaggio:** TypeScript
-- **Framework frontend:** React 18
+- **Framework frontend:** React 19
 - **Strumento di build:** Vite
 - **Stile:** Tailwind CSS
 - **Icone:** Lucide React

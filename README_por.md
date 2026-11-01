@@ -112,7 +112,7 @@ Como as partes deste repositório se encaixam: quem o usa, o que contém e de qu
 ### Stack tecnológica
 
 - **Linguagem:** TypeScript
-- **Framework de frontend:** React 18
+- **Framework de frontend:** React 19
 - **Ferramenta de build:** Vite
 - **Estilos:** Tailwind CSS
 - **Ícones:** Lucide React

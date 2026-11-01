@@ -110,7 +110,7 @@ Comment les parties de ce dépôt s'articulent : qui l'utilise, ce qu'il contien
 ### Stack technique
 
 - **Langage :** TypeScript
-- **Framework frontend :** React 18
+- **Framework frontend :** React 19
 - **Outil de build :** Vite
 - **Style :** Tailwind CSS
 - **Icônes :** Lucide React

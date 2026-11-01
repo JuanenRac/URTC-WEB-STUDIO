@@ -113,7 +113,7 @@ Wie die Teile dieses Repositorys zusammenpassen: wer es nutzt, was es enthält u
 ### Technologie-Stack
 
 - **Sprache:** TypeScript
-- **Frontend-Framework:** React 18
+- **Frontend-Framework:** React 19
 - **Build-Tool:** Vite
 - **Styling:** Tailwind CSS
 - **Icons:** Lucide React

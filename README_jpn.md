@@ -115,7 +115,7 @@ URTC-WEB-STUDIO は URTC の 2 つのデスクトッププログラム、URTC-FL
 ### 技術スタック
 
 - **言語：** TypeScript
-- **フロントエンドフレームワーク：** React 18
+- **フロントエンドフレームワーク：** React 19
 - **ビルドツール：** Vite
 - **スタイリング：** Tailwind CSS
 - **アイコン：** Lucide React

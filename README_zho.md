@@ -109,7 +109,7 @@ URTC-WEB-STUDIO 是 URTC 两个桌面程序 URTC-FLASHER 和 URTC-TESTER 的浏�
 ### 技术栈
 
 - **语言：** TypeScript
-- **前端框架：** React 18
+- **前端框架：** React 19
 - **构建工具：** Vite
 - **样式：** Tailwind CSS
 - **图标：** Lucide React

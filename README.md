@@ -112,7 +112,7 @@ How the parts of this repository fit together: who uses it, what it holds and wh
 ### Technology Stack
 
 - **Language:** TypeScript
-- **Frontend Framework:** React 18
+- **Frontend Framework:** React 19
 - **Build Tool:** Vite
 - **Styling:** Tailwind CSS
 - **Icons:** Lucide React
