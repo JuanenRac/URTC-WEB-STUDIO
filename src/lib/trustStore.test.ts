@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { aliasOfKey, formatTrustStore, loadTrustText, parseTrustStore, saveTrustText, TRUST_LINE_LIMIT, TRUST_STORAGE_NAME } from './trustStore';
+import {
+  aliasOfKey, exportTrustFile, formatTrustStore, importTrustFile, loadTrustText, mergeTrustStore, parseTrustStore, saveTrustText, TRUST_FILE_FORMAT, TRUST_FILE_MAX_BYTES, TRUST_LINE_LIMIT,
+  TRUST_STORAGE_NAME,
+} from './trustStore';
 import { parseEvidenceFile, signatureView } from './evidenceHistory';
 
 const PUB_A = 'd75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a';   // the public key of RFC 8032 test 1
@@ -98,5 +101,57 @@ describe('the state of a signature against the store', () => {
     expect(signatureView(unsigned, store).state).toBe('unsigned');
     const otherRecord = await entryOf({ ...TEST, detail: 'another record with the same signature', evidence_sha256: '0'.repeat(64), signature: SIGNATURE });
     expect(signatureView(otherRecord, store).state).toBe('invalid');
+  });
+});
+
+describe('the list as a file', () => {
+  const file = (keys: unknown, extra: object = {}) => JSON.stringify({ format: TRUST_FILE_FORMAT, keys, ...extra });
+
+  it('is written with the format name and the aliases in order, and reads back the same', () => {
+    const store = { Zed: PUB_B, Abe: PUB_A };
+    const text = exportTrustFile(store);
+    expect(JSON.parse(text)).toEqual({ format: TRUST_FILE_FORMAT, keys: { Abe: PUB_A, Zed: PUB_B } });
+    expect(text.indexOf('Abe')).toBeLessThan(text.indexOf('Zed'));
+    expect(importTrustFile(text)).toEqual({ ok: true, store: { Abe: PUB_A, Zed: PUB_B } });
+  });
+  it('holds nothing but public keys: what is exported is only what the list holds', () => {
+    expect(exportTrustFile({})).toBe(JSON.stringify({ format: TRUST_FILE_FORMAT, keys: {} }, null, 2) + String.fromCharCode(10));
+  });
+  it('reads keys in upper case as lower case', () => {
+    expect(importTrustFile(file({ Ana: PUB_A.toUpperCase() }))).toEqual({ ok: true, store: { Ana: PUB_A } });
+  });
+  it('refuses a file that is too big or not JSON', () => {
+    expect(importTrustFile(' '.repeat(TRUST_FILE_MAX_BYTES + 1))).toMatchObject({ ok: false, reason: 'too_big' });
+    expect(importTrustFile('{nope')).toMatchObject({ ok: false, reason: 'not_json' });
+    expect(importTrustFile('')).toMatchObject({ ok: false, reason: 'not_json' });
+  });
+  it('refuses another format, other fields and a list that is not an object', () => {
+    for (const text of ['[]', 'null', '3', '{"keys":{}}', JSON.stringify({ format: 'other/1', keys: { A: PUB_A } }), file(['x']), file(null), file({ A: PUB_A }, { note: 'x' }),
+      JSON.stringify({ format: TRUST_FILE_FORMAT })]) {
+      expect(importTrustFile(text)).toMatchObject({ ok: false, reason: 'wrong_format' });
+    }
+  });
+  it('refuses an empty list and a list with too many keys', () => {
+    expect(importTrustFile(file({}))).toMatchObject({ ok: false, reason: 'empty' });
+    const many = Object.fromEntries(Array.from({ length: TRUST_LINE_LIMIT + 1 }, (_, i) => ['K' + i, PUB_A]));
+    expect(importTrustFile(file(many))).toMatchObject({ ok: false, reason: 'too_many' });
+  });
+  it('refuses the whole file when one entry is wrong, and says how many, so a half-wrong file never slips a key in', () => {
+    const result = importTrustFile(file({ Good: PUB_A, 'Bad<b>': PUB_B, Short: 'ab'.repeat(31), Num: 5, Nul: null, 'Ok2': PUB_B }));
+    expect(result).toEqual({ ok: false, reason: 'bad_entry', detail: 4 });
+  });
+  it('refuses a seed-looking value that is not hexadecimal and names no value', () => {
+    const result = importTrustFile(file({ Ana: 'zz'.repeat(32) }));
+    expect(result).toEqual({ ok: false, reason: 'bad_entry', detail: 1 });
+    expect(JSON.stringify(result)).not.toContain('zz');
+  });
+  it('is not tripped by names that are properties of every object', () => {
+    const text = '{"format":"' + TRUST_FILE_FORMAT + '","keys":{"__proto__":"' + PUB_A + '","constructor":"' + PUB_B + '"}}';
+    expect(importTrustFile(text)).toMatchObject({ ok: false, reason: 'bad_entry' });
+    expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+  });
+  it('merges: the imported keys are added and an imported alias replaces the same one', () => {
+    const merged = mergeTrustStore({ Ana: PUB_A, Bea: PUB_B }, { Bea: PUB_A, Cy: PUB_B });
+    expect({ ...merged }).toEqual({ Ana: PUB_A, Bea: PUB_A, Cy: PUB_B });
   });
 });

@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { readFile } from 'node:fs/promises';
 import { collectErrors, openTesterPanel } from './support/studio';
 
 // The Evidence tab: a record signed in Python (record_signing.sign_evidence, RFC 8032 test 1 key) is checked in the page, and the trusted keys the person lists
@@ -20,7 +21,7 @@ test.describe('the evidence history with the trusted keys', () => {
     await page.goto('/');
     await openTesterPanel(page, 'Evidence');
     const file = { name: 'signed.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(SIGNED)) };
-    await page.locator('input[type="file"]').setInputFiles(file);
+    await page.locator('input[type="file"][multiple]').setInputFiles(file);
     const rows = page.locator('table tbody tr');
     await expect(rows).toHaveCount(1);
     await expect(rows.first()).toContainText('signed, signature matches');
@@ -39,8 +40,38 @@ test.describe('the evidence history with the trusted keys', () => {
     await openTesterPanel(page, 'Evidence');
     await page.getByTestId('evidence-trust').locator('summary').click();
     await expect(page.getByTestId('evidence-trust').locator('textarea')).toHaveValue('Ana=' + PUBLIC);
-    await page.locator('input[type="file"]').setInputFiles(file);
+    await page.locator('input[type="file"][multiple]').setInputFiles(file);
     await expect(page.locator('table tbody tr').first()).toContainText('signed by Ana');
     expect(errors).toEqual([]);
   });
+
+  test('saves the list as a file and takes keys from a file, whole or not at all', async ({ page }) => {
+    const errors = collectErrors(page);
+    await page.goto('/');
+    await openTesterPanel(page, 'Evidence');
+    await page.getByTestId('evidence-trust').locator('summary').click();
+    const box = page.getByTestId('evidence-trust').locator('textarea');
+    await expect(page.getByTestId('evidence-trust').getByRole('button', { name: 'Save the list (JSON file)' })).toBeDisabled();
+    await box.fill('Ana=' + PUBLIC);
+
+    const download = page.waitForEvent('download');
+    await page.getByRole('button', { name: 'Save the list (JSON file)' }).click();
+    const saved = JSON.parse(await readFile((await (await download).path()) ?? '', 'utf8'));
+    expect(saved).toEqual({ format: 'urtc-trusted-keys/1', keys: { Ana: PUBLIC } });
+
+    const other = '3d4017c3e843895a92b70aa74d1b7ebc9c982ccf2ec4968cc0cd55f12af4660c';
+    const input = page.getByTestId('trust-import');
+    await input.setInputFiles({ name: 'keys.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify({ format: 'urtc-trusted-keys/1', keys: { Bea: other } })) });
+    await expect(page.getByTestId('evidence-trust').getByRole('status')).toContainText('1 key(s) added from the file');
+    await expect(box).toHaveValue('Ana=' + PUBLIC + String.fromCharCode(10) + 'Bea=' + other);
+
+    // one wrong entry refuses the whole file: nothing is added
+    await input.setInputFiles({ name: 'bad.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify({ format: 'urtc-trusted-keys/1', keys: { Cy: PUBLIC, 'Bad<b>': other } })) });
+    await expect(page.getByTestId('evidence-trust').getByRole('status')).toContainText('1 entry(ies) of the file are not an alias with a public key; nothing was added');
+    await expect(box).toHaveValue('Ana=' + PUBLIC + String.fromCharCode(10) + 'Bea=' + other);
+    await input.setInputFiles({ name: 'other.json', mimeType: 'application/json', buffer: Buffer.from('{"nope"') });
+    await expect(page.getByTestId('evidence-trust').getByRole('status')).toContainText('The file is not JSON; nothing was added');
+    expect(errors).toEqual([]);
+  });
 });
+

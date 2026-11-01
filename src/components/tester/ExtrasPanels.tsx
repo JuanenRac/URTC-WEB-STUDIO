@@ -6,7 +6,7 @@ import { useConfirmAction } from '../../hooks/useConfirmAction';
 import { downloadBlob } from '../../lib/download';
 import { featuresWrite } from '../../lib/toolFrames';
 import { EVIDENCE_KINDS, EVIDENCE_OUTCOMES, EvidenceEntry, evidenceCsv, evidenceRow, parseEvidenceFile, selectEvidence, signatureView, summarizeEvidence } from '../../lib/evidenceHistory';
-import { formatTrustStore, loadTrustText, parseTrustStore, saveTrustText } from '../../lib/trustStore';
+import { TRUST_FILE_MAX_BYTES, exportTrustFile, formatTrustStore, importTrustFile, loadTrustText, mergeTrustStore, parseTrustStore, saveTrustText } from '../../lib/trustStore';
 import { CAN_ID_SET_FEATURES, CAN_ID_FEATURES_RESP, CAN_ID_PID_CONFIG, CAN_ID_PID_STATE_RESP } from '../../lib/canIds';
 import { PID_ACTION_AUTOTUNE_ABORT, PID_ACTION_AUTOTUNE_START, PID_ACTION_QUERY, PID_ACTION_SET_GAINS, PID_STATE_KEYS, decodePidState, encodePidConfig } from '../../lib/pid';
 import {
@@ -466,6 +466,18 @@ export const EvidenceHistoryPanel: React.FC = () => {
     setTrustKept(saveTrustText(formatTrustStore(parseTrustStore(value).store)));
   };
 
+  const [trustNote, setTrustNote] = useState('');
+  // a file of trusted keys is taken whole or not at all (see importTrustFile); what it holds is added to the list
+  const importTrust = async (file: File | undefined) => {
+    if (!file) return;
+    const result = file.size > TRUST_FILE_MAX_BYTES ? { ok: false as const, reason: 'too_big' as const, detail: 0 } : importTrustFile(await file.text());
+    if (!result.ok) { setTrustNote(t(`testerextras.evidence_trust_refused_${result.reason}`, result.reason, { count: result.detail })); return; }
+    const text = formatTrustStore(mergeTrustStore(trust.store, result.store));
+    setTrustText(text);
+    setTrustKept(saveTrustText(text));
+    setTrustNote(t('testerextras.evidence_trust_imported', '{{count}} key(s) added from the file', { count: Object.keys(result.store).length }));
+  };
+
   const load = async (files: FileList | null) => {
     if (!files) return;
     setBusy(true);
@@ -512,6 +524,14 @@ export const EvidenceHistoryPanel: React.FC = () => {
           placeholder="Ana=d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a"
         />
         <p className="text-[11px] text-slate-500 mt-1">{t('testerextras.evidence_trust_hint', 'Public keys only, never a private key.')}</p>
+        <div className="flex flex-wrap items-center gap-3 mt-2">
+          <button className={btnCls} disabled={Object.keys(trust.store).length === 0} onClick={() => downloadBlob(new Blob([exportTrustFile(trust.store)], { type: 'application/json' }), 'urtc_trusted_keys.json')}>{t('testerextras.evidence_trust_export', 'Save the list (JSON file)')}</button>
+          <label className="text-[11px] text-slate-400">
+            {t('testerextras.evidence_trust_import', 'Add keys from a file (JSON)')}
+            <input type="file" accept=".json,application/json" data-testid="trust-import" className={`${inputCls} mt-1`} onChange={(e) => { void importTrust(e.target.files?.[0]); e.target.value = ''; }} />
+          </label>
+        </div>
+        {trustNote && <p className="text-[11px] text-amber-300 mt-1" role="status">{trustNote}</p>}
         {trust.problems > 0 && <p className="text-[11px] text-amber-300 mt-1" role="alert">{t('testerextras.evidence_trust_problems', '{{count}} line(s) were not read as alias=public key and were left out', { count: trust.problems })}</p>}
         {!trustKept && <p className="text-[11px] text-amber-300 mt-1" role="alert">{t('testerextras.evidence_trust_not_saved', 'This browser would not keep the list')}</p>}
       </details>
