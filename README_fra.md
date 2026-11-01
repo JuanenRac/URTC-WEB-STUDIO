@@ -36,7 +36,7 @@
 
 | | |
 |---|---|
-| Version | `0.4.2` |
+| Version | `0.4.3` |
 | Maturité | Fonctionnel |
 | Tests | 792 (`npm test`) |
 | Technologie | Web Serial API / TypeScript |

@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented here.
 
-## [Unreleased]
+## [0.4.3] - The CI runs the static checks of the Python of the repository
 
 - **The CI runs the static checks of the Python of the repository:** `ruff` (pinned) over the tools and the build scripts, with the same rules as the rest of the family (unused names, exception chaining, syntax), in the new `ruff.toml`. The type check of the page stays `tsc` (`npm run lint`).
 
