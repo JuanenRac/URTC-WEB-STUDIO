@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented here.
 
-## [Unreleased]
+## [0.4.4] - The summary of each tool in the Tester Studio is written from its profile and the rows of the raw bus monitor are memoized and measured
 
 - **The summary of the tool in the Tester Studio is written from its profile:** the panel above the controls of the active tool (hero metric and range, watchdog, pins, firmware capabilities) is generated from the tool profiles of the shared specification, with the wording of the Tool Catalog in the eight languages, and the choice between the plain stepper panel and the panel without a CAN handler now follows the kind each profile declares instead of a list kept by hand.
 - **The rows of the raw bus monitor are memoized and measured:** a logged frame never changes, so a new frame draws one row instead of up to 500; drawing the 500 rows from scratch takes about 130 ms in a cold test run (100 rows: about 20 ms), which is why the list is not virtualized.
