@@ -133,10 +133,13 @@ export const THERMAL_CHUNK_COUNT = 48; // 48 chunks x 16 px = 768px = 32x24
 // The names come from the tool profiles of URTC-COMMON (generated/urtcTools.ts).
 export const TOOL_NAMES: Record<number, string> = Object.fromEntries(URTC_TOOL_PROFILES.map(p => [p.id, p.shortName]));
 
-// Tools 1,2,3,6,7,12,16 all share the plain-stepper 0x120 motion panel.
-export const MOTION_TOOL_IDS = new Set([1, 2, 3, 6, 7, 12, 16]);
-// No CAN handler at all - actuator/sensor lives on the robot mainboard, not this board.
-export const NO_HANDLER_TOOL_IDS = new Set([15, 20]);
+// The panel a tool gets follows the kind its profile declares (spec/tools.json of URTC-COMMON): a stepper tool shares the plain 0x120
+// motion panel, an external tool has no CAN handler at all (its actuator/sensor lives on the robot mainboard, not this board).
+// Two stepper tools have a command of their own (0: soldering iron, 21: crimping actuator) and are drawn by their own panels.
+export const OWN_COMMAND_MOTION_TOOL_IDS: ReadonlySet<number> = new Set([0, 21]);
+export const MOTION_TOOL_IDS: ReadonlySet<number> = new Set(
+  URTC_TOOL_PROFILES.filter(p => p.kind === 'motion' && !OWN_COMMAND_MOTION_TOOL_IDS.has(p.id)).map(p => p.id));
+export const NO_HANDLER_TOOL_IDS: ReadonlySet<number> = new Set(URTC_TOOL_PROFILES.filter(p => p.kind === 'external').map(p => p.id));
 
 // --- Bootloader verify-fail reason codes (second byte of a 0x7F5 verify-fail frame) ---
 // The wording lives in the locales as flasher.verify_fail_<code>.

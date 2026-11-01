@@ -14,6 +14,7 @@ import {
 } from './tester/ToolPanels';
 import { CAN_ID_WELD_SPOT_CMD, CAN_ID_WELD_ULTRASONIC_CMD } from '../lib/canIds';
 import { TraceViewerPanel } from './tester/TraceViewerPanel';
+import { ToolProfilePanel } from './tester/ToolProfilePanel';
 import { BlackBoxPanel, EvidenceHistoryPanel, FeaturesPanel, PidPanel, RackBenchPanel, ThermalViewPanel } from './tester/ExtrasPanels';
 
 interface TesterStudioProps {
@@ -180,7 +181,7 @@ export const TesterStudio: React.FC<TesterStudioProps> = ({
         ))}
       </div>
 
-      {subTab === 'tool' && renderToolPanel()}
+      {subTab === 'tool' && <>{isConnected && toolKnown && toolId !== null && <ToolProfilePanel toolId={toolId} />}{renderToolPanel()}</>}
       {subTab === 'global' && <GlobalControlsPanel ctx={ctx} />}
       {subTab === 'expansion' && <ExpansionBoardPanel ctx={ctx} />}
       {subTab === 'fram' && <FramPanel ctx={ctx} />}

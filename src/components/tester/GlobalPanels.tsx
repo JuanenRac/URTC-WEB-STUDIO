@@ -13,6 +13,7 @@ import { parseCustomFrame, customFrameErrorText } from '../../lib/customFrame';
 import { spiPassthrough, statusLedCommand } from '../../lib/toolFrames';
 import { Section, Field, inputCls, btnCls, btnPrimaryCls, safeInt } from './shared';
 import { ToolCtx } from './ToolPanels';
+import { BusMonitorRow, BUS_MONITOR_MAX_ROWS } from './BusMonitorRow';
 import {
   CAN_ID_STATUS_LED_CMD, CAN_ID_QUERY_ACTIVE_TOOL, CAN_ID_ACTIVE_TOOL_RESP,
   CAN_ID_FRAM_QUERY, CAN_ID_FRAM_STATE_RESP, CAN_ID_ERASE_FRAM, ERASE_FRAM_MAGIC,
@@ -255,7 +256,7 @@ export const BusMonitorPanel: React.FC<{ ctx: ToolCtx; subscribeAll: (cb: (f: Ca
     if (!filterRef.current.accept(f.id, f.dataHex)) return;
     setFrames(prev => {
       const next = [f, ...prev];
-      return next.length > 500 ? next.slice(0, 500) : next;
+      return next.length > BUS_MONITOR_MAX_ROWS ? next.slice(0, BUS_MONITOR_MAX_ROWS) : next;
     });
   }), [subscribeAll]);
 
@@ -330,15 +331,7 @@ export const BusMonitorPanel: React.FC<{ ctx: ToolCtx; subscribeAll: (cb: (f: Ca
             <tr><th className="text-left px-2 py-1">{t('testerglobal.th_time', 'Time')}</th><th className="text-left px-2 py-1">{t('testerglobal.th_dir', 'Dir')}</th><th className="text-left px-2 py-1">{t('testerglobal.th_id', 'ID')}</th><th className="text-left px-2 py-1">{t('testerglobal.th_dlc', 'DLC')}</th><th className="text-left px-2 py-1">{t('testerglobal.th_data', 'Data')}</th></tr>
           </thead>
           <tbody>
-            {frames.map((f) => (
-              <tr key={f.seq} className="odd:bg-slate-950 even:bg-slate-900/50">
-                <td className="px-2 py-0.5 text-slate-500">{f.timestamp}</td>
-                <td className={`px-2 py-0.5 ${f.direction === 'Tx' ? 'text-amber-400' : 'text-cyan-400'}`}>{f.direction}</td>
-                <td className="px-2 py-0.5 text-slate-200">{f.idHex}</td>
-                <td className="px-2 py-0.5 text-slate-400">{f.dlc}</td>
-                <td className="px-2 py-0.5 text-slate-300">{f.dataHex}</td>
-              </tr>
-            ))}
+            {frames.map((f) => <BusMonitorRow key={f.seq} frame={f} />)}
           </tbody>
         </table>
       </div>
