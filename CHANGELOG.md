@@ -2,6 +2,10 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+- **The CI runs the static checks of the Python of the repository:** `ruff` (pinned) over the tools and the build scripts, with the same rules as the rest of the family (unused names, exception chaining, syntax), in the new `ruff.toml`. The type check of the page stays `tsc` (`npm run lint`).
+
 ## [0.4.2] - A list of trusted keys in the Evidence tab that can be saved to and read from a file, so the evidence says who signed it
 
 - **The list of trusted keys can be saved as a file and added from a file:** "Save the list (JSON file)" writes `{ "format": "urtc-trusted-keys/1", "keys": { alias: public key } }`, and "Add keys from a file (JSON)" reads one back. The reading is strict and all or nothing: a file that is too big (64 KB), not JSON, of another format or with other fields, empty, with more than 200 keys, or with a single entry that is not an alias and a 64-digit public key is refused whole, with the reason and how many entries were wrong (never their values), and nothing is added; an accepted file adds its keys, and an imported alias replaces the same alias. Public keys only. The texts are in the eight languages (Portuguese of Portugal); unit tests hold every refusal and an end-to-end check saves, imports and refuses.
