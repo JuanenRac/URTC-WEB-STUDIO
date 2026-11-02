@@ -416,6 +416,7 @@ URTC-WEB-STUDIO/
 ├── dev.sh dev.bat                                 安装并启动开发服务器
 ├── bump.py bump_manifest_version.py               提升版本号的脚本
 ├── index.html                                     Vite 入口页
+├── ruff.toml                                      ruff 的设置，Python 脚本的代码检查工具
 ├── package.json package-lock.json tsconfig.json   软件包、锁定的版本、TypeScript 和 Vite
 ├── playwright.config.ts vite.config.ts            端到端检查的设置
 ├── playwright.screenshots.config.ts               README 屏幕截图使用的 Playwright 设置

@@ -104,6 +104,14 @@ for (const [name, layout] of Object.entries(LAYOUTS)) {
   LAYOUTS_BY_ID.set(layout.id, list);
 }
 
+/** Do the bytes of the frame carry the fixed values (the operation of a command, a magic) that the layout names? */
+const fixedBytesMatch = (layout: Layout, data: number[]): boolean =>
+  layout.fields.every((f) => {
+    if (!f.fixed) return true;
+    const want = (f.fixed.match(/../g) ?? []).map((pair) => Number.parseInt(pair, 16));
+    return want.every((byte, i) => data[f.offset + i] === byte);
+  });
+
 const layoutFloor = (rule: Layout['dlc']): number => rule.exact ?? (rule.one_of ? Math.min(...rule.one_of) : rule.min ?? 0);
 
 function fieldsText(fields: Record<string, number | number[] | null>): string {
@@ -145,7 +153,9 @@ export function decodeTraceFrame(id: number, data: number[], declaredDlc: number
   const wantRole = direction === 'Tx' ? 'request' : 'response';
   const ordered = [...candidates.filter(([, l]) => l.role === wantRole), ...candidates.filter(([, l]) => l.role !== wantRole)];
   // A query takes any length in its layout; in a file where every frame is received, it is only taken for an empty frame, so a short answer is not mistaken for one.
-  const hit = ordered.find(([, l]) => dlcAllows(l.dlc, data.length) && (l.role === wantRole || !l.dlc.any || data.length === 0));
+  const lengthFits = ordered.filter(([, l]) => dlcAllows(l.dlc, data.length) && (l.role === wantRole || !l.dlc.any || data.length === 0));
+  // Several layouts of one identifier and one length (the operations of 0x7EA) are told apart by the fixed bytes they start with; without a match the first one fits.
+  const hit = lengthFits.find(([, l]) => fixedBytesMatch(l, data)) ?? lengthFits[0];
   if (!hit) {
     const [name, layout] = ordered[0];
     const shortOfSpec = data.length < Math.min(...ordered.map(([, l]) => layoutFloor(l.dlc)));

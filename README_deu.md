@@ -466,6 +466,7 @@ URTC-WEB-STUDIO/
 ├── dev.sh dev.bat                                 installieren und den Entwicklungsserver starten
 ├── bump.py bump_manifest_version.py               Skripte, die die Version erhöhen
 ├── index.html                                     Einstiegsseite von Vite
+├── ruff.toml                                      Einstellungen von ruff, dem Linter der Python-Skripte
 ├── package.json package-lock.json tsconfig.json   Pakete, feste Versionen, TypeScript und Vite
 ├── playwright.config.ts vite.config.ts            Einstellungen der End-to-End-Prüfungen
 ├── playwright.screenshots.config.ts               Playwright-Einstellungen für die Screenshots des README

@@ -221,6 +221,7 @@
     "downgrade_label": "Permitir downgrade (omitir anti-rollback, CAN 0x7FD)",
     "downgrade_sub": "Solo placa principal. Un solo uso por intento - solo omite la comprobación de orden de versiones, la imagen completa se sigue transfiriendo y verificando normalmente.",
     "log_key_match": "La placa y la imagen usan la misma clave de firma ({{fingerprint}}).",
+    "log_key_unknown": "El bootloader no publica la clave de firma que acepta: no se compara la clave antes de la transferencia.",
     "log_key_mismatch": "La placa acepta la clave de firma {{board}} pero esta imagen está firmada con {{image}}: la actualización fallaría al final. Elige la imagen correcta, o marca la opción de rechazar esa actualización.",
     "err_key_mismatch": "La placa acepta la clave de firma {{board}} pero esta imagen está firmada con {{image}}: no se envió nada.",
     "refuse_key_label": "Rechazar la actualización si la clave de firma no coincide",

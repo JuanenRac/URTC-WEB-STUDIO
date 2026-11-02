@@ -169,14 +169,18 @@ export function useFlasher(serialCan: SerialCanBus) {
     // The key the bootloader accepts against the key of the image, before anything is erased: a bootloader that does not publish its fingerprint, or an image whose manifest does not declare one, is never a mismatch.
     if (opts.signingKeyId) {
       let boardKeyId: string | undefined;
+      let boardIsBootloader = false;
       try {
         const info = await queryMainVersion(serialCan);
-        boardKeyId = info?.responder === 'bootloader' ? info.bootKeyId : undefined;
+        boardIsBootloader = info?.responder === 'bootloader';
+        boardKeyId = boardIsBootloader ? info?.bootKeyId : undefined;
       } catch {
         boardKeyId = undefined;
       }
       const keyCheck = compareSigningKey(boardKeyId, opts.signingKeyId);
-      if (keyCheck === 'match') {
+      if (keyCheck === 'unknown' && boardIsBootloader && !boardKeyId) {
+        appendLog(t('flasher.log_key_unknown', 'The bootloader does not publish the signing key it accepts: the key is not compared before the transfer.'));
+      } else if (keyCheck === 'match') {
         appendLog(t('flasher.log_key_match', 'The board and the image use the same signing key ({{fingerprint}}).', { fingerprint: boardKeyId }));
       } else if (keyCheck === 'mismatch') {
         const params = { board: boardKeyId, image: opts.signingKeyId };

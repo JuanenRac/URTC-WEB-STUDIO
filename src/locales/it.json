@@ -221,6 +221,7 @@
     "downgrade_label": "Consenti downgrade (bypassa l'anti-rollback, CAN 0x7FD)",
     "downgrade_sub": "Solo scheda principale. Un solo utilizzo per tentativo - rimuove solo il controllo sull'ordine delle versioni, l'immagine completa viene comunque trasferita e verificata normalmente.",
     "log_key_match": "La scheda e l'immagine usano la stessa chiave di firma ({{fingerprint}}).",
+    "log_key_unknown": "Il bootloader non pubblica la chiave di firma che accetta: la chiave non viene confrontata prima del trasferimento.",
     "log_key_mismatch": "La scheda accetta la chiave di firma {{board}} ma questa immagine è firmata con {{image}}: l'aggiornamento fallirebbe alla fine. Scegli l'immagine giusta, oppure attiva l'opzione per rifiutare un aggiornamento simile.",
     "err_key_mismatch": "La scheda accetta la chiave di firma {{board}} ma questa immagine è firmata con {{image}}: non è stato inviato nulla.",
     "refuse_key_label": "Rifiuta l'aggiornamento se la chiave di firma non corrisponde",

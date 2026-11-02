@@ -451,6 +451,7 @@ URTC-WEB-STUDIO/
 ├── dev.sh dev.bat                                 instalar e arrancar o servidor de desenvolvimento
 ├── bump.py bump_manifest_version.py               scripts que sobem a versão
 ├── index.html                                     página de entrada do Vite
+├── ruff.toml                                      definições do ruff, o verificador dos scripts Python
 ├── package.json package-lock.json tsconfig.json   pacotes, versões fixadas, TypeScript e Vite
 ├── playwright.config.ts vite.config.ts            definições das verificações de ponta a ponta
 ├── playwright.screenshots.config.ts               Definições do Playwright para as capturas do README

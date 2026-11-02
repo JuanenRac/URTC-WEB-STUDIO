@@ -446,6 +446,7 @@ URTC-WEB-STUDIO/
 ├── dev.sh dev.bat                                 install and start the dev server
 ├── bump.py bump_manifest_version.py               scripts that raise the version
 ├── index.html                                     Vite entry page
+├── ruff.toml                                      settings of ruff, the linter of the Python scripts
 ├── package.json package-lock.json tsconfig.json   packages, locked versions, TypeScript
 ├── playwright.config.ts vite.config.ts            Vite and end-to-end settings
 ├── playwright.screenshots.config.ts               Playwright settings of the screenshots of the README

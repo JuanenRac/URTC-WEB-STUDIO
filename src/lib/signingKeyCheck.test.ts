@@ -8,25 +8,64 @@ function frame(id: number, data: number[]): CanFrame {
 }
 
 const BOOT_7F9 = [0x01, 0x03, 0x03, 0xcc, 0x01, 0x00, 0x00, 0x03];
+const APP_7F9 = [0x00, 0x03, 0x03, 0xcc, 0x01, 0x00, 0x00, 0x03];
+const KEY = [0xa1, 0xb2, 0xc3, 0xd4, 0xe5, 0xf6, 0x07, 0x18];
+const OTHER_KEY = [0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77];
 
-function bus(boot7fa: number[]): VersionBus {
+/** A bus where the answers to a waitForFrame are the queued frames of each identifier, in order (the second wait gets the second frame). */
+function bus(answers: { f7f9?: number[]; f7fa?: number[]; keys?: number[][] }): VersionBus {
+  const keys = [...(answers.keys ?? [])];
   return {
-    async request(_id, _data, respId) { return respId === 0x7f9 ? frame(0x7f9, BOOT_7F9) : null; },
-    async waitForFrame(id) { return id === 0x7fa ? frame(0x7fa, boot7fa) : null; },
+    async request(_id, _data, respId) { return respId === 0x7f9 ? frame(0x7f9, answers.f7f9 ?? BOOT_7F9) : null; },
+    async waitForFrame(id) {
+      if (id === 0x7fa) return answers.f7fa ? frame(0x7fa, answers.f7fa) : null;
+      if (id === 0x7ed) { const next = keys.shift(); return next ? frame(0x7ed, next) : null; }
+      return null;
+    },
     flushFrames() {},
   };
 }
 
 describe("the signing key before the transfer", () => {
-  it("reads the fingerprint after the version when the bootloader sends eleven bytes", async () => {
-    const info = await queryMainVersion(bus([1, 0, 0, 0xa1, 0xb2, 0xc3, 0xd4, 0xe5, 0xf6, 0x07, 0x18]));
-    expect(info).toMatchObject({ responder: "bootloader", bootMajor: 1, bootKeyId: "a1b2c3d4e5f60718" });
+  it("reads the fingerprint from 0x7ED when the bootloader sends it", async () => {
+    const info = await queryMainVersion(bus({ f7fa: [1, 0, 0], keys: [KEY] }));
+    expect(info).toMatchObject({ responder: "bootloader", bootMajor: 1, bootMinor: 0, bootPatch: 0, bootKeyId: "a1b2c3d4e5f60718" });
   });
 
-  it("leaves the fingerprint unknown for a bootloader that sends three bytes", async () => {
-    const info = await queryMainVersion(bus([1, 0, 0]));
+  it("leaves the fingerprint unknown for a bootloader that sends no 0x7ED", async () => {
+    const info = await queryMainVersion(bus({ f7fa: [1, 0, 0] }));
     expect(info?.bootMajor).toBe(1);
     expect(info?.bootKeyId).toBeUndefined();
+  });
+
+  it("does not read an eleven-byte 0x7FA: it cannot exist on a classic CAN frame, so it is neither a version nor a fingerprint", async () => {
+    const info = await queryMainVersion(bus({ f7fa: [1, 0, 0, ...KEY] }));
+    expect(info?.bootMajor).toBeUndefined();
+    expect(info?.bootKeyId).toBeUndefined();
+  });
+
+  it("ignores a 0x7ED of the wrong length", async () => {
+    for (const payload of [KEY.slice(0, 7), [...KEY, 0], []]) {
+      const info = await queryMainVersion(bus({ f7fa: [1, 0, 0], keys: [payload] }));
+      expect(info?.bootKeyId).toBeUndefined();
+    }
+  });
+
+  it("never takes a fingerprint from an application", async () => {
+    const info = await queryMainVersion(bus({ f7f9: APP_7F9, keys: [KEY] }));
+    expect(info).toMatchObject({ responder: "application" });
+    expect(info?.bootKeyId).toBeUndefined();
+  });
+
+  it("gives the fingerprint when two heads of a mixed bus answer with the same key, or when an older head sends none", async () => {
+    expect((await queryMainVersion(bus({ f7fa: [1, 0, 0], keys: [KEY, KEY] })))?.bootKeyId).toBe("a1b2c3d4e5f60718");
+    expect((await queryMainVersion(bus({ f7fa: [1, 0, 0], keys: [KEY] })))?.bootKeyId).toBe("a1b2c3d4e5f60718");
+  });
+
+  it("gives no data when two heads answer with different keys and none is selected", async () => {
+    const info = await queryMainVersion(bus({ f7fa: [1, 0, 0], keys: [KEY, OTHER_KEY] }));
+    expect(info?.bootKeyId).toBeUndefined();
+    expect(compareSigningKey(info?.bootKeyId, "0011223344556677")).toBe("unknown");
   });
 
   it("matches the same key, also against a longer fingerprint that starts with it, and ignores case and a 0x prefix", () => {

@@ -455,6 +455,7 @@ URTC-WEB-STUDIO/
 ├── dev.sh dev.bat                                 インストールして開発サーバーを起動
 ├── bump.py bump_manifest_version.py               バージョンを上げるスクリプト
 ├── index.html                                     Vite のエントリーページ
+├── ruff.toml                                      Python スクリプトのリンター ruff の設定
 ├── package.json package-lock.json tsconfig.json   パッケージ、固定バージョン、TypeScript、Vite
 ├── playwright.config.ts vite.config.ts            エンドツーエンド検査の設定
 ├── playwright.screenshots.config.ts               README のスクリーンショット用 Playwright 設定

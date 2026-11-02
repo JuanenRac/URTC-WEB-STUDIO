@@ -221,6 +221,7 @@
     "downgrade_label": "Downgrade zulassen (Anti-Rollback umgehen, CAN 0x7FD)",
     "downgrade_sub": "Nur Hauptplatine. Einmalig pro Versuch - hebt nur die Versionsreihenfolgeprüfung auf, das vollständige Image wird weiterhin normal übertragen und verifiziert.",
     "log_key_match": "Platine und Image verwenden denselben Signaturschlüssel ({{fingerprint}}).",
+    "log_key_unknown": "Der Bootloader veröffentlicht den von ihm akzeptierten Signaturschlüssel nicht: Der Schlüssel wird vor der Übertragung nicht verglichen.",
     "log_key_mismatch": "Die Platine akzeptiert den Signaturschlüssel {{board}}, dieses Image ist aber mit {{image}} signiert: Das Update würde am Ende scheitern. Wählen Sie das richtige Image oder aktivieren Sie die Option, ein solches Update abzulehnen.",
     "err_key_mismatch": "Die Platine akzeptiert den Signaturschlüssel {{board}}, dieses Image ist aber mit {{image}} signiert: Es wurde nichts gesendet.",
     "refuse_key_label": "Update ablehnen, wenn der Signaturschlüssel nicht passt",

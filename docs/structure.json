@@ -338,6 +338,19 @@
           }
         },
         {
+          "name": "ruff.toml",
+          "desc": {
+            "en": "settings of ruff, the linter of the Python scripts",
+            "es": "ajustes de ruff, el linter de los scripts de Python",
+            "de": "Einstellungen von ruff, dem Linter der Python-Skripte",
+            "fr": "réglages de ruff, le linter des scripts Python",
+            "it": "impostazioni di ruff, il linter degli script Python",
+            "zh": "ruff 的设置，Python 脚本的代码检查工具",
+            "ja": "Python スクリプトのリンター ruff の設定",
+            "pt": "definições do ruff, o verificador dos scripts Python"
+          }
+        },
+        {
           "name": "package.json  package-lock.json  tsconfig.json",
           "tree_name": "package.json package-lock.json tsconfig.json",
           "desc": {

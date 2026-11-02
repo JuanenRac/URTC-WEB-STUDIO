@@ -24,6 +24,7 @@ export const CAN_ID_HMAC_CHUNK = generated.CAN_ID_HMAC_CHUNK;
 export const CAN_ID_QUERY_VERSION = generated.CAN_ID_QUERY_VERSION;
 export const CAN_ID_VERSION_RESPONSE = generated.CAN_ID_VERSION_RESPONSE;
 export const CAN_ID_BOOTLOADER_VERSION_RESPONSE = generated.CAN_ID_BOOTLOADER_VERSION_RESPONSE;
+export const CAN_ID_BOOTLOADER_KEY_ID = generated.CAN_ID_BOOTLOADER_KEY_ID; // DLC 8 (optional): sent by a bootloader that holds a trusted Ed25519 key right after its 0x7F9: the identifier of that key
 export const CAN_ID_VERSION_PATCH_RESPONSE = generated.CAN_ID_VERSION_PATCH_RESPONSE; // DLC 3: side, application patch (0xFF = unknown), flags
 export const CAN_ID_QUERY_ERROR_COUNTERS = generated.CAN_ID_QUERY_ERROR_COUNTERS;
 export const CAN_ID_ERROR_COUNTERS_RESPONSE = generated.CAN_ID_ERROR_COUNTERS_RESPONSE;

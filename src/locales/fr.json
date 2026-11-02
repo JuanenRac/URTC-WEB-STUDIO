@@ -221,6 +221,7 @@
     "downgrade_label": "Autoriser le downgrade (contourner l'anti-rollback, CAN 0x7FD)",
     "downgrade_sub": "Carte principale uniquement. À usage unique par tentative - ne lève que la vérification de l'ordre des versions, l'image complète est toujours transférée et vérifiée normalement.",
     "log_key_match": "La carte et l'image utilisent la même clé de signature ({{fingerprint}}).",
+    "log_key_unknown": "Le bootloader ne publie pas la clé de signature qu'il accepte : la clé n'est pas comparée avant le transfert.",
     "log_key_mismatch": "La carte accepte la clé de signature {{board}} mais cette image est signée avec {{image}} : la mise à jour échouerait à la fin. Choisissez la bonne image, ou cochez l'option de refuser une telle mise à jour.",
     "err_key_mismatch": "La carte accepte la clé de signature {{board}} mais cette image est signée avec {{image}} : rien n'a été envoyé.",
     "refuse_key_label": "Refuser la mise à jour si la clé de signature ne correspond pas",

@@ -69,7 +69,7 @@ Every file of the repository with a line on what it does: the annotated tree tha
 │   │   ├── traceReplay.ts           Reads .trc/.asc traces; the player with speed and pauses
 │   │   ├── canTrace.ts              The trace viewer: reads .trc/.asc/candump/JSON traces, names every frame with the specification layouts, marks refusals and odd frames, filters, sorts, CSV/JSON
 │   │   ├── traceWindow.ts           The rows of the virtual table of the trace viewer in view, and where the keyboard moves
-│   │   ├── boardVersion.ts          Version queries: 0x7F9/0x7FA/0x7E9 and the slave's 0x217/0x218
+│   │   ├── boardVersion.ts          Version queries: 0x7F9/0x7FA/0x7E9, the key identifier 0x7ED and the slave's 0x217/0x218
 │   │   ├── githubRelease.ts         Images of the newest GitHub release and their download
 │   │   ├── firmwareImage.ts         Image checks, manifest target and version (with patch)
 │   │   ├── firmwareSignature.ts     Picks the signature to send: the published one,

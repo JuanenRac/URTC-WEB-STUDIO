@@ -1,7 +1,7 @@
 import { CanFrame } from '../types';
 import { CAN_ID_SLAVE_REG_READ, CAN_ID_SLAVE_APP_PATCH, decodeSlaveAppPatch, encodeSlaveRegReadRequest } from './generated/urtcCanIds';
 import {
-  CAN_ID_QUERY_VERSION, CAN_ID_VERSION_RESPONSE, CAN_ID_BOOTLOADER_VERSION_RESPONSE, CAN_ID_VERSION_PATCH_RESPONSE,
+  CAN_ID_QUERY_VERSION, CAN_ID_VERSION_RESPONSE, CAN_ID_BOOTLOADER_VERSION_RESPONSE, CAN_ID_BOOTLOADER_KEY_ID, CAN_ID_VERSION_PATCH_RESPONSE,
   CAN_ID_SLAVE_VERSION_RESP_1, CAN_ID_SLAVE_VERSION_RESP_2, PATCH_GRACE_MS, PATCH_UNKNOWN,
   FirmwareVersion, parsePatchFrame,
 } from './flasher';
@@ -13,8 +13,15 @@ import {
 // with the two-component version. No React and no serial port here, so the rules
 // are tested with a fake bus.
 
-/** 0x7FA with the key fingerprint: major, minor, patch and eight bytes of fingerprint. */
-export const BOOT_KEY_ID_FRAME_BYTES = 11;
+/** 0x7ED: the eight bytes of the fingerprint of the signing key a bootloader accepts. 0x7FA stays at the three bytes of the version: a classic CAN frame carries eight data bytes at most. */
+export const BOOT_KEY_ID_FRAME_BYTES = 8;
+
+/** How long to listen for a second, different fingerprint after the first one. */
+const KEY_ID_SECOND_ANSWER_MS = 30;
+
+function fingerprintHex(data: number[]): string {
+  return data.map(b => b.toString(16).padStart(2, '0')).join('');
+}
 
 /** The part of the CAN bus the version queries need. */
 export interface VersionBus {
@@ -37,7 +44,7 @@ export interface BoardVersionInfo {
   bootMajor?: number;
   bootMinor?: number;
   bootPatch?: number;
-  /** The fingerprint (eight bytes, hex) of the signing key the bootloader accepts, when its 0x7FA carries it (eleven bytes); undefined for a bootloader that does not publish it. */
+  /** The fingerprint (eight bytes, hex) of the signing key the bootloader accepts, from its 0x7ED; undefined for a bootloader that does not publish it (an older one, or one without a key), or when several heads answered with different keys and none was selected. Undefined is "no data": never a difference, never an error. */
   bootKeyId?: string;
 }
 
@@ -60,10 +67,11 @@ export function installedVersion(info: { appMajor: number; appMinor: number; app
     : { major: info.appMajor, minor: info.appMinor, patch: info.appPatch };
 }
 
-/** 0x7F8 -> 0x7F9, then 0x7FA (bootloader) and 0x7E9 (patch) within a short grace window. Null when nothing answered. */
+/** 0x7F8 -> 0x7F9, then 0x7FA (bootloader), 0x7ED (the key of a bootloader that holds one) and 0x7E9 (patch) within a short grace window. Null when nothing answered. */
 export async function queryMainVersion(bus: VersionBus): Promise<BoardVersionInfo | null> {
   bus.flushFrames(CAN_ID_BOOTLOADER_VERSION_RESPONSE);
   bus.flushFrames(CAN_ID_VERSION_PATCH_RESPONSE);
+  bus.flushFrames(CAN_ID_BOOTLOADER_KEY_ID);
   const resp = await bus.request(CAN_ID_QUERY_VERSION, [0x00], CAN_ID_VERSION_RESPONSE, 1500, 'Query board version');
   if (!resp || resp.data.length < 8) return null;
   const responder: BoardVersionInfo['responder'] = resp.data[0] === 0x00 ? 'application' : 'bootloader';
@@ -77,17 +85,22 @@ export async function queryMainVersion(bus: VersionBus): Promise<BoardVersionInf
   };
 
   // The order of the companion frames is not guaranteed and a board without the extension never sends 0x7E9: wait for both together, for at most the grace window.
-  const [bootResp, patchResp] = await Promise.all([
+  const [bootResp, keyResp, patchResp] = await Promise.all([
     responder === 'bootloader' ? bus.waitForFrame(CAN_ID_BOOTLOADER_VERSION_RESPONSE, PATCH_GRACE_MS) : Promise.resolve(null),
+    responder === 'bootloader' ? bus.waitForFrame(CAN_ID_BOOTLOADER_KEY_ID, PATCH_GRACE_MS) : Promise.resolve(null),
     bus.waitForFrame(CAN_ID_VERSION_PATCH_RESPONSE, PATCH_GRACE_MS),
   ]);
-  if (bootResp && bootResp.data.length >= 3) {
+  // exactly the three bytes of the version: a longer 0x7FA is not a bootloader version (the first precheck looked for the fingerprint there, which cannot exist)
+  if (bootResp && bootResp.data.length === 3) {
     info.bootMajor = bootResp.data[0];
     info.bootMinor = bootResp.data[1];
     info.bootPatch = bootResp.data[2];
-    if (bootResp.data.length >= BOOT_KEY_ID_FRAME_BYTES) {
-      info.bootKeyId = bootResp.data.slice(3, BOOT_KEY_ID_FRAME_BYTES).map(b => b.toString(16).padStart(2, '0')).join('');
-    }
+  }
+  if (keyResp && keyResp.data.length === BOOT_KEY_ID_FRAME_BYTES) {
+    const keyId = fingerprintHex(keyResp.data);
+    // a second head with another key (several heads, none selected) cannot be attributed to the one that answered 0x7F9: no data
+    const other = await bus.waitForFrame(CAN_ID_BOOTLOADER_KEY_ID, KEY_ID_SECOND_ANSWER_MS);
+    if (!other || other.data.length !== BOOT_KEY_ID_FRAME_BYTES || fingerprintHex(other.data) === keyId) info.bootKeyId = keyId;
   }
   const patch = patchResp ? parsePatchFrame(patchResp.data) : null;
   if (patch) {
