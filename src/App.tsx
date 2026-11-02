@@ -465,7 +465,7 @@ export default function App() {
     fwFile: string,
     fileObj: File | null | undefined,
     remote: RemoteFirmware | undefined,
-    opts: { triggerBootloader: boolean; eraseFram: boolean; allowDowngrade: boolean },
+    opts: { triggerBootloader: boolean; eraseFram: boolean; allowDowngrade: boolean; refuseKeyMismatch?: boolean },
     manifestFile?: File | null
   ) => {
     if (!serialCan.isConnected) {
@@ -617,7 +617,7 @@ export default function App() {
       if (target === 'slave') {
         await flasher.flashSlave(data, { triggerBootloader: opts.triggerBootloader, reportMajor, reportMinor, reportPatch, signature });
       } else {
-        await flasher.flashMain(data, { ...opts, reportMajor, reportMinor, reportPatch, signature });
+        await flasher.flashMain(data, { ...opts, reportMajor, reportMinor, reportPatch, signature, signingKeyId: manifest?.signingKeyId });
         handleResetSplash();
       }
     } catch (e: any) {

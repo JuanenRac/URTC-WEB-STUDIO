@@ -13,6 +13,9 @@ import {
 // with the two-component version. No React and no serial port here, so the rules
 // are tested with a fake bus.
 
+/** 0x7FA with the key fingerprint: major, minor, patch and eight bytes of fingerprint. */
+export const BOOT_KEY_ID_FRAME_BYTES = 11;
+
 /** The part of the CAN bus the version queries need. */
 export interface VersionBus {
   request(id: number, data: number[], respId: number, timeoutMs?: number, description?: string): Promise<CanFrame | null>;
@@ -34,6 +37,8 @@ export interface BoardVersionInfo {
   bootMajor?: number;
   bootMinor?: number;
   bootPatch?: number;
+  /** The fingerprint (eight bytes, hex) of the signing key the bootloader accepts, when its 0x7FA carries it (eleven bytes); undefined for a bootloader that does not publish it. */
+  bootKeyId?: string;
 }
 
 export interface SlaveVersionInfo {
@@ -80,6 +85,9 @@ export async function queryMainVersion(bus: VersionBus): Promise<BoardVersionInf
     info.bootMajor = bootResp.data[0];
     info.bootMinor = bootResp.data[1];
     info.bootPatch = bootResp.data[2];
+    if (bootResp.data.length >= BOOT_KEY_ID_FRAME_BYTES) {
+      info.bootKeyId = bootResp.data.slice(3, BOOT_KEY_ID_FRAME_BYTES).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
   }
   const patch = patchResp ? parsePatchFrame(patchResp.data) : null;
   if (patch) {

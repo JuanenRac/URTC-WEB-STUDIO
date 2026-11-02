@@ -23,7 +23,7 @@ interface FlasherStudioProps {
     firmwareFile: string,
     fileObj: File | null | undefined,
     remote: RemoteFirmware | undefined,
-    opts: { triggerBootloader: boolean; eraseFram: boolean; allowDowngrade: boolean },
+    opts: { triggerBootloader: boolean; eraseFram: boolean; allowDowngrade: boolean; refuseKeyMismatch?: boolean },
     manifestFile?: File | null
   ) => void;
   onStartSwdFlash: (firmwareFile: string, fileObj?: File | null, bootloaderFile?: string, bootloaderObj?: File | null) => void;
@@ -83,6 +83,7 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
   const [runAppTrigger, setRunAppTrigger] = useState<boolean>(true);
   const [eraseFram, setEraseFram] = useState<boolean>(false);
   const [allowDowngrade, setAllowDowngrade] = useState<boolean>(false);
+  const [refuseKeyMismatch, setRefuseKeyMismatch] = useState<boolean>(false);
   const [activeFlasherTab, setActiveFlasherTab] = useState<'can-ota' | 'swd' | 'config'>('can-ota');
   const [customFile, setCustomFile] = useState<File | null>(null);
   // The <image>.manifest.json picked together with a browsed image: a page cannot read a file next to it, so it is picked with it.
@@ -447,6 +448,14 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
                         <span className="text-[10px] text-slate-500 block leading-tight mt-0.5">{t('flasher.downgrade_sub', 'Main board only. One-shot per attempt - only lifts the version-ordering check, the full image still transfers and is verified normally.')}</span>
                       </div>
                     </label>
+
+                    <label className={`flex items-start gap-2 text-xs cursor-pointer ${flashTarget === 'slave' ? 'opacity-40 pointer-events-none' : 'text-slate-300'}`}>
+                      <input type="checkbox" checked={refuseKeyMismatch} disabled={flashTarget === 'slave'} onChange={(e) => setRefuseKeyMismatch(e.target.checked)} className="mt-0.5 accent-amber-500 rounded bg-slate-900 border-slate-700" />
+                      <div>
+                        <span className="font-semibold block text-slate-200">{t('flasher.refuse_key_label', 'Refuse the update when the signing key does not match')}</span>
+                        <span className="text-[10px] text-slate-500 block leading-tight mt-0.5">{t('flasher.refuse_key_sub', 'Main board only. A bootloader that publishes the fingerprint of its signing key is compared with the key of the image before anything is sent; off, a difference is only logged. A bootloader or a manifest without the fingerprint is never a mismatch.')}</span>
+                      </div>
+                    </label>
                   </div>
                 </div>
 
@@ -455,7 +464,7 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
                     onClick={() => {
                       if (allowDowngrade && !window.confirm(t('flasher.alert_downgrade_confirm', 'You are about to authorize a firmware DOWNGRADE, bypassing the bootloader\'s anti-rollback protection. Continue?'))) return;
                       if (!window.confirm(t('flasher.alert_flash_confirm', 'Flash "{{firmware}}" to the {{target}} now?', { firmware: selectedFirmware, target: flashTarget === 'slave' ? t('flasher.alert_target_slave', 'expansion slave') : t('flasher.alert_target_main', 'main board') }))) return;
-                      onStartCanOta(flashTarget, selectedFirmware, customFile, githubFirmwares.find(f => f.name === selectedFirmware), { triggerBootloader: runAppTrigger, eraseFram, allowDowngrade }, customFile ? customManifest : null);
+                      onStartCanOta(flashTarget, selectedFirmware, customFile, githubFirmwares.find(f => f.name === selectedFirmware), { triggerBootloader: runAppTrigger, eraseFram, allowDowngrade, refuseKeyMismatch }, customFile ? customManifest : null);
                     }}
                     disabled={busy || !isConnected}
                     className="flex-1 py-2.5 px-4 rounded-lg bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-slate-950 font-semibold text-xs transition shadow-md shadow-amber-500/10 flex items-center justify-center gap-2"

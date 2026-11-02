@@ -17,6 +17,7 @@ import {
   minorField, formatVersion
 } from '../lib/flasher';
 import { dataChunkData, endUpdateData, hmacChunkData, startUpdateData } from '../lib/flashFrames';
+import { compareSigningKey } from '../lib/signingKeyCheck';
 import { queryMainVersion, querySlaveVersion, querySlaveApplicationVersion, BoardVersionInfo, SlaveVersionInfo, SlaveAppVersionInfo } from '../lib/boardVersion';
 import { CAN_ID_ERASE_FRAM, CAN_ID_FRAM_STATE_RESP, ERASE_FRAM_MAGIC, VERIFY_FAIL_CODES } from '../lib/canIds';
 
@@ -28,6 +29,8 @@ export interface FlashOptions {
   reportMinor: number;
   reportPatch?: number; // declared only to a bootloader that announced the patch extension (CANBUS.TXT, FIRMWARE PATCH NUMBER)
   signature: Uint8Array; // HMAC-SHA256 published with the image - see lib/firmwareSignature.ts
+  signingKeyId?: string; // the fingerprint of the signing key the manifest declares; compared with the one the bootloader publishes
+  refuseKeyMismatch?: boolean; // stop before the transfer when the two differ (off: the difference is only logged)
 }
 
 class FlashError extends Error {}
@@ -162,6 +165,26 @@ export function useFlasher(serialCan: SerialCanBus) {
 
     setFlasherState(prev => ({ ...prev, mode: 'receiving', progress: 5, log: [...prev.log, t('flasher.log_bootloader_listening', 'Bootloader listening. Sending START_UPDATE...')] }));
     checkCancelled();
+
+    // The key the bootloader accepts against the key of the image, before anything is erased: a bootloader that does not publish its fingerprint, or an image whose manifest does not declare one, is never a mismatch.
+    if (opts.signingKeyId) {
+      let boardKeyId: string | undefined;
+      try {
+        const info = await queryMainVersion(serialCan);
+        boardKeyId = info?.responder === 'bootloader' ? info.bootKeyId : undefined;
+      } catch {
+        boardKeyId = undefined;
+      }
+      const keyCheck = compareSigningKey(boardKeyId, opts.signingKeyId);
+      if (keyCheck === 'match') {
+        appendLog(t('flasher.log_key_match', 'The board and the image use the same signing key ({{fingerprint}}).', { fingerprint: boardKeyId }));
+      } else if (keyCheck === 'mismatch') {
+        const params = { board: boardKeyId, image: opts.signingKeyId };
+        if (opts.refuseKeyMismatch) throw new FlashError(t('flasher.err_key_mismatch', 'The board accepts signing key {{board}} but this image is signed with {{image}}: nothing was sent.', params));
+        appendLog(t('flasher.log_key_mismatch', 'The board accepts signing key {{board}} but this image is signed with {{image}}: the update would fail at the end. Pick the right image, or tick the option to refuse such an update.', params));
+      }
+      checkCancelled();
+    }
 
     const sendPatch = await bootloaderAcceptsPatch(
       opts.reportPatch,
