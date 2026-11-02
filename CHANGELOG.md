@@ -4,6 +4,7 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The screenshots of the README are listed in `docs/screenshots.json`:** each picture has a short name and a caption in the eight languages, the README section is written from that file, and `tools/capture_screenshots.py` takes the pictures again without opening a window on the desktop.
 - **The signing key is checked before the transfer:** a bootloader that publishes the fingerprint of the signing key it accepts (a `0x7FA` frame of eleven bytes) is compared with the `signing_key_id` of the image manifest before anything is erased, and a difference is logged. A new option in the Flasher, off by default, refuses the update instead. A bootloader or a manifest without the fingerprint is never a mismatch. Tried against a simulated bus only; no bootloader publishes the fingerprint yet.
 
 ## [0.4.4] - The summary of each tool in the Tester Studio is written from its profile and the rows of the raw bus monitor are memoized and measured

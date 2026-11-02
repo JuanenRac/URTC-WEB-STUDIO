@@ -121,26 +121,41 @@ Come si incastrano le parti di questo repository: chi lo usa, che cosa contiene 
 - **Trasporto hardware:** Web Serial API + framing SLCAN (nessuna dipendenza
   nativa, nessun server backend compagno)
 
+<!-- urtc-section:screenshots -->
 ## 🖼️ Schermate
 
-<!-- urtc-shots -->
-Catturate a 1920×1080 su un banco di prova, con dati di esempio e senza alcuna installazione reale dietro.
+Catturate su un banco di prova con dati di esempio inventati e senza alcuna installazione reale dietro.
 
-<table>
-<tr>
-<td width="50%" valign="top"><img src="images/screenshots/control.png" alt="Matrice degli utensili e controllo: i 25 profili utensile del firmware con i loro jumper e i comandi dell'utensile selezionato (scheda simulatore: non invia nulla al bus)." width="100%"><br><sub>Matrice degli utensili e controllo: i 25 profili utensile del firmware con i loro jumper e i comandi dell'utensile selezionato (scheda simulatore: non invia nulla al bus).</sub></td>
-<td width="50%" valign="top"><img src="images/screenshots/oled.png" alt="OLED e monitor hardware: la schermata di stato dell'utensile, i cinque jumper di identificazione, il LED di stato e l'anello da 8 LED (scheda simulatore)." width="100%"><br><sub>OLED e monitor hardware: la schermata di stato dell'utensile, i cinque jumper di identificazione, il LED di stato e l'anello da 8 LED (scheda simulatore).</sub></td>
-</tr>
-<tr>
-<td width="50%" valign="top"><img src="images/screenshots/flasher.png" alt="Flasher: la mappa flash della scheda, l'immagine e il suo manifesto pronti all'invio e le opzioni di un aggiornamento CAN-OTA (scheda modellata; non si invia nulla)." width="100%"><br><sub>Flasher: la mappa flash della scheda, l'immagine e il suo manifesto pronti all'invio e le opzioni di un aggiornamento CAN-OTA (scheda modellata; non si invia nulla).</sub></td>
-<td width="50%" valign="top"><img src="images/screenshots/thermal.png" alt="Ispezione termica: un'immagine a falsi colori di una matrice a infrarossi 32×24 con un punto caldo simulato (scheda simulatore)." width="100%"><br><sub>Ispezione termica: un'immagine a falsi colori di una matrice a infrarossi 32×24 con un punto caldo simulato (scheda simulatore).</sub></td>
-</tr>
-<tr>
-<td width="50%" valign="top"><img src="images/screenshots/tester.png" alt="Diagnostica del tester: la scatola nera e i contatori termici nel tempo, letti da una scheda modellata." width="100%"><br><sub>Diagnostica del tester: la scatola nera e i contatori termici nel tempo, letti da una scheda modellata.</sub></td>
-<td width="50%"></td>
-</tr>
-</table>
-<!-- /urtc-shots -->
+<p align="center">
+  <img src="images/screenshots/control.png" alt="Matrice degli strumenti e controllo" width="100%">
+</p>
+
+<p align="center"><em>Matrice degli utensili e controllo: i 25 profili utensile del firmware con i loro jumper e i comandi dell'utensile selezionato (scheda simulatore: non invia nulla al bus).</em></p>
+
+<p align="center">
+  <img src="images/screenshots/oled.png" alt="OLED e monitor hardware" width="100%">
+</p>
+
+<p align="center"><em>OLED e monitor hardware: la schermata di stato dell'utensile, i cinque jumper di identificazione, il LED di stato e l'anello da 8 LED (scheda simulatore).</em></p>
+
+<p align="center">
+  <img src="images/screenshots/flasher.png" alt="Flasher" width="100%">
+</p>
+
+<p align="center"><em>Flasher: la mappa flash della scheda, l'immagine e il suo manifesto pronti all'invio e le opzioni di un aggiornamento CAN-OTA (scheda modellata; non si invia nulla).</em></p>
+
+<p align="center">
+  <img src="images/screenshots/thermal.png" alt="Ispezione termica" width="100%">
+</p>
+
+<p align="center"><em>Ispezione termica: un'immagine a falsi colori di una matrice a infrarossi 32×24 con un punto caldo simulato (scheda simulatore).</em></p>
+
+<p align="center">
+  <img src="images/screenshots/tester.png" alt="Diagnostica del Tester" width="100%">
+</p>
+
+<p align="center"><em>Diagnostica del tester: la scatola nera e i contatori termici nel tempo, letti da una scheda modellata.</em></p>
+<!-- /urtc-section:screenshots -->
 
 ## ✨ Funzionalità
 

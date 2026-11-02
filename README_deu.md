@@ -123,26 +123,41 @@ Wie die Teile dieses Repositorys zusammenpassen: wer es nutzt, was es enthält u
 - **Hardware-Transport:** Web Serial API + SLCAN-Framing (keine nativen
   Abhängigkeiten, kein begleitender Backend-Server)
 
+<!-- urtc-section:screenshots -->
 ## 🖼️ Screenshots
 
-<!-- urtc-shots -->
-Aufgenommen mit 1920×1080 auf einem Prüfstand, mit Beispieldaten und ohne eine echte Anlage dahinter.
+Aufgenommen auf einem Prüfstand mit erfundenen Beispieldaten und ohne eine echte Anlage dahinter.
 
-<table>
-<tr>
-<td width="50%" valign="top"><img src="images/screenshots/control.png" alt="Werkzeugmatrix und Steuerung: die 25 Werkzeugprofile der Firmware mit ihren Jumpern und die Bedienelemente des gewählten Werkzeugs (Simulator-Tab: sendet nichts auf den Bus)." width="100%"><br><sub>Werkzeugmatrix und Steuerung: die 25 Werkzeugprofile der Firmware mit ihren Jumpern und die Bedienelemente des gewählten Werkzeugs (Simulator-Tab: sendet nichts auf den Bus).</sub></td>
-<td width="50%" valign="top"><img src="images/screenshots/oled.png" alt="OLED und Hardware-Monitor: der Statusbildschirm des Werkzeugs, die fünf Kennungs-Jumper, die Status-LED und der 8-LED-Ring (Simulator-Tab)." width="100%"><br><sub>OLED und Hardware-Monitor: der Statusbildschirm des Werkzeugs, die fünf Kennungs-Jumper, die Status-LED und der 8-LED-Ring (Simulator-Tab).</sub></td>
-</tr>
-<tr>
-<td width="50%" valign="top"><img src="images/screenshots/flasher.png" alt="Flasher: die Flash-Karte der Platine, das Image und sein Manifest versandbereit sowie die Optionen einer CAN-OTA-Aktualisierung (modellierte Platine; es wird nichts gesendet)." width="100%"><br><sub>Flasher: die Flash-Karte der Platine, das Image und sein Manifest versandbereit sowie die Optionen einer CAN-OTA-Aktualisierung (modellierte Platine; es wird nichts gesendet).</sub></td>
-<td width="50%" valign="top"><img src="images/screenshots/thermal.png" alt="Thermische Inspektion: ein Falschfarbenbild eines 32×24-Infrarot-Arrays mit einem simulierten Hotspot (Simulator-Tab)." width="100%"><br><sub>Thermische Inspektion: ein Falschfarbenbild eines 32×24-Infrarot-Arrays mit einem simulierten Hotspot (Simulator-Tab).</sub></td>
-</tr>
-<tr>
-<td width="50%" valign="top"><img src="images/screenshots/tester.png" alt="Tester-Diagnose: die Blackbox und die thermischen Zähler im Zeitverlauf, gelesen von einer modellierten Platine." width="100%"><br><sub>Tester-Diagnose: die Blackbox und die thermischen Zähler im Zeitverlauf, gelesen von einer modellierten Platine.</sub></td>
-<td width="50%"></td>
-</tr>
-</table>
-<!-- /urtc-shots -->
+<p align="center">
+  <img src="images/screenshots/control.png" alt="Werkzeugmatrix und Steuerung" width="100%">
+</p>
+
+<p align="center"><em>Werkzeugmatrix und Steuerung: die 25 Werkzeugprofile der Firmware mit ihren Jumpern und die Bedienelemente des gewählten Werkzeugs (Simulator-Tab: sendet nichts auf den Bus).</em></p>
+
+<p align="center">
+  <img src="images/screenshots/oled.png" alt="OLED und Hardware-Monitor" width="100%">
+</p>
+
+<p align="center"><em>OLED und Hardware-Monitor: der Statusbildschirm des Werkzeugs, die fünf Kennungs-Jumper, die Status-LED und der 8-LED-Ring (Simulator-Tab).</em></p>
+
+<p align="center">
+  <img src="images/screenshots/flasher.png" alt="Flasher" width="100%">
+</p>
+
+<p align="center"><em>Flasher: die Flash-Karte der Platine, das Image und sein Manifest versandbereit sowie die Optionen einer CAN-OTA-Aktualisierung (modellierte Platine; es wird nichts gesendet).</em></p>
+
+<p align="center">
+  <img src="images/screenshots/thermal.png" alt="Wärmeinspektion" width="100%">
+</p>
+
+<p align="center"><em>Thermische Inspektion: ein Falschfarbenbild eines 32×24-Infrarot-Arrays mit einem simulierten Hotspot (Simulator-Tab).</em></p>
+
+<p align="center">
+  <img src="images/screenshots/tester.png" alt="Tester-Diagnose" width="100%">
+</p>
+
+<p align="center"><em>Tester-Diagnose: die Blackbox und die thermischen Zähler im Zeitverlauf, gelesen von einer modellierten Platine.</em></p>
+<!-- /urtc-section:screenshots -->
 
 ## ✨ Funktionen
 

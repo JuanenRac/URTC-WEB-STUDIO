@@ -1,0 +1,119 @@
+{
+  "screens": [
+    {
+      "file": "control.png",
+      "alt": {
+        "en": "Tool matrix and control",
+        "es": "Matriz de herramientas y control",
+        "fr": "Matrice d'outils et commande",
+        "it": "Matrice degli strumenti e controllo",
+        "de": "Werkzeugmatrix und Steuerung",
+        "zh": "工具矩阵与控制",
+        "ja": "ツールマトリクスと制御",
+        "pt": "Matriz de ferramentas e controlo"
+      },
+      "caption": {
+        "en": "Tool matrix and control: the 25 tool profiles of the firmware with their jumpers, and the controls of the selected tool (a simulator tab: it sends nothing to the bus).",
+        "es": "Matriz de herramientas y control: los 25 perfiles de herramienta del firmware con sus puentes, y los controles de la herramienta seleccionada (pestaña de simulador: no envía nada al bus).",
+        "fr": "Matrice des outils et commande : les 25 profils d'outil du firmware avec leurs cavaliers, et les commandes de l'outil sélectionné (onglet simulateur : il n'envoie rien sur le bus).",
+        "it": "Matrice degli utensili e controllo: i 25 profili utensile del firmware con i loro jumper e i comandi dell'utensile selezionato (scheda simulatore: non invia nulla al bus).",
+        "de": "Werkzeugmatrix und Steuerung: die 25 Werkzeugprofile der Firmware mit ihren Jumpern und die Bedienelemente des gewählten Werkzeugs (Simulator-Tab: sendet nichts auf den Bus).",
+        "zh": "工具矩阵与控制：固件的 25 个工具配置及其跳线，以及所选工具的控件（模拟器标签页：不会向总线发送任何内容）。",
+        "ja": "ツールマトリクスと制御：ファームウェアの 25 のツールプロファイルとそのジャンパー、選択したツールの操作（シミュレーターのタブ：バスには何も送信しません）。",
+        "pt": "Matriz de ferramentas e controlo: os 25 perfis de ferramenta do firmware com os seus jumpers e os controlos da ferramenta selecionada (separador de simulador: não envia nada para o barramento)."
+      }
+    },
+    {
+      "file": "oled.png",
+      "alt": {
+        "en": "OLED and hardware monitor",
+        "es": "OLED y monitor de hardware",
+        "fr": "OLED et moniteur matériel",
+        "it": "OLED e monitor hardware",
+        "de": "OLED und Hardware-Monitor",
+        "zh": "OLED 与硬件监视器",
+        "ja": "OLED とハードウェアモニター",
+        "pt": "OLED e monitor de hardware"
+      },
+      "caption": {
+        "en": "OLED and hardware monitor: the status screen of the tool, the five identification jumpers, the status LED and the 8-LED ring (a simulator tab).",
+        "es": "OLED y monitor de hardware: la pantalla de estado de la herramienta, los cinco puentes de identificación, el LED de estado y el anillo de 8 LED (pestaña de simulador).",
+        "fr": "OLED et moniteur matériel : l'écran d'état de l'outil, les cinq cavaliers d'identification, la LED d'état et l'anneau de 8 LED (onglet simulateur).",
+        "it": "OLED e monitor hardware: la schermata di stato dell'utensile, i cinque jumper di identificazione, il LED di stato e l'anello da 8 LED (scheda simulatore).",
+        "de": "OLED und Hardware-Monitor: der Statusbildschirm des Werkzeugs, die fünf Kennungs-Jumper, die Status-LED und der 8-LED-Ring (Simulator-Tab).",
+        "zh": "OLED 与硬件监视器：工具的状态屏幕、五个识别跳线、状态 LED 和 8 灯环（模拟器标签页）。",
+        "ja": "OLED とハードウェアモニター：ツールのステータス画面、5 本の識別ジャンパー、ステータス LED、8 LED リング（シミュレーターのタブ）。",
+        "pt": "OLED e monitor de hardware: o ecrã de estado da ferramenta, os cinco jumpers de identificação, o LED de estado e o anel de 8 LED (separador de simulador)."
+      }
+    },
+    {
+      "file": "flasher.png",
+      "alt": {
+        "en": "Flasher",
+        "es": "Flasher",
+        "fr": "Flasher",
+        "it": "Flasher",
+        "de": "Flasher",
+        "zh": "Flasher",
+        "ja": "Flasher",
+        "pt": "Flasher"
+      },
+      "caption": {
+        "en": "Flasher: the flash map of the board, the image and its manifest ready to send, and the options of a CAN-OTA update (modelled board; nothing is sent).",
+        "es": "Flasher: el mapa de flash de la placa, la imagen y su manifiesto listos para enviar, y las opciones de una actualización CAN-OTA (placa modelada; no se envía nada).",
+        "fr": "Flasher : la carte flash de la carte, l'image et son manifeste prêts à l'envoi, et les options d'une mise à jour CAN-OTA (carte modélisée ; rien n'est envoyé).",
+        "it": "Flasher: la mappa flash della scheda, l'immagine e il suo manifesto pronti all'invio e le opzioni di un aggiornamento CAN-OTA (scheda modellata; non si invia nulla).",
+        "de": "Flasher: die Flash-Karte der Platine, das Image und sein Manifest versandbereit sowie die Optionen einer CAN-OTA-Aktualisierung (modellierte Platine; es wird nichts gesendet).",
+        "zh": "刷写器：电路板的闪存映射、准备发送的映像及其清单，以及 CAN-OTA 更新的选项（模拟电路板，不发送任何内容）。",
+        "ja": "フラッシャー：ボードのフラッシュマップ、送信準備が整ったイメージとそのマニフェスト、CAN-OTA 更新のオプション（モデル化したボード。何も送信しません）。",
+        "pt": "Flasher: o mapa de flash da placa, a imagem e o seu manifesto prontos a enviar e as opções de uma atualização CAN-OTA (placa modelada; não se envia nada)."
+      }
+    },
+    {
+      "file": "thermal.png",
+      "alt": {
+        "en": "Thermal inspection",
+        "es": "Inspección térmica",
+        "fr": "Inspection thermique",
+        "it": "Ispezione termica",
+        "de": "Wärmeinspektion",
+        "zh": "热成像检查",
+        "ja": "熱検査",
+        "pt": "Inspeção térmica"
+      },
+      "caption": {
+        "en": "Thermal inspection: a false-colour image of a 32×24 infrared array with a simulated hot spot (a simulator tab).",
+        "es": "Inspección térmica: una imagen en falso color de una matriz infrarroja de 32×24 con un punto caliente simulado (pestaña de simulador).",
+        "fr": "Inspection thermique : une image en fausses couleurs d'une matrice infrarouge de 32×24 avec un point chaud simulé (onglet simulateur).",
+        "it": "Ispezione termica: un'immagine a falsi colori di una matrice a infrarossi 32×24 con un punto caldo simulato (scheda simulatore).",
+        "de": "Thermische Inspektion: ein Falschfarbenbild eines 32×24-Infrarot-Arrays mit einem simulierten Hotspot (Simulator-Tab).",
+        "zh": "热成像检查：32×24 红外阵列的伪彩色图像，带有一个模拟的热点（模拟器标签页）。",
+        "ja": "サーモグラフィ検査：32×24 の赤外線アレイの擬似カラー画像と、模擬のホットスポット（シミュレーターのタブ）。",
+        "pt": "Inspeção térmica: uma imagem em falsa cor de uma matriz de infravermelhos de 32×24 com um ponto quente simulado (separador de simulador)."
+      }
+    },
+    {
+      "file": "tester.png",
+      "alt": {
+        "en": "Tester diagnostics",
+        "es": "Diagnóstico del Tester",
+        "fr": "Diagnostic du Tester",
+        "it": "Diagnostica del Tester",
+        "de": "Tester-Diagnose",
+        "zh": "Tester 诊断",
+        "ja": "Tester の診断",
+        "pt": "Diagnóstico do Tester"
+      },
+      "caption": {
+        "en": "Tester diagnostics: the black box and the thermal counters over time, read from a modelled board.",
+        "es": "Diagnóstico del tester: la caja negra y los contadores térmicos a lo largo del tiempo, leídos de una placa modelada.",
+        "fr": "Diagnostic du testeur : la boîte noire et les compteurs thermiques dans le temps, lus sur une carte modélisée.",
+        "it": "Diagnostica del tester: la scatola nera e i contatori termici nel tempo, letti da una scheda modellata.",
+        "de": "Tester-Diagnose: die Blackbox und die thermischen Zähler im Zeitverlauf, gelesen von einer modellierten Platine.",
+        "zh": "测试器诊断：黑匣子和随时间变化的热计数器，读取自模拟电路板。",
+        "ja": "テスター診断：ブラックボックスと、時間経過に伴う温度カウンター（モデル化したボードから読み取り）。",
+        "pt": "Diagnóstico do testador: a caixa negra e os contadores térmicos ao longo do tempo, lidos de uma placa modelada."
+      }
+    }
+  ]
+}

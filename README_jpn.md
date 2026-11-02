@@ -125,26 +125,41 @@ URTC-WEB-STUDIO は URTC の 2 つのデスクトッププログラム、URTC-FL
 - **ハードウェアトランスポート：** Web Serial API + SLCAN フレーミング
   （ネイティブ依存なし、コンパニオンバックエンドサーバーなし）
 
+<!-- urtc-section:screenshots -->
 ## 🖼️ スクリーンショット
 
-<!-- urtc-shots -->
-テストベンチで 1920×1080 で撮影。サンプルデータを使用しており、実際の設備は接続されていません。
+テストベンチで架空のサンプルデータを使って撮影したもので、実際の設備は接続されていません。
 
-<table>
-<tr>
-<td width="50%" valign="top"><img src="images/screenshots/control.png" alt="ツールマトリクスと制御：ファームウェアの 25 のツールプロファイルとそのジャンパー、選択したツールの操作（シミュレーターのタブ：バスには何も送信しません）。" width="100%"><br><sub>ツールマトリクスと制御：ファームウェアの 25 のツールプロファイルとそのジャンパー、選択したツールの操作（シミュレーターのタブ：バスには何も送信しません）。</sub></td>
-<td width="50%" valign="top"><img src="images/screenshots/oled.png" alt="OLED とハードウェアモニター：ツールのステータス画面、5 本の識別ジャンパー、ステータス LED、8 LED リング（シミュレーターのタブ）。" width="100%"><br><sub>OLED とハードウェアモニター：ツールのステータス画面、5 本の識別ジャンパー、ステータス LED、8 LED リング（シミュレーターのタブ）。</sub></td>
-</tr>
-<tr>
-<td width="50%" valign="top"><img src="images/screenshots/flasher.png" alt="フラッシャー：ボードのフラッシュマップ、送信準備が整ったイメージとそのマニフェスト、CAN-OTA 更新のオプション（モデル化したボード。何も送信しません）。" width="100%"><br><sub>フラッシャー：ボードのフラッシュマップ、送信準備が整ったイメージとそのマニフェスト、CAN-OTA 更新のオプション（モデル化したボード。何も送信しません）。</sub></td>
-<td width="50%" valign="top"><img src="images/screenshots/thermal.png" alt="サーモグラフィ検査：32×24 の赤外線アレイの擬似カラー画像と、模擬のホットスポット（シミュレーターのタブ）。" width="100%"><br><sub>サーモグラフィ検査：32×24 の赤外線アレイの擬似カラー画像と、模擬のホットスポット（シミュレーターのタブ）。</sub></td>
-</tr>
-<tr>
-<td width="50%" valign="top"><img src="images/screenshots/tester.png" alt="テスター診断：ブラックボックスと、時間経過に伴う温度カウンター（モデル化したボードから読み取り）。" width="100%"><br><sub>テスター診断：ブラックボックスと、時間経過に伴う温度カウンター（モデル化したボードから読み取り）。</sub></td>
-<td width="50%"></td>
-</tr>
-</table>
-<!-- /urtc-shots -->
+<p align="center">
+  <img src="images/screenshots/control.png" alt="ツールマトリクスと制御" width="100%">
+</p>
+
+<p align="center"><em>ツールマトリクスと制御：ファームウェアの 25 のツールプロファイルとそのジャンパー、選択したツールの操作（シミュレーターのタブ：バスには何も送信しません）。</em></p>
+
+<p align="center">
+  <img src="images/screenshots/oled.png" alt="OLED とハードウェアモニター" width="100%">
+</p>
+
+<p align="center"><em>OLED とハードウェアモニター：ツールのステータス画面、5 本の識別ジャンパー、ステータス LED、8 LED リング（シミュレーターのタブ）。</em></p>
+
+<p align="center">
+  <img src="images/screenshots/flasher.png" alt="Flasher" width="100%">
+</p>
+
+<p align="center"><em>フラッシャー：ボードのフラッシュマップ、送信準備が整ったイメージとそのマニフェスト、CAN-OTA 更新のオプション（モデル化したボード。何も送信しません）。</em></p>
+
+<p align="center">
+  <img src="images/screenshots/thermal.png" alt="熱検査" width="100%">
+</p>
+
+<p align="center"><em>サーモグラフィ検査：32×24 の赤外線アレイの擬似カラー画像と、模擬のホットスポット（シミュレーターのタブ）。</em></p>
+
+<p align="center">
+  <img src="images/screenshots/tester.png" alt="Tester の診断" width="100%">
+</p>
+
+<p align="center"><em>テスター診断：ブラックボックスと、時間経過に伴う温度カウンター（モデル化したボードから読み取り）。</em></p>
+<!-- /urtc-section:screenshots -->
 
 ## ✨ 機能
 

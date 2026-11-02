@@ -120,26 +120,41 @@ Comment les parties de ce dépôt s'articulent : qui l'utilise, ce qu'il contien
 - **Transport matériel :** Web Serial API + framing SLCAN (aucune dépendance
   native, aucun serveur backend compagnon)
 
+<!-- urtc-section:screenshots -->
 ## 🖼️ Captures d'écran
 
-<!-- urtc-shots -->
-Capturées en 1920×1080 sur un banc d'essai, avec des données d'exemple et sans installation réelle derrière.
+Capturées sur un banc d'essai avec des données d'exemple fictives et sans installation réelle derrière.
 
-<table>
-<tr>
-<td width="50%" valign="top"><img src="images/screenshots/control.png" alt="Matrice des outils et commande : les 25 profils d'outil du firmware avec leurs cavaliers, et les commandes de l'outil sélectionné (onglet simulateur : il n'envoie rien sur le bus)." width="100%"><br><sub>Matrice des outils et commande : les 25 profils d'outil du firmware avec leurs cavaliers, et les commandes de l'outil sélectionné (onglet simulateur : il n'envoie rien sur le bus).</sub></td>
-<td width="50%" valign="top"><img src="images/screenshots/oled.png" alt="OLED et moniteur matériel : l'écran d'état de l'outil, les cinq cavaliers d'identification, la LED d'état et l'anneau de 8 LED (onglet simulateur)." width="100%"><br><sub>OLED et moniteur matériel : l'écran d'état de l'outil, les cinq cavaliers d'identification, la LED d'état et l'anneau de 8 LED (onglet simulateur).</sub></td>
-</tr>
-<tr>
-<td width="50%" valign="top"><img src="images/screenshots/flasher.png" alt="Flasher : la carte flash de la carte, l'image et son manifeste prêts à l'envoi, et les options d'une mise à jour CAN-OTA (carte modélisée ; rien n'est envoyé)." width="100%"><br><sub>Flasher : la carte flash de la carte, l'image et son manifeste prêts à l'envoi, et les options d'une mise à jour CAN-OTA (carte modélisée ; rien n'est envoyé).</sub></td>
-<td width="50%" valign="top"><img src="images/screenshots/thermal.png" alt="Inspection thermique : une image en fausses couleurs d'une matrice infrarouge de 32×24 avec un point chaud simulé (onglet simulateur)." width="100%"><br><sub>Inspection thermique : une image en fausses couleurs d'une matrice infrarouge de 32×24 avec un point chaud simulé (onglet simulateur).</sub></td>
-</tr>
-<tr>
-<td width="50%" valign="top"><img src="images/screenshots/tester.png" alt="Diagnostic du testeur : la boîte noire et les compteurs thermiques dans le temps, lus sur une carte modélisée." width="100%"><br><sub>Diagnostic du testeur : la boîte noire et les compteurs thermiques dans le temps, lus sur une carte modélisée.</sub></td>
-<td width="50%"></td>
-</tr>
-</table>
-<!-- /urtc-shots -->
+<p align="center">
+  <img src="images/screenshots/control.png" alt="Matrice d'outils et commande" width="100%">
+</p>
+
+<p align="center"><em>Matrice des outils et commande : les 25 profils d'outil du firmware avec leurs cavaliers, et les commandes de l'outil sélectionné (onglet simulateur : il n'envoie rien sur le bus).</em></p>
+
+<p align="center">
+  <img src="images/screenshots/oled.png" alt="OLED et moniteur matériel" width="100%">
+</p>
+
+<p align="center"><em>OLED et moniteur matériel : l'écran d'état de l'outil, les cinq cavaliers d'identification, la LED d'état et l'anneau de 8 LED (onglet simulateur).</em></p>
+
+<p align="center">
+  <img src="images/screenshots/flasher.png" alt="Flasher" width="100%">
+</p>
+
+<p align="center"><em>Flasher : la carte flash de la carte, l'image et son manifeste prêts à l'envoi, et les options d'une mise à jour CAN-OTA (carte modélisée ; rien n'est envoyé).</em></p>
+
+<p align="center">
+  <img src="images/screenshots/thermal.png" alt="Inspection thermique" width="100%">
+</p>
+
+<p align="center"><em>Inspection thermique : une image en fausses couleurs d'une matrice infrarouge de 32×24 avec un point chaud simulé (onglet simulateur).</em></p>
+
+<p align="center">
+  <img src="images/screenshots/tester.png" alt="Diagnostic du Tester" width="100%">
+</p>
+
+<p align="center"><em>Diagnostic du testeur : la boîte noire et les compteurs thermiques dans le temps, lus sur une carte modélisée.</em></p>
+<!-- /urtc-section:screenshots -->
 
 ## ✨ Fonctionnalités
 
