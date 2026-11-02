@@ -108,8 +108,7 @@ for (const [name, layout] of Object.entries(LAYOUTS)) {
 const fixedBytesMatch = (layout: Layout, data: number[]): boolean =>
   layout.fields.every((f) => {
     if (!f.fixed) return true;
-    const want = (f.fixed.match(/../g) ?? []).map((pair) => Number.parseInt(pair, 16));
-    return want.every((byte, i) => data[f.offset + i] === byte);
+    return Array.from({ length: f.fixed.length / 2 }).every((_, i) => data[f.offset + i] === Number.parseInt(f.fixed!.slice(2 * i, 2 * i + 2), 16));
   });
 
 const layoutFloor = (rule: Layout['dlc']): number => rule.exact ?? (rule.one_of ? Math.min(...rule.one_of) : rule.min ?? 0);

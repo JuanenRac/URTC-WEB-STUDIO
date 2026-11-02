@@ -17,7 +17,7 @@ import {
   minorField, formatVersion
 } from '../lib/flasher';
 import { dataChunkData, endUpdateData, hmacChunkData, startUpdateData } from '../lib/flashFrames';
-import { compareSigningKey } from '../lib/signingKeyCheck';
+import { precheckOutcome } from '../lib/signingKeyCheck';
 import { queryMainVersion, querySlaveVersion, querySlaveApplicationVersion, BoardVersionInfo, SlaveVersionInfo, SlaveAppVersionInfo } from '../lib/boardVersion';
 import { CAN_ID_ERASE_FRAM, CAN_ID_FRAM_STATE_RESP, ERASE_FRAM_MAGIC, VERIFY_FAIL_CODES } from '../lib/canIds';
 
@@ -173,12 +173,12 @@ export function useFlasher(serialCan: SerialCanBus) {
       try {
         const info = await queryMainVersion(serialCan);
         boardIsBootloader = info?.responder === 'bootloader';
-        boardKeyId = boardIsBootloader ? info?.bootKeyId : undefined;
+        boardKeyId = info?.bootKeyId;   // only a bootloader gives one
       } catch {
         boardKeyId = undefined;
       }
-      const keyCheck = compareSigningKey(boardKeyId, opts.signingKeyId);
-      if (keyCheck === 'unknown' && boardIsBootloader && !boardKeyId) {
+      const keyCheck = precheckOutcome(boardKeyId, opts.signingKeyId, boardIsBootloader);
+      if (keyCheck === 'no_data') {
         appendLog(t('flasher.log_key_unknown', 'The bootloader does not publish the signing key it accepts: the key is not compared before the transfer.'));
       } else if (keyCheck === 'match') {
         appendLog(t('flasher.log_key_match', 'The board and the image use the same signing key ({{fingerprint}}).', { fingerprint: boardKeyId }));

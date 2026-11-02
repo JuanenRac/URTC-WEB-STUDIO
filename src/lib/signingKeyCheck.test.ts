@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { CanFrame } from "../types";
 import { VersionBus, queryMainVersion } from "./boardVersion";
-import { compareSigningKey } from "./signingKeyCheck";
+import { compareSigningKey, precheckOutcome } from "./signingKeyCheck";
 
 function frame(id: number, data: number[]): CanFrame {
   return { id, idHex: "0x" + id.toString(16), dlc: data.length, data, dataHex: "", timestamp: "", direction: "Rx", description: "", seq: 0 };
@@ -68,6 +68,11 @@ describe("the signing key before the transfer", () => {
     expect(compareSigningKey(info?.bootKeyId, "0011223344556677")).toBe("unknown");
   });
 
+  it("ignores a second 0x7ED of the wrong length and keeps the first fingerprint", async () => {
+    const info = await queryMainVersion(bus({ f7fa: [1, 0, 0], keys: [KEY, KEY.slice(0, 5)] }));
+    expect(info?.bootKeyId).toBe("a1b2c3d4e5f60718");
+  });
+
   it("matches the same key, also against a longer fingerprint that starts with it, and ignores case and a 0x prefix", () => {
     expect(compareSigningKey("a1b2c3d4e5f60718", "A1B2C3D4E5F60718")).toBe("match");
     expect(compareSigningKey("a1b2c3d4e5f60718", "0xa1b2c3d4e5f60718" + "00".repeat(24))).toBe("match");
@@ -81,5 +86,13 @@ describe("the signing key before the transfer", () => {
     expect(compareSigningKey(undefined, "0011223344556677")).toBe("unknown");
     expect(compareSigningKey("a1b2c3d4e5f60718", undefined)).toBe("unknown");
     expect(compareSigningKey("", "")).toBe("unknown");
+  });
+
+  it("says no_data only when a bootloader answered without a fingerprint and the image declares one", () => {
+    expect(precheckOutcome(undefined, "0011223344556677", true)).toBe("no_data");
+    expect(precheckOutcome(undefined, "0011223344556677", false)).toBe("unknown");   // an application never gives one
+    expect(precheckOutcome(undefined, undefined, true)).toBe("unknown");             // nothing declared, nothing to compare
+    expect(precheckOutcome("a1b2c3d4e5f60718", "0011223344556677", true)).toBe("mismatch");
+    expect(precheckOutcome("a1b2c3d4e5f60718", "a1b2c3d4e5f60718", true)).toBe("match");
   });
 });

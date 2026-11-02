@@ -4,6 +4,8 @@
 // Either side missing is "unknown" (no data), never a mismatch and never an error: an older bootloader, or one without a key, sends no 0x7ED.
 
 export type KeyCheck = 'match' | 'mismatch' | 'unknown';
+/** What the transfer reports: a comparison, or that the bootloader gave nothing to compare (older, or without a key). */
+export type PrecheckOutcome = KeyCheck | 'no_data';
 export type KeyPrecheckPolicy = 'warn' | 'refuse';
 
 function clean(value: string | undefined | null): string {
@@ -15,4 +17,10 @@ export function compareSigningKey(boardKeyId: string | undefined | null, imageKe
   const image = clean(imageKeyId);
   if (!board || !image) return 'unknown';
   return image.startsWith(board) || board.startsWith(image) ? 'match' : 'mismatch';
+}
+
+/** The comparison, or `no_data` when a bootloader answered without a fingerprint while the image declares one: said once in the log, never a difference and never an error. */
+export function precheckOutcome(boardKeyId: string | undefined | null, imageKeyId: string | undefined | null, boardIsBootloader: boolean): PrecheckOutcome {
+  const check = compareSigningKey(boardKeyId, imageKeyId);
+  return check === 'unknown' && boardIsBootloader && !clean(boardKeyId) && clean(imageKeyId) ? 'no_data' : check;
 }
