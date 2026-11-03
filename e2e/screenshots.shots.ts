@@ -59,7 +59,7 @@ test('the pictures of the README', async ({ page }) => {
     version: '9.9.9', sha256: createHash('sha256').update(bin).digest('hex'), hmac_sha256: createHash('sha256').update('sample signature').digest('hex'),
     component: 'main_application', hardware_id: `0x${HARDWARE_ID_MAIN.toString(16).toUpperCase().padStart(8, '0')}`, signing_key_kind: 'development',
   };
-  await page.locator('input[type="file"][accept=".bin,.json"]').setInputFiles([
+  await page.locator('input[type="file"][accept=".bin,.json,.imgsig"]').setInputFiles([
     { name, mimeType: 'application/octet-stream', buffer: bin },
     { name: `${name}.manifest.json`, mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(manifest)) },
   ]);

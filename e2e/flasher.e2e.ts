@@ -35,7 +35,7 @@ async function openFlasherWith(page: Page, bin: Buffer, version?: string, hardwa
   await page.goto('/');
   await connectBoard(page);
   await openTab(page, 'flasher');
-  await page.locator('input[type="file"][accept=".bin,.json"]').setInputFiles(files(bin, version, hardwareId));
+  await page.locator('input[type="file"][accept=".bin,.json,.imgsig"]').setInputFiles(files(bin, version, hardwareId));
 }
 
 test.describe('Flasher Studio', () => {
