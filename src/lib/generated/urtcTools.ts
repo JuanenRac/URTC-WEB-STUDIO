@@ -1356,8 +1356,7 @@ export const URTC_TOOL_PROFILES: UrtcToolProfile[] = [
               "type": "number",
               "label": {
                 "key": "testertool.pulse_duration_label",
-                "default": "Pulse duration (1-{{max}} ms)",
-                "param": "max_value"
+                "default": "Pulse duration (1-{{max}} ms)"
               },
               "min": 1,
               "max": 2000,
@@ -2078,8 +2077,7 @@ export const URTC_TOOL_PROFILES: UrtcToolProfile[] = [
               "type": "number",
               "label": {
                 "key": "testertool.pulse_duration_label",
-                "default": "Pulse duration (1-{{max}} ms)",
-                "param": "max_value"
+                "default": "Pulse duration (1-{{max}} ms)"
               },
               "min": 1,
               "max": 2000,

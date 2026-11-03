@@ -4,15 +4,12 @@ import { ShieldCheck, Download, Usb, CheckCircle2, AlertTriangle } from 'lucide-
 import { CanFrame } from '../types';
 import { BoardStatus } from '../lib/boardTelemetry';
 import { downloadBlob } from '../lib/download';
-import { CAN_ID_QUERY_ACTIVE_TOOL, CAN_ID_ACTIVE_TOOL_RESP, TOOL_NAMES, MOTION_TOOL_IDS, NO_HANDLER_TOOL_IDS, CAN_ID_CRIMPING_CMD, CAN_ID_MOTION_CMD } from '../lib/canIds';
+import { CAN_ID_QUERY_ACTIVE_TOOL, CAN_ID_ACTIVE_TOOL_RESP, TOOL_NAMES, NO_HANDLER_TOOL_IDS } from '../lib/canIds';
 import { THIS_HARDWARE_ID, CAN_ID_QUERY_VERSION, CAN_ID_VERSION_RESPONSE } from '../lib/flasher';
 import { GlobalControlsPanel, ExpansionBoardPanel, FramPanel, SelfTestPanel, BusMonitorPanel, CustomFramePanel } from './tester/GlobalPanels';
-import {
-  ToolCtx, SolderingIronPanel, MotionPanel, VacuumPanel, DrillPanel, AoiPanel, LaserPanel, Printer3DPanel,
-  ScanProbePanel, ElectromagnetPanel, WeldPanel, FlyingProbePanel, UvCuringPanel, HotAirReworkPanel,
-  PasteJettingPanel, ThermalInspectionPanel, NoHandlerPanel
-} from './tester/ToolPanels';
-import { CAN_ID_WELD_SPOT_CMD, CAN_ID_WELD_ULTRASONIC_CMD } from '../lib/canIds';
+import { ToolCtx, SolderingIronPanel, Printer3DPanel, ScanProbePanel, FlyingProbePanel, ThermalInspectionPanel, NoHandlerPanel } from './tester/ToolPanels';
+import { GeneratedToolPanel } from './tester/GeneratedToolPanel';
+import { panelOf } from '../lib/toolPanelView';
 import { TraceViewerPanel } from './tester/TraceViewerPanel';
 import { ToolProfilePanel } from './tester/ToolProfilePanel';
 import { BlackBoxPanel, EvidenceHistoryPanel, FeaturesPanel, PidPanel, RackBenchPanel, ThermalViewPanel } from './tester/ExtrasPanels';
@@ -80,29 +77,19 @@ export const TesterStudio: React.FC<TesterStudioProps> = ({
       return <div className="text-xs text-red-300 p-4">{t('tester.tool_invalid', 'The board reports tool number {{id}}, which is not a valid tool. Check the ID jumpers and the free tool configuration.', { id: toolId })}</div>;
     }
     const activeToolId = toolId;
-    if (MOTION_TOOL_IDS.has(activeToolId)) {
-      return <MotionPanel ctx={ctx} cmdId={CAN_ID_MOTION_CMD} label={TOOL_NAMES[activeToolId]} />;
-    }
     if (NO_HANDLER_TOOL_IDS.has(activeToolId)) {
       return <NoHandlerPanel name={TOOL_NAMES[activeToolId]} />;
     }
+    // Most panels are drawn from the `panel` of the profile (spec/tools.json); the few below keep a screen of their own because they
+    // query the board, draw an image or hold a state the description does not cover yet.
+    const panel = panelOf(activeToolId);
+    if (panel) return <GeneratedToolPanel key={activeToolId} ctx={ctx} panel={panel} toolName={TOOL_NAMES[activeToolId]} />;
     switch (activeToolId) {
       case 0: return <SolderingIronPanel ctx={ctx} />;
-      case 4: return <VacuumPanel ctx={ctx} />;
-      case 5: return <DrillPanel ctx={ctx} />;
-      case 8: return <AoiPanel ctx={ctx} />;
-      case 9: return <LaserPanel ctx={ctx} />;
       case 10: return <Printer3DPanel ctx={ctx} />;
       case 11: return <ScanProbePanel ctx={ctx} />;
-      case 13: return <ElectromagnetPanel ctx={ctx} />;
-      case 14: return <WeldPanel ctx={ctx} cmdId={CAN_ID_WELD_SPOT_CMD} label="Spot Welder" gated={true} />;
       case 17: return <FlyingProbePanel ctx={ctx} />;
-      case 18: return <UvCuringPanel ctx={ctx} />;
-      case 19: return <HotAirReworkPanel ctx={ctx} />;
-      case 21: return <MotionPanel ctx={ctx} cmdId={CAN_ID_CRIMPING_CMD} label="Crimping Actuator (expansion driver)" />;
       case 22: return <ThermalInspectionPanel ctx={ctx} />;
-      case 23: return <PasteJettingPanel ctx={ctx} />;
-      case 24: return <WeldPanel ctx={ctx} cmdId={CAN_ID_WELD_ULTRASONIC_CMD} label="Ultrasonic Welder" gated={false} />;
       default: return <div className="text-xs text-slate-500 p-4">{t('tester.no_panel', 'No panel implemented for tool #{{id}}.', { id: activeToolId })}</div>;
     }
   };
