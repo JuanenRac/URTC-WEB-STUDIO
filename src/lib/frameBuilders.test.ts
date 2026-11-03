@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   FEATURES_MAGIC, featuresWrite, motionMove, motionStop, spiPassthrough, statusLedCommand, thermalMotionCommand, weldFire,
 } from './toolFrames';
-import { dataChunkData, endUpdateData, hmacChunkData, startUpdateData } from './flashFrames';
+import { dataChunkData, endUpdateData, hmacChunkData, parseImgsig, recordChunkData, RECORD_CHUNK_COUNT, RECORD_SIZE, startUpdateData } from './flashFrames';
 
 describe('the frames of the global controls and of the optional panels', () => {
   it('writes the status LED, the OLED mode and the ring in eight bytes', () => {
@@ -76,5 +76,27 @@ describe('the frames of a firmware update', () => {
   it('writes END_UPDATE with the CRC-32, the major number and the minor field', () => {
     expect(endUpdateData(0xDEADBEEF, 0, 3)).toEqual([0xDE, 0xAD, 0xBE, 0xEF, 0, 0, 0, 3]);
     expect(endUpdateData(0, 0x0102, 0x8005)).toEqual([0, 0, 0, 0, 1, 2, 0x80, 0x05]);
+  });
+});
+
+describe('the signature record (11 frames of an index and 7 bytes)', () => {
+  const record = Uint8Array.from({ length: RECORD_SIZE }, (_, i) => (i * 3 + 1) & 0xFF);
+
+  it('splits the 76 bytes into 11 frames and pads the last one with a zero', () => {
+    const frames = Array.from({ length: RECORD_CHUNK_COUNT }, (_, i) => recordChunkData(record, i));
+    expect(frames.every(frame => frame.length === 8)).toBe(true);
+    expect(frames.map(frame => frame[0])).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    const joined = frames.flatMap(frame => frame.slice(1));
+    expect(joined.slice(0, RECORD_SIZE)).toEqual(Array.from(record));
+    expect(joined.slice(RECORD_SIZE)).toEqual([0]);
+  });
+
+  it('reads a .imgsig file of 152 hexadecimal digits and refuses anything else', () => {
+    const text = Array.from(record, b => b.toString(16).padStart(2, '0')).join('');
+    expect(Array.from(parseImgsig(`${text}\n`))).toEqual(Array.from(record));
+    expect(() => parseImgsig(text.slice(2))).toThrow();
+    expect(() => parseImgsig(text + '00')).toThrow();
+    expect(() => parseImgsig('zz'.repeat(RECORD_SIZE))).toThrow();
+    expect(() => parseImgsig('')).toThrow();
   });
 });

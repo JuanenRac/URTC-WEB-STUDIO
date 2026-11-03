@@ -5,6 +5,34 @@
 export type UrtcToolKind = 'motion' | 'telemetry' | 'external' | 'actuator';
 export type UrtcExpansionNeed = 'none' | 'recommended' | 'required';
 
+/** A text of a panel: an existing translated text (key and its English default), or a plain one that is not translated. */
+export type UrtcPanelText = { key: string; default: string; param?: string } | { text: string };
+
+export type UrtcPanelControl =
+  | { id: string; type: 'range' | 'number'; label: UrtcPanelText; min: number; max: number; default: number }
+  | { id: string; type: 'select'; label: UrtcPanelText; default: string | number; options: { value: string | number; label: UrtcPanelText }[] }
+  | { id: string; type: 'checkbox'; label: UrtcPanelText; default: boolean };
+
+export interface UrtcPanelReading {
+  id: string; label: UrtcPanelText; message: string; canId: number; offset: number; width: 1 | 2;
+  format?: 'yes_no'; unit?: string; graph_max?: number;
+}
+
+export interface UrtcPanelAction {
+  type: 'keepalive' | 'send' | 'stop' | 'latched';
+  message: string; canId: number; encoder: string; args?: string[]; description?: string;
+  label?: UrtcPanelText; confirm?: string; confirm_value?: string;
+  off_encoder?: string; off_description?: string; watchdog_ms?: number; reset?: string[];
+  description_on?: string; description_off?: string;
+}
+
+export interface UrtcPanelSection {
+  title: UrtcPanelText; subtitle?: UrtcPanelText; notice?: UrtcPanelText;
+  controls?: UrtcPanelControl[]; telemetry?: UrtcPanelReading[]; actions?: UrtcPanelAction[];
+}
+
+export interface UrtcToolPanel { sections: UrtcPanelSection[] }
+
 export interface UrtcToolProfile {
   id: number;
   name: string;
@@ -22,6 +50,7 @@ export interface UrtcToolProfile {
   kind: UrtcToolKind;
   shortName: string;
   expansionBoard: UrtcExpansionNeed;
+  panel?: UrtcToolPanel;
 }
 
 export const URTC_TOOL_PROFILES: UrtcToolProfile[] = [
@@ -86,7 +115,90 @@ export const URTC_TOOL_PROFILES: UrtcToolProfile[] = [
     ],
     "kind": "motion",
     "shortName": "Paste Dispenser",
-    "expansionBoard": "none"
+    "expansionBoard": "none",
+    "panel": {
+      "sections": [
+        {
+          "title": {
+            "text": "{tool} (0x120)"
+          },
+          "subtitle": {
+            "key": "testertool.motion_subtitle",
+            "default": "One-shot move, no telemetry, no comms watchdog."
+          },
+          "controls": [
+            {
+              "id": "dir",
+              "type": "select",
+              "label": {
+                "key": "testertool.direction_label",
+                "default": "Direction"
+              },
+              "default": "fwd",
+              "options": [
+                {
+                  "value": "fwd",
+                  "label": {
+                    "key": "testertool.forward",
+                    "default": "Forward"
+                  }
+                },
+                {
+                  "value": "rev",
+                  "label": {
+                    "key": "testertool.reverse",
+                    "default": "Reverse"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "steps",
+              "type": "number",
+              "label": {
+                "key": "testertool.steps_label",
+                "default": "Steps"
+              },
+              "min": 1,
+              "max": 4294967295,
+              "default": 200
+            }
+          ],
+          "actions": [
+            {
+              "type": "send",
+              "label": {
+                "key": "testertool.move",
+                "default": "Move"
+              },
+              "message": "MOTION_CMD",
+              "canId": 288,
+              "encoder": "motionMove",
+              "args": [
+                "dir",
+                "steps"
+              ],
+              "description": "Move",
+              "confirm": "motion"
+            },
+            {
+              "type": "stop",
+              "label": {
+                "key": "testertool.stop",
+                "default": "Stop"
+              },
+              "message": "MOTION_CMD",
+              "canId": 288,
+              "encoder": "motionStop",
+              "args": [
+                "dir"
+              ],
+              "description": "Stop"
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     "id": 2,
@@ -116,7 +228,90 @@ export const URTC_TOOL_PROFILES: UrtcToolProfile[] = [
     ],
     "kind": "motion",
     "shortName": "Liquid Dispenser",
-    "expansionBoard": "none"
+    "expansionBoard": "none",
+    "panel": {
+      "sections": [
+        {
+          "title": {
+            "text": "{tool} (0x120)"
+          },
+          "subtitle": {
+            "key": "testertool.motion_subtitle",
+            "default": "One-shot move, no telemetry, no comms watchdog."
+          },
+          "controls": [
+            {
+              "id": "dir",
+              "type": "select",
+              "label": {
+                "key": "testertool.direction_label",
+                "default": "Direction"
+              },
+              "default": "fwd",
+              "options": [
+                {
+                  "value": "fwd",
+                  "label": {
+                    "key": "testertool.forward",
+                    "default": "Forward"
+                  }
+                },
+                {
+                  "value": "rev",
+                  "label": {
+                    "key": "testertool.reverse",
+                    "default": "Reverse"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "steps",
+              "type": "number",
+              "label": {
+                "key": "testertool.steps_label",
+                "default": "Steps"
+              },
+              "min": 1,
+              "max": 4294967295,
+              "default": 200
+            }
+          ],
+          "actions": [
+            {
+              "type": "send",
+              "label": {
+                "key": "testertool.move",
+                "default": "Move"
+              },
+              "message": "MOTION_CMD",
+              "canId": 288,
+              "encoder": "motionMove",
+              "args": [
+                "dir",
+                "steps"
+              ],
+              "description": "Move",
+              "confirm": "motion"
+            },
+            {
+              "type": "stop",
+              "label": {
+                "key": "testertool.stop",
+                "default": "Stop"
+              },
+              "message": "MOTION_CMD",
+              "canId": 288,
+              "encoder": "motionStop",
+              "args": [
+                "dir"
+              ],
+              "description": "Stop"
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     "id": 3,
@@ -147,7 +342,90 @@ export const URTC_TOOL_PROFILES: UrtcToolProfile[] = [
     ],
     "kind": "motion",
     "shortName": "Screwdriver",
-    "expansionBoard": "none"
+    "expansionBoard": "none",
+    "panel": {
+      "sections": [
+        {
+          "title": {
+            "text": "{tool} (0x120)"
+          },
+          "subtitle": {
+            "key": "testertool.motion_subtitle",
+            "default": "One-shot move, no telemetry, no comms watchdog."
+          },
+          "controls": [
+            {
+              "id": "dir",
+              "type": "select",
+              "label": {
+                "key": "testertool.direction_label",
+                "default": "Direction"
+              },
+              "default": "fwd",
+              "options": [
+                {
+                  "value": "fwd",
+                  "label": {
+                    "key": "testertool.forward",
+                    "default": "Forward"
+                  }
+                },
+                {
+                  "value": "rev",
+                  "label": {
+                    "key": "testertool.reverse",
+                    "default": "Reverse"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "steps",
+              "type": "number",
+              "label": {
+                "key": "testertool.steps_label",
+                "default": "Steps"
+              },
+              "min": 1,
+              "max": 4294967295,
+              "default": 200
+            }
+          ],
+          "actions": [
+            {
+              "type": "send",
+              "label": {
+                "key": "testertool.move",
+                "default": "Move"
+              },
+              "message": "MOTION_CMD",
+              "canId": 288,
+              "encoder": "motionMove",
+              "args": [
+                "dir",
+                "steps"
+              ],
+              "description": "Move",
+              "confirm": "motion"
+            },
+            {
+              "type": "stop",
+              "label": {
+                "key": "testertool.stop",
+                "default": "Stop"
+              },
+              "message": "MOTION_CMD",
+              "canId": 288,
+              "encoder": "motionStop",
+              "args": [
+                "dir"
+              ],
+              "description": "Stop"
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     "id": 4,
@@ -177,7 +455,46 @@ export const URTC_TOOL_PROFILES: UrtcToolProfile[] = [
     ],
     "kind": "telemetry",
     "shortName": "Vacuum Pickup",
-    "expansionBoard": "none"
+    "expansionBoard": "none",
+    "panel": {
+      "sections": [
+        {
+          "title": {
+            "key": "testertool.vacuum_title",
+            "default": "Vacuum Pickup (0x145, telemetry only)"
+          },
+          "subtitle": {
+            "key": "testertool.vacuum_subtitle",
+            "default": "Passively pushed by the firmware - no command to send."
+          },
+          "telemetry": [
+            {
+              "id": "adc",
+              "label": {
+                "key": "testertool.adc_label",
+                "default": "ADC:"
+              },
+              "message": "VACUUM_TELEMETRY",
+              "canId": 325,
+              "offset": 0,
+              "width": 2
+            },
+            {
+              "id": "part",
+              "label": {
+                "key": "testertool.part_detected_label",
+                "default": "Part detected:"
+              },
+              "message": "VACUUM_TELEMETRY",
+              "canId": 325,
+              "offset": 2,
+              "width": 1,
+              "format": "yes_no"
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     "id": 5,
@@ -210,7 +527,115 @@ export const URTC_TOOL_PROFILES: UrtcToolProfile[] = [
     ],
     "kind": "actuator",
     "shortName": "Drill",
-    "expansionBoard": "none"
+    "expansionBoard": "none",
+    "panel": {
+      "sections": [
+        {
+          "title": {
+            "key": "testertool.drill_title",
+            "default": "Drill (0x140 / telemetry 0x147)"
+          },
+          "subtitle": {
+            "key": "testertool.drill_subtitle",
+            "default": "The command is resent while Active is checked; the board stops the drill 250 ms after the last one."
+          },
+          "controls": [
+            {
+              "id": "speed",
+              "type": "range",
+              "label": {
+                "key": "testertool.speed_label",
+                "default": "Speed ({{speed}})",
+                "param": "speed"
+              },
+              "min": 0,
+              "max": 255,
+              "default": 0
+            },
+            {
+              "id": "dir",
+              "type": "select",
+              "label": {
+                "key": "testertool.direction_label",
+                "default": "Direction"
+              },
+              "default": "cw",
+              "options": [
+                {
+                  "value": "cw",
+                  "label": {
+                    "key": "testertool.clockwise",
+                    "default": "Clockwise"
+                  }
+                },
+                {
+                  "value": "ccw",
+                  "label": {
+                    "key": "testertool.counter_clockwise",
+                    "default": "Counter-clockwise"
+                  }
+                }
+              ]
+            }
+          ],
+          "actions": [
+            {
+              "type": "keepalive",
+              "message": "DRILL_CMD",
+              "canId": 320,
+              "encoder": "drillCommand",
+              "args": [
+                "speed",
+                "dir"
+              ],
+              "off_encoder": "drillStop",
+              "description": "Drill command",
+              "off_description": "Drill stop",
+              "confirm": "drill",
+              "watchdog_ms": 250
+            },
+            {
+              "type": "stop",
+              "label": {
+                "key": "testertool.stop",
+                "default": "Stop"
+              },
+              "message": "DRILL_CMD",
+              "canId": 320,
+              "encoder": "drillStop",
+              "description": "Drill stop",
+              "reset": [
+                "speed"
+              ]
+            }
+          ],
+          "telemetry": [
+            {
+              "id": "rpm",
+              "label": {
+                "key": "testertool.rpm_label",
+                "default": "RPM:"
+              },
+              "message": "DRILL_TELEMETRY",
+              "canId": 327,
+              "offset": 0,
+              "width": 2
+            },
+            {
+              "id": "endstop",
+              "label": {
+                "key": "testertool.endstop_label",
+                "default": "Endstop:"
+              },
+              "message": "DRILL_TELEMETRY",
+              "canId": 327,
+              "offset": 2,
+              "width": 1
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     "id": 6,
@@ -239,7 +664,90 @@ export const URTC_TOOL_PROFILES: UrtcToolProfile[] = [
     ],
     "kind": "motion",
     "shortName": "Gripper (Gimbal)",
-    "expansionBoard": "none"
+    "expansionBoard": "none",
+    "panel": {
+      "sections": [
+        {
+          "title": {
+            "text": "{tool} (0x120)"
+          },
+          "subtitle": {
+            "key": "testertool.motion_subtitle",
+            "default": "One-shot move, no telemetry, no comms watchdog."
+          },
+          "controls": [
+            {
+              "id": "dir",
+              "type": "select",
+              "label": {
+                "key": "testertool.direction_label",
+                "default": "Direction"
+              },
+              "default": "fwd",
+              "options": [
+                {
+                  "value": "fwd",
+                  "label": {
+                    "key": "testertool.forward",
+                    "default": "Forward"
+                  }
+                },
+                {
+                  "value": "rev",
+                  "label": {
+                    "key": "testertool.reverse",
+                    "default": "Reverse"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "steps",
+              "type": "number",
+              "label": {
+                "key": "testertool.steps_label",
+                "default": "Steps"
+              },
+              "min": 1,
+              "max": 4294967295,
+              "default": 200
+            }
+          ],
+          "actions": [
+            {
+              "type": "send",
+              "label": {
+                "key": "testertool.move",
+                "default": "Move"
+              },
+              "message": "MOTION_CMD",
+              "canId": 288,
+              "encoder": "motionMove",
+              "args": [
+                "dir",
+                "steps"
+              ],
+              "description": "Move",
+              "confirm": "motion"
+            },
+            {
+              "type": "stop",
+              "label": {
+                "key": "testertool.stop",
+                "default": "Stop"
+              },
+              "message": "MOTION_CMD",
+              "canId": 288,
+              "encoder": "motionStop",
+              "args": [
+                "dir"
+              ],
+              "description": "Stop"
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     "id": 7,
@@ -269,7 +777,90 @@ export const URTC_TOOL_PROFILES: UrtcToolProfile[] = [
     ],
     "kind": "motion",
     "shortName": "Gripper (NEMA)",
-    "expansionBoard": "none"
+    "expansionBoard": "none",
+    "panel": {
+      "sections": [
+        {
+          "title": {
+            "text": "{tool} (0x120)"
+          },
+          "subtitle": {
+            "key": "testertool.motion_subtitle",
+            "default": "One-shot move, no telemetry, no comms watchdog."
+          },
+          "controls": [
+            {
+              "id": "dir",
+              "type": "select",
+              "label": {
+                "key": "testertool.direction_label",
+                "default": "Direction"
+              },
+              "default": "fwd",
+              "options": [
+                {
+                  "value": "fwd",
+                  "label": {
+                    "key": "testertool.forward",
+                    "default": "Forward"
+                  }
+                },
+                {
+                  "value": "rev",
+                  "label": {
+                    "key": "testertool.reverse",
+                    "default": "Reverse"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "steps",
+              "type": "number",
+              "label": {
+                "key": "testertool.steps_label",
+                "default": "Steps"
+              },
+              "min": 1,
+              "max": 4294967295,
+              "default": 200
+            }
+          ],
+          "actions": [
+            {
+              "type": "send",
+              "label": {
+                "key": "testertool.move",
+                "default": "Move"
+              },
+              "message": "MOTION_CMD",
+              "canId": 288,
+              "encoder": "motionMove",
+              "args": [
+                "dir",
+                "steps"
+              ],
+              "description": "Move",
+              "confirm": "motion"
+            },
+            {
+              "type": "stop",
+              "label": {
+                "key": "testertool.stop",
+                "default": "Stop"
+              },
+              "message": "MOTION_CMD",
+              "canId": 288,
+              "encoder": "motionStop",
+              "args": [
+                "dir"
+              ],
+              "description": "Stop"
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     "id": 8,
@@ -299,7 +890,96 @@ export const URTC_TOOL_PROFILES: UrtcToolProfile[] = [
     ],
     "kind": "telemetry",
     "shortName": "AOI Inspection",
-    "expansionBoard": "none"
+    "expansionBoard": "none",
+    "panel": {
+      "sections": [
+        {
+          "title": {
+            "key": "testertool.aoi_title",
+            "default": "AOI Inspection (0x150 / telemetry 0x155)"
+          },
+          "subtitle": {
+            "key": "testertool.aoi_subtitle",
+            "default": "Ring color comes from the global 0x100 command - this only sets mode/strobe."
+          },
+          "controls": [
+            {
+              "id": "mode",
+              "type": "select",
+              "label": {
+                "key": "testertool.ring_mode_label",
+                "default": "Ring Mode"
+              },
+              "default": 0,
+              "options": [
+                {
+                  "value": 0,
+                  "label": {
+                    "key": "testertool.mode_off",
+                    "default": "Off"
+                  }
+                },
+                {
+                  "value": 1,
+                  "label": {
+                    "key": "testertool.mode_sync",
+                    "default": "Synchronous strobe"
+                  }
+                },
+                {
+                  "value": 2,
+                  "label": {
+                    "key": "testertool.mode_fixed",
+                    "default": "Fixed continuous"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "period",
+              "type": "number",
+              "label": {
+                "key": "testertool.strobe_period_label",
+                "default": "Strobe period (ms)"
+              },
+              "min": 1,
+              "max": 500,
+              "default": 100
+            }
+          ],
+          "actions": [
+            {
+              "type": "send",
+              "label": {
+                "key": "testertool.send",
+                "default": "Send"
+              },
+              "message": "AOI_CMD",
+              "canId": 336,
+              "encoder": "aoiRingCommand",
+              "args": [
+                "mode",
+                "period"
+              ],
+              "description": "AOI ring command"
+            }
+          ],
+          "telemetry": [
+            {
+              "id": "endstop",
+              "label": {
+                "key": "testertool.endstop_label",
+                "default": "Endstop:"
+              },
+              "message": "AOI_TELEMETRY",
+              "canId": 341,
+              "offset": 0,
+              "width": 1
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     "id": 9,
@@ -331,7 +1011,74 @@ export const URTC_TOOL_PROFILES: UrtcToolProfile[] = [
     ],
     "kind": "actuator",
     "shortName": "Laser Engraver",
-    "expansionBoard": "none"
+    "expansionBoard": "none",
+    "panel": {
+      "sections": [
+        {
+          "title": {
+            "key": "testertool.laser_title",
+            "default": "Laser Engraver (0x160 / telemetry 0x165)"
+          },
+          "notice": {
+            "key": "testertool.laser_interlock_notice",
+            "default": "Interlock must be armed for power to actually do anything (firmware-side gate)."
+          },
+          "controls": [
+            {
+              "id": "power",
+              "type": "range",
+              "label": {
+                "key": "testertool.power_label",
+                "default": "Power ({{power}})",
+                "param": "power"
+              },
+              "min": 0,
+              "max": 255,
+              "default": 0
+            },
+            {
+              "id": "interlock",
+              "type": "checkbox",
+              "label": {
+                "key": "testertool.interlock_armed",
+                "default": "Interlock Armed"
+              },
+              "default": false
+            }
+          ],
+          "actions": [
+            {
+              "type": "keepalive",
+              "message": "LASER_CMD",
+              "canId": 352,
+              "encoder": "laserCommand",
+              "args": [
+                "power",
+                "interlock"
+              ],
+              "off_encoder": "laserOff",
+              "description": "Laser power command",
+              "off_description": "Laser off",
+              "confirm": "laser",
+              "watchdog_ms": 250
+            }
+          ],
+          "telemetry": [
+            {
+              "id": "endstop",
+              "label": {
+                "key": "testertool.endstop_label",
+                "default": "Endstop:"
+              },
+              "message": "LASER_TELEMETRY",
+              "canId": 357,
+              "offset": 0,
+              "width": 1
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     "id": 10,
@@ -423,7 +1170,90 @@ export const URTC_TOOL_PROFILES: UrtcToolProfile[] = [
     ],
     "kind": "motion",
     "shortName": "SMT Pick & Place",
-    "expansionBoard": "none"
+    "expansionBoard": "none",
+    "panel": {
+      "sections": [
+        {
+          "title": {
+            "text": "{tool} (0x120)"
+          },
+          "subtitle": {
+            "key": "testertool.motion_subtitle",
+            "default": "One-shot move, no telemetry, no comms watchdog."
+          },
+          "controls": [
+            {
+              "id": "dir",
+              "type": "select",
+              "label": {
+                "key": "testertool.direction_label",
+                "default": "Direction"
+              },
+              "default": "fwd",
+              "options": [
+                {
+                  "value": "fwd",
+                  "label": {
+                    "key": "testertool.forward",
+                    "default": "Forward"
+                  }
+                },
+                {
+                  "value": "rev",
+                  "label": {
+                    "key": "testertool.reverse",
+                    "default": "Reverse"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "steps",
+              "type": "number",
+              "label": {
+                "key": "testertool.steps_label",
+                "default": "Steps"
+              },
+              "min": 1,
+              "max": 4294967295,
+              "default": 200
+            }
+          ],
+          "actions": [
+            {
+              "type": "send",
+              "label": {
+                "key": "testertool.move",
+                "default": "Move"
+              },
+              "message": "MOTION_CMD",
+              "canId": 288,
+              "encoder": "motionMove",
+              "args": [
+                "dir",
+                "steps"
+              ],
+              "description": "Move",
+              "confirm": "motion"
+            },
+            {
+              "type": "stop",
+              "label": {
+                "key": "testertool.stop",
+                "default": "Stop"
+              },
+              "message": "MOTION_CMD",
+              "canId": 288,
+              "encoder": "motionStop",
+              "args": [
+                "dir"
+              ],
+              "description": "Stop"
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     "id": 13,
@@ -452,7 +1282,35 @@ export const URTC_TOOL_PROFILES: UrtcToolProfile[] = [
     ],
     "kind": "actuator",
     "shortName": "Electromagnet",
-    "expansionBoard": "none"
+    "expansionBoard": "none",
+    "panel": {
+      "sections": [
+        {
+          "title": {
+            "key": "testertool.electromagnet_title",
+            "default": "Electromagnet (0x1B0)"
+          },
+          "subtitle": {
+            "key": "testertool.electromagnet_subtitle",
+            "default": "Latched digital command - no comms watchdog by design (see CANBUS.TXT note on 0x1B0)."
+          },
+          "actions": [
+            {
+              "type": "latched",
+              "label": {
+                "key": "testertool.energize",
+                "default": "Energize"
+              },
+              "message": "ELECTROMAGNET_CMD",
+              "canId": 432,
+              "encoder": "electromagnetCommand",
+              "description_on": "Electromagnet ON",
+              "description_off": "Electromagnet OFF"
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     "id": 14,
@@ -481,7 +1339,51 @@ export const URTC_TOOL_PROFILES: UrtcToolProfile[] = [
     ],
     "kind": "actuator",
     "shortName": "Spot Welder",
-    "expansionBoard": "recommended"
+    "expansionBoard": "recommended",
+    "panel": {
+      "sections": [
+        {
+          "title": {
+            "text": "Spot Welder (0x1C0)"
+          },
+          "subtitle": {
+            "key": "testertool.weld_subtitle_gated",
+            "default": "Requires the contact sensor to be satisfied (firmware-side gate)."
+          },
+          "controls": [
+            {
+              "id": "ms",
+              "type": "number",
+              "label": {
+                "key": "testertool.pulse_duration_label",
+                "default": "Pulse duration (1-{{max}} ms)",
+                "param": "max_value"
+              },
+              "min": 1,
+              "max": 2000,
+              "default": 200
+            }
+          ],
+          "actions": [
+            {
+              "type": "send",
+              "label": {
+                "key": "testertool.fire_pulse",
+                "default": "Fire Pulse"
+              },
+              "message": "SPOT_WELD_CMD",
+              "canId": 448,
+              "encoder": "weldFire",
+              "args": [
+                "ms"
+              ],
+              "description": "Spot Welder (0x1C0) fire",
+              "confirm": "weld"
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     "id": 15,
@@ -540,7 +1442,90 @@ export const URTC_TOOL_PROFILES: UrtcToolProfile[] = [
     ],
     "kind": "motion",
     "shortName": "Vacuum Gripper (LG)",
-    "expansionBoard": "none"
+    "expansionBoard": "none",
+    "panel": {
+      "sections": [
+        {
+          "title": {
+            "text": "{tool} (0x120)"
+          },
+          "subtitle": {
+            "key": "testertool.motion_subtitle",
+            "default": "One-shot move, no telemetry, no comms watchdog."
+          },
+          "controls": [
+            {
+              "id": "dir",
+              "type": "select",
+              "label": {
+                "key": "testertool.direction_label",
+                "default": "Direction"
+              },
+              "default": "fwd",
+              "options": [
+                {
+                  "value": "fwd",
+                  "label": {
+                    "key": "testertool.forward",
+                    "default": "Forward"
+                  }
+                },
+                {
+                  "value": "rev",
+                  "label": {
+                    "key": "testertool.reverse",
+                    "default": "Reverse"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "steps",
+              "type": "number",
+              "label": {
+                "key": "testertool.steps_label",
+                "default": "Steps"
+              },
+              "min": 1,
+              "max": 4294967295,
+              "default": 200
+            }
+          ],
+          "actions": [
+            {
+              "type": "send",
+              "label": {
+                "key": "testertool.move",
+                "default": "Move"
+              },
+              "message": "MOTION_CMD",
+              "canId": 288,
+              "encoder": "motionMove",
+              "args": [
+                "dir",
+                "steps"
+              ],
+              "description": "Move",
+              "confirm": "motion"
+            },
+            {
+              "type": "stop",
+              "label": {
+                "key": "testertool.stop",
+                "default": "Stop"
+              },
+              "message": "MOTION_CMD",
+              "canId": 288,
+              "encoder": "motionStop",
+              "args": [
+                "dir"
+              ],
+              "description": "Stop"
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     "id": 17,
@@ -600,7 +1585,51 @@ export const URTC_TOOL_PROFILES: UrtcToolProfile[] = [
     ],
     "kind": "actuator",
     "shortName": "UV Curing",
-    "expansionBoard": "none"
+    "expansionBoard": "none",
+    "panel": {
+      "sections": [
+        {
+          "title": {
+            "key": "testertool.uv_curing_title",
+            "default": "UV Curing (0x1D0)"
+          },
+          "subtitle": {
+            "key": "testertool.uv_curing_subtitle",
+            "default": "Shares TIM1_CH1 with the laser - same 250ms watchdog."
+          },
+          "controls": [
+            {
+              "id": "power",
+              "type": "range",
+              "label": {
+                "key": "testertool.power_label",
+                "default": "Power ({{power}})",
+                "param": "power"
+              },
+              "min": 0,
+              "max": 255,
+              "default": 0
+            }
+          ],
+          "actions": [
+            {
+              "type": "keepalive",
+              "message": "UV_CURING_CMD",
+              "canId": 464,
+              "encoder": "powerByte",
+              "args": [
+                "power"
+              ],
+              "off_encoder": "powerOff",
+              "description": "UV curing power",
+              "off_description": "UV curing off",
+              "confirm": "uv",
+              "watchdog_ms": 250
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     "id": 19,
@@ -631,7 +1660,75 @@ export const URTC_TOOL_PROFILES: UrtcToolProfile[] = [
     ],
     "kind": "actuator",
     "shortName": "Hot Air Rework",
-    "expansionBoard": "none"
+    "expansionBoard": "none",
+    "panel": {
+      "sections": [
+        {
+          "title": {
+            "key": "testertool.hotair_title",
+            "default": "Hot Air Rework (0x1E0, telemetry shared with 0x135)"
+          },
+          "controls": [
+            {
+              "id": "temp",
+              "type": "number",
+              "label": {
+                "key": "testertool.setpoint_0_445",
+                "default": "Setpoint (0-445 C)"
+              },
+              "min": 0,
+              "max": 445,
+              "default": 200
+            },
+            {
+              "id": "blower",
+              "type": "range",
+              "label": {
+                "key": "testertool.blower_label",
+                "default": "Blower ({{power}})",
+                "param": "power"
+              },
+              "min": 0,
+              "max": 255,
+              "default": 0
+            }
+          ],
+          "actions": [
+            {
+              "type": "keepalive",
+              "message": "HOTAIR_CMD",
+              "canId": 480,
+              "encoder": "hotAirCommand",
+              "args": [
+                "temp",
+                "blower"
+              ],
+              "off_encoder": "hotAirOff",
+              "description": "Hot air rework command",
+              "off_description": "Hot air rework off",
+              "confirm": "heater",
+              "confirm_value": "temp",
+              "watchdog_ms": 250
+            }
+          ],
+          "telemetry": [
+            {
+              "id": "live",
+              "label": {
+                "key": "testertool.live_label",
+                "default": "Live:"
+              },
+              "message": "SOLDER_TELEMETRY",
+              "canId": 309,
+              "offset": 0,
+              "width": 2,
+              "unit": "C",
+              "graph_max": 450
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     "id": 20,
@@ -690,7 +1787,90 @@ export const URTC_TOOL_PROFILES: UrtcToolProfile[] = [
     ],
     "kind": "motion",
     "shortName": "Crimping Actuator",
-    "expansionBoard": "required"
+    "expansionBoard": "required",
+    "panel": {
+      "sections": [
+        {
+          "title": {
+            "text": "{tool} (0x1F0)"
+          },
+          "subtitle": {
+            "key": "testertool.motion_subtitle",
+            "default": "One-shot move, no telemetry, no comms watchdog."
+          },
+          "controls": [
+            {
+              "id": "dir",
+              "type": "select",
+              "label": {
+                "key": "testertool.direction_label",
+                "default": "Direction"
+              },
+              "default": "fwd",
+              "options": [
+                {
+                  "value": "fwd",
+                  "label": {
+                    "key": "testertool.forward",
+                    "default": "Forward"
+                  }
+                },
+                {
+                  "value": "rev",
+                  "label": {
+                    "key": "testertool.reverse",
+                    "default": "Reverse"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "steps",
+              "type": "number",
+              "label": {
+                "key": "testertool.steps_label",
+                "default": "Steps"
+              },
+              "min": 1,
+              "max": 4294967295,
+              "default": 200
+            }
+          ],
+          "actions": [
+            {
+              "type": "send",
+              "label": {
+                "key": "testertool.move",
+                "default": "Move"
+              },
+              "message": "CRIMPING_CMD",
+              "canId": 496,
+              "encoder": "motionMove",
+              "args": [
+                "dir",
+                "steps"
+              ],
+              "description": "Move",
+              "confirm": "motion"
+            },
+            {
+              "type": "stop",
+              "label": {
+                "key": "testertool.stop",
+                "default": "Stop"
+              },
+              "message": "CRIMPING_CMD",
+              "canId": 496,
+              "encoder": "motionStop",
+              "args": [
+                "dir"
+              ],
+              "description": "Stop"
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     "id": 22,
@@ -748,7 +1928,111 @@ export const URTC_TOOL_PROFILES: UrtcToolProfile[] = [
     ],
     "kind": "actuator",
     "shortName": "Paste Jetting",
-    "expansionBoard": "required"
+    "expansionBoard": "required",
+    "panel": {
+      "sections": [
+        {
+          "title": {
+            "key": "testertool.paste_pwm_title",
+            "default": "PWM Config (0x230)"
+          },
+          "controls": [
+            {
+              "id": "channel",
+              "type": "number",
+              "label": {
+                "key": "testertool.channel_label",
+                "default": "Channel (0-3)"
+              },
+              "min": 0,
+              "max": 3,
+              "default": 0
+            },
+            {
+              "id": "freq",
+              "type": "number",
+              "label": {
+                "key": "testertool.frequency_label",
+                "default": "Frequency (Hz)"
+              },
+              "min": 1,
+              "max": 65535,
+              "default": 1000
+            }
+          ],
+          "actions": [
+            {
+              "type": "send",
+              "label": {
+                "key": "testertool.configure",
+                "default": "Configure"
+              },
+              "message": "PASTE_JETTING_CONFIG",
+              "canId": 560,
+              "encoder": "pasteJettingConfig",
+              "args": [
+                "channel",
+                "freq"
+              ],
+              "description": "Paste jetting config"
+            }
+          ]
+        },
+        {
+          "title": {
+            "key": "testertool.paste_fire_title",
+            "default": "Fire Pulse (0x231)"
+          },
+          "subtitle": {
+            "key": "testertool.paste_fire_subtitle",
+            "default": "Reuses the last-configured channel."
+          },
+          "controls": [
+            {
+              "id": "duty",
+              "type": "number",
+              "label": {
+                "key": "testertool.duty_label",
+                "default": "Duty (%)"
+              },
+              "min": 0,
+              "max": 100,
+              "default": 50
+            },
+            {
+              "id": "pulse",
+              "type": "number",
+              "label": {
+                "key": "testertool.duration_ms_label",
+                "default": "Duration (ms)"
+              },
+              "min": 1,
+              "max": 255,
+              "default": 50
+            }
+          ],
+          "actions": [
+            {
+              "type": "send",
+              "label": {
+                "key": "testertool.fire_pulse",
+                "default": "Fire Pulse"
+              },
+              "message": "PASTE_JETTING_PULSE",
+              "canId": 561,
+              "encoder": "pasteJettingPulse",
+              "args": [
+                "channel",
+                "duty",
+                "pulse"
+              ],
+              "description": "Paste jetting pulse",
+              "confirm": "paste"
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     "id": 24,
@@ -777,6 +2061,50 @@ export const URTC_TOOL_PROFILES: UrtcToolProfile[] = [
     ],
     "kind": "actuator",
     "shortName": "Ultrasonic Welder",
-    "expansionBoard": "recommended"
+    "expansionBoard": "recommended",
+    "panel": {
+      "sections": [
+        {
+          "title": {
+            "text": "Ultrasonic Welder (0x200)"
+          },
+          "subtitle": {
+            "key": "testertool.weld_subtitle_ungated",
+            "default": "No contact-sensor gate."
+          },
+          "controls": [
+            {
+              "id": "ms",
+              "type": "number",
+              "label": {
+                "key": "testertool.pulse_duration_label",
+                "default": "Pulse duration (1-{{max}} ms)",
+                "param": "max_value"
+              },
+              "min": 1,
+              "max": 2000,
+              "default": 200
+            }
+          ],
+          "actions": [
+            {
+              "type": "send",
+              "label": {
+                "key": "testertool.fire_pulse",
+                "default": "Fire Pulse"
+              },
+              "message": "ULTRASONIC_WELD_CMD",
+              "canId": 512,
+              "encoder": "weldFire",
+              "args": [
+                "ms"
+              ],
+              "description": "Ultrasonic Welder (0x200) fire",
+              "confirm": "weld"
+            }
+          ]
+        }
+      ]
+    }
   }
 ];

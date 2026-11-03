@@ -24,7 +24,8 @@ interface FlasherStudioProps {
     fileObj: File | null | undefined,
     remote: RemoteFirmware | undefined,
     opts: { triggerBootloader: boolean; eraseFram: boolean; allowDowngrade: boolean; refuseKeyMismatch?: boolean },
-    manifestFile?: File | null
+    manifestFile?: File | null,
+    recordFile?: File | null
   ) => void;
   onStartSwdFlash: (firmwareFile: string, fileObj?: File | null, bootloaderFile?: string, bootloaderObj?: File | null) => void;
   onReadback: () => void;
@@ -88,6 +89,7 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
   const [customFile, setCustomFile] = useState<File | null>(null);
   // The <image>.manifest.json picked together with a browsed image: a page cannot read a file next to it, so it is picked with it.
   const [customManifest, setCustomManifest] = useState<File | null>(null);
+  const [customRecord, setCustomRecord] = useState<File | null>(null);   // the <image>.imgsig picked together with a browsed image
 
   // GitHub Firmware State
   const [githubFirmwares, setGithubFirmwares] = useState<RemoteFirmware[]>([]);
@@ -353,7 +355,7 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
                   <div className="flex gap-2 items-center">
                     <select
                       value={selectedFirmware}
-                      onChange={(e) => { setSelectedFirmware(e.target.value); setCustomFile(null); setCustomManifest(null); }}
+                      onChange={(e) => { setSelectedFirmware(e.target.value); setCustomFile(null); setCustomManifest(null); setCustomRecord(null); }}
                       className="flex-1 px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs font-mono text-amber-300 focus:outline-none focus:border-amber-500"
                     >
                       <optgroup label={t('flasher.optgroup_local', 'Local (public/firmware/)')}>
@@ -370,13 +372,14 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
                       )}
                       {customFile && <option value={customFile.name}>{customFile.name} {t('flasher.option_browsed', '(browsed)')}</option>}
                     </select>
-                    <input type="file" accept=".bin,.json" multiple ref={fileInputRef} className="hidden"
+                    <input type="file" accept=".bin,.json,.imgsig" multiple ref={fileInputRef} className="hidden"
                       onChange={(e) => {
                         const picked = Array.from(e.target.files ?? []);
                         const image = picked.find(f => f.name.toLowerCase().endsWith('.bin'));
                         if (image) {
                           setCustomFile(image);
                           setCustomManifest(picked.find(f => f.name === `${image.name}.manifest.json`) ?? null);
+                          setCustomRecord(picked.find(f => f.name === `${image.name}.imgsig`) ?? null);
                           setSelectedFirmware(image.name);
                         }
                         e.target.value = '';
@@ -418,6 +421,10 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
                       {customManifest
                         ? t('flasher.browsed_manifest_found', 'Manifest selected: {{name}}', { name: customManifest.name })
                         : t('flasher.browsed_manifest_hint', 'To use the published signature, select the .bin together with its .bin.manifest.json (Ctrl-click).')}
+                      {' '}
+                      {customRecord
+                        ? t('flasher.browsed_record_found', 'Signature record selected: {{name}}', { name: customRecord.name })
+                        : t('flasher.browsed_record_hint', 'To flash with its signature record, select the .bin together with its .bin.imgsig (Ctrl-click).')}
                     </div>
                   )}
                   {githubError && <div className="text-[10px] text-red-400 mt-1">{t('flasher.github_listing_error', 'GitHub listing:')} {githubError}</div>}
@@ -464,7 +471,7 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
                     onClick={() => {
                       if (allowDowngrade && !window.confirm(t('flasher.alert_downgrade_confirm', 'You are about to authorize a firmware DOWNGRADE, bypassing the bootloader\'s anti-rollback protection. Continue?'))) return;
                       if (!window.confirm(t('flasher.alert_flash_confirm', 'Flash "{{firmware}}" to the {{target}} now?', { firmware: selectedFirmware, target: flashTarget === 'slave' ? t('flasher.alert_target_slave', 'expansion slave') : t('flasher.alert_target_main', 'main board') }))) return;
-                      onStartCanOta(flashTarget, selectedFirmware, customFile, githubFirmwares.find(f => f.name === selectedFirmware), { triggerBootloader: runAppTrigger, eraseFram, allowDowngrade, refuseKeyMismatch }, customFile ? customManifest : null);
+                      onStartCanOta(flashTarget, selectedFirmware, customFile, githubFirmwares.find(f => f.name === selectedFirmware), { triggerBootloader: runAppTrigger, eraseFram, allowDowngrade, refuseKeyMismatch }, customFile ? customManifest : null, customFile ? customRecord : null);
                     }}
                     disabled={busy || !isConnected}
                     className="flex-1 py-2.5 px-4 rounded-lg bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-slate-950 font-semibold text-xs transition shadow-md shadow-amber-500/10 flex items-center justify-center gap-2"

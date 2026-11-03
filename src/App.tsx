@@ -30,6 +30,7 @@ import {
 import { BoardVersionInfo, SlaveVersionInfo, SlaveAppVersionInfo, installedVersion } from './lib/boardVersion';
 import { RemoteFirmware, downloadAsset, downloadAssetText, digestMismatch, GithubReleaseError } from './lib/githubRelease';
 import { resolveSignature } from './lib/firmwareSignature';
+import { parseImgsig } from './lib/flashFrames';
 import { checkReleaseSignature } from './lib/releaseSignature';
 import { validateImage, checkSidecar, resolveVersion } from './lib/firmwareImage';
 import { parseCustomFrame, customFrameErrorText } from './lib/customFrame';
@@ -442,6 +443,33 @@ export default function App() {
     }
   };
 
+  // <file>.imgsig: the 76-byte Ed25519 record of the image, as 152 hexadecimal digits. Same sources as the manifest (a file picked with the image, an asset of the
+  // GitHub release, or the bundled /firmware/ folder). Null when there is none; a file that is there but is not a record is an error and never ignored.
+  const tryFetchRecord = async (fileName: string, remote?: RemoteFirmware, recordFile?: File | null): Promise<Uint8Array | null> => {
+    let text: string | null = null;
+    try {
+      if (recordFile) {
+        text = await recordFile.text();
+      } else if (remote) {
+        if (!remote.record) return null;
+        text = await downloadAssetText(fetch, remote.record);
+      } else {
+        const res = await fetch(`${import.meta.env.BASE_URL}firmware/${fileName}.imgsig`);
+        const type = res.headers.get('content-type') ?? '';
+        if (res.ok && !type.includes('text/html')) text = await res.text();
+      }
+    } catch {
+      if (remote) throw new Error(t('flasher.err_record_download', 'The signature record of this image could not be downloaded from the GitHub release.'));
+      return null;
+    }
+    if (text === null) return null;
+    try {
+      return parseImgsig(text);
+    } catch {
+      throw new Error(t('flasher.err_record_bad', 'The signature record is not valid: it must hold exactly 152 hexadecimal digits on one line.'));
+    }
+  };
+
   const loadFirmwareBytes = async (fwFile: string, fileObj?: File | null, remote?: RemoteFirmware): Promise<Uint8Array> => {
     if (fileObj) return new Uint8Array(await fileObj.arrayBuffer());
     if (remote) return new Uint8Array(await downloadAsset(fetch, remote.asset));
@@ -466,7 +494,8 @@ export default function App() {
     fileObj: File | null | undefined,
     remote: RemoteFirmware | undefined,
     opts: { triggerBootloader: boolean; eraseFram: boolean; allowDowngrade: boolean; refuseKeyMismatch?: boolean },
-    manifestFile?: File | null
+    manifestFile?: File | null,
+    recordFile?: File | null
   ) => {
     if (!serialCan.isConnected) {
       alert(t('flasher.alert_connect_first', 'Please connect to the USB-CAN adapter first using the top header.'));
@@ -588,15 +617,30 @@ export default function App() {
     // app holds no key. Only an image WITHOUT a published signature (a
     // self-built file picked from disk, for a bench board) asks for a key,
     // kept in this function's memory for this one flash and never stored.
+    // The Ed25519 record published next to the image: the bootloader of the main board verifies it, and for the expansion slave the main board verifies it and
+    // confirms the image. With a record there is no key to ask for: the slave bootloader holds none and the main one only holds public keys.
+    let record: Uint8Array | null = null;
+    try {
+      record = await tryFetchRecord(fileName, remote, fileObj ? recordFile : null);
+    } catch (e: any) {
+      refuse(e.message);
+      return;
+    }
+    if (target === 'slave' && !record) {
+      refuse(t('flasher.err_no_record', 'This image has no signature record (<image>.imgsig): the bootloader installs nothing without one. Nothing was sent to the board.'));
+      return;
+    }
     let runtimeKey: string | null = null;
-    if (!manifest?.hmacSha256) {
+    if (!manifest?.hmacSha256 && !record) {
       runtimeKey = window.prompt(t('flasher.prompt_signing_key', 'This image has no published signature (<file>.manifest.json with hmac_sha256). To flash a self-built image to a bench board, enter its {{board}} signing key (64 hex characters). It is not stored.', { board: target === 'slave' ? 'slave' : 'master' }));
     }
-    let signature: Uint8Array;
+    let signature: Uint8Array = new Uint8Array(0);
     try {
-      const resolved = await resolveSignature(data, manifest, runtimeKey);
-      signature = resolved.signature;
-      if (resolved.source === 'manifest') {
+      const resolved = target === 'slave' || (record && !manifest?.hmacSha256) ? null : await resolveSignature(data, manifest, runtimeKey);
+      if (resolved) signature = resolved.signature;
+      if (!resolved) {
+        flasher.appendLog(t('flasher.log_record_found', 'Using the signature record published with the image; the bootloader verifies it.'));
+      } else if (resolved.source === 'manifest') {
         flasher.appendLog(t('flasher.log_signature_from_manifest', 'Using the signature published in the manifest (key: {{kind}}).', { kind: resolved.keyKind ?? 'unknown' }));
         if (resolved.keyKind === 'dev') {
           flasher.appendLog(t('flasher.log_dev_key_warning', 'NOTE: signed with the PUBLIC development key - only boards whose bootloader was built with that same key accept it.'));
@@ -615,9 +659,9 @@ export default function App() {
 
     try {
       if (target === 'slave') {
-        await flasher.flashSlave(data, { triggerBootloader: opts.triggerBootloader, reportMajor, reportMinor, reportPatch, signature });
+        await flasher.flashSlave(data, { triggerBootloader: opts.triggerBootloader, reportMajor, reportMinor, reportPatch, record: record as Uint8Array });
       } else {
-        await flasher.flashMain(data, { ...opts, reportMajor, reportMinor, reportPatch, signature, signingKeyId: manifest?.signingKeyId });
+        await flasher.flashMain(data, { ...opts, reportMajor, reportMinor, reportPatch, signature, record, signingKeyId: manifest?.signingKeyId });
         handleResetSplash();
       }
     } catch (e: any) {

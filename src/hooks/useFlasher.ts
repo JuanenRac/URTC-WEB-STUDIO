@@ -7,7 +7,7 @@ import {
   CAN_ID_PAGE_ACK, CAN_ID_END_UPDATE, CAN_ID_STATUS, CAN_ID_QUERY_VERSION,
   CAN_ID_VERSION_RESPONSE, CAN_ID_QUERY_ERROR_COUNTERS, CAN_ID_ERROR_COUNTERS_RESPONSE,
   CAN_ID_AUTHORIZE_DOWNGRADE, CAN_ID_READBACK, CAN_ID_READBACK_PAGE_ACK,
-  CAN_ID_SLAVE_ENTER_BOOTLOADER, CAN_ID_SLAVE_START_UPDATE, CAN_ID_SLAVE_HMAC_CHUNK,
+  CAN_ID_SLAVE_ENTER_BOOTLOADER, CAN_ID_SLAVE_START_UPDATE, CAN_ID_SLAVE_HMAC_CHUNK, CAN_ID_SLAVE_RECORD_CHUNK, CAN_ID_BOOTLOADER_SIGNATURE_CHUNK,
   CAN_ID_SLAVE_DATA, CAN_ID_SLAVE_END_UPDATE, CAN_ID_SLAVE_STATUS, CAN_ID_SLAVE_PROGRESS,
   CAN_ID_SLAVE_VERIFY_FAIL_REASON,
   ENTER_BOOTLOADER_MAGIC, AUTHORIZE_DOWNGRADE_MAGIC,
@@ -16,7 +16,7 @@ import {
   packUInt32BE, unpackUInt32BE, getCrc32, isLastPartialPage, readbackChunkLength,
   minorField, formatVersion
 } from '../lib/flasher';
-import { dataChunkData, endUpdateData, hmacChunkData, startUpdateData } from '../lib/flashFrames';
+import { dataChunkData, endUpdateData, hmacChunkData, recordChunkData, RECORD_CHUNK_COUNT, RECORD_SIZE, startUpdateData } from '../lib/flashFrames';
 import { precheckOutcome } from '../lib/signingKeyCheck';
 import { queryMainVersion, querySlaveVersion, querySlaveApplicationVersion, BoardVersionInfo, SlaveVersionInfo, SlaveAppVersionInfo } from '../lib/boardVersion';
 import { CAN_ID_ERASE_FRAM, CAN_ID_FRAM_STATE_RESP, ERASE_FRAM_MAGIC, VERIFY_FAIL_CODES } from '../lib/canIds';
@@ -28,7 +28,8 @@ export interface FlashOptions {
   reportMajor: number;
   reportMinor: number;
   reportPatch?: number; // declared only to a bootloader that announced the patch extension (CANBUS.TXT, FIRMWARE PATCH NUMBER)
-  signature: Uint8Array; // HMAC-SHA256 published with the image - see lib/firmwareSignature.ts
+  signature: Uint8Array; // HMAC-SHA256 published with the image (bootloaders of the earlier generation) - see lib/firmwareSignature.ts; empty when the image has a record
+  record?: Uint8Array | null; // the 76-byte Ed25519 record published next to the image (<image>.imgsig): the bootloader verifies it
   signingKeyId?: string; // the fingerprint of the signing key the manifest declares; compared with the one the bootloader publishes
   refuseKeyMismatch?: boolean; // stop before the transfer when the two differ (off: the difference is only logged)
 }
@@ -137,7 +138,10 @@ export function useFlasher(serialCan: SerialCanBus) {
 
     const crc32 = getCrc32(data);
     const signature = opts.signature;
-    if (signature.length !== 32) throw new FlashError('HMAC-SHA256 signature must be 32 bytes');
+    const record = opts.record ?? null;
+    if (record !== null && record.length !== RECORD_SIZE) throw new FlashError('The signature record must be 76 bytes');
+    // A bootloader that verifies the record has no use for an HMAC; an image with neither a record nor an HMAC cannot be sent.
+    if (signature.length !== 32 && !(signature.length === 0 && record !== null)) throw new FlashError('HMAC-SHA256 signature must be 32 bytes');
 
     setFlasherState(prev => ({
       ...prev, mode: 'erasing', progress: 0,
@@ -212,11 +216,21 @@ export function useFlasher(serialCan: SerialCanBus) {
       throw new FlashError(t('flasher.err_bootloader_rejected', 'Bootloader rejected update start (expected RECEIVING status)'));
     }
 
-    appendLog(t('flasher.log_hmac_sending', 'Sending HMAC-SHA256 signature (4 chunks)...'));
-    for (let i = 0; i < 4; i++) {
-      checkCancelled();
-      await serialCan.sendFrame(CAN_ID_HMAC_CHUNK, hmacChunkData(signature, i), `HMAC chunk ${i + 1}/4`);
-      await new Promise(r => setTimeout(r, 10));
+    if (record !== null) {
+      appendLog(t('flasher.log_record_sending', 'Sending the Ed25519 signature record ({{id}}, 11 frames)...', { id: '0x7EC' }));
+      for (let i = 0; i < RECORD_CHUNK_COUNT; i++) {
+        checkCancelled();
+        await serialCan.sendFrame(CAN_ID_BOOTLOADER_SIGNATURE_CHUNK, recordChunkData(record, i), `Signature record ${i + 1}/${RECORD_CHUNK_COUNT}`);
+        await new Promise(r => setTimeout(r, 10));
+      }
+    }
+    if (signature.length === 32) {
+      appendLog(t('flasher.log_hmac_sending', 'Sending HMAC-SHA256 signature (4 chunks)...'));
+      for (let i = 0; i < 4; i++) {
+        checkCancelled();
+        await serialCan.sendFrame(CAN_ID_HMAC_CHUNK, hmacChunkData(signature, i), `HMAC chunk ${i + 1}/4`);
+        await new Promise(r => setTimeout(r, 10));
+      }
     }
 
     if (opts.allowDowngrade) {
@@ -324,17 +338,18 @@ export function useFlasher(serialCan: SerialCanBus) {
   }, [serialCan, appendLog]);
 
   // ---- Expansion slave OTA, relayed through the main board's I2C bridge (0x210-0x219) ----
-  const flashSlave = useCallback(async (data: Uint8Array, opts: { triggerBootloader: boolean; reportMajor: number; reportMinor: number; reportPatch?: number; signature: Uint8Array }) => {
+  const flashSlave = useCallback(async (data: Uint8Array, opts: { triggerBootloader: boolean; reportMajor: number; reportMinor: number; reportPatch?: number; record: Uint8Array }) => {
     stopRequestedRef.current = false;
     checkSecureContext();
     if (data.length === 0) throw new FlashError(t('flasher.err_empty_file', 'Firmware file is empty'));
     if (data.length > SLAVE_APP_MAX_SIZE) throw new FlashError(t('flasher.err_exceeds_slave_slot', 'Firmware exceeds the {{max}} byte slave application slot', { max: SLAVE_APP_MAX_SIZE }));
 
     const crc32 = getCrc32(data);
-    // Signed by the URTC build with the slave board's own key (different
-    // from the master's - see slaveboot_common.h); published with the image.
-    const signature = opts.signature;
-    if (signature.length !== 32) throw new FlashError('HMAC-SHA256 signature must be 32 bytes');
+    // The slave bootloader holds no key: the 0x212 frames carry the plain SHA-256 of the image, and the main board verifies the Ed25519 record (0x21A) before it
+    // confirms the image to the slave.
+    const record = opts.record;
+    if (record.length !== RECORD_SIZE) throw new FlashError('The signature record must be 76 bytes');
+    const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', data.slice().buffer as ArrayBuffer));
 
     setFlasherState(prev => ({ ...prev, mode: 'erasing', progress: 0, statusText: t('flasher.status_entering_slave_bootloader', '1/5: Entering slave bootloader (relayed via I2C)...'), log: [t('flasher.log_computing_crc', 'Computing CRC32 and HMAC-SHA256 over the selected image...')] }));
 
@@ -363,10 +378,16 @@ export function useFlasher(serialCan: SerialCanBus) {
     }
     if (!receiving) throw new FlashError(t('flasher.err_slave_timeout_receiving', 'Timeout waiting for slave bootloader to report RECEIVING'));
 
-    appendLog(t('flasher.log_hmac_sending', 'Sending HMAC-SHA256 signature (4 chunks)...'));
+    appendLog(t('flasher.log_digest_sending', 'Sending the SHA-256 of the image ({{id}}, 4 frames)...', { id: '0x212' }));
     for (let i = 0; i < 4; i++) {
       checkCancelled();
-      await serialCan.sendFrame(CAN_ID_SLAVE_HMAC_CHUNK, hmacChunkData(signature, i), `Slave HMAC chunk ${i + 1}/4`);
+      await serialCan.sendFrame(CAN_ID_SLAVE_HMAC_CHUNK, hmacChunkData(digest, i), `Slave SHA-256 chunk ${i + 1}/4`);
+      await new Promise(r => setTimeout(r, 10));
+    }
+    appendLog(t('flasher.log_record_sending', 'Sending the Ed25519 signature record ({{id}}, 11 frames)...', { id: '0x21A' }));
+    for (let i = 0; i < RECORD_CHUNK_COUNT; i++) {
+      checkCancelled();
+      await serialCan.sendFrame(CAN_ID_SLAVE_RECORD_CHUNK, recordChunkData(record, i), `Slave signature record ${i + 1}/${RECORD_CHUNK_COUNT}`);
       await new Promise(r => setTimeout(r, 10));
     }
 

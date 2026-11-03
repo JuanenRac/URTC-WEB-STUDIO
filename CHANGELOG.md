@@ -2,6 +2,10 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+- **The signature record goes to the board with the image:** the flasher reads `<image>.imgsig` (152 hexadecimal digits: the 76-byte Ed25519 record), picked together with a browsed image, downloaded from the GitHub release next to the image, or served from `/firmware/`, and sends it in 11 frames, `0x7EC` to the main-board bootloader and `0x21A` to the expansion slave (through the main board, which verifies it and confirms the image). The frames `0x212` to the slave carry the SHA-256 of the image computed in the page, because the slave bootloader holds no key any more; an image without a record is refused for the slave before any frame is sent, a file that is not a record is an error, and with a record the page no longer asks for a signing key (the HMAC chunks are only sent when the image has a published HMAC, for bootloaders of the earlier generation). Eight messages in the eight languages, tests of the frames and of the file reader, and the copy of URTC-COMMON refreshed. The bundled images and the sync script still need the `.imgsig` of each image from the release.
+
 ## [0.4.5] - The check of the signing key reads the fingerprint from 0x7ED, the trace viewer tells layers of the same length apart by their fixed bytes and the README shows screenshots of the studio
 
 - **The screenshots of the README are listed in `docs/screenshots.json`:** each picture has a short name and a caption in the eight languages, the README section is written from that file, and `tools/capture_screenshots.py` takes the pictures again without opening a window on the desktop.

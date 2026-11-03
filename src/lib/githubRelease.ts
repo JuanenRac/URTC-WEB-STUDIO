@@ -41,6 +41,8 @@ export interface RemoteFirmware {
   manifest?: ReleaseAsset;
   /** The release signature of the image (<image>.sig), when the release has one. */
   signature?: ReleaseAsset;
+  /** The Ed25519 signature record of the image (<image>.imgsig, 152 hexadecimal digits), which the bootloader verifies. */
+  record?: ReleaseAsset;
 }
 
 export type GithubReleaseErrorCode = 'rate_limit' | 'no_release' | 'http' | 'network' | 'no_images';
@@ -73,6 +75,7 @@ export function imagesFromRelease(release: any, target: FlashTarget): RemoteFirm
       sha256: byName.get(firmwareSidecarName(a.name, '.sha256')),
       manifest: byName.get(firmwareSidecarName(a.name, '.manifest.json')),
       signature: byName.get(firmwareSidecarName(a.name, '.sig')),
+      record: byName.get(`${a.name}.imgsig`),
     }));
 }
 
