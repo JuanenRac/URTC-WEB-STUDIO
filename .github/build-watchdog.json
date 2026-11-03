@@ -1,0 +1,4 @@
+{
+  "workflow": "site-build.yml",
+  "max_minutes": 120
+}
