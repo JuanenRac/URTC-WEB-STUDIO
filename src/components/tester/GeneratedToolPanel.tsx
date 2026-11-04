@@ -7,21 +7,13 @@ import { KEEPALIVE_INTERVAL_MS } from '../../lib/canIds';
 import type { UrtcPanelAction, UrtcPanelControl, UrtcPanelReading, UrtcPanelSection, UrtcToolPanel } from '../../lib/generated/urtcTools';
 import { isConfigWord } from '../../lib/toolLimits';
 import {
-  PANEL_ENCODERS, clampControl, decodeValue, heatColor, imagePixels, initialValues, isEventFrame, labelParams, panelControls, panelText, readingOf,
-  resultText, type PanelValue, type PanelValues,
+  PANEL_ENCODERS, askValue, clampControl, encodeAction, heatColor, initialValues, labelParams, panelControls, panelText, pullImage, readingShown,
+  readingStep, resultText, type PanelValue, type PanelValues,
 } from '../../lib/toolPanelView';
 import { Section, Field, inputCls, btnCls, btnPrimaryCls, KeepaliveCheckbox, LiveGraph } from './shared';
 import type { ToolCtx } from './ToolPanels';
 
 type TFn = (key: string, fallback: string, params?: Record<string, unknown>) => string;
-
-// A number in `args` stands for itself; a name is the control whose value goes in that place. With `gateFirst` the first one goes as 0 while the
-// repeated command of the section is off (a heater set point must not be armed by a one-off move).
-function encode(name: string, values: PanelValues, args: (string | number)[] | undefined, gateFirst = false, gateOpen = true): number[] {
-  const list = (args ?? []).map((a) => (typeof a === 'number' ? a : values[a]));
-  if (gateFirst && !gateOpen && list.length) list[0] = 0;
-  return PANEL_ENCODERS[name](...list);
-}
 
 const ControlView: React.FC<{ control: UrtcPanelControl; value: PanelValue; onChange: (v: PanelValue) => void; t: TFn }> = ({ control, value, onChange, t }) => {
   const label = panelText(t, control.label, labelParams(control, value));
@@ -64,28 +56,15 @@ const ControlView: React.FC<{ control: UrtcPanelControl; value: PanelValue; onCh
 };
 
 const ReadingView: React.FC<{ ctx: ToolCtx; reading: UrtcPanelReading; t: TFn }> = ({ ctx, reading, t }) => {
-  const [value, setValue] = useState<number | null>(null);
-  const [seen, setSeen] = useState<string | null>(null);
-  useEffect(() => ctx.subscribe(reading.canId, (f) => {
-    if (reading.format === 'count' || reading.format === 'last_seen') {
-      if (!isEventFrame(reading, f.data)) return;
-      if (reading.format === 'count') setValue((c) => (c ?? 0) + 1);
-      else setSeen(f.timestamp);
-      return;
-    }
-    const v = readingOf(reading, f.data);
-    if (v !== null) setValue(v);
-  }), [ctx, reading.canId, reading.offset, reading.width, reading.format, reading.match]);
-  const shown = reading.format === 'yes_no'
-    ? <span className={`font-mono ${value ? 'text-emerald-400' : 'text-slate-500'}`}>{value ? t('testertool.yes', 'YES') : t('testertool.no', 'no')}</span>
-    : reading.format === 'count'
-      ? <span className="font-mono text-slate-200">{value ?? 0}</span>
-      : reading.format === 'last_seen'
-        ? <span className="font-mono text-slate-200">{seen ?? '--'}</span>
-        : <span className="font-mono text-slate-200">{value ?? '--'}{reading.unit ? ` ${reading.unit}` : ''}</span>;
+  const [state, setState] = useState<{ value: number | null; seen: string | null }>({ value: null, seen: null });
+  useEffect(() => ctx.subscribe(reading.canId, (f) => setState((prev) => readingStep(reading, f, prev))),
+    [ctx, reading.canId, reading.offset, reading.width, reading.format, reading.match]);
+  const { value } = state;
+  const shown = readingShown(reading, value, state.seen, t('testertool.yes', 'YES'), t('testertool.no', 'no'));
+  const tone = shown.tone === 'on' ? 'text-emerald-400' : shown.tone === 'off' ? 'text-slate-500' : 'text-slate-200';
   return (
     <div data-testid={`reading-${reading.id}`}>
-      {panelText(t, reading.label)} {shown}
+      {panelText(t, reading.label)} <span className={`font-mono ${tone}`}>{shown.text}</span>
       {reading.graph_max ? <LiveGraph value={value} yMax={reading.graph_max} /> : null}
     </div>
   );
@@ -98,7 +77,7 @@ const KeepaliveAction: React.FC<{
   const confirm = useConfirmAction();
   useKeepalive(
     active, action.interval_ms ?? KEEPALIVE_INTERVAL_MS,
-    () => ctx.sendFrame(action.canId, encode(action.encoder as string, values, action.args), action.description),
+    () => ctx.sendFrame(action.canId, encodeAction(action.encoder as string, values, action.args), action.description),
     () => setActive(false),
     () => ctx.sendFrame(action.canId, PANEL_ENCODERS[action.off_encoder as string](), action.off_description),
   );
@@ -132,8 +111,7 @@ const QueryAction: React.FC<{ ctx: ToolCtx; action: UrtcPanelAction; index: numb
   const [value, setValue] = useState<number | null>(null);
   const result = action.result as NonNullable<UrtcPanelAction['result']>;
   const ask = async () => {
-    const resp = await ctx.request(action.canId, [], action.respCanId ?? action.canId, action.timeout_ms, action.description);
-    const v = resp ? decodeValue(result, resp.data) : null;
+    const v = await askValue(ctx, action);
     if (v !== null) setValue(v);
   };
   useEffect(() => { if (action.auto && ctx.isConnected) void ask(); }, [ctx.isConnected]);
@@ -152,26 +130,12 @@ const ImageAction: React.FC<{ ctx: ToolCtx; action: UrtcPanelAction; t: TFn }> =
   const [reading, setReading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
-  const chunks = action.chunks as number;
-  const respId = action.respCanId ?? action.canId;
   const read = async () => {
     setReading(true);
     setProgress(0);
     setError('');
-    const bytes: number[] = [];
     try {
-      for (let chunk = 0; chunk < chunks; chunk++) {
-        // Frames left over from an earlier, aborted reading must not be mixed into this chunk.
-        ctx.flushFrames(respId);
-        await ctx.sendFrame(action.canId, [chunk], `${action.description} ${chunk}`);
-        for (let f = 0; f < (action.frames_per_chunk as number); f++) {
-          const frame = await ctx.waitForFrame(respId, action.timeout_ms);
-          if (!frame) throw new Error(`Timeout on chunk ${chunk}, frame ${f}`);
-          bytes.push(...frame.data);
-        }
-        setProgress(Math.floor(((chunk + 1) / chunks) * 100));
-      }
-      setPixels(imagePixels(bytes, action.scale as number));
+      setPixels(await pullImage(ctx, action, setProgress));
     } catch (e) {
       console.error(e);
       setError(panelText(t, action.error as NonNullable<UrtcPanelAction['error']>, { message: e instanceof Error ? e.message : String(e) }));
@@ -227,7 +191,7 @@ const SectionView: React.FC<{
                 onClick={async () => {
                   if (stop) { setActive(false); if (a.reset) reset(a.reset); }
                   else if (a.confirm && !(await confirm(a.confirm as ActionKind, a.confirm_value ? { value: Number(values[a.confirm_value]) } : {}))) return;
-                  ctx.sendFrame(a.canId, encode(a.encoder as string, values, a.args, a.gate_first, active), a.description);
+                  ctx.sendFrame(a.canId, encodeAction(a.encoder as string, values, a.args, a.gate_first, active), a.description);
                 }}
               >{panelText(t, a.label ?? { text: '' })}</button>
             );

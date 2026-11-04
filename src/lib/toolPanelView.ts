@@ -6,7 +6,8 @@
 // The controls, the readings and the commands of most tool panels are data (the `panel` of a tool in spec/tools.json of URTC-COMMON, generated
 // into generated/urtcTools.ts). This module holds what does not need a screen: the frame builders a panel may name, the first value of every
 // control, the reading of a number from a telemetry frame and the text of a label.
-import type { UrtcPanelControl, UrtcPanelReading, UrtcPanelResult, UrtcPanelText, UrtcToolPanel } from './generated/urtcTools';
+import type { UrtcPanelAction, UrtcPanelControl, UrtcPanelReading, UrtcPanelResult, UrtcPanelText, UrtcToolPanel } from './generated/urtcTools';
+import type { CanFrame } from '../types';
 import { URTC_TOOL_PROFILES } from './generated/urtcTools';
 import { SOLDER_FEEDER_RESET_MAGIC, WELD_PULSE_MAX_MS } from './canIds';
 import {
@@ -48,6 +49,69 @@ export const PANEL_ENCODERS: Record<string, (...values: PanelValue[]) => number[
   thermalMotion: (celsius, dir, steps) => thermalMotionCommand(num(celsius), dir === 'fwd', num(steps)),
   thermalMotionOff: () => thermalMotionCommand(0, true, 0),
 };
+
+// A number in `args` stands for itself; a name is the control whose value goes in that place. With `gateFirst` the first one goes as 0 while the
+// repeated command of the section is off (a heater set point must not be armed by a one-off move).
+export function encodeAction(name: string, values: PanelValues, args: (string | number)[] | undefined, gateFirst = false, gateOpen = true): number[] {
+  const list = (args ?? []).map((a) => (typeof a === 'number' ? a : values[a]));
+  if (gateFirst && !gateOpen && list.length) list[0] = 0;
+  return PANEL_ENCODERS[name](...list);
+}
+
+/** What a panel needs of the bus to ask the board for something (the `ToolCtx` of the tester satisfies it). */
+export interface PanelBus {
+  sendFrame: (id: number, data: number[], description?: string) => Promise<void>;
+  waitForFrame: (id: number, timeoutMs?: number) => Promise<CanFrame | null>;
+  request: (id: number, data: number[], respId: number, timeoutMs?: number, description?: string) => Promise<CanFrame | null>;
+  flushFrames: (id?: number) => void;
+}
+
+/** Asks the board for the value of a `query` action: the number its answer holds, or null when nothing came back or the frame was too short. */
+export async function askValue(bus: PanelBus, action: UrtcPanelAction): Promise<number | null> {
+  const resp = await bus.request(action.canId, [], action.respCanId ?? action.canId, action.timeout_ms, action.description);
+  return resp && action.result ? decodeValue(action.result, resp.data) : null;
+}
+
+/** Pulls the picture of an `image` action chunk by chunk and returns its temperatures; throws when a frame of a chunk does not arrive in time. */
+export async function pullImage(bus: PanelBus, action: UrtcPanelAction, onProgress: (percent: number) => void): Promise<number[]> {
+  const chunks = action.chunks as number;
+  const respId = action.respCanId ?? action.canId;
+  const bytes: number[] = [];
+  for (let chunk = 0; chunk < chunks; chunk++) {
+    // Frames left over from an earlier, aborted reading must not be mixed into this chunk.
+    bus.flushFrames(respId);
+    await bus.sendFrame(action.canId, [chunk], `${action.description} ${chunk}`);
+    for (let f = 0; f < (action.frames_per_chunk as number); f++) {
+      const frame = await bus.waitForFrame(respId, action.timeout_ms);
+      if (!frame) throw new Error(`Timeout on chunk ${chunk}, frame ${f}`);
+      bytes.push(...frame.data);
+    }
+    onProgress(Math.floor(((chunk + 1) / chunks) * 100));
+  }
+  return imagePixels(bytes, action.scale as number);
+}
+
+/** What a reading holds after a frame: a counter counts the frames of its event, a last-seen reading keeps their time, any other keeps the number it decodes. */
+export function readingStep(
+  reading: UrtcPanelReading, frame: { data: number[]; timestamp: string }, prev: { value: number | null; seen: string | null },
+): { value: number | null; seen: string | null } {
+  if (reading.format === 'count' || reading.format === 'last_seen') {
+    if (!isEventFrame(reading, frame.data)) return prev;
+    return reading.format === 'count' ? { ...prev, value: (prev.value ?? 0) + 1 } : { ...prev, seen: frame.timestamp };
+  }
+  const v = readingOf(reading, frame.data);
+  return v === null ? prev : { ...prev, value: v };
+}
+
+/** The text of a reading and the tone it is drawn in: a yes/no flag, a count, the time of the last event or a number with its unit. */
+export function readingShown(
+  reading: Pick<UrtcPanelReading, 'format' | 'unit'>, value: number | null, seen: string | null, yes: string, no: string,
+): { text: string; tone: 'on' | 'off' | 'plain' } {
+  if (reading.format === 'yes_no') return value ? { text: yes, tone: 'on' } : { text: no, tone: 'off' };
+  if (reading.format === 'count') return { text: String(value ?? 0), tone: 'plain' };
+  if (reading.format === 'last_seen') return { text: seen ?? '--', tone: 'plain' };
+  return { text: `${value ?? '--'}${reading.unit ? ` ${reading.unit}` : ''}`, tone: 'plain' };
+}
 
 export function panelOf(toolId: number): UrtcToolPanel | null {
   return URTC_TOOL_PROFILES.find((p) => p.id === toolId)?.panel ?? null;

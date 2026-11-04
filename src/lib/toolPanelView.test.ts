@@ -3,8 +3,8 @@ import { URTC_TOOL_PROFILES } from './generated/urtcTools';
 import { MOTION_TOOL_IDS, OWN_COMMAND_MOTION_TOOL_IDS, WELD_PULSE_MAX_MS } from './canIds';
 import { AOI_STROBE_MAX_MS, AOI_STROBE_MIN_MS, MAX_HEATER_SETPOINT_C, MAX_MOTION_STEPS, PASTE_PULSE_MAX_MS, PASTE_PULSE_MIN_MS } from './toolLimits';
 import {
-  PANEL_ENCODERS, clampControl, decodeValue, heatColor, imagePixels, initialValues, isEventFrame, labelParams, panelControls, panelOf, panelText,
-  readingOf, resultText,
+  PANEL_ENCODERS, askValue, clampControl, decodeValue, encodeAction, heatColor, imagePixels, initialValues, isEventFrame, labelParams, panelControls,
+  panelOf, panelText, pullImage, readingOf, readingShown, readingStep, resultText, type PanelBus,
 } from './toolPanelView';
 import { KEEPALIVE_INTERVAL_MS, LAYERFAN_KEEPALIVE_INTERVAL_MS, SOLDER_FEEDER_RESET_MAGIC, THERMAL_CHUNK_COUNT } from './canIds';
 
@@ -92,6 +92,92 @@ describe('the panels that are described in the profiles', () => {
     expect(drill.actions![0].canId).toBe(0x140);
     expect(drill.telemetry!.map((r) => [r.canId, r.offset, r.width])).toEqual([[0x147, 0, 2], [0x147, 2, 1]]);
     expect(panelOf(19)!.sections[0].telemetry![0].canId).toBe(0x135);
+  });
+});
+
+const frame = (id: number, data: number[]) => ({ id, data, timestamp: '12:00:00', simulated: false } as never);
+const bus = (overrides: Partial<PanelBus> = {}): PanelBus => ({
+  sendFrame: async () => undefined, waitForFrame: async () => null, request: async () => null, flushFrames: () => undefined, ...overrides,
+});
+
+describe('what a panel does with the bus', () => {
+  it('encodes a command from the values of its controls, with a number standing for itself', () => {
+    const values = { temp: 200, dir: 'fwd', steps: 5 };
+    expect(encodeAction('thermalMotion', values, ['temp', 'dir', 0])).toEqual([0, 200, 1, 0, 0, 0]);
+    expect(encodeAction('thermalMotion', values, ['temp', 'dir', 'steps'])).toEqual([0, 200, 1, 0, 0, 5]);
+    expect(encodeAction('emptyFrame', values, undefined)).toEqual([]);
+  });
+
+  it('holds the first argument at 0 while the repeated command of the section is off, and only then', () => {
+    const values = { temp: 200, dir: 'fwd', steps: 5 };
+    const args = ['temp', 'dir', 'steps'];
+    expect(encodeAction('thermalMotion', values, args, true, false)).toEqual([0, 0, 1, 0, 0, 5]);
+    expect(encodeAction('thermalMotion', values, args, true, true)).toEqual([0, 200, 1, 0, 0, 5]);
+    expect(encodeAction('thermalMotion', values, args, false, false)).toEqual([0, 200, 1, 0, 0, 5]);
+    expect(encodeAction('emptyFrame', values, [], true, false)).toEqual([]);
+  });
+
+  it('asks for the position of the feeder and reads the signed answer, or nothing when none comes', async () => {
+    const query = panelOf(0)!.sections[1].actions!.find((a) => a.type === 'query')!;
+    const asked: number[][] = [];
+    const answer = bus({ request: async (id, data, respId) => { asked.push([id, respId, ...data]); return frame(respId, [0xFF, 0xFF, 0xFF, 0x38]); } });
+    expect(await askValue(answer, query)).toBe(-200);
+    expect(asked).toEqual([[0x132, 0x132]]);
+    expect(await askValue(bus(), query)).toBeNull();
+    expect(await askValue(bus({ request: async () => frame(0x132, [1]) }), query)).toBeNull();
+  });
+
+  it('pulls a picture chunk by chunk and reports the progress', async () => {
+    const image = panelOf(22)!.sections[0].actions!.find((a) => a.type === 'image')!;
+    const sent: number[][] = [];
+    const flushed: (number | undefined)[] = [];
+    const progress: number[] = [];
+    const full = bus({
+      sendFrame: async (id, data) => { sent.push([id, ...data]); },
+      flushFrames: (id) => { flushed.push(id); },
+      waitForFrame: async (id) => frame(id, [0x09, 0xC4, 0x09, 0xC4, 0x09, 0xC4, 0x09, 0xC4]),
+    });
+    const pixels = await pullImage(full, image, (p) => progress.push(p));
+    expect(pixels).toHaveLength(768);
+    expect(pixels[0]).toBe(25);
+    expect(sent).toHaveLength(THERMAL_CHUNK_COUNT);
+    expect(sent[3]).toEqual([0x254, 3]);
+    expect(flushed.every((id) => id === 0x255)).toBe(true);
+    expect(progress[0]).toBe(2);
+    expect(progress.at(-1)).toBe(100);
+  });
+
+  it('gives up with the chunk and the frame that did not arrive', async () => {
+    const image = panelOf(22)!.sections[0].actions!.find((a) => a.type === 'image')!;
+    let n = 0;
+    const slow = bus({ waitForFrame: async (id) => (++n > 5 ? null : frame(id, [0, 0, 0, 0, 0, 0, 0, 0])) });
+    await expect(pullImage(slow, image, () => undefined)).rejects.toThrow('Timeout on chunk 1, frame 1');
+  });
+
+  it('keeps what a reading holds: a count, the time of the last event, a number, and the last number when a frame is too short', () => {
+    const [impacts, last] = panelOf(11)!.sections[0].telemetry!;
+    const none = { value: null, seen: null };
+    const hit = { data: [1], timestamp: '10:00:01' };
+    const miss = { data: [0], timestamp: '10:00:02' };
+    expect(readingStep(impacts, hit, none)).toEqual({ value: 1, seen: null });
+    expect(readingStep(impacts, hit, { value: 1, seen: null })).toEqual({ value: 2, seen: null });
+    expect(readingStep(impacts, miss, { value: 1, seen: null })).toEqual({ value: 1, seen: null });
+    expect(readingStep(last, hit, none)).toEqual({ value: null, seen: '10:00:01' });
+    expect(readingStep(last, miss, { value: null, seen: '10:00:01' })).toEqual({ value: null, seen: '10:00:01' });
+    const hotend = panelOf(10)!.sections[0].telemetry![0];
+    expect(readingStep(hotend, { data: [0x00, 0xC8], timestamp: 't' }, none)).toEqual({ value: 200, seen: null });
+    expect(readingStep(hotend, { data: [0x00], timestamp: 't' }, { value: 5, seen: null })).toEqual({ value: 5, seen: null });
+  });
+
+  it('shows a reading as yes/no, a count, a time or a number with its unit', () => {
+    expect(readingShown({ format: 'yes_no' }, 1, null, 'YES', 'no')).toEqual({ text: 'YES', tone: 'on' });
+    expect(readingShown({ format: 'yes_no' }, 0, null, 'YES', 'no')).toEqual({ text: 'no', tone: 'off' });
+    expect(readingShown({ format: 'count' }, null, null, 'YES', 'no')).toEqual({ text: '0', tone: 'plain' });
+    expect(readingShown({ format: 'count' }, 3, null, 'YES', 'no')).toEqual({ text: '3', tone: 'plain' });
+    expect(readingShown({ format: 'last_seen' }, null, null, 'YES', 'no')).toEqual({ text: '--', tone: 'plain' });
+    expect(readingShown({ format: 'last_seen' }, null, '10:00:01', 'YES', 'no')).toEqual({ text: '10:00:01', tone: 'plain' });
+    expect(readingShown({ unit: 'C' }, 220, null, 'YES', 'no')).toEqual({ text: '220 C', tone: 'plain' });
+    expect(readingShown({}, null, null, 'YES', 'no')).toEqual({ text: '--', tone: 'plain' });
   });
 });
 
