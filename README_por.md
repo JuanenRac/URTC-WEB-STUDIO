@@ -31,7 +31,7 @@
 
 ---
 
-> **Estado de segurança (safety e security):** este ecossistema não é um sistema de segurança certificado e ainda não existe nenhuma placa URTC montada. Os bootloaders verificam as imagens de firmware com CRC32 e um HMAC-SHA256 de chave partilhada, não com uma assinatura assimétrica (prevista); as imagens de aplicação publicadas estão assinadas com a chave pública de desenvolvimento (`signing_key_kind: dev`), pelo que qualquer pessoa pode produzir uma imagem que o bootloader aceita; nada foi transmitido a uma placa real. Leia a [base de segurança](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md) e o [modelo de ameaças](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md) antes de confiar em qualquer afirmação aqui para a segurança de uma pessoa.
+> **Estado de segurança (safety e security):** este ecossistema não é um sistema de segurança certificado e ainda não existe nenhuma placa URTC montada. O bootloader da placa principal verifica um registo Ed25519 da imagem (`<image>.imgsig`) contra uma tabela de chaves públicas e não guarda nenhum segredo, e o bootloader do escravo de expansão verifica um SHA-256 simples e só instala uma imagem que a placa principal confirma; a tabela da compilação oficial está vazia até a chave de assinatura de imagens ser criada, e uma compilação de bancada confia numa chave pública de desenvolvimento, pelo que qualquer pessoa pode produzir uma imagem que um bootloader assim aceita; nada foi transmitido a uma placa real. Leia a [base de segurança](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md) e o [modelo de ameaças](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md) antes de confiar em qualquer afirmação aqui para a segurança de uma pessoa.
 
 ## 📋 Num relance
 
@@ -166,7 +166,7 @@ Portado a partir do próprio `flasher_protocol.py` do `URTC-FLASHER`, contra os 
 CAN IDs:
 
 - **Atualização CAN-OTA da placa principal** (`0x7F0`-`0x7F7`): acionador de
-  entrada no bootloader, HMAC-SHA256 de chave partilhada (testado apenas contra um simulador), transferência paginada com controlo de
+  entrada no bootloader, registo Ed25519 da imagem (testado apenas contra um simulador), transferência paginada com controlo de
   fluxo por ACK de página e retry/backoff, CRC32 + END_UPDATE com versão declarada,
   e tratamento do estado terminal (incluindo a recuperação de uma trama de
   confirmação perdida da mesma forma que a ferramenta de ambiente de trabalho - volta a
@@ -189,7 +189,7 @@ CAN IDs:
   respondedor real (app ou bootloader), o HardwareID e a versão, não um interruptor
   simulado.
 - **Assinatura e digest publicados** - cada imagem da build do URTC traz
-  `<file>.manifest.json` (versão, `sha256` e o valor `hmac_sha256` que o bootloader espera, um HMAC-SHA256 de chave partilhada e não uma assinatura assimétrica) e `<file>.sha256`. A aplicação envia essa assinatura publicada,
+  `<file>.manifest.json` (versão, `sha256` e o valor `hmac_sha256` que o bootloader espera, um HMAC-SHA256 de chave partilhada que só os bootloaders da geração anterior verificam; o registo Ed25519 que os atuais verificam é o ficheiro `<file>.imgsig` junto à imagem, que a aplicação envia ao bootloader) e `<file>.sha256`. A aplicação envia essa assinatura publicada,
   um `sha256` do manifesto que não corresponda ao ficheiro **bloqueia** a gravação,
   e a versão do manifesto é a que é comunicada ao bootloader. Um ficheiro escolhido
   a partir do disco não tem manifesto: só pode ser gravado com uma chave de assinatura

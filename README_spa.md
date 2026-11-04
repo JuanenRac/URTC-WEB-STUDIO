@@ -30,7 +30,7 @@
 
 ---
 
-> **Estado de seguridad física y de ciberseguridad:** este ecosistema no es un sistema de seguridad certificado y todavía no existe ninguna placa URTC poblada. Los bootloaders comprueban las imágenes de firmware con CRC32 y un HMAC-SHA256 de clave compartida, no con una firma asimétrica (prevista); las imágenes de aplicación publicadas están firmadas con la clave pública de desarrollo (`signing_key_kind: dev`), así que cualquiera puede producir una imagen que el bootloader acepte; no se ha transmitido nada a una placa real. Lee la [línea base de seguridad](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md) y el [modelo de amenazas](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md) antes de fiarte de cualquier afirmación de aquí para la seguridad de una persona.
+> **Estado de seguridad física y de ciberseguridad:** este ecosistema no es un sistema de seguridad certificado y todavía no existe ninguna placa URTC poblada. El bootloader de la placa principal verifica un registro Ed25519 de la imagen (`<imagen>.imgsig`) contra una tabla de claves públicas y no guarda ningún secreto, y el bootloader del esclavo de expansión comprueba un SHA-256 simple e instala solo una imagen que la placa principal confirma; la tabla de la compilación oficial está vacía hasta que se cree la clave de firma de imágenes, y una compilación de banco confía en una clave pública de desarrollo, así que cualquiera puede producir una imagen que un bootloader así acepte; no se ha transmitido nada a una placa real. Lee la [línea base de seguridad](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md) y el [modelo de amenazas](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md) antes de fiarte de cualquier afirmación de aquí para la seguridad de una persona.
 
 ## 📋 De un vistazo
 
@@ -165,7 +165,7 @@ Portado desde el propio `flasher_protocol.py` de `URTC-FLASHER`, contra los mism
 CAN ID:
 
 - **Actualización CAN-OTA de la placa principal** (`0x7F0`-`0x7F7`): disparador de
-  entrada al bootloader, HMAC-SHA256 de clave compartida (probado solo contra un simulador), transferencia paginada con control de
+  entrada al bootloader, registro Ed25519 de la imagen (probado solo contra un simulador), transferencia paginada con control de
   flujo por ACK de página y reintento/backoff, CRC32 + END_UPDATE con versión
   declarada, y manejo de estado terminal (incluida la recuperación de una trama de
   confirmación perdida de la misma forma que la herramienta de escritorio - vuelve a
@@ -188,7 +188,7 @@ CAN ID:
   respondedor real (app o bootloader), HardwareID, y versión, no un interruptor
   simulado.
 - **Firma y resumen publicados** - cada imagen del build de URTC trae
-  `<file>.manifest.json` (versión, `sha256` y el valor `hmac_sha256` que espera el bootloader, un HMAC-SHA256 de clave compartida y no una firma asimétrica) y `<file>.sha256`. La app envía esa firma publicada,
+  `<file>.manifest.json` (versión, `sha256` y el valor `hmac_sha256` que espera el bootloader, un HMAC-SHA256 de clave compartida que solo comprueban los bootloaders de la generación anterior; el registro Ed25519 que verifican los actuales es el archivo `<file>.imgsig` junto a la imagen, que la app envía al bootloader) y `<file>.sha256`. La app envía esa firma publicada,
   un `sha256` del manifiesto que no coincide con el archivo **bloquea** la
   grabación, y la versión del manifiesto es la que se informa al bootloader.
   Un archivo elegido del disco no tiene manifiesto: solo se puede grabar con

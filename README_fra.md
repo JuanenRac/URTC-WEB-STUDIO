@@ -30,7 +30,7 @@
 
 ---
 
-> **État de la sûreté et de la cybersécurité :** cet écosystème n'est pas un système de sécurité certifié et aucune carte URTC assemblée n'existe encore. Les bootloaders contrôlent les images de firmware par CRC32 et un HMAC-SHA256 à clé partagée, pas par une signature asymétrique (prévue) ; les images d'application publiées sont signées avec la clé publique de développement (`signing_key_kind: dev`), si bien que n'importe qui peut produire une image acceptée par le bootloader ; rien n'a été transmis à une carte réelle. Lisez la [base de sécurité](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md) et le [modèle de menaces](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md) avant de vous fier à une affirmation d'ici pour la sécurité d'une personne.
+> **État de la sûreté et de la cybersécurité :** cet écosystème n'est pas un système de sécurité certifié et aucune carte URTC assemblée n'existe encore. Le bootloader de la carte principale vérifie un enregistrement Ed25519 de l'image (`<image>.imgsig`) par rapport à une table de clés publiques et ne détient aucun secret, et celui de l'esclave d'extension contrôle un simple SHA-256 et n'installe qu'une image que la carte principale confirme ; la table du build officiel est vide tant que la clé de signature des images n'est pas créée, et un build de banc fait confiance à une clé publique de développement, si bien que n'importe qui peut produire une image qu'un tel bootloader accepte ; rien n'a été transmis à une carte réelle. Lisez la [base de sécurité](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md) et le [modèle de menaces](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md) avant de vous fier à une affirmation d'ici pour la sécurité d'une personne.
 
 ## 📋 En un coup d'œil
 
@@ -164,7 +164,7 @@ Porté depuis le propre `flasher_protocol.py` d'`URTC-FLASHER`, contre les même
 CAN ID :
 
 - **Mise à jour CAN-OTA de la carte principale** (`0x7F0`-`0x7F7`) : déclencheur
-  d'entrée dans le bootloader, HMAC-SHA256 à clé partagée (testé uniquement contre un simulateur), transfert paginé avec
+  d'entrée dans le bootloader, enregistrement Ed25519 de l'image (testé uniquement contre un simulateur), transfert paginé avec
   contrôle de flux par ACK de page et retry/backoff, CRC32 + END_UPDATE avec
   version déclarée, et gestion de statut terminal (y compris la récupération d'une
   trame de confirmation perdue de la même manière que l'outil de bureau - il
@@ -189,7 +189,7 @@ CAN ID :
   vrai répondant (application ou bootloader), le HardwareID, et la version, pas un
   commutateur simulé.
 - **Signature et empreinte publiées** - chaque image issue du build URTC est
-  livrée avec `<file>.manifest.json` (version, `sha256` et la valeur `hmac_sha256` attendue par le bootloader, un HMAC-SHA256 à clé partagée et non une signature asymétrique) et `<file>.sha256`. L'application
+  livrée avec `<file>.manifest.json` (version, `sha256` et la valeur `hmac_sha256` attendue par le bootloader, un HMAC-SHA256 à clé partagée que seuls les bootloaders de la génération précédente contrôlent ; l'enregistrement Ed25519 que vérifient les actuels est le fichier `<file>.imgsig` à côté de l'image, que l'application envoie au bootloader) et `<file>.sha256`. L'application
   envoie cette signature publiée, un `sha256` du manifeste qui ne correspond
   pas au fichier **bloque** le flashage, et c'est la version du manifeste qui
   est annoncée au bootloader. Un fichier choisi sur le disque n'a pas de

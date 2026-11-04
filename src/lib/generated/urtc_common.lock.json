@@ -28,7 +28,7 @@
     },
     "urtcCanIds.ts": {
       "from": "generated/urtcCanIds.ts",
-      "sha256": "daab85e1bab288bbeade0e5e363d1e22c3a695d5f52044c60fc6ff088805d039"
+      "sha256": "0d5a9ea659a8f41065d6204a191a7fda79f806aeae6e59ff6ce6c2c0d840a9d8"
     },
     "urtcTools.ts": {
       "from": "generated/urtcTools.ts",

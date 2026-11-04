@@ -80,11 +80,11 @@ describe('release signatures of the firmware set', () => {
   });
 
   it('reads --allow-unsigned', () => {
-    expect(parseArgs(['--tag', 'v0.3.5', '--allow-unsigned'])).toEqual({ dir: undefined, tag: 'v0.3.5', allowUnsigned: true, requireOfficial: false });
+    expect(parseArgs(['--tag', 'v0.3.5', '--allow-unsigned'])).toEqual({ dir: undefined, tag: 'v0.3.5', allowUnsigned: true, requireOfficial: false, requireRecord: false });
   });
 
   it('reads --require-official and refuses it with a local folder or with unsigned sets', () => {
-    expect(parseArgs(['--require-official'])).toEqual({ dir: undefined, tag: undefined, allowUnsigned: false, requireOfficial: true });
+    expect(parseArgs(['--require-official'])).toEqual({ dir: undefined, tag: undefined, allowUnsigned: false, requireOfficial: true, requireRecord: false });
     expect(() => parseArgs(['--require-official', '../URTC/firmware'])).toThrow(/not a local folder/);
     expect(() => parseArgs(['--require-official', '--allow-unsigned'])).toThrow(/contradict/);
   });
@@ -133,6 +133,82 @@ describe('what a published page may carry (--require-official)', () => {
     }
     const missing = async () => ({ ok: false, status: 404 });
     await expect(downloadRelease({ fetchFn: missing, outDir: dir, fallbackTag: undefined, requireOfficial: true })).rejects.toThrow(/404/);
+  });
+});
+
+describe('the image signature record of the application images', () => {
+  const RECORD = 'ab'.repeat(76);
+  const APPS = [COMPONENTS.main_application, COMPONENTS.slave_application];
+  const writeRecords = () => { for (const bin of APPS) writeFileSync(join(dir, `${bin}.imgsig`), `${RECORD}\n`); };
+
+  it('copies the record of each application image, and with it its release signature', () => {
+    writeRecords();
+    for (const name of [...allFiles(), ...APPS.map((bin) => `${bin}.imgsig`)]) signFile(name);
+    const out = join(dir, 'out');
+    checkFolder(dir, { publicKeyHex: publicHex, requireRecord: true }).copy(out);
+    for (const bin of APPS) {
+      expect(readFileSync(join(out, `${bin}.imgsig`), 'ascii').trim()).toBe(RECORD);
+      expect(existsSync(join(out, `${bin}.imgsig.sig`))).toBe(true);
+    }
+    expect(existsSync(join(out, `${COMPONENTS.main_bootloader}.imgsig`))).toBe(false);
+  });
+
+  it('accepts an application manifest without hmac_sha256 when the record is there, and not otherwise', () => {
+    writeRecords();
+    for (const bin of APPS) {
+      const path = join(dir, `${bin}.manifest.json`);
+      const manifest = JSON.parse(readFileSync(path, 'utf8'));
+      delete manifest.hmac_sha256;
+      writeFileSync(path, JSON.stringify(manifest));
+    }
+    expect(() => checkFolder(dir, { allowUnsigned: true, publicKeyHex: publicHex, requireRecord: true })).not.toThrow();
+    rmSync(join(dir, `${COMPONENTS.main_application}.imgsig`));
+    expect(() => checkFolder(dir, { allowUnsigned: true, publicKeyHex: publicHex })).toThrow(/needs hmac_sha256 in its manifest or its signature record/);
+  });
+
+  it('accepts a set without records unless they are required', () => {
+    expect(() => checkFolder(dir, { allowUnsigned: true, publicKeyHex: publicHex })).not.toThrow();
+    expect(() => checkFolder(dir, { allowUnsigned: true, publicKeyHex: publicHex, requireRecord: true })).toThrow(/no image signature record/);
+  });
+
+  it('refuses a file that is not a record, whatever the options', () => {
+    for (const text of ['ab'.repeat(75), `${RECORD}\n\n`, 'zz'.repeat(76), '']) {
+      writeFileSync(join(dir, `${COMPONENTS.main_application}.imgsig`), text);
+      expect(() => checkFolder(dir, { allowUnsigned: true, publicKeyHex: publicHex })).toThrow(/not an image signature record/);
+    }
+  });
+
+  it('refuses a record whose release signature is wrong', () => {
+    writeRecords();
+    for (const name of allFiles()) signFile(name);
+    signFile(`${COMPONENTS.main_application}.imgsig`, 'another-file.imgsig');
+    expect(() => checkFolder(dir, { allowUnsigned: true, publicKeyHex: publicHex })).toThrow(/does not match its release signature/);
+  });
+
+  it('downloads the records of a release that has them, and names the one a release lacks when they are required', async () => {
+    writeRecords();
+    const names = [...allFiles(), ...APPS.map((bin) => `${bin}.imgsig`)];
+    const assets = names.map((name, i) => ({ name, url: `https://asset/${i}`, size: 1 }));
+    const fetchFn = async (url) => {
+      if (url.includes('/releases/')) return { ok: true, status: 200, json: async () => ({ tag_name: 'v9.9.9', assets }) };
+      const name = names[Number(url.split('/').pop())];
+      return { ok: true, status: 200, arrayBuffer: async () => readFileSync(join(dir, name)) };
+    };
+    const out = mkdtempSync(join(tmpdir(), 'urtc-sync-out-'));
+    try {
+      await downloadRelease({ fetchFn, outDir: out, env: {}, requireRecord: true });
+      expect(existsSync(join(out, `${COMPONENTS.slave_application}.imgsig`))).toBe(true);
+      const without = { ...{ tag_name: 'v9.9.9' }, assets: assets.filter((a) => !a.name.endsWith('.imgsig')) };
+      const fetchWithout = async (url) => (url.includes('/releases/') ? { ok: true, status: 200, json: async () => without } : fetchFn(url));
+      await expect(downloadRelease({ fetchFn: fetchWithout, outDir: out, env: {}, requireRecord: true })).rejects.toThrow(/has no asset .*\.imgsig/);
+      await expect(downloadRelease({ fetchFn: fetchWithout, outDir: out, env: {} })).resolves.toBe('v9.9.9');
+    } finally {
+      rmSync(out, { recursive: true, force: true });
+    }
+  });
+
+  it('reads --require-record', () => {
+    expect(parseArgs(['--require-record']).requireRecord).toBe(true);
   });
 });
 

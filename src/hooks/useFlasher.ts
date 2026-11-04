@@ -7,7 +7,7 @@ import {
   CAN_ID_PAGE_ACK, CAN_ID_END_UPDATE, CAN_ID_STATUS, CAN_ID_QUERY_VERSION,
   CAN_ID_VERSION_RESPONSE, CAN_ID_QUERY_ERROR_COUNTERS, CAN_ID_ERROR_COUNTERS_RESPONSE,
   CAN_ID_AUTHORIZE_DOWNGRADE, CAN_ID_READBACK, CAN_ID_READBACK_PAGE_ACK,
-  CAN_ID_SLAVE_ENTER_BOOTLOADER, CAN_ID_SLAVE_START_UPDATE, CAN_ID_SLAVE_HMAC_CHUNK, CAN_ID_SLAVE_RECORD_CHUNK, CAN_ID_BOOTLOADER_SIGNATURE_CHUNK,
+  CAN_ID_SLAVE_ENTER_BOOTLOADER, CAN_ID_SLAVE_START_UPDATE, CAN_ID_SLAVE_DIGEST_CHUNK, CAN_ID_SLAVE_RECORD_CHUNK, CAN_ID_BOOTLOADER_SIGNATURE_CHUNK,
   CAN_ID_SLAVE_DATA, CAN_ID_SLAVE_END_UPDATE, CAN_ID_SLAVE_STATUS, CAN_ID_SLAVE_PROGRESS,
   CAN_ID_SLAVE_VERIFY_FAIL_REASON,
   ENTER_BOOTLOADER_MAGIC, AUTHORIZE_DOWNGRADE_MAGIC,
@@ -381,7 +381,7 @@ export function useFlasher(serialCan: SerialCanBus) {
     appendLog(t('flasher.log_digest_sending', 'Sending the SHA-256 of the image ({{id}}, 4 frames)...', { id: '0x212' }));
     for (let i = 0; i < 4; i++) {
       checkCancelled();
-      await serialCan.sendFrame(CAN_ID_SLAVE_HMAC_CHUNK, hmacChunkData(digest, i), `Slave SHA-256 chunk ${i + 1}/4`);
+      await serialCan.sendFrame(CAN_ID_SLAVE_DIGEST_CHUNK, hmacChunkData(digest, i), `Slave SHA-256 chunk ${i + 1}/4`);
       await new Promise(r => setTimeout(r, 10));
     }
     appendLog(t('flasher.log_record_sending', 'Sending the Ed25519 signature record ({{id}}, 11 frames)...', { id: '0x21A' }));

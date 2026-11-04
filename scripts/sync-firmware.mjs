@@ -19,6 +19,12 @@
 //                                                     no fallback tag, no local folder), every file signed, and every
 //                                                     application image built with a production key: what a published
 //                                                     page may carry
+//   --require-record                                  every application image must come with its image signature record
+//                                                     (<image>.imgsig: 152 hexadecimal digits, the Ed25519 record that the
+//                                                     bootloaders verify; an official release has one per application image)
+//
+// The image signature record is copied with the image, together with its release signature, whenever the set has it; the Flasher
+// of the page sends it to the bootloader. A set that has none is still accepted (an older release), unless --require-record.
 //
 // A release is first downloaded to a temporary folder; either way every image is checked
 // (sha256 against its manifest and its sidecar) before anything in public/firmware is touched.
@@ -55,6 +61,11 @@ export function pickFiles(index) {
   return files;
 }
 
+/** The application images carry an image signature record (<image>.imgsig); the bootloader images do not. */
+const APPLICATIONS = ['mainApplication', 'slaveApplication'];
+/** The record: 76 bytes as exactly 152 hexadecimal digits on one line, at most one line end after it. */
+export const IMGSIG_PATTERN = /^[0-9a-f]{152}\n?$/i;
+
 const sha256Of = (path) => createHash('sha256').update(readFileSync(path)).digest('hex');
 
 /** 'signed', 'unsigned' (no <file>.sig) or 'invalid' for the release signature of a file. */
@@ -77,18 +88,19 @@ export function keyKindOf(manifest, indexComponent) {
   return manifest.signing_key_kind ?? indexComponent?.signing?.key_kind;
 }
 
-export function checkFolder(src, { allowUnsigned = false, publicKeyHex = RELEASE_PUBLIC_KEY_HEX, requireProductionKey = false } = {}) {
+export function checkFolder(src, { allowUnsigned = false, publicKeyHex = RELEASE_PUBLIC_KEY_HEX, requireProductionKey = false, requireRecord = false } = {}) {
   const index = JSON.parse(readFileSync(join(src, 'firmware_manifest.json'), 'utf8'));
   const files = pickFiles(index);
   const toCopy = ['firmware_manifest.json'];
-  for (const bin of Object.values(files)) {
+  for (const [key, bin] of Object.entries(files)) {
     const manifest = JSON.parse(readFileSync(join(src, `${bin}.manifest.json`), 'utf8'));
     const actual = sha256Of(join(src, bin));
     if (actual !== manifest.sha256) throw new Error(`${bin}: sha256 ${actual} does not match its manifest ${manifest.sha256}`);
     const sidecar = readFileSync(join(src, `${bin}.sha256`), 'utf8').trim().split(/\s+/)[0].toLowerCase();
     if (sidecar !== actual) throw new Error(`${bin}: sha256 ${actual} does not match its .sha256 file ${sidecar}`);
-    if (/application/i.test(manifest.component ?? '') && !/^[0-9a-f]{64}$/i.test(manifest.hmac_sha256 ?? '')) {
-      throw new Error(`${bin}: an application image needs hmac_sha256 in its manifest`);
+    // The signature its bootloader checks: the Ed25519 record (<image>.imgsig) or, for the bootloaders of the earlier generation, the hmac_sha256 of the manifest.
+    if (/application/i.test(manifest.component ?? '') && !/^[0-9a-f]{64}$/i.test(manifest.hmac_sha256 ?? '') && !existsSync(join(src, `${bin}.imgsig`))) {
+      throw new Error(`${bin}: an application image needs hmac_sha256 in its manifest or its signature record (${bin}.imgsig)`);
     }
     if (requireProductionKey && /application/i.test(manifest.component ?? '')) {
       const kind = keyKindOf(manifest, index.components?.[manifest.component]);
@@ -96,6 +108,15 @@ export function checkFolder(src, { allowUnsigned = false, publicKeyHex = RELEASE
     }
     const stem = bin.replace(/\.bin$/, '');
     toCopy.push(bin, `${bin}.sha256`, `${bin}.manifest.json`);
+    if (APPLICATIONS.includes(key)) {
+      const record = join(src, `${bin}.imgsig`);
+      if (existsSync(record)) {
+        if (!IMGSIG_PATTERN.test(readFileSync(record, 'ascii'))) throw new Error(`${bin}.imgsig is not an image signature record (152 hexadecimal digits on one line)`);
+        toCopy.push(`${bin}.imgsig`);
+      } else if (requireRecord) {
+        throw new Error(`${bin} has no image signature record (${bin}.imgsig)`);
+      }
+    }
     for (const optional of [`${stem}.hex`, `${stem}.elf`]) if (existsSync(join(src, optional))) toCopy.push(optional);
   }
   const signatures = [];
@@ -138,7 +159,7 @@ export function pinnedTag(root) {
  * When the newest release was asked for and GitHub has none (404), the release named by `fallbackTag` is used
  * instead; a tag that was asked for is never replaced.
  */
-export async function downloadRelease({ fetchFn = fetch, tag, outDir, env = process.env, fallbackTag, requireOfficial = false }) {
+export async function downloadRelease({ fetchFn = fetch, tag, outDir, env = process.env, fallbackTag, requireOfficial = false, requireRecord = false }) {
   const releaseUrl = (name) => `https://api.github.com/repos/${RELEASE_REPO}/releases/${name ? `tags/${encodeURIComponent(name)}` : 'latest'}`;
   let url = releaseUrl(tag);
   let res = await fetchFn(url, { headers: apiHeaders('application/vnd.github+json', env) });
@@ -164,9 +185,13 @@ export async function downloadRelease({ fetchFn = fetch, tag, outDir, env = proc
   await get('firmware_manifest.json');
   await getSignature('firmware_manifest.json');
   const files = pickFiles(JSON.parse(readFileSync(join(outDir, 'firmware_manifest.json'), 'utf8')));
-  for (const bin of Object.values(files)) {
+  for (const [key, bin] of Object.entries(files)) {
     const stem = bin.replace(/\.bin$/, '');
     for (const name of [bin, `${bin}.sha256`, `${bin}.manifest.json`]) { await get(name); await getSignature(name); }
+    if (APPLICATIONS.includes(key)) {
+      if (assets.has(`${bin}.imgsig`)) { await get(`${bin}.imgsig`); await getSignature(`${bin}.imgsig`); }
+      else if (requireRecord) throw new Error(`the release ${release.tag_name} has no asset ${bin}.imgsig`);
+    }
     for (const optional of [`${stem}.hex`, `${stem}.elf`]) if (assets.has(optional)) { await get(optional); await getSignature(optional); }
   }
   return release.tag_name;
@@ -175,16 +200,17 @@ export async function downloadRelease({ fetchFn = fetch, tag, outDir, env = proc
 export function writeBundledModule(root, files) {
   writeFileSync(join(root, 'src', 'lib', 'bundledFirmware.ts'), `// GENERATED by scripts/sync-firmware.mjs from the URTC release assets (or a local build folder) - do not edit by hand.
 // The binaries in public/firmware/ are byte-identical to what URTC published
-// and each ships its <bin>.sha256 and <bin>.manifest.json (with hmac_sha256).
+// and each ships its <bin>.sha256 and <bin>.manifest.json (with hmac_sha256); an application image also ships its <bin>.imgsig when the release has one.
 export const BUNDLED_FIRMWARE = ${JSON.stringify(files, null, 2)} as const;
 `);
 }
 
 export function parseArgs(argv) {
-  const out = { dir: undefined, tag: undefined, allowUnsigned: false, requireOfficial: false };
+  const out = { dir: undefined, tag: undefined, allowUnsigned: false, requireOfficial: false, requireRecord: false };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--allow-unsigned') out.allowUnsigned = true;
     else if (argv[i] === '--require-official') out.requireOfficial = true;
+    else if (argv[i] === '--require-record') out.requireRecord = true;
     else if (argv[i] === '--tag') {
       out.tag = argv[++i];
       if (!out.tag) throw new Error('--tag needs a value, for example v0.3.5');
@@ -210,12 +236,12 @@ async function main() {
     origin = src;
   } else {
     temp = mkdtempSync(join(tmpdir(), 'urtc-release-'));
-    const tag = await downloadRelease({ tag: args.tag, outDir: temp, fallbackTag: args.requireOfficial ? undefined : pinnedTag(root), requireOfficial: args.requireOfficial });
+    const tag = await downloadRelease({ tag: args.tag, outDir: temp, fallbackTag: args.requireOfficial ? undefined : pinnedTag(root), requireOfficial: args.requireOfficial, requireRecord: args.requireRecord });
     src = temp;
     origin = `release ${tag} of ${RELEASE_REPO}`;
   }
   try {
-    const checked = checkFolder(src, { allowUnsigned: args.allowUnsigned, requireProductionKey: args.requireOfficial });
+    const checked = checkFolder(src, { allowUnsigned: args.allowUnsigned, requireProductionKey: args.requireOfficial, requireRecord: args.requireRecord });
     checked.copy(dst);
     writeBundledModule(root, checked.files);
     console.log(`synced ${Object.keys(checked.files).length} images from ${origin}:`, checked.files);

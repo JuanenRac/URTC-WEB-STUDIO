@@ -41,7 +41,7 @@ export const ENTER_BOOTLOADER_MAGIC = [...generated.MAGIC_ENTER_BOOTLOADER];
 // Flasher's flasher_config.py for the authoritative reference. ---
 export const CAN_ID_SLAVE_ENTER_BOOTLOADER = generated.CAN_ID_SLAVE_ENTER_BOOTLOADER;
 export const CAN_ID_SLAVE_START_UPDATE = generated.CAN_ID_SLAVE_START_UPDATE;
-export const CAN_ID_SLAVE_HMAC_CHUNK = generated.CAN_ID_SLAVE_HMAC_CHUNK; // the name is historic: the frames carry the SHA-256 of the image
+export const CAN_ID_SLAVE_DIGEST_CHUNK = generated.CAN_ID_SLAVE_DIGEST_CHUNK; // the frames carry the SHA-256 of the image
 export const CAN_ID_SLAVE_RECORD_CHUNK = generated.CAN_ID_SLAVE_RECORD_CHUNK; // the 76-byte Ed25519 record of the slave image, 11 frames
 export const CAN_ID_BOOTLOADER_SIGNATURE_CHUNK = generated.CAN_ID_BOOTLOADER_SIGNATURE_CHUNK; // the 76-byte Ed25519 record of the main-board image, 11 frames
 export const CAN_ID_SLAVE_DATA = generated.CAN_ID_SLAVE_DATA;

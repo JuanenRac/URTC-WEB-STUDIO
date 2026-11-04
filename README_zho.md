@@ -31,7 +31,7 @@
 
 ---
 
-> **安全与安防现状:**本生态系统不是经认证的安全系统,目前也不存在已组装的 URTC 电路板。引导程序使用 CRC32 和共享密钥的 HMAC-SHA256 校验固件映像,而非非对称签名(计划中);已发布的应用映像使用公开的开发密钥签名(`signing_key_kind: dev`),因此任何人都可以生成引导程序接受的映像;尚未向任何真实电路板发送过任何内容。在依赖此处任何说法来保障人身安全之前,请先阅读[安全基线](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md)和[威胁模型](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md)。
+> **安全与安防现状:**本生态系统不是经认证的安全系统,目前也不存在已组装的 URTC 电路板。主板的引导程序用公钥表校验映像的 Ed25519 记录(`<image>.imgsig`),自身不保存任何机密;扩展从机的引导程序只检查普通 SHA-256,并且只安装主板确认过的映像;正式构建的公钥表在创建映像签名密钥之前为空,而台架构建信任一把公开的开发密钥,因此任何人都可以生成这类引导程序接受的映像;尚未向任何真实电路板发送过任何内容。在依赖此处任何说法来保障人身安全之前,请先阅读[安全基线](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md)和[威胁模型](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md)。
 
 ## 📋 速览
 
@@ -162,7 +162,7 @@ URTC-WEB-STUDIO 是 URTC 两个桌面程序 URTC-FLASHER 和 URTC-TESTER 的浏�
 CAN ID：
 
 - **主板的 CAN-OTA 更新**（`0x7F0`-`0x7F7`）：进入引导程序触发指令、
-  共享密钥的 HMAC-SHA256（仅针对模拟器测试过）、带页面 ACK 流量控制和重试/退避的分页传输、CRC32 +
+  镜像的 Ed25519 记录（仅针对模拟器测试过）、带页面 ACK 流量控制和重试/退避的分页传输、CRC32 +
   声明版本的 END_UPDATE,以及最终状态处理（包括以与桌面工具相同的方式
   从丢失的确认帧中恢复——它会重新查询版本,而不是报告一个错误的失败）。
 - **扩展从属的 CAN-OTA 更新**（`0x210`-`0x219`,经主板自身的 I2C 桥中继）
@@ -179,7 +179,7 @@ CAN ID：
 - **实时板卡版本查询**（`0x7F8`/`0x7F9`/`0x7FA`/`0x7E9`）——显示真实的应答方
   （应用或引导程序）、HardwareID 和版本,而非一个模拟的开关。
 - **已发布的签名和摘要**——URTC 构建生成的每个镜像都附带
-  `<file>.manifest.json`（版本、`sha256` 以及引导程序期望的 `hmac_sha256` 值，是共享密钥的 HMAC-SHA256 而非非对称签名）和 `<file>.sha256`。应用发送该已发布的签名；如果清单中的 `sha256`
+  `<file>.manifest.json`（版本、`sha256` 以及引导程序期望的 `hmac_sha256` 值，是共享密钥的 HMAC-SHA256，仅上一代引导程序会检查；当前引导程序验证的 Ed25519 记录是镜像旁的 `<file>.imgsig` 文件，由应用发送给引导程序）和 `<file>.sha256`。应用发送该已发布的签名；如果清单中的 `sha256`
   与文件不符，将**阻止**刷写；向引导程序报告的是清单中的版本。从磁盘选择的
   文件没有清单：只能使用为该次刷写输入的签名密钥来刷写（测试板），除非同时
   选择了它的 `.manifest.json`。

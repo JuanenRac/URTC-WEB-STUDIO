@@ -30,7 +30,7 @@
 
 ---
 
-> **Stand von Sicherheit (Safety) und Security:** Dieses Ökosystem ist kein zertifiziertes Sicherheitssystem, und es existiert noch keine bestückte URTC-Platine. Die Bootloader prüfen Firmware-Images mit CRC32 und einem HMAC-SHA256 mit gemeinsamem Schlüssel, nicht mit einer asymmetrischen Signatur (geplant); die veröffentlichten Anwendungs-Images sind mit dem öffentlichen Entwicklungsschlüssel signiert (`signing_key_kind: dev`), sodass jeder ein vom Bootloader akzeptiertes Image erzeugen kann; an eine echte Platine wurde noch nichts gesendet. Lesen Sie die [Sicherheitsbasis](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md) und das [Bedrohungsmodell](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md), bevor Sie sich für die Sicherheit einer Person auf eine Aussage hier verlassen.
+> **Stand von Sicherheit (Safety) und Security:** Dieses Ökosystem ist kein zertifiziertes Sicherheitssystem, und es existiert noch keine bestückte URTC-Platine. Der Bootloader der Hauptplatine prüft einen Ed25519-Eintrag des Images (`<image>.imgsig`) gegen eine Tabelle öffentlicher Schlüssel und hält kein Geheimnis, und der Bootloader des Erweiterungs-Slaves prüft ein einfaches SHA-256 und installiert nur ein Image, das die Hauptplatine bestätigt; die Tabelle des offiziellen Builds ist leer, bis der Schlüssel zum Signieren der Images erzeugt ist, und ein Bench-Build vertraut einem öffentlichen Entwicklungsschlüssel, sodass jeder ein Image erzeugen kann, das ein solcher Bootloader akzeptiert; an eine echte Platine wurde noch nichts gesendet. Lesen Sie die [Sicherheitsbasis](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md) und das [Bedrohungsmodell](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md), bevor Sie sich für die Sicherheit einer Person auf eine Aussage hier verlassen.
 
 ## 📋 Auf einen Blick
 
@@ -167,7 +167,7 @@ Portiert aus dem eigenen `flasher_protocol.py` von `URTC-FLASHER`, gegen
 dieselben CAN-IDs:
 
 - **CAN-OTA-Update der Hauptplatine** (`0x7F0`-`0x7F7`): Bootloader-Eintritts-
-  Trigger, HMAC-SHA256 mit gemeinsamem Schlüssel (nur gegen einen Simulator getestet), seitenweise Übertragung mit
+  Trigger, Ed25519-Eintrag des Images (nur gegen einen Simulator getestet), seitenweise Übertragung mit
   Seiten-ACK-Flusssteuerung und Retry/Backoff, CRC32 + END_UPDATE mit
   deklarierter Version, und Behandlung des Endstatus (einschließlich der
   Wiederherstellung von einem verlorenen Bestätigungs-Frame auf dieselbe
@@ -192,7 +192,7 @@ dieselben CAN-IDs:
   echten Antwortenden (Anwendung oder Bootloader), die HardwareID, und die
   Version, kein simulierter Umschalter.
 - **Veröffentlichte Signatur und Prüfsumme** - jedes Image aus dem
-  URTC-Build kommt mit `<file>.manifest.json` (Version, `sha256` und der `hmac_sha256`-Wert, den der Bootloader erwartet, ein HMAC-SHA256 mit gemeinsamem Schlüssel und keine asymmetrische Signatur) und `<file>.sha256`.
+  URTC-Build kommt mit `<file>.manifest.json` (Version, `sha256` und der `hmac_sha256`-Wert, den der Bootloader erwartet, ein HMAC-SHA256 mit gemeinsamem Schlüssel, den nur die Bootloader der früheren Generation prüfen; der Ed25519-Eintrag, den die aktuellen prüfen, ist die Datei `<file>.imgsig` neben dem Image, die die App an den Bootloader sendet) und `<file>.sha256`.
   Die App sendet diese veröffentlichte Signatur, ein `sha256` im Manifest,
   das nicht zur Datei passt, **blockiert** das Flashen, und die Version aus
   dem Manifest wird dem Bootloader gemeldet. Eine von der Festplatte gewählte

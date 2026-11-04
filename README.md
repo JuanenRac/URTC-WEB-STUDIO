@@ -31,7 +31,7 @@
 
 ---
 
-> **Safety and security status:** this ecosystem is not a certified safety system, and no populated URTC board exists yet. The bootloaders check firmware images with CRC32 and a shared-key HMAC-SHA256, not with an asymmetric signature (planned); the published application images are signed with the public development key (`signing_key_kind: dev`), so anyone can produce an image the bootloader accepts; nothing has been transmitted to a real board. Read the [security baseline](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md) and the [threat model](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md) before relying on any statement here for the safety of a person.
+> **Safety and security status:** this ecosystem is not a certified safety system, and no populated URTC board exists yet. The main-board bootloader verifies an Ed25519 record of the image (`<image>.imgsig`) against a table of public keys and holds no secret, and the expansion-slave bootloader checks a plain SHA-256 and installs only an image that the main board confirms; the table of the official build is empty until the image-signing key is created, and a bench build trusts a public development key, so anyone can produce an image such a bootloader accepts; nothing has been transmitted to a real board. Read the [security baseline](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md) and the [threat model](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md) before relying on any statement here for the safety of a person.
 
 ## 📋 At a glance
 
@@ -166,7 +166,7 @@ Ported from `URTC-FLASHER`'s own `flasher_protocol.py`, against the same CAN
 IDs:
 
 - **CAN-OTA update of the main board** (`0x7F0`-`0x7F7`): enter-bootloader
-  trigger, shared-key HMAC-SHA256 chunks (tested against a simulator only), paged transfer with page-ACK flow control and
+  trigger, the Ed25519 image record (tested against a simulator only), paged transfer with page-ACK flow control and
   retry/backoff, CRC32 + declared-version END_UPDATE, and terminal-status
   handling (including recovering from a lost confirmation frame the same way
   the desktop tool does - it re-queries the version rather than reporting a
@@ -189,7 +189,7 @@ IDs:
   responder (app or bootloader), HardwareID, and version, not a simulated
   toggle.
 - **Published signature and digest** - every image from the URTC build ships
-  with `<file>.manifest.json` (version, `sha256`, and the `hmac_sha256` value the bootloader expects, a shared-key HMAC-SHA256 and not an asymmetric signature) and `<file>.sha256`. The app sends that
+  with `<file>.manifest.json` (version, `sha256`, and the `hmac_sha256` value the bootloader expects, a shared-key HMAC-SHA256 that only the bootloaders of the earlier generation check; the Ed25519 record that the current ones verify is the file `<file>.imgsig` next to the image, which the app sends to the bootloader) and `<file>.sha256`. The app sends that
   published signature, a manifest `sha256` that does not match the file
   **blocks** the flash, and the manifest's version is what gets reported to
   the bootloader. A file picked from disk has no manifest: it can only be
