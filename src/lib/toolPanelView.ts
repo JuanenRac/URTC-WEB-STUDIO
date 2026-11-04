@@ -6,13 +6,14 @@
 // The controls, the readings and the commands of most tool panels are data (the `panel` of a tool in spec/tools.json of URTC-COMMON, generated
 // into generated/urtcTools.ts). This module holds what does not need a screen: the frame builders a panel may name, the first value of every
 // control, the reading of a number from a telemetry frame and the text of a label.
-import type { UrtcPanelControl, UrtcPanelReading, UrtcPanelText, UrtcToolPanel } from './generated/urtcTools';
+import type { UrtcPanelControl, UrtcPanelReading, UrtcPanelResult, UrtcPanelText, UrtcToolPanel } from './generated/urtcTools';
 import { URTC_TOOL_PROFILES } from './generated/urtcTools';
-import { WELD_PULSE_MAX_MS } from './canIds';
+import { SOLDER_FEEDER_RESET_MAGIC, WELD_PULSE_MAX_MS } from './canIds';
 import {
   aoiRingCommand, drillCommand, drillStop, electromagnetCommand, hotAirCommand, hotAirOff, laserCommand, laserOff, motionMove, motionStop,
-  pasteJettingConfig, pasteJettingPulse, powerByte, powerOff, weldFire,
+  pasteJettingConfig, pasteJettingPulse, powerByte, powerOff, solderOff, solderSetpoint, thermalMotionCommand, weldFire,
 } from './toolFrames';
+import { configWordToBytes } from './toolLimits';
 
 export type PanelValue = number | string | boolean;
 export type PanelValues = Record<string, PanelValue>;
@@ -39,6 +40,13 @@ export const PANEL_ENCODERS: Record<string, (...values: PanelValue[]) => number[
   weldFire: (ms) => weldFire(num(ms), WELD_PULSE_MAX_MS),
   pasteJettingConfig: (channel, hertz) => pasteJettingConfig(num(channel), num(hertz)),
   pasteJettingPulse: (channel, duty, pulseMs) => pasteJettingPulse(num(channel), num(duty), num(pulseMs)),
+  emptyFrame: () => [],
+  adsConfig: (word) => configWordToBytes(String(word)),
+  feederReset: () => [...SOLDER_FEEDER_RESET_MAGIC],
+  solderSetpoint: (celsius) => solderSetpoint(num(celsius)),
+  solderOff: () => solderOff(),
+  thermalMotion: (celsius, dir, steps) => thermalMotionCommand(num(celsius), dir === 'fwd', num(steps)),
+  thermalMotionOff: () => thermalMotionCommand(0, true, 0),
 };
 
 export function panelOf(toolId: number): UrtcToolPanel | null {
@@ -68,6 +76,49 @@ export function clampControl(control: UrtcPanelControl, raw: string | number): n
 export function readingOf(reading: Pick<UrtcPanelReading, 'offset' | 'width'>, data: number[]): number | null {
   if (data.length < reading.offset + reading.width) return null;
   return reading.width === 1 ? data[reading.offset] : (data[reading.offset] << 8) | data[reading.offset + 1];
+}
+
+/** The number a query answer holds: 1, 2 or 4 bytes big-endian from `offset`, as a signed value when the result says so; null when the frame is too short. */
+export function decodeValue(spec: Pick<UrtcPanelResult, 'offset' | 'width' | 'signed'>, data: number[]): number | null {
+  if (data.length < spec.offset + spec.width) return null;
+  let value = 0;
+  for (let i = 0; i < spec.width; i++) value = value * 256 + data[spec.offset + i];
+  const range = 2 ** (8 * spec.width);
+  return spec.signed && value >= range / 2 ? value - range : value;
+}
+
+/** The text a query result shows: the name of the state the number stands for, the number itself, or its hexadecimal form for a state nobody named. */
+export function resultText(
+  t: (key: string, fallback: string, params?: Record<string, unknown>) => string,
+  result: Pick<UrtcPanelResult, 'states'>,
+  value: number | null,
+): string {
+  if (value === null) return '--';
+  if (!result.states) return String(value);
+  const state = result.states.find((s) => s.value === value);
+  return state ? panelText(t, state.label) : `0x${value.toString(16)}`;
+}
+
+/** True when a frame is the event a reading counts: the byte at its offset equals `match` (every frame counts when the reading names none). */
+export function isEventFrame(reading: Pick<UrtcPanelReading, 'offset' | 'match'>, data: number[]): boolean {
+  return reading.match === undefined || data[reading.offset] === reading.match;
+}
+
+/** The temperatures of a picture: the bytes of its chunks as signed 16-bit numbers (big-endian) divided by `scale`. */
+export function imagePixels(bytes: number[], scale: number): number[] {
+  const out: number[] = [];
+  for (let i = 0; i + 1 < bytes.length; i += 2) {
+    let v = (bytes[i] << 8) | bytes[i + 1];
+    if (v & 0x8000) v -= 0x10000;
+    out.push(v / scale);
+  }
+  return out;
+}
+
+/** The colour of a pixel: blue at 0 up to red at `max`, held to that range. */
+export function heatColor(value: number, max: number): string {
+  const clamped = Math.max(0, Math.min(max, value));
+  return `hsl(${240 - (clamped / max) * 240}, 90%, 50%)`;
 }
 
 /** The text of a label: the translation of its key (with the value of its control and the range as parameters), or its plain text. */

@@ -46,6 +46,43 @@ describe('a tool panel drawn from its profile', () => {
     expect(html(21)).toContain('Crimping Actuator (0x1F0)');
   });
 
+  it('draws the soldering iron: heater, feeder move, position query and reset', () => {
+    const out = html(0);
+    expect(out).toContain('Heater (0x130 / telemetry 0x135)');
+    expect(out).toContain('data-testid="reading-live"');
+    expect(out).toContain('Wire Feeder');
+    expect(out).toContain('data-testid="query-1"');
+    expect(out).toContain('Position:');
+    expect(out).toContain('Query');
+    expect(out).toContain('Reset');
+  });
+
+  it('draws the 3D printer as a nozzle and two fan sections with their readings', () => {
+    const out = html(10);
+    expect(out).toContain('lg:grid-cols-2');
+    expect(out).toContain('Move Extruder Once');
+    expect(out).toContain('data-testid="reading-hotend"');
+    expect(out).toContain('data-testid="reading-layer_rpm"');
+    expect(out).toContain('data-testid="reading-hotend_rpm"');
+    expect(out).toContain('Layer fan (0)');
+    expect(out).toContain('Hotend fan (0)');
+  });
+
+  it('draws the scan probe counters, the flying probe config field and the thermal status and picture buttons', () => {
+    const probe = html(11);
+    expect(probe).toContain('Impacts this session:');
+    expect(probe).toContain('data-testid="reading-last"');
+    const flying = html(17);
+    expect(flying).toContain('value="8583"');
+    expect(flying).toContain('Trigger Conversion');
+    expect(flying).toContain('Read Result');
+    const thermal = html(22);
+    expect(thermal).toContain('Trigger Capture');
+    expect(thermal).toContain('Check Status');
+    expect(thermal).toContain('Read Thermal Image');
+    expect(thermal).toContain('data-testid="panel-image"');
+  });
+
   it('draws every panel of the specification without failing', () => {
     for (const profile of URTC_TOOL_PROFILES.filter((p) => p.panel)) expect(html(profile.id)).toContain('generated-tool-panel');
   });

@@ -5,16 +5,22 @@ import { useConfirmAction } from '../../hooks/useConfirmAction';
 import type { ActionKind } from '../../lib/dangerousActions';
 import { KEEPALIVE_INTERVAL_MS } from '../../lib/canIds';
 import type { UrtcPanelAction, UrtcPanelControl, UrtcPanelReading, UrtcPanelSection, UrtcToolPanel } from '../../lib/generated/urtcTools';
+import { isConfigWord } from '../../lib/toolLimits';
 import {
-  PANEL_ENCODERS, clampControl, initialValues, labelParams, panelText, readingOf, type PanelValue, type PanelValues,
+  PANEL_ENCODERS, clampControl, decodeValue, heatColor, imagePixels, initialValues, isEventFrame, labelParams, panelControls, panelText, readingOf,
+  resultText, type PanelValue, type PanelValues,
 } from '../../lib/toolPanelView';
 import { Section, Field, inputCls, btnCls, btnPrimaryCls, KeepaliveCheckbox, LiveGraph } from './shared';
 import type { ToolCtx } from './ToolPanels';
 
 type TFn = (key: string, fallback: string, params?: Record<string, unknown>) => string;
 
-function encode(name: string, values: PanelValues, args: string[] | undefined, extra: PanelValue[] = []): number[] {
-  return PANEL_ENCODERS[name](...(args ?? []).map((id) => values[id]), ...extra);
+// A number in `args` stands for itself; a name is the control whose value goes in that place. With `gateFirst` the first one goes as 0 while the
+// repeated command of the section is off (a heater set point must not be armed by a one-off move).
+function encode(name: string, values: PanelValues, args: (string | number)[] | undefined, gateFirst = false, gateOpen = true): number[] {
+  const list = (args ?? []).map((a) => (typeof a === 'number' ? a : values[a]));
+  if (gateFirst && !gateOpen && list.length) list[0] = 0;
+  return PANEL_ENCODERS[name](...list);
 }
 
 const ControlView: React.FC<{ control: UrtcPanelControl; value: PanelValue; onChange: (v: PanelValue) => void; t: TFn }> = ({ control, value, onChange, t }) => {
@@ -35,6 +41,14 @@ const ControlView: React.FC<{ control: UrtcPanelControl; value: PanelValue; onCh
       </Field>
     );
   }
+  if (control.type === 'hex') {
+    const ok = isConfigWord(String(value));
+    return (
+      <Field label={label}>
+        <input value={String(value)} onChange={(e) => onChange(e.target.value)} className={`${inputCls} ${ok ? '' : 'border-red-500'}`} aria-invalid={!ok} />
+      </Field>
+    );
+  }
   if (control.type === 'range') {
     return (
       <Field label={label}>
@@ -51,13 +65,24 @@ const ControlView: React.FC<{ control: UrtcPanelControl; value: PanelValue; onCh
 
 const ReadingView: React.FC<{ ctx: ToolCtx; reading: UrtcPanelReading; t: TFn }> = ({ ctx, reading, t }) => {
   const [value, setValue] = useState<number | null>(null);
+  const [seen, setSeen] = useState<string | null>(null);
   useEffect(() => ctx.subscribe(reading.canId, (f) => {
+    if (reading.format === 'count' || reading.format === 'last_seen') {
+      if (!isEventFrame(reading, f.data)) return;
+      if (reading.format === 'count') setValue((c) => (c ?? 0) + 1);
+      else setSeen(f.timestamp);
+      return;
+    }
     const v = readingOf(reading, f.data);
     if (v !== null) setValue(v);
-  }), [ctx, reading.canId, reading.offset, reading.width]);
+  }), [ctx, reading.canId, reading.offset, reading.width, reading.format, reading.match]);
   const shown = reading.format === 'yes_no'
     ? <span className={`font-mono ${value ? 'text-emerald-400' : 'text-slate-500'}`}>{value ? t('testertool.yes', 'YES') : t('testertool.no', 'no')}</span>
-    : <span className="font-mono text-slate-200">{value ?? '--'}{reading.unit ? ` ${reading.unit}` : ''}</span>;
+    : reading.format === 'count'
+      ? <span className="font-mono text-slate-200">{value ?? 0}</span>
+      : reading.format === 'last_seen'
+        ? <span className="font-mono text-slate-200">{seen ?? '--'}</span>
+        : <span className="font-mono text-slate-200">{value ?? '--'}{reading.unit ? ` ${reading.unit}` : ''}</span>;
   return (
     <div data-testid={`reading-${reading.id}`}>
       {panelText(t, reading.label)} {shown}
@@ -68,12 +93,12 @@ const ReadingView: React.FC<{ ctx: ToolCtx; reading: UrtcPanelReading; t: TFn }>
 
 // The command that is repeated while "Active" is checked. It is a component of its own so that the hook of each one is called in a fixed place.
 const KeepaliveAction: React.FC<{
-  ctx: ToolCtx; action: UrtcPanelAction; values: PanelValues; active: boolean; setActive: (v: boolean) => void;
-}> = ({ ctx, action, values, active, setActive }) => {
+  ctx: ToolCtx; action: UrtcPanelAction; values: PanelValues; active: boolean; setActive: (v: boolean) => void; reset: (ids: string[]) => void;
+}> = ({ ctx, action, values, active, setActive, reset }) => {
   const confirm = useConfirmAction();
   useKeepalive(
-    active, KEEPALIVE_INTERVAL_MS,
-    () => ctx.sendFrame(action.canId, encode(action.encoder, values, action.args), action.description),
+    active, action.interval_ms ?? KEEPALIVE_INTERVAL_MS,
+    () => ctx.sendFrame(action.canId, encode(action.encoder as string, values, action.args), action.description),
     () => setActive(false),
     () => ctx.sendFrame(action.canId, PANEL_ENCODERS[action.off_encoder as string](), action.off_description),
   );
@@ -83,6 +108,7 @@ const KeepaliveAction: React.FC<{
       onChange={async (v) => {
         if (v && action.confirm && !(await confirm(action.confirm as ActionKind, action.confirm_value ? { value: Number(values[action.confirm_value]) } : {}))) return;
         setActive(v);
+        if (!v && action.reset) reset(action.reset);
       }}
     />
   );
@@ -94,43 +120,122 @@ const LatchedAction: React.FC<{ ctx: ToolCtx; action: UrtcPanelAction; t: TFn }>
     <label className="flex items-center gap-2 text-sm text-slate-200 cursor-pointer">
       <input
         type="checkbox" checked={on} className="accent-purple-500 w-4 h-4"
-        onChange={(e) => { setOn(e.target.checked); ctx.sendFrame(action.canId, PANEL_ENCODERS[action.encoder](e.target.checked), e.target.checked ? action.description_on : action.description_off); }}
+        onChange={(e) => { setOn(e.target.checked); ctx.sendFrame(action.canId, PANEL_ENCODERS[action.encoder as string](e.target.checked), e.target.checked ? action.description_on : action.description_off); }}
       />
       {panelText(t, action.label ?? { text: '' })}
     </label>
   );
 };
 
+// Asks the board for one value and shows it (with `auto`, also when the adapter connects).
+const QueryAction: React.FC<{ ctx: ToolCtx; action: UrtcPanelAction; index: number; t: TFn }> = ({ ctx, action, index, t }) => {
+  const [value, setValue] = useState<number | null>(null);
+  const result = action.result as NonNullable<UrtcPanelAction['result']>;
+  const ask = async () => {
+    const resp = await ctx.request(action.canId, [], action.respCanId ?? action.canId, action.timeout_ms, action.description);
+    const v = resp ? decodeValue(result, resp.data) : null;
+    if (v !== null) setValue(v);
+  };
+  useEffect(() => { if (action.auto && ctx.isConnected) void ask(); }, [ctx.isConnected]);
+  return (
+    <>
+      {result.label && <span className="text-xs text-slate-400">{panelText(t, result.label)}</span>}
+      <span className="text-xs font-mono text-slate-200" data-testid={`query-${index}`}>{resultText(t, result, value)}</span>
+      <button className={btnCls} onClick={ask}>{panelText(t, action.label ?? { text: '' })}</button>
+    </>
+  );
+};
+
+// Pulls a picture from the board a chunk at a time (one request, then the frames of the chunk) and draws it as coloured squares.
+const ImageAction: React.FC<{ ctx: ToolCtx; action: UrtcPanelAction; t: TFn }> = ({ ctx, action, t }) => {
+  const [pixels, setPixels] = useState<number[] | null>(null);
+  const [reading, setReading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [error, setError] = useState('');
+  const chunks = action.chunks as number;
+  const respId = action.respCanId ?? action.canId;
+  const read = async () => {
+    setReading(true);
+    setProgress(0);
+    setError('');
+    const bytes: number[] = [];
+    try {
+      for (let chunk = 0; chunk < chunks; chunk++) {
+        // Frames left over from an earlier, aborted reading must not be mixed into this chunk.
+        ctx.flushFrames(respId);
+        await ctx.sendFrame(action.canId, [chunk], `${action.description} ${chunk}`);
+        for (let f = 0; f < (action.frames_per_chunk as number); f++) {
+          const frame = await ctx.waitForFrame(respId, action.timeout_ms);
+          if (!frame) throw new Error(`Timeout on chunk ${chunk}, frame ${f}`);
+          bytes.push(...frame.data);
+        }
+        setProgress(Math.floor(((chunk + 1) / chunks) * 100));
+      }
+      setPixels(imagePixels(bytes, action.scale as number));
+    } catch (e) {
+      console.error(e);
+      setError(panelText(t, action.error as NonNullable<UrtcPanelAction['error']>, { message: e instanceof Error ? e.message : String(e) }));
+    } finally {
+      setReading(false);
+    }
+  };
+  const label = panelText(t, action.label ?? { text: '' });
+  return (
+    <>
+      <button className={btnPrimaryCls} onClick={read} disabled={reading}>
+        {reading ? panelText(t, action.progress as NonNullable<UrtcPanelAction['progress']>, { pct: progress }) : label}
+      </button>
+      <div className="basis-full" data-testid="panel-image">
+        {error && <div className="mb-2 text-xs text-red-400">{error}</div>}
+        {pixels && (
+          <div className="grid gap-px bg-slate-800 border border-slate-800 rounded overflow-hidden" style={{ gridTemplateColumns: `repeat(${action.columns}, 1fr)`, maxWidth: 480 }}>
+            {pixels.slice(0, (action.chunks as number) * (action.frames_per_chunk as number) * 4).map((v, i) => (
+              <div key={i} style={{ background: heatColor(v, action.max_value as number), aspectRatio: '1/1' }} title={`${v.toFixed(1)} C`} />
+            ))}
+          </div>
+        )}
+      </div>
+    </>
+  );
+};
+
 const SectionView: React.FC<{
-  ctx: ToolCtx; section: UrtcPanelSection; toolName: string; values: PanelValues; set: (id: string, v: PanelValue) => void; reset: (ids: string[]) => void; t: TFn;
-}> = ({ ctx, section, toolName, values, set, reset, t }) => {
+  ctx: ToolCtx; section: UrtcPanelSection; toolName: string; values: PanelValues; badHex: Set<string>;
+  set: (id: string, v: PanelValue) => void; reset: (ids: string[]) => void; t: TFn;
+}> = ({ ctx, section, toolName, values, badHex, set, reset, t }) => {
   const [active, setActive] = useState(false);
   const confirm = useConfirmAction();
   const params = { tool: toolName };
   const keepalive = (section.actions ?? []).filter((a) => a.type === 'keepalive');
+  const hasRow = (section.controls ?? []).length > 0 || (section.actions ?? []).length > 0;
   return (
     <Section title={panelText(t, section.title, params)} subtitle={section.subtitle ? panelText(t, section.subtitle, params) : undefined}>
       {section.notice && <div className="p-2 mb-3 rounded bg-amber-500/10 border border-amber-500/30 text-amber-200 text-[11px]">{panelText(t, section.notice)}</div>}
-      <div className="flex flex-wrap items-end gap-3">
-        {(section.controls ?? []).map((c) => <ControlView key={c.id} control={c} value={values[c.id]} onChange={(v) => set(c.id, v)} t={t} />)}
-        {(section.actions ?? []).map((a, i) => {
-          if (a.type === 'keepalive') return <KeepaliveAction key={i} ctx={ctx} action={a} values={values} active={active} setActive={setActive} />;
-          if (a.type === 'latched') return <LatchedAction key={i} ctx={ctx} action={a} t={t} />;
-          const stop = a.type === 'stop';
-          return (
-            <button
-              key={i} className={stop ? btnCls : btnPrimaryCls}
-              onClick={async () => {
-                if (stop) { setActive(false); if (a.reset) reset(a.reset); }
-                else if (a.confirm && !(await confirm(a.confirm as ActionKind, a.confirm_value ? { value: Number(values[a.confirm_value]) } : {}))) return;
-                ctx.sendFrame(a.canId, encode(a.encoder, values, a.args), a.description);
-              }}
-            >{panelText(t, a.label ?? { text: '' })}</button>
-          );
-        })}
-      </div>
+      {hasRow && (
+        <div className="flex flex-wrap items-end gap-3">
+          {(section.controls ?? []).map((c) => <ControlView key={c.id} control={c} value={values[c.id]} onChange={(v) => set(c.id, v)} t={t} />)}
+          {(section.actions ?? []).map((a, i) => {
+            if (a.type === 'keepalive') return <KeepaliveAction key={i} ctx={ctx} action={a} values={values} active={active} setActive={setActive} reset={reset} />;
+            if (a.type === 'latched') return <LatchedAction key={i} ctx={ctx} action={a} t={t} />;
+            if (a.type === 'query') return <QueryAction key={i} ctx={ctx} action={a} index={i} t={t} />;
+            if (a.type === 'image') return <ImageAction key={i} ctx={ctx} action={a} t={t} />;
+            const stop = a.type === 'stop';
+            return (
+              <button
+                key={i} className={stop ? btnCls : btnPrimaryCls}
+                disabled={(a.args ?? []).some((id) => typeof id === 'string' && badHex.has(id))}
+                onClick={async () => {
+                  if (stop) { setActive(false); if (a.reset) reset(a.reset); }
+                  else if (a.confirm && !(await confirm(a.confirm as ActionKind, a.confirm_value ? { value: Number(values[a.confirm_value]) } : {}))) return;
+                  ctx.sendFrame(a.canId, encode(a.encoder as string, values, a.args, a.gate_first, active), a.description);
+                }}
+              >{panelText(t, a.label ?? { text: '' })}</button>
+            );
+          })}
+        </div>
+      )}
       {(section.telemetry ?? []).length > 0 && (
-        <div className={`${keepalive.length || section.controls ? 'mt-3 ' : ''}flex flex-wrap gap-x-6 gap-y-2 text-xs text-slate-400`}>
+        <div className={`${keepalive.length || hasRow ? 'mt-3 ' : ''}flex flex-wrap gap-x-6 gap-y-2 text-xs text-slate-400`}>
           {(section.telemetry ?? []).map((r) => <ReadingView key={r.id} ctx={ctx} reading={r} t={t} />)}
         </div>
       )}
@@ -145,10 +250,11 @@ export const GeneratedToolPanel: React.FC<{ ctx: ToolCtx; panel: UrtcToolPanel; 
   const [values, setValues] = useState<PanelValues>(() => initialValues(panel));
   const set = (id: string, v: PanelValue) => setValues((prev) => ({ ...prev, [id]: v }));
   const reset = (ids: string[]) => setValues((prev) => ({ ...prev, ...Object.fromEntries(ids.map((id) => [id, initialValues(panel)[id]])) }));
+  const badHex = new Set(panelControls(panel).filter((c) => c.type === 'hex' && !isConfigWord(String(values[c.id]))).map((c) => c.id));
   const grid = panel.sections.length > 1;
   return (
     <div className={grid ? 'grid grid-cols-1 lg:grid-cols-2 gap-4' : undefined} data-testid="generated-tool-panel">
-      {panel.sections.map((s, i) => <SectionView key={i} ctx={ctx} section={s} toolName={toolName} values={values} set={set} reset={reset} t={tf} />)}
+      {panel.sections.map((s, i) => <SectionView key={i} ctx={ctx} section={s} toolName={toolName} values={values} badHex={badHex} set={set} reset={reset} t={tf} />)}
     </div>
   );
 };
