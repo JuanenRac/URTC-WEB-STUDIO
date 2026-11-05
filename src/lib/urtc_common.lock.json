@@ -4,7 +4,7 @@
   "files": {
     "canConformance.vectors.json": {
       "from": "conformance/can_vectors.json",
-      "sha256": "62101e147a094ecd39909f5d92184dbffb8734cb3e734171e7eab467a65a54ff"
+      "sha256": "b91c9588e93f6110d5fed82c347a1cc91f02b1d57a847e54f27d4b8530917e33"
     }
   }
 }
