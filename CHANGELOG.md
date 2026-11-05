@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+- **The components that need a DOM are tested:** `jsdom` and Testing Library join the development dependencies, and `src/components/domComponents.test.tsx` renders the confirmation dialog (focus on Cancel, answers true only on Confirm, false on Cancel, Escape and a click outside) and the sidebar in a simulated page.
+- **The coverage floors follow what is measured:** statements and lines 85 %, functions 64 %, branches 83 % (they were 26 %, 27 % and 85 % from a time when almost nothing was loaded by the tests).
+
 ## [0.4.6] - The full build check compiles only on CI or when allowed: tools/buildtest.py prints BUILDTEST=SKIPPED (exit status 2) for the stacks that compile unless it runs on a CI runner or ALLOWLOCALBUILD=1 says so; the light check is... (and 9 more changes)
 
 - **The full build check compiles only on CI or when allowed:** `tools/build_test.py` prints `BUILD_TEST=SKIPPED` (exit status 2) for the stacks that compile unless it runs on a CI runner or `ALLOW_LOCAL_BUILD=1` says so; the light check is not locked.
