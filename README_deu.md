@@ -36,7 +36,7 @@
 
 | | |
 |---|---|
-| Version | `0.4.5` |
+| Version | `0.4.6` |
 | Reifegrad | Funktionsfähig |
 | Tests | 1170 (`npm test`) |
 | Technik | Web Serial API / TypeScript |
