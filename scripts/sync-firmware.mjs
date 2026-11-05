@@ -236,12 +236,12 @@ async function main() {
     origin = src;
   } else {
     temp = mkdtempSync(join(tmpdir(), 'urtc-release-'));
-    const tag = await downloadRelease({ tag: args.tag, outDir: temp, fallbackTag: args.requireOfficial ? undefined : pinnedTag(root), requireOfficial: args.requireOfficial, requireRecord: args.requireRecord });
+    const tag = await downloadRelease({ tag: args.tag, outDir: temp, fallbackTag: args.requireOfficial ? undefined : pinnedTag(root), requireOfficial: args.requireOfficial, requireRecord: args.requireRecord || args.requireOfficial });
     src = temp;
     origin = `release ${tag} of ${RELEASE_REPO}`;
   }
   try {
-    const checked = checkFolder(src, { allowUnsigned: args.allowUnsigned, requireProductionKey: args.requireOfficial, requireRecord: args.requireRecord });
+    const checked = checkFolder(src, { allowUnsigned: args.allowUnsigned, requireProductionKey: args.requireOfficial, requireRecord: args.requireRecord || args.requireOfficial });
     checked.copy(dst);
     writeBundledModule(root, checked.files);
     console.log(`synced ${Object.keys(checked.files).length} images from ${origin}:`, checked.files);

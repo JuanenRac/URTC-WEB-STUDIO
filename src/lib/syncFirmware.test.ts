@@ -54,14 +54,39 @@ describe("sync-firmware from a local folder", () => {
     expect(() => sync.checkFolder(src2)).toThrow(/does not match its \.sha256/);
   });
 
-  it("refuses an application manifest without its signature", () => {
-    const src = temp();
-    cpSync(bundled, src, { recursive: true });
+  const withoutHmac = (src: string) => {
     const file = join(src, `${BUNDLED_FIRMWARE.slaveApplication}.manifest.json`);
     const manifest = JSON.parse(readFileSync(file, "utf8"));
     delete manifest.hmac_sha256;
     writeFileSync(file, JSON.stringify(manifest));
+    rmSync(`${file}.sig`, { force: true }); // the edited manifest no longer matches its release signature
+  };
+  const record = (src: string) => join(src, `${BUNDLED_FIRMWARE.slaveApplication}.imgsig`);
+
+  it("accepts an application manifest without hmac_sha256 when its .imgsig record is there", () => {
+    const src = temp();
+    cpSync(bundled, src, { recursive: true });
+    withoutHmac(src);
+    if (existsSync(record(src))) expect(() => sync.checkFolder(src, { allowUnsigned: true })).not.toThrow();
+  });
+
+  it("refuses an application manifest with neither hmac_sha256 nor a .imgsig record", () => {
+    const src = temp();
+    cpSync(bundled, src, { recursive: true });
+    withoutHmac(src);
+    rmSync(record(src), { force: true });
     expect(() => sync.checkFolder(src)).toThrow(/hmac_sha256/);
+  });
+
+  it("refuses a corrupt .imgsig record and a missing one when records are required", () => {
+    const src = temp();
+    cpSync(bundled, src, { recursive: true });
+    withoutHmac(src);
+    if (!existsSync(record(src))) return;
+    writeFileSync(record(src), "zz".repeat(76));
+    expect(() => sync.checkFolder(src, { allowUnsigned: true })).toThrow(/image signature record/);
+    rmSync(record(src));
+    expect(() => sync.checkFolder(src, { allowUnsigned: true, requireRecord: true })).toThrow();
   });
 
   it("works without the optional .hex and .elf files, as a release without them has", () => {

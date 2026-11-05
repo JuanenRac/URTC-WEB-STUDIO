@@ -2,8 +2,8 @@
 // The binaries in public/firmware/ are byte-identical to what URTC published
 // and each ships its <bin>.sha256 and <bin>.manifest.json (with hmac_sha256); an application image also ships its <bin>.imgsig when the release has one.
 export const BUNDLED_FIRMWARE = {
-  "mainApplication": "URTC_MAIN_FIRMWARE_v0.4.4.bin",
-  "slaveApplication": "URTC_SLAVE_FIRMWARE_v0.2.8.bin",
-  "mainBootloader": "URTC_MAIN_BOOTLOADER_v0.4.6.bin",
-  "slaveBootloader": "URTC_SLAVE_BOOTLOADER_v0.3.0.bin"
+  "mainApplication": "URTC_MAIN_FIRMWARE_v0.4.5.bin",
+  "slaveApplication": "URTC_SLAVE_FIRMWARE_v0.2.9.bin",
+  "mainBootloader": "URTC_MAIN_BOOTLOADER_v0.4.7.bin",
+  "slaveBootloader": "URTC_SLAVE_BOOTLOADER_v0.3.1.bin"
 } as const;
