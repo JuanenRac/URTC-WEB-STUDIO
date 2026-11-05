@@ -4,6 +4,7 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The list of bundled images follows the newest official release:** `src/lib/bundledFirmware.ts` names the images that the sync script downloaded from the release (main application 0.4.4, slave application 0.2.8, main bootloader 0.4.6, slave bootloader 0.3.0) instead of the ones of an older set.
 - **The components that need a DOM are tested:** `jsdom` and Testing Library join the development dependencies, and `src/components/domComponents.test.tsx` renders the confirmation dialog (focus on Cancel, answers true only on Confirm, false on Cancel, Escape and a click outside) and the sidebar in a simulated page, and `GeneratedToolPanel.dom.test.tsx` drives the generated tool panels the way a person does (a reading that follows a frame, a button that sends the values of its controls, a value held to its range, a question to the board, the thermal picture pulled chunk by chunk, a repeated command that waits for the confirmation and sends the off frame when it ends).
 - **The coverage floors follow what is measured:** statements and lines 87 %, functions 67 %, branches 85 % (measured: 88.8 %, 68.8 %, 86.2 %) (they were 26 %, 27 % and 85 % from a time when almost nothing was loaded by the tests).
 
