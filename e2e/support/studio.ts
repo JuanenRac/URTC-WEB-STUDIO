@@ -20,8 +20,22 @@ export async function openTesterPanel(page: Page, name: string | RegExp): Promis
   await page.getByRole('button', { name }).first().click();
 }
 
+/**
+ * Answers the requests that the page makes to the GitHub API itself (the newest release of the firmware), so that a check of the built page does not depend on
+ * the network or on the rate limit of the machine that runs it (an unauthenticated runner is answered 403 now and then, which the browser logs as an error).
+ */
+export async function mockGithubApi(page: Page): Promise<void> {
+  await page.route('https://api.github.com/**', (route) => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    headers: { 'access-control-allow-origin': '*' },
+    body: JSON.stringify({ tag_name: 'v0.0.0', assets: [] }),
+  }));
+}
+
 /** Records every console error and uncaught error of the page, to be checked at the end of a test. */
 export function collectErrors(page: Page): string[] {
+  void mockGithubApi(page);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(`pageerror: ${error.message}`));
   page.on('console', (message) => {
