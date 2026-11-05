@@ -12,7 +12,7 @@
     "tools/_readme_parity.py": "ed77ae2050457f6e1bd18c7d4d03b3de5efc0d8bf2e641f7f3b76fadb28172bb",
     "tools/_readme_svg.py": "7bb8388deb11c15dfbc202c8da1b808540853ec2c263260795d3cb2664d6f94d",
     "tools/_tracked_names.py": "a63c02e5b399d7ac331b694589e391a9bc2d407063688a7225a6e36dfa4d867d",
-    "tools/build_test.py": "89d359ff3aab4479ae7c614b3bf9abfe4a770ce8e48c6551cabb5ce21b519d25",
+    "tools/build_test.py": "e87c10ee9601c63182b299097cd83c95437492325e47d7cb3993a696f56f4a94",
     "tools/make_architecture.py": "9df7d6c00af0f1178c44eae8e849c31218bae196984ec718a7fdc63daa2e2fa9",
     "tools/make_structure.py": "27615e9b6374cbb6cc21b52d52bad4e9db1c9307319a8910b4b75c4ecb9fe5c8",
     "tools/pretty_run.py": "1698bfec531568afaf5319f0a220e9bf7c0087f39cbf5e6e88e7035bfc1327c5",

@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The full build check compiles only on CI or when allowed:** `tools/build_test.py` prints `BUILD_TEST=SKIPPED` (exit status 2) for the stacks that compile unless it runs on a CI runner or `ALLOW_LOCAL_BUILD=1` says so; the light check is not locked.
+
 - **The "At a glance" section of the eight READMEs follows the data of the documentation hub** (the number of tests).
 - **The checks of the built page no longer depend on the GitHub API:** the end-to-end checks answer the request for the newest firmware release themselves, because an unauthenticated runner is now and then answered 403 and the browser logs that as an error, which failed the check of the console. The copy of the shared identifiers follows the new frames of the bootloader (`0x7EE`, `0x7EF`).
 - **The copy of the shared protocol and vectors is refreshed:** the identifiers file, the tool profiles and the conformance vectors follow the shared repository (the new `0x1BB` frame of the board and the digest register of the expansion slave).
