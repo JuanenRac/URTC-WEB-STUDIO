@@ -1,5 +1,5 @@
 import { isFlashableFirmwareName, FlashTarget } from './firmwareImage';
-import { firmwareSidecarName } from './generated/firmwareNames';
+import { firmwareSidecarName, parseFirmwareImageName } from './generated/firmwareNames';
 
 // The URTC firmware binaries are not in git: they are assets of the GitHub release of
 // each version (see URTC docs/FIRMWARE_DISTRIBUTION.md). This lists the application
@@ -140,4 +140,47 @@ export function digestMismatch(actualHex: string, sidecarText: string | null, li
   if (listedDigest && /^sha256:[0-9a-f]{64}$/i.test(listedDigest)) expected.push(listedDigest.slice(7).toLowerCase());
   for (const e of expected) if (e !== actualHex.toLowerCase()) return e;
   return null;
+}
+
+/** One bundled application that is not the one of the newest release. */
+export interface BundledComparison {
+  board: FlashTarget;
+  local: string;
+  latest: string;
+  /** "older": the release has a higher version; "newer": the bundled image is higher than anything published (a test build). */
+  state: 'older' | 'newer';
+}
+
+const versionParts = (version: string) => version.split('.').map(Number);
+
+/** Compares two dotted versions number by number (0.10.0 is higher than 0.9.0): negative, zero or positive. */
+export function compareVersions(a: string, b: string): number {
+  const x = versionParts(a);
+  const y = versionParts(b);
+  for (let i = 0; i < Math.max(x.length, y.length); i++) {
+    const d = (x[i] ?? 0) - (y[i] ?? 0);
+    if (d !== 0) return d;
+  }
+  return 0;
+}
+
+/**
+ * The bundled application images that differ from the ones of the newest release (the list the Flasher already read, so no extra request).
+ * An equal version, an image the release does not list and a name that is not an image say nothing.
+ */
+export function compareBundledApplications(bundled: { mainApplication: string; slaveApplication: string }, released: RemoteFirmware[]): BundledComparison[] {
+  const found: BundledComparison[] = [];
+  for (const [board, name] of [['main', bundled.mainApplication], ['slave', bundled.slaveApplication]] as const) {
+    const local = parseFirmwareImageName(name);
+    if (!local) continue;
+    const latest = released
+      .map(r => parseFirmwareImageName(r.name))
+      .filter((p): p is NonNullable<typeof p> => p !== null && p.kind === 'FIRMWARE' && p.board === board.toUpperCase())
+      .sort((a, b) => compareVersions(b.version, a.version))[0];
+    if (!latest) continue;
+    const order = compareVersions(local.version, latest.version);
+    if (order < 0) found.push({ board, local: local.version, latest: latest.version, state: 'older' });
+    else if (order > 0) found.push({ board, local: local.version, latest: latest.version, state: 'newer' });
+  }
+  return found;
 }

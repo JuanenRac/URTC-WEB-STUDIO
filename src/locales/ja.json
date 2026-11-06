@@ -214,6 +214,8 @@
     "option_browsed": "（参照済み）",
     "browse": "参照…",
     "github_listing_error": "GitHub 一覧：",
+    "bundled_older": "同梱の {{board}} アプリケーションは {{local}} で、GitHub の最新リリースは {{latest}} です。",
+    "bundled_newer": "同梱の {{board}} アプリケーションは {{local}} で、GitHub の最新リリース（{{latest}}）より新しく、公開されたバージョンではありません。",
     "trigger_label": "ボードは現在アプリケーションを実行中（先にブートローダー起動トリガーを送信）",
     "trigger_sub": "ボードがすでにブートローダー内にある場合はチェックを外してください。",
     "erase_label": "書き込み前に永続化 F-RAM も消去する",

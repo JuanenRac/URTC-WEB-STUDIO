@@ -27,7 +27,7 @@ template only; deployment secrets stay outside Git.
 2. Settings > Pages: Source "GitHub Actions" (once). Until then the run reports a notice and ends without deploying.
 3. Run the workflow by hand (Actions > URTC Web Studio on GitHub Pages > Run workflow), or push to `main`.
 
-The firmware step is `npm run sync-firmware -- --require-official`. It takes the newest official release of URTC (GitHub's "latest", so never a pre-release; no fallback tag, no local folder), refuses a file whose release signature is missing or does not verify against the pinned key of the releases, and refuses an application image whose manifest says it was built with a key other than a production one (`release` or `production`). A page published this way therefore cannot carry images of the public development key, and the bench notice (`VITE_BENCH_NOTICE`) is not set. To check the Pages build locally with a bench build instead: `URTC_BASE_PATH=/URTC-WEB-STUDIO/ npm run build`, then `npm run preview`.
+The firmware step is `npm run sync-firmware -- --require-official`. It takes the newest official release of URTC (GitHub's "latest", so never a pre-release; no local folder), refuses a file whose release signature is missing or does not verify against the pinned key of the releases, and refuses an application image whose manifest says it was built with a key other than a production one (`release` or `production`). A page published this way therefore cannot carry images of the public development key, and the bench notice (`VITE_BENCH_NOTICE`) is not set. To check the Pages build locally with a bench build instead: `URTC_BASE_PATH=/URTC-WEB-STUDIO/ npm run build`, then `npm run preview`.
 
 ## End-to-end checks
 

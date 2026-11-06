@@ -214,6 +214,8 @@
     "option_browsed": "(sfogliato)",
     "browse": "Sfoglia...",
     "github_listing_error": "Elenco GitHub:",
+    "bundled_older": "L'applicazione {{board}} inclusa è la {{local}}; l'ultima release di GitHub ha la {{latest}}.",
+    "bundled_newer": "L'applicazione {{board}} inclusa è la {{local}}, più recente dell'ultima release di GitHub ({{latest}}): non è una versione pubblicata.",
     "trigger_label": "La scheda sta attualmente eseguendo l'applicazione (invia prima il trigger di ingresso al bootloader)",
     "trigger_sub": "Deseleziona se la scheda è già nel bootloader.",
     "erase_label": "Cancella anche la F-RAM persistente prima del flashing",

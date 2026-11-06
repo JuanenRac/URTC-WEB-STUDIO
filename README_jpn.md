@@ -316,7 +316,7 @@ STOP ALL はソフトウェアのコマンドで、非常停止ではなく、�
 ボードにしかインストールできません（ログに表示されます）。URTC の
 `docs/FIRMWARE_SIGNING.TXT` を参照してください。
 
-このフォルダーは **git にありません**。`npm run sync-firmware` が作成します（CI と Pages のビルドは、テストとビルドの前にこれを実行します）。公式リリースがまだない間は、GitHub の「latest」が 404 を返すため、代わりに使うリリースを `firmware-release.json` が指定します（現在はベンチ用のプレリリース）。公式リリースが公開されたら、このファイルを削除するかタグを変更してください。**ページのセキュリティ**：スクリプト、スタイル、フォント、画像はページ自身から読み込まれ（フォントはアプリに同梱されており、フォントサーバーへのリクエストはありません）、インラインで許可されるのは React が書き込むスタイル属性だけです。ページが接続できるのは自分自身のオリジンと、リリースを配信する GitHub のホストだけです（ビルドされた `index.html` の Content-Security-Policy）。ヘッダーを送れるホストは `public/_headers` を使います（同じポリシーと `Permissions-Policy: serial=(self)`、それ以外に強力な権限はありません）。GitHub Pages はヘッダーを送れないため、そこではページ内のポリシーだけが適用されます。
+このフォルダーは **git にありません**。`npm run sync-firmware` が作成します（CI と Pages のビルドは、テストとビルドの前にこれを実行します）。**ページのセキュリティ**：スクリプト、スタイル、フォント、画像はページ自身から読み込まれ（フォントはアプリに同梱されており、フォントサーバーへのリクエストはありません）、インラインで許可されるのは React が書き込むスタイル属性だけです。ページが接続できるのは自分自身のオリジンと、リリースを配信する GitHub のホストだけです（ビルドされた `index.html` の Content-Security-Policy）。ヘッダーを送れるホストは `public/_headers` を使います（同じポリシーと `Permissions-Policy: serial=(self)`、それ以外に強力な権限はありません）。GitHub Pages はヘッダーを送れないため、そこではページ内のポリシーだけが適用されます。
 
 `public/firmware/` には URTC が公開したファイルがそのまま（同じ名前、同じ
 バイト、付属ファイル付き）入っています。URTC のバイナリは git にはなく、各
@@ -421,7 +421,7 @@ npm run preview
 
 ### GitHub Pages（所有者が有効にするまで停止）
 
-このリポジトリは、ビルドしたサイトをGitHub Pagesに公開できます（ワークフロー `.github/workflows/pages.yml`：`npm ci`、型チェック、テスト、プロジェクトのベースパスを指定した `npm run build`、続いて `upload-pages-artifact` と `deploy-pages`）。**このワークフローは停止中です**。2つのジョブは、リポジトリ変数 `URTC_PAGES_ENABLED` が `true` のときだけ実行されます（Settings > Secrets and variables > Actions > Variables）。所有者が URTC の最初の署名済み正式リリースの後に設定します。そのときビルドは `npm run sync-firmware -- --require-official` を実行し、最新の正式リリースのファームウェアだけを取得します（プレリリースや `firmware-release.json` の代替タグは使いません）。有効なリリース署名のないファイルや、公開の開発用鍵で作られたアプリケーションイメージは拒否されるため、公開ページに開発用鍵のイメージが含まれることはありません。Pages 自体も一度有効にする必要があります（Settings > Pages > Source: GitHub Actions）。変数が未設定ならワークフローはスキップされます。Web SerialにはChromium系ブラウザとhttpsが必要で、Pagesはhttpsを提供します。
+このリポジトリは、ビルドしたサイトをGitHub Pagesに公開できます（ワークフロー `.github/workflows/pages.yml`：`npm ci`、型チェック、テスト、プロジェクトのベースパスを指定した `npm run build`、続いて `upload-pages-artifact` と `deploy-pages`）。**このワークフローは停止中です**。2つのジョブは、リポジトリ変数 `URTC_PAGES_ENABLED` が `true` のときだけ実行されます（Settings > Secrets and variables > Actions > Variables）。所有者が URTC の最初の署名済み正式リリースの後に設定します。そのときビルドは `npm run sync-firmware -- --require-official` を実行し、最新の正式リリースのファームウェアだけを取得します（プレリリースは使いません）。有効なリリース署名のないファイルや、公開の開発用鍵で作られたアプリケーションイメージは拒否されるため、公開ページに開発用鍵のイメージが含まれることはありません。Pages 自体も一度有効にする必要があります（Settings > Pages > Source: GitHub Actions）。変数が未設定ならワークフローはスキップされます。Web SerialにはChromium系ブラウザとhttpsが必要で、Pagesはhttpsを提供します。
 
 `package.json` の `version` と `urtc.project.json` の `version` は、明示的な手順（`python bump.py`。2 つを揃え、変更履歴の項目を書きます）でのみ変わります。`build.bat` / `build.sh`、`npm run build`、`npm run dev`、`npm run lint`、`npm run preview` がバージョンを変えることはありません。
 

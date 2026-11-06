@@ -214,6 +214,8 @@
     "option_browsed": "（已浏览）",
     "browse": "浏览…",
     "github_listing_error": "GitHub 列表：",
+    "bundled_older": "内置的 {{board}} 应用程序是 {{local}}；GitHub 最新发布版本是 {{latest}}。",
+    "bundled_newer": "内置的 {{board}} 应用程序是 {{local}}，比 GitHub 最新发布版本（{{latest}}）更新：它不是已发布的版本。",
     "trigger_label": "板卡当前正在运行应用程序（先发送进入引导程序触发指令）",
     "trigger_sub": "如果板卡已经处于引导程序中，请取消勾选。",
     "erase_label": "刷写前同时擦除持久化 F-RAM",

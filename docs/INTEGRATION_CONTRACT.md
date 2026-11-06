@@ -81,8 +81,7 @@ server API.
   signing key. The anonymous API limit (60 requests per hour) is reported as
   its own error.
 - `public/firmware/` is not in git: `npm run sync-firmware` creates it from the
-  newest official release (or, while there is none, from the release named in
-  `firmware-release.json`), from `--tag <tag>`, or from a local folder given as an
+  newest official release, from `--tag <tag>`, or from a local folder given as an
   argument; the digests, the sidecars and the release signatures are checked before
   the folder is touched. The CI and the Pages build run it before the tests.
 

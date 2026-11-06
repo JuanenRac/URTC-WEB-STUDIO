@@ -214,6 +214,8 @@
     "option_browsed": "(browsed)",
     "browse": "Browse...",
     "github_listing_error": "GitHub listing:",
+    "bundled_older": "The bundled {{board}} application is {{local}}; the newest GitHub release has {{latest}}.",
+    "bundled_newer": "The bundled {{board}} application is {{local}}, newer than the newest GitHub release ({{latest}}): it is not a published version.",
     "trigger_label": "Board is currently running the application (send enter-bootloader trigger first)",
     "trigger_sub": "Uncheck if the board is already sitting in its bootloader.",
     "erase_label": "Also erase the persistence F-RAM before flashing",

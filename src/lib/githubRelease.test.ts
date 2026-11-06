@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   GithubReleaseError, LATEST_RELEASE_URL, downloadAsset, downloadAssetText, digestMismatch,
-  imagesFromRelease, listAllReleaseFirmware, parseSha256Sidecar,
+  compareBundledApplications, compareVersions, imagesFromRelease, listAllReleaseFirmware, parseSha256Sidecar,
 } from "./githubRelease";
 
 // A release shaped like the real one: 17 assets (4 components x bin, hex, .sha256, .manifest.json, plus the index).
@@ -143,5 +143,33 @@ describe("the digests a release publishes", () => {
     expect(digestMismatch(other, `${hex}  x.bin`)).toBe(hex);
     expect(digestMismatch(other, null, `sha256:${hex}`)).toBe(hex);
     expect(digestMismatch(hex, `${hex}  x.bin`, `sha256:${other}`)).toBe(other);
+  });
+});
+
+describe("the bundled applications against the newest release", () => {
+  const released = imagesFromRelease(RELEASE, "main").concat(imagesFromRelease(RELEASE, "slave"));
+  const bundled = (main: string, slave: string) => ({ mainApplication: `URTC_MAIN_FIRMWARE_v${main}.bin`, slaveApplication: `URTC_SLAVE_FIRMWARE_v${slave}.bin` });
+
+  it("compares versions number by number", () => {
+    expect(compareVersions("0.10.0", "0.9.0")).toBeGreaterThan(0);
+    expect(compareVersions("0.3.5", "0.3.5")).toBe(0);
+    expect(compareVersions("0.3", "0.3.0")).toBe(0);
+    expect(compareVersions("0.1.9", "0.1.10")).toBeLessThan(0);
+  });
+
+  it("says nothing when both images are the ones of the release", () => {
+    expect(compareBundledApplications(bundled("0.3.5", "0.1.10"), released)).toEqual([]);
+  });
+
+  it("reports an older image and a newer one (a test build), each with its board and versions", () => {
+    expect(compareBundledApplications(bundled("0.3.4", "0.2.0"), released)).toEqual([
+      { board: "main", local: "0.3.4", latest: "0.3.5", state: "older" },
+      { board: "slave", local: "0.2.0", latest: "0.1.10", state: "newer" },
+    ]);
+  });
+
+  it("says nothing when the release lists no image for the board or the bundled name is not an image", () => {
+    expect(compareBundledApplications(bundled("0.3.4", "0.1.9"), [])).toEqual([]);
+    expect(compareBundledApplications({ mainApplication: "notes.txt", slaveApplication: "URTC_SLAVE_FIRMWARE_v0.1.10.bin" }, released)).toEqual([]);
   });
 });

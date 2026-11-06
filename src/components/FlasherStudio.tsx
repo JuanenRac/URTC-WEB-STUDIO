@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BUNDLED_FIRMWARE } from '../lib/bundledFirmware';
 import { isFlashableFirmwareName, resolveVersion } from '../lib/firmwareImage';
-import { RemoteFirmware, listAllReleaseFirmware, GithubReleaseError } from '../lib/githubRelease';
+import { RemoteFirmware, listAllReleaseFirmware, GithubReleaseError, compareBundledApplications } from '../lib/githubRelease';
 import { useTranslation } from 'react-i18next';
 import { useConfirmAction } from '../hooks/useConfirmAction';
 import { THIS_HARDWARE_ID, SLAVE_HARDWARE_ID, compareVersions, formatVersion } from '../lib/flasher';
@@ -428,6 +428,13 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
                     </div>
                   )}
                   {githubError && <div className="text-[10px] text-red-400 mt-1">{t('flasher.github_listing_error', 'GitHub listing:')} {githubError}</div>}
+                  {compareBundledApplications(BUNDLED_FIRMWARE, githubFirmwares).map(c => (
+                    <div key={c.board} className="text-[10px] text-amber-400 mt-1">
+                      {c.state === 'older'
+                        ? t('flasher.bundled_older', 'The bundled {{board}} application is {{local}}; the newest GitHub release has {{latest}}.', { board: t(c.board === 'main' ? 'flasher.alert_target_main' : 'flasher.alert_target_slave', c.board), local: c.local, latest: c.latest })
+                        : t('flasher.bundled_newer', 'The bundled {{board}} application is {{local}}, newer than the newest GitHub release ({{latest}}): it is not a published version.', { board: t(c.board === 'main' ? 'flasher.alert_target_main' : 'flasher.alert_target_slave', c.board), local: c.local, latest: c.latest })}
+                    </div>
+                  ))}
                 </div>
 
                 <div className="space-y-3 pt-2 pb-2">

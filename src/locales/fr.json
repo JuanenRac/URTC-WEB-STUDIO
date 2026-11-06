@@ -214,6 +214,8 @@
     "option_browsed": "(parcouru)",
     "browse": "Parcourir...",
     "github_listing_error": "Liste GitHub :",
+    "bundled_older": "L'application {{board}} incluse est la {{local}} ; la dernière release GitHub contient la {{latest}}.",
+    "bundled_newer": "L'application {{board}} incluse est la {{local}}, plus récente que la dernière release GitHub ({{latest}}) : ce n'est pas une version publiée.",
     "trigger_label": "La carte exécute actuellement l'application (envoyer d'abord le déclencheur d'entrée en bootloader)",
     "trigger_sub": "Décocher si la carte est déjà dans son bootloader.",
     "erase_label": "Effacer aussi la F-RAM persistante avant le flashage",

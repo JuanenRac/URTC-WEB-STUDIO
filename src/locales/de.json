@@ -214,6 +214,8 @@
     "option_browsed": "(ausgewählt)",
     "browse": "Durchsuchen...",
     "github_listing_error": "GitHub-Auflistung:",
+    "bundled_older": "Die mitgelieferte Anwendung für {{board}} ist {{local}}; das neueste GitHub-Release enthält {{latest}}.",
+    "bundled_newer": "Die mitgelieferte Anwendung für {{board}} ist {{local}} und neuer als das neueste GitHub-Release ({{latest}}): Es ist keine veröffentlichte Version.",
     "trigger_label": "Die Platine führt derzeit die Anwendung aus (zuerst Bootloader-Eintritt-Trigger senden)",
     "trigger_sub": "Deaktivieren, wenn sich die Platine bereits im Bootloader befindet.",
     "erase_label": "Auch das persistente F-RAM vor dem Flashen löschen",

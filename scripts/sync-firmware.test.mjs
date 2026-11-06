@@ -126,13 +126,13 @@ describe('what a published page may carry (--require-official)', () => {
     return { ok: true, status: 200, arrayBuffer: async () => new ArrayBuffer(0) };
   };
 
-  it('refuses a pre-release and a draft, and uses no fallback tag', async () => {
+  it('refuses a pre-release and a draft', async () => {
     for (const flag of ['prerelease', 'draft']) {
       await expect(downloadRelease({ fetchFn: fakeFetch({ tag_name: 'v0.4.0', [flag]: true, assets: [] }), tag: 'v0.4.0', outDir: dir, requireOfficial: true }))
         .rejects.toThrow(/not an official one/);
     }
     const missing = async () => ({ ok: false, status: 404 });
-    await expect(downloadRelease({ fetchFn: missing, outDir: dir, fallbackTag: undefined, requireOfficial: true })).rejects.toThrow(/404/);
+    await expect(downloadRelease({ fetchFn: missing, outDir: dir, requireOfficial: true })).rejects.toThrow(/404/);
   });
 });
 

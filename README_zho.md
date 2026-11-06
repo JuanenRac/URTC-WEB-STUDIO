@@ -284,7 +284,7 @@ Studio 只负责传送该签名——与桌面版 `URTC Flasher` 相同的模式
 `signing_key_kind: "dev"`）只能安装到以相同方式构建引导程序的板卡上——日志
 会给出提示。参见 URTC 的 `docs/FIRMWARE_SIGNING.TXT`。
 
-该文件夹**不在 git 中**：由 `npm run sync-firmware` 创建（CI 和 Pages 构建会在测试和构建之前运行它）。在没有正式发布版本期间，GitHub 的 “latest” 会返回 404，由 `firmware-release.json` 指定改用的发布版本（目前是台架预发布版）；发布正式版本后，请删除该文件或修改其标签。**页面的安全性**：脚本、样式、字体和图片都来自页面本身（字体随应用打包，不会向字体服务器发出请求），内联只允许 React 写入的样式属性，页面只能访问自己的源以及提供发布文件的 GitHub 主机（构建出的 `index.html` 中的 Content-Security-Policy）。能够发送响应头的主机使用 `public/_headers`（相同的策略、`Permissions-Policy: serial=(self)`，没有其他强大的权限）；GitHub Pages 无法发送响应头，因此在那里只有页面内的策略生效。
+该文件夹**不在 git 中**：由 `npm run sync-firmware` 创建（CI 和 Pages 构建会在测试和构建之前运行它）。**页面的安全性**：脚本、样式、字体和图片都来自页面本身（字体随应用打包，不会向字体服务器发出请求），内联只允许 React 写入的样式属性，页面只能访问自己的源以及提供发布文件的 GitHub 主机（构建出的 `index.html` 中的 Content-Security-Policy）。能够发送响应头的主机使用 `public/_headers`（相同的策略、`Permissions-Policy: serial=(self)`，没有其他强大的权限）；GitHub Pages 无法发送响应头，因此在那里只有页面内的策略生效。
 
 `public/firmware/` 中正是 URTC 发布的文件（相同名称、相同字节，并附带附属
 文件）。URTC 的二进制文件不在 git 中：它们是每个版本 GitHub 发布版本的附件。
@@ -382,7 +382,7 @@ npm run preview
 
 ### GitHub Pages（所有者启用前保持关闭）
 
-本仓库可以把构建好的站点发布到 GitHub Pages（工作流 `.github/workflows/pages.yml`：`npm ci`、类型检查、测试、带项目基础路径的 `npm run build`，然后是 `upload-pages-artifact` 和 `deploy-pages`）。**该工作流目前处于关闭状态**：只有当仓库变量 `URTC_PAGES_ENABLED` 为 `true`（Settings > Secrets and variables > Actions > Variables）时，两个作业才会运行，所有者在 URTC 的第一个已签名正式发布之后设置它。此时构建会执行 `npm run sync-firmware -- --require-official`：只取最新正式发布的固件（绝不使用预发布版本，也不使用 `firmware-release.json` 的备用标签），拒绝任何没有有效发布签名的文件，以及任何用公开开发密钥构建的应用镜像，因此发布的页面不可能带有开发密钥的镜像。Pages 本身也需要启用一次（Settings > Pages > Source: GitHub Actions）；变量未设置时工作流会被跳过。Web Serial 需要基于 Chromium 的浏览器和 https，Pages 提供 https。
+本仓库可以把构建好的站点发布到 GitHub Pages（工作流 `.github/workflows/pages.yml`：`npm ci`、类型检查、测试、带项目基础路径的 `npm run build`，然后是 `upload-pages-artifact` 和 `deploy-pages`）。**该工作流目前处于关闭状态**：只有当仓库变量 `URTC_PAGES_ENABLED` 为 `true`（Settings > Secrets and variables > Actions > Variables）时，两个作业才会运行，所有者在 URTC 的第一个已签名正式发布之后设置它。此时构建会执行 `npm run sync-firmware -- --require-official`：只取最新正式发布的固件（绝不使用预发布版本），拒绝任何没有有效发布签名的文件，以及任何用公开开发密钥构建的应用镜像，因此发布的页面不可能带有开发密钥的镜像。Pages 本身也需要启用一次（Settings > Pages > Source: GitHub Actions）；变量未设置时工作流会被跳过。Web Serial 需要基于 Chromium 的浏览器和 https，Pages 提供 https。
 
 `package.json` 的 `version` 与 `urtc.project.json` 的 `version` 只会通过明确的步骤（`python bump.py`，它让两者保持一致并写入变更日志条目）改变；`build.bat` / `build.sh`、`npm run build`、`npm run dev`、`npm run lint` 和 `npm run preview` 从不改变版本。
 
