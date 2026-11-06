@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented here.
 
-## [Unreleased]
+## [0.4.8] - The Flasher page says when the bundled application is not the one of the newest release: from the list of the GitHub release that the page already reads (no extra request), compareBundledApplications finds the main or slave... (and 2 more changes)
 
 - **The Flasher page says when the bundled application is not the one of the newest release:** from the list of the GitHub release that the page already reads (no extra request), `compareBundledApplications` finds the main or slave application whose bundled version is lower than the release (or higher: a test build) and the page shows one line for each, in the eight languages (`flasher.bundled_older`, `flasher.bundled_newer`). Versions are compared number by number.
 - **The firmware step reads the official release and nothing else:** `npm run sync-firmware` takes GitHub's "latest" release of URTC (an official release exists now), and the fallback to a release named in a `firmware-release.json` file is gone together with its reader (`pinnedTag`) and its tests; a release is chosen with `--tag`, a local build with a folder argument. The bundled names in `src/lib/bundledFirmware.ts` are the four images of that release.
