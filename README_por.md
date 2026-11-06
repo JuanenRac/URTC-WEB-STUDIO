@@ -247,17 +247,17 @@ Portado a partir dos painéis do próprio deck Qt Quick do `URTC-TESTER`
   watchdog de 1000ms), com os mesmos intervalos de reenvio da ferramenta de
   ambiente de trabalho. Ao desmarcá-la, mudar de painel ou de separador, desligar ou
   fechar a página é enviado o comando de desligar da ferramenta.
-- **Global Controls** (`0x100`), passthrough SPI da **Expansion Board** + consulta
+- **Controlos Globais** (`0x100`), passthrough SPI da **Placa de Expansão** + consulta
   TMC DIAG0 (`0x180`-`0x183`), consulta/apagamento da **F-RAM** (`0x190`-`0x192`),
-  **Self-Test** (verificações seguras, em repouso, por ferramenta), um
-  **Raw Bus Monitor** com exportação de traço `.trc`/`.asc`, e um injetor de
-  **Custom Frame** com um intervalo de repetição opcional - validado como o
+  **Autoteste** (verificações seguras, em repouso, por ferramenta), um
+  **Monitor de Barramento em Bruto** com exportação de traço `.trc`/`.asc`, e um injetor de
+  **Trama Personalizada** com um intervalo de repetição opcional - validado como o
   próprio injetor de tramas do CAN Bus Protocol Analyzer: um identificador fora de
   `0`-`7FF`, um byte de dados inválido ou mais de 8 bytes é recusado com uma
   mensagem, nunca mascarado, descartado nem cortado. Os identificadores que só a
   placa transmite são recusados, e as escritas na memória da placa, os comandos do
   bootloader e os dos atuadores são confirmados antes.
-- **Detect Hardware** consulta a ferramenta ativa real (`0x110`/`0x111`) e a
+- **Detetar Hardware** consulta a ferramenta ativa real (`0x110`/`0x111`) e a
   versão da placa (`0x7F8`/`0x7F9`), e um erro crítico declarado (`0x111` byte 1)
   surge como um banner de falha em direto.
 

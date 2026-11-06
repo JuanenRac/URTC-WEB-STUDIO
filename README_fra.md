@@ -251,17 +251,17 @@ Porté depuis les panneaux du propre deck Qt Quick d'`URTC-TESTER`
   1000ms), avec les mêmes intervalles de renvoi que l'outil de bureau. La décocher,
   changer de panneau ou d'onglet, se déconnecter ou fermer la page envoie la
   commande d'arrêt de l'outil.
-- **Global Controls** (`0x100`), passthrough SPI de **Expansion Board** + requête
+- **Contrôles Globaux** (`0x100`), passthrough SPI de **Carte d'Extension** + requête
   TMC DIAG0 (`0x180`-`0x183`), requête/effacement **F-RAM** (`0x190`-`0x192`),
-  **Self-Test** (contrôles sûrs, au repos, par outil), un **Raw Bus Monitor** avec
-  export de trace `.trc`/`.asc`, et un injecteur **Custom Frame** avec un
+  **Auto-test** (contrôles sûrs, au repos, par outil), un **Moniteur de Bus Brut** avec
+  export de trace `.trc`/`.asc`, et un injecteur **Trame Personnalisée** avec un
   intervalle de répétition optionnel - validé comme l'injecteur de trames propre
   au CAN Bus Protocol Analyzer : un identifiant hors de `0`-`7FF`, un octet de
   données invalide ou plus de 8 octets est refusé avec un message, jamais masqué,
   ignoré ni tronqué. Les identifiants que seule la carte émet sont refusés, et les
   écritures dans la mémoire de la carte, les commandes du bootloader et celles des
   actionneurs sont confirmées au préalable.
-- **Detect Hardware** interroge le vrai outil actif (`0x110`/`0x111`) et la
+- **Détecter le Matériel** interroge le vrai outil actif (`0x110`/`0x111`) et la
   version de carte (`0x7F8`/`0x7F9`), et une erreur critique déclarée (`0x111`
   octet 1) apparaît comme une bannière de défaut en direct.
 

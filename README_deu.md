@@ -253,18 +253,18 @@ Portiert aus den Panels des eigenen Qt-Quick-Decks von `URTC-TESTER`
   unter seinem eigenen 1000ms-Watchdog), mit denselben Sendeintervallen wie
   das Desktop-Tool. Beim Abwählen, beim Wechsel von Panel oder Tab, beim
   Trennen oder beim Schließen der Seite wird der Aus-Befehl des Werkzeugs gesendet.
-- **Global Controls** (`0x100`), SPI-Durchleitung von **Expansion Board** +
+- **Globale Steuerungen** (`0x100`), SPI-Durchleitung von **Erweiterungsplatine** +
   TMC-DIAG0-Abfrage (`0x180`-`0x183`), **F-RAM**-Abfrage/Löschung
-  (`0x190`-`0x192`), **Self-Test** (sichere Prüfungen im Ruhezustand pro
-  Werkzeug), ein **Raw Bus Monitor** mit `.trc`/`.asc`-Trace-Export, und ein
-  **Custom Frame**-Injektor mit optionalem Wiederholungsintervall -
+  (`0x190`-`0x192`), **Selbsttest** (sichere Prüfungen im Ruhezustand pro
+  Werkzeug), ein **Roher Bus-Monitor** mit `.trc`/`.asc`-Trace-Export, und ein
+  **Benutzerdefinierte Nachricht**-Injektor mit optionalem Wiederholungsintervall -
   validiert wie der eigene Frame-Injektor des CAN Bus Protocol Analyzer: ein
   Identifier außerhalb von `0`-`7FF`, ein ungültiges Datenbyte oder mehr als
   8 Bytes wird mit einer Meldung abgelehnt, nie maskiert, verworfen oder
   gekürzt. Identifier, die nur die Platine sendet, werden abgelehnt, und
   Schreibzugriffe auf den Platinenspeicher, Bootloader-Befehle und
   Aktor-Befehle werden vorher bestätigt.
-- **Detect Hardware** fragt das echte aktive Werkzeug (`0x110`/`0x111`) und
+- **Hardware erkennen** fragt das echte aktive Werkzeug (`0x110`/`0x111`) und
   die Platinenversion (`0x7F8`/`0x7F9`) ab, und ein deklarierter kritischer
   Fehler (`0x111` Byte 1) erscheint als Live-Fehlerbanner.
 
