@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented here.
 
-## [Unreleased]
+## [0.4.7] - An official release synchronizes without hmacsha256: an application image whose .imgsig record is valid in shape is accepted with a manifest that has no hmacsha256 (the images of the current generation of bootloaders are... (and 3 more changes)
 
 - **An official release synchronizes without `hmac_sha256`:** an application image whose `.imgsig` record is valid in shape is accepted with a manifest that has no `hmac_sha256` (the images of the current generation of bootloaders are signed with the Ed25519 record and carry no HMAC); the HMAC is still required for a set of the earlier generation that has no record, a corrupt record is refused, and `--require-official` now also requires the record of each application image. The tests of the bundled set and of the sync check the record first and the HMAC only when there is no record; new tests for a set with the record and without the HMAC (accepted), without either (refused) and with a corrupt record (refused), and the list of bundled images follows the newest official release (main application 0.4.5, slave application 0.2.9, main bootloader 0.4.7, slave bootloader 0.3.1).
 - **The list of bundled images follows the newest official release:** `src/lib/bundledFirmware.ts` names the images that the sync script downloaded from the release (main application 0.4.4, slave application 0.2.8, main bootloader 0.4.6, slave bootloader 0.3.0) instead of the ones of an older set.
