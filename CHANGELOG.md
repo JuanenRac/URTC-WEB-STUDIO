@@ -2,6 +2,10 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+- **The repository check compares the manifest with what can be computed:** `tools/ci_validate.py` now also runs the shared `tools/sync_manifests.py` offline, which compares the shipped version, the newest released heading of this changelog, the presence of tests and the claimed level of evidence with the manifest. It is part of the shared set of tools, so the copy is pinned by the lock.
+
 ## [0.4.8] - The Flasher page says when the bundled application is not the one of the newest release: from the list of the GitHub release that the page already reads (no extra request), compareBundledApplications finds the main or slave... (and 2 more changes)
 
 - **The Flasher page says when the bundled application is not the one of the newest release:** from the list of the GitHub release that the page already reads (no extra request), `compareBundledApplications` finds the main or slave application whose bundled version is lower than the release (or higher: a test build) and the page shows one line for each, in the eight languages (`flasher.bundled_older`, `flasher.bundled_newer`). Versions are compared number by number.
