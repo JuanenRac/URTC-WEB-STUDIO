@@ -60,4 +60,27 @@ describe('the side navigation', () => {
     fireEvent.click(screen.getByText('Tester Diagnostics'));
     expect(setActiveTab).toHaveBeenLastCalledWith('tester');
   });
+
+  it('answers each of the seven buttons with its own screen and marks exactly that one when it is the active one', () => {
+    const labels: Array<[string, 'control' | 'oled' | 'can' | 'flasher' | 'thermal' | 'specs' | 'tester']> = [
+      ['Tool Matrix & Control', 'control'],
+      ['OLED & Hardware Monitor', 'oled'],
+      ['CAN Bus Protocol Analyzer', 'can'],
+      ['Firmware OTA / Flasher', 'flasher'],
+      ['Thermal IR Inspection', 'thermal'],
+      ['BOM & Hardware Pinouts', 'specs'],
+      ['Tester Diagnostics', 'tester'],
+    ];
+    for (const [label, tab] of labels) {
+      const setActiveTab = vi.fn();
+      const { unmount } = render(<Sidebar activeTab={tab} setActiveTab={setActiveTab} />);
+      const marked = screen.getAllByRole('button').filter((b) => b.className.includes('bg-amber-500'));
+      expect(marked).toHaveLength(1);
+      expect(marked[0].textContent).toBe(label);
+      fireEvent.click(screen.getByText(label));
+      expect(setActiveTab).toHaveBeenCalledTimes(1);
+      expect(setActiveTab).toHaveBeenCalledWith(tab);
+      unmount();
+    }
+  });
 });

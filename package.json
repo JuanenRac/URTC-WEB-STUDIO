@@ -11,7 +11,7 @@
     "preview": "vite preview --port 3000",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "test:coverage": "vitest run --coverage --coverage.reporter=text-summary --coverage.thresholds.lines=87 --coverage.thresholds.statements=87 --coverage.thresholds.functions=67 --coverage.thresholds.branches=85",
+    "test:coverage": "vitest run --coverage --coverage.reporter=text-summary --coverage.thresholds.lines=96 --coverage.thresholds.statements=96 --coverage.thresholds.functions=95 --coverage.thresholds.branches=92",
     "sync-firmware": "node scripts/sync-firmware.mjs"
   },
   "dependencies": {
