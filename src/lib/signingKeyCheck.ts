@@ -24,3 +24,14 @@ export function precheckOutcome(boardKeyId: string | undefined | null, imageKeyI
   const check = compareSigningKey(boardKeyId, imageKeyId);
   return check === 'unknown' && boardIsBootloader && !clean(boardKeyId) && clean(imageKeyId) ? 'no_data' : check;
 }
+
+/** The key id a signature record names: its first eight bytes (key id, counter, signature). The record is what the bootloader checks, so it wins over the key an older manifest declares. */
+export function recordKeyId(record: Uint8Array | null | undefined): string | undefined {
+  if (!record || record.length < 8) return undefined;
+  return Array.from(record.slice(0, 8), (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+/** The fingerprint the image declares: the key id of its record when there is one, else the one of the manifest. */
+export function imageKeyId(record: Uint8Array | null | undefined, manifestKeyId: string | undefined): string | undefined {
+  return recordKeyId(record) ?? (manifestKeyId || undefined);
+}

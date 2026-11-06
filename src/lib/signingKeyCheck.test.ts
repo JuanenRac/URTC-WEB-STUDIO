@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { CanFrame } from "../types";
 import { VersionBus, queryMainVersion } from "./boardVersion";
-import { compareSigningKey, precheckOutcome } from "./signingKeyCheck";
+import { compareSigningKey, imageKeyId, precheckOutcome, recordKeyId } from "./signingKeyCheck";
 
 function frame(id: number, data: number[]): CanFrame {
   return { id, idHex: "0x" + id.toString(16), dlc: data.length, data, dataHex: "", timestamp: "", direction: "Rx", description: "", seq: 0 };
@@ -94,5 +94,23 @@ describe("the signing key before the transfer", () => {
     expect(precheckOutcome(undefined, undefined, true)).toBe("unknown");             // nothing declared, nothing to compare
     expect(precheckOutcome("a1b2c3d4e5f60718", "0011223344556677", true)).toBe("mismatch");
     expect(precheckOutcome("a1b2c3d4e5f60718", "a1b2c3d4e5f60718", true)).toBe("match");
+  });
+});
+
+describe("the key named by the signature record", () => {
+  const record = (id: number[]) => Uint8Array.from([...id, 0, 0, 0, 1, ...new Array(64).fill(0)]);
+
+  it("is the first eight bytes of the record", () => {
+    expect(recordKeyId(record(KEY))).toBe("a1b2c3d4e5f60718");
+    expect(recordKeyId(null)).toBeUndefined();
+    expect(recordKeyId(new Uint8Array(7))).toBeUndefined();
+  });
+
+  it("wins over the key an older manifest declares, and the manifest is used when there is no record", () => {
+    expect(imageKeyId(record(KEY), "0011223344556677")).toBe("a1b2c3d4e5f60718");
+    expect(imageKeyId(null, "0011223344556677")).toBe("0011223344556677");
+    expect(imageKeyId(undefined, "")).toBeUndefined();
+    expect(compareSigningKey("a1b2c3d4e5f60718", imageKeyId(record(KEY), "0011223344556677"))).toBe("match");
+    expect(compareSigningKey("a1b2c3d4e5f60718", imageKeyId(record(OTHER_KEY), undefined))).toBe("mismatch");
   });
 });
