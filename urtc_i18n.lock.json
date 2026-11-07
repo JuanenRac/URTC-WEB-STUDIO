@@ -2,9 +2,9 @@
   "format": 1,
   "urtc_common_version": "0.2.4",
   "catalog": "spec/i18n/catalog/web-studio.json",
-  "catalog_sha256": "9bf748371b01d2b1f6300c29158885997b4c55d1f098fefdba85b9f9fc827472",
+  "catalog_sha256": "0774bca2b4179fcf7ac6992800b398bd9f1232215c9d4762dae18300487640bb",
   "files": {
-    "src/locales/de.json": "80cd28816a6903a013b4c1053b86ec2825214f0287d7e28c57646770adec3cb2",
+    "src/locales/de.json": "285bc8fe6e3cbde37afdb27bfb749654ac9b865b37c35f79fb59e00fdb90a865",
     "src/locales/en.json": "fff3a51c4c48e4cbef0970aecd34b6a518b4aa1d9506d621492c52ed6f7cf803",
     "src/locales/es.json": "c7d3e3b215840f4119b63394a89af18c754a244080910f00c04f260721358bb4",
     "src/locales/fr.json": "207118525f195c0161948277682c989a34e80f9accafd1c479159e097c3b141b",
