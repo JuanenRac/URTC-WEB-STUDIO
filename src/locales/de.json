@@ -237,7 +237,7 @@
     "target_main_short": "Haupt",
     "cancel_button": "Abbrechen",
     "backup_button": "Firmware sichern (CAN-Rücklesen, 0x7FE/0x7FF)",
-    "backup_button_title": "Liest den aktuellen Inhalt des Haupt-Slots über CAN, bevor Sie ihn überschreibst (Bootloader muss bereits laufen)",
+    "backup_button_title": "Liest den aktuellen Inhalt des Haupt-Slots über CAN, bevor Sie ihn überschreiben (Bootloader muss bereits laufen)",
     "connect_warning": "Verbinden Sie den USB-CAN-Adapter, um das Flashen zu aktivieren.",
     "swd_notice": "Ein Browser hat keine API zur Ansteuerung einer SWD/JTAG-Sonde (Web Serial spricht nur mit seriell adressierten Geräten wie einem USB-CAN-Adapter, nicht mit dem eigenen Protokoll einer Debug-Sonde). Dieser Tab erklärt die genauen Befehle, die das Desktop-Tool URTC Flasher lokal über STM32CubeProgrammer/pyOCD ausführt - von hier aus wird nichts ausgeführt.",
     "swd_bootloader_label": "Bootloader-Datei (.bin):",
