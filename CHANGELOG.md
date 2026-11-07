@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The Spanish, German, French and Italian READMEs show the Vite badge** that the English, Portuguese, Japanese and Chinese ones already had.
+
 - **The copy of the CAN identifiers and vectors is refreshed:** the shared tables now list `0x1BC` (ask for the crash record) and `0x1BD` (the six frames of the record), the identifiers a firmware built with the crash capture answers; this program neither sends nor reads them.
 
 - **The copy of the firmware file names is refreshed:** the table of the files that travel with an image now includes the signature record (`.imgsig`), and the tests check that it is listed, that no suffix is taken for an image, every board and kind, and the names that are refused. The vitest count is 1357.
