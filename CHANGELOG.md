@@ -4,7 +4,7 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
-- **The copy of the firmware file names is refreshed:** the table of the files that travel with an image now includes the signature record (`.imgsig`), and the tests check that it is listed, that no suffix is taken for an image, every board and kind, and the names that are refused. The vitest count is 1345.
+- **The copy of the firmware file names is refreshed:** the table of the files that travel with an image now includes the signature record (`.imgsig`), and the tests check that it is listed, that no suffix is taken for an image, every board and kind, and the names that are refused. The vitest count is 1357.
 
 ## [0.4.9] - Both signing keys are shown while a rotation is in progress: before an update the page asks the bootloader which keys it trusts (0x7EA operation 05), writes both fingerprints and the minutes left in the flasher log, accepts an... (and 2 more changes)
 
