@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented here.
 
-## [Unreleased]
+## [0.4.9] - Both signing keys are shown while a rotation is in progress: before an update the page asks the bootloader which keys it trusts (0x7EA operation 05), writes both fingerprints and the minutes left in the flasher log, accepts an... (and 2 more changes)
 
 - **Both signing keys are shown while a rotation is in progress:** before an update the page asks the bootloader which keys it trusts (`0x7EA` operation `05`), writes both fingerprints and the minutes left in the flasher log, accepts an image signed with either of them and warns when it uses the previous one; a revoked current key is said too. Ambiguous answers count as no data. Texts in the eight languages.
 
