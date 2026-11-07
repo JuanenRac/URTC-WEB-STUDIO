@@ -2,16 +2,16 @@
   "format": 1,
   "urtc_common_version": "0.2.4",
   "catalog": "spec/i18n/catalog/web-studio.json",
-  "catalog_sha256": "0774bca2b4179fcf7ac6992800b398bd9f1232215c9d4762dae18300487640bb",
+  "catalog_sha256": "7630b54f7fd360d0d99393b3baf6f3abbde5bcb8de528a65a332c643015e2e89",
   "files": {
-    "src/locales/de.json": "285bc8fe6e3cbde37afdb27bfb749654ac9b865b37c35f79fb59e00fdb90a865",
+    "src/locales/de.json": "7ee16d7c82ce6ab87131ada5ec7e09fc77089847dcdc3f7685b2847625181677",
     "src/locales/en.json": "fff3a51c4c48e4cbef0970aecd34b6a518b4aa1d9506d621492c52ed6f7cf803",
-    "src/locales/es.json": "c7d3e3b215840f4119b63394a89af18c754a244080910f00c04f260721358bb4",
+    "src/locales/es.json": "cb616e2ac6b6390f4883577ce7e20d7e36c763516b9579be8d11f7ae4abb98de",
     "src/locales/fr.json": "207118525f195c0161948277682c989a34e80f9accafd1c479159e097c3b141b",
     "src/locales/generated.test.ts": "b235c660d2e4b721264ea1f80a61d74517363d08bd0455f21d0c49b551bfb808",
     "src/locales/it.json": "77704c8ead430942554f35d55e934ae7b164be8b2b6da15a65aae41bcbdc1156",
     "src/locales/ja.json": "a6d949ef97cfa2bc526500c8a54749294c713357ad69668bab57e8d89da277f7",
     "src/locales/pt.json": "1383683206f5b3cfce85abf583d2fc0915bd6c032f7b7bf5aff44306684eb8e2",
-    "src/locales/zh.json": "e2e4561d2b4c97a12aa542249681f5750b01547c74c01fcba69df34337121242"
+    "src/locales/zh.json": "7817d9cfbf24e711bc22f0a27333d3bd6ed25969b1b2a8fcb7c17b85849530a2"
   }
 }
