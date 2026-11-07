@@ -178,7 +178,7 @@ CAN ID:
 - **Autorización de downgrade** (`0x7FD`) - una casilla protegida por confirmación
   que autoriza al intento actual a saltarse la comprobación anti-rollback del
   bootloader, para un revert deliberado a una versión más antigua.
-- **Borrado de F-RAM antes de flashear** (`0x192`), opcional, solo placa principal.
+- **Borrado de F-RAM antes de grabar** (`0x192`), opcional, solo placa principal.
 - **Consulta del contador de errores CAN** (`0x7FB`/`0x7FC`, TEC/REC leídos
   directamente de los propios registros de error del controlador CAN) - distingue un
   problema genuino de bus de uno del lado de la aplicación/bootloader.
@@ -281,7 +281,7 @@ El firmware puede hacer que varios cabezales compartan un bus CAN (la extensión
 |---|---|
 | Una trama mal formada llega al cable o a la pantalla | Se validan ambas direcciones del enlace SLCAN: un identificador fuera de `0x000`-`0x7FF`, una carga de más de 8 bytes o un byte fuera de `0x00`-`0xFF` se rechaza antes de escribirse, y una línea entrante que no es una trama SLCAN real se descarta |
 | Un secreto viaja en la página | La aplicación no lleva ninguna clave de firma: Flasher Studio solo envía la firma que la compilación de URTC publicó junto a cada imagen, así que la página puede alojarse públicamente |
-| Una imagen de firmware equivocada o manipulada | Un manifiesto cuyo `sha256` no coincide con el archivo bloquea el flasheo; cada imagen de una release oficial lleva una firma de release Ed25519 que la página comprueba en el navegador antes de enviar la imagen |
+| Una imagen de firmware equivocada o manipulada | Un manifiesto cuyo `sha256` no coincide con el archivo bloquea la grabación; cada imagen de una release oficial lleva una firma de release Ed25519 que la página comprueba en el navegador antes de enviar la imagen |
 | Una respuesta simulada tomada por real | Las pestañas de zona de pruebas no transmiten nada y, con una placa conectada, no responden nada; sus tramas se marcan SIM y una traza reproducida se marca REPLAY |
 | Una acción sobre la placa por error | Láser, taladro, curado UV, soldadura, calentadores, movimiento, dosificación de pasta, escrituras en la memoria de la placa, tramas escritas a mano arriesgadas y una imagen firmada con la clave pública de desarrollo piden confirmación antes |
 | Un actuador que se queda funcionando | Cada herramienta con perro guardián en el firmware se mantiene viva con un reenvío y se apaga al reemplazar el panel, cambiar de pestaña, desconectar la placa o cerrar la página; STOP ALL apaga todo lo que la página mantiene vivo |
@@ -295,7 +295,7 @@ STOP ALL es una orden de software, no una parada de emergencia, y ninguna de las
 - Tester Studio muestra un panel de herramienta solo para la herramienta que la propia placa ha comunicado (`0x111`), y ninguno antes de que la placa responda.
 - Láser, taladro, curado UV, soldadura, calentadores, movimiento, dispensado de pasta, escrituras en la memoria de la placa y tramas escritas a mano que entrañan riesgo piden confirmación antes.
 - **PARAR TODO** en la cabecera (visible con la conexión activa) apaga todos los actuadores que esta página mantiene activos; cerrar la página y desconectar hacen lo mismo. Es una orden de software, no una parada de emergencia.
-- Flashear una imagen firmada con la clave de desarrollo pública pide confirmación antes, porque esa clave no demuestra quién hizo la imagen.
+- Grabar una imagen firmada con la clave de desarrollo pública pide confirmación antes, porque esa clave no demuestra quién hizo la imagen.
 - Cuando la placa declara un error crítico, el aviso indica también el motivo de la protección contra fuga térmica si la placa lo comunica.
 - **Reproducción de una traza grabada** (CAN Bus Protocol Analyzer): un archivo `.trc` o `.asc`, por ejemplo el que exporta el Raw Bus Monitor, reproduce sus tramas recibidas en el registro y en los paneles sin placa, de 0,25x a 10x y opcionalmente en bucle. Las tramas se marcan REPLAY, no se transmite nada, una grabación nunca responde a una petición, nunca se exporta como algo que dijo la placa y la reproducción se pausa mientras haya una placa conectada.
 
@@ -513,7 +513,7 @@ URTC se compone de repositorios independientes, cada uno con su versión, sus pr
 - [`docs/INTEGRATION_CONTRACT.md`](docs/INTEGRATION_CONTRACT.md) — qué debe
   hacer este cliente ante un esquema desconocido, una identidad de destino
   ausente o un resultado de API malformado, y por qué la autoridad real de
-  flasheo se mantiene en el servidor o en las herramientas de escritorio
+  grabación se mantiene en el servidor o en las herramientas de escritorio
   dedicadas.
 
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** — stack tecnológico y pautas de codificación para un pull request.
