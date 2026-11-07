@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The manifest says which version of the shared contracts it needs:** `min_common` in `urtc.project.json` is the oldest version of URTC-COMMON among the copies this repository carries, the value the updater compares with what is installed (a warning only). `tools/min_common.py` of URTC-COMMON checks it and a new copy brings it up to date.
+
 - **The Spanish, German, French and Italian READMEs show the Vite badge** that the English, Portuguese, Japanese and Chinese ones already had.
 
 - **The copy of the CAN identifiers and vectors is refreshed:** the shared tables now list `0x1BC` (ask for the crash record) and `0x1BD` (the six frames of the record), the identifiers a firmware built with the crash capture answers; this program neither sends nor reads them.
