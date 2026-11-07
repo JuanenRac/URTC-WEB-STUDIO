@@ -16,6 +16,27 @@ describe('firmware file names', () => {
 
   it('names the files that travel with an image', () => {
     const image = 'URTC_MAIN_FIRMWARE_v0.4.1.bin';
-    expect(FIRMWARE_SIDECAR_SUFFIXES.map(suffix => firmwareSidecarName(image, suffix))).toEqual([`${image}.sha256`, `${image}.manifest.json`, `${image}.sig`]);
+    expect(FIRMWARE_SIDECAR_SUFFIXES.map(suffix => firmwareSidecarName(image, suffix))).toEqual([`${image}.sha256`, `${image}.manifest.json`, `${image}.sig`, `${image}.imgsig`]);
+  });
+
+  it('lists the signature record of the image among the files that travel with it', () => {
+    expect(FIRMWARE_SIDECAR_SUFFIXES).toContain('.imgsig');
+    expect(new Set(FIRMWARE_SIDECAR_SUFFIXES).size).toBe(FIRMWARE_SIDECAR_SUFFIXES.length);
+    for (const suffix of FIRMWARE_SIDECAR_SUFFIXES) {
+      expect(suffix.startsWith('.')).toBe(true);
+      expect(parseFirmwareImageName(`URTC_MAIN_FIRMWARE_v0.4.1.bin${suffix}`)).toBeNull();
+    }
+  });
+
+  it('reads every board and kind and a version of three or four parts, and nothing else', () => {
+    for (const board of ['MAIN', 'SLAVE']) {
+      for (const kind of ['FIRMWARE', 'BOOTLOADER']) {
+        expect(parseFirmwareImageName(`URTC_${board}_${kind}_v1.2.3.bin`)).toEqual({ board, kind, version: '1.2.3' });
+        expect(parseFirmwareImageName(`URTC_${board}_${kind}_v1.2.3.4.bin`)?.version).toBe('1.2.3.4');
+      }
+    }
+    for (const name of ['URTC_MAIN_FIRMWARE_v1.2.3.bin ', ' URTC_MAIN_FIRMWARE_v1.2.3.bin', 'URTC_MAIN_FIRMWARE_1.2.3.bin', 'URTC_MAIN_APP_v1.2.3.bin', 'URTC_MAIN_FIRMWARE_v1.2.3.binx', 'URTC_MAIN_FIRMWARE_v1..3.bin']) {
+      expect(parseFirmwareImageName(name)).toBeNull();
+    }
   });
 });

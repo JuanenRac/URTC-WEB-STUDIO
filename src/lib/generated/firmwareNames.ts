@@ -6,7 +6,7 @@ export const FIRMWARE_PREFIX = "URTC";
 export const FIRMWARE_BOARDS = ["MAIN", "SLAVE"] as const;
 export const FIRMWARE_KINDS = ["FIRMWARE", "BOOTLOADER"] as const;
 export const FIRMWARE_IMAGE_EXTENSION = ".bin";
-export const FIRMWARE_SIDECAR_SUFFIXES = [".sha256", ".manifest.json", ".sig"] as const;
+export const FIRMWARE_SIDECAR_SUFFIXES = [".sha256", ".manifest.json", ".sig", ".imgsig"] as const;
 export const FIRMWARE_IMAGE_NAME = /^URTC_(MAIN|SLAVE)_(FIRMWARE|BOOTLOADER)_v(\d+(?:\.\d+)+)\.bin$/i;
 
 export interface FirmwareImageName { board: (typeof FIRMWARE_BOARDS)[number]; kind: (typeof FIRMWARE_KINDS)[number]; version: string }

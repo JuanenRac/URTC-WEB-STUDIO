@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "urtc_common_version": "0.2.3",
+  "urtc_common_version": "0.2.4",
   "files": {
     "blackbox_vectors.json": {
       "from": "conformance/blackbox_vectors.json",
@@ -8,7 +8,7 @@
     },
     "firmwareNames.ts": {
       "from": "generated/firmwareNames.ts",
-      "sha256": "058cf67f98b75ab4fc250224b3da2ec6fd3697a3e4ef9e795a283076e97b8050"
+      "sha256": "0a2dac695a25b2992dd670fd2675f9a1d61142d58ef1a5459d06c47a8a961369"
     },
     "node_picker_vectors.json": {
       "from": "conformance/node_picker_vectors.json",
