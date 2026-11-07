@@ -37,7 +37,7 @@
 
 | | |
 |---|---|
-| Versione | `0.4.9` |
+| Versione | `0.5.0` |
 | Maturità | Funzionale |
 | Test | 1357 (`npm test`) |
 | Tecnologia | Web Serial API / TypeScript |
