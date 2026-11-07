@@ -64,7 +64,7 @@
         "fr": "Flasher : la carte flash de la carte, l'image et son manifeste prêts à l'envoi, et les options d'une mise à jour CAN-OTA (carte modélisée ; rien n'est envoyé).",
         "it": "Flasher: la mappa flash della scheda, l'immagine e il suo manifesto pronti all'invio e le opzioni di un aggiornamento CAN-OTA (scheda modellata; non si invia nulla).",
         "de": "Flasher: die Flash-Karte der Platine, das Image und sein Manifest versandbereit sowie die Optionen einer CAN-OTA-Aktualisierung (modellierte Platine; es wird nichts gesendet).",
-        "zh": "刷写器：电路板的闪存映射、准备发送的映像及其清单，以及 CAN-OTA 更新的选项（模拟电路板，不发送任何内容）。",
+        "zh": "刷写器：板卡的闪存映射、准备发送的映像及其清单，以及 CAN-OTA 更新的选项（模拟板卡，不发送任何内容）。",
         "ja": "フラッシャー：ボードのフラッシュマップ、送信準備が整ったイメージとそのマニフェスト、CAN-OTA 更新のオプション（モデル化したボード。何も送信しません）。",
         "pt": "Flasher: o mapa de flash da placa, a imagem e o seu manifesto prontos a enviar e as opções de uma atualização CAN-OTA (placa modelada; não se envia nada)."
       }
@@ -110,7 +110,7 @@
         "fr": "Diagnostic du testeur : la boîte noire et les compteurs thermiques dans le temps, lus sur une carte modélisée.",
         "it": "Diagnostica del tester: la scatola nera e i contatori termici nel tempo, letti da una scheda modellata.",
         "de": "Tester-Diagnose: die Blackbox und die thermischen Zähler im Zeitverlauf, gelesen von einer modellierten Platine.",
-        "zh": "测试器诊断：黑匣子和随时间变化的热计数器，读取自模拟电路板。",
+        "zh": "测试器诊断：黑匣子和随时间变化的热计数器，读取自模拟板卡。",
         "ja": "テスター診断：ブラックボックスと、時間経過に伴う温度カウンター（モデル化したボードから読み取り）。",
         "pt": "Diagnóstico do testador: a caixa negra e os contadores térmicos ao longo do tempo, lidos de uma placa modelada."
       }
