@@ -78,7 +78,7 @@ reçoivent les vraies trames CAN décrites dans `docs/CANBUS.TXT` du
 Cette app a deux types d'onglets :
 
 - **Onglets réels, pilotés par le matériel** - Flasher Studio, Tester Studio, et le
-  CAN Bus Protocol Analyzer. Ceux-ci ne font quoi que ce soit qu'une fois que vous
+  CAN Bus Protocol Analyzer. Ceux-ci ne font quelque chose qu'une fois que vous
   avez connecté un vrai adaptateur USB-CAN (bouton en haut à droite de l'en-tête) ;
   chaque commande qu'ils envoient et chaque lecture qu'ils affichent provient du bus CAN (ce chemin n'a jamais été exécuté avec un vrai adaptateur ni une vraie carte). Cela inclut la **lecture réelle de la caméra thermique** - le panneau
   « Thermal Inspection » de Tester Studio (`0x250`/`0x251`/`0x254`/`0x255`) interroge
@@ -99,7 +99,7 @@ Cette app a deux types d'onglets :
 
 ## 🧩 Rôle dans URTC
 
-URTC-WEB-STUDIO est la version navigateur des deux programmes de bureau d'URTC, URTC-FLASHER et URTC-TESTER : une page React qui parle à une carte URTC par un adaptateur USB-CAN avec Web Serial, avec le même cadrage SLCAN et le même protocole CAN (ses tableaux et vecteurs sont générés à partir d'URTC-COMMON). Elle apporte leurs principaux flux dans un onglet de navigateur, sans rien installer, et laisse SWD/JTAG, qu'aucun navigateur ne peut piloter, au flasheur de bureau. Elle a aussi des onglets bac à sable qui explorent les 25 outils hors ligne et ne transmettent rien.
+URTC-WEB-STUDIO est la version navigateur des deux programmes de bureau d'URTC, URTC-FLASHER et URTC-TESTER : une page React qui parle à une carte URTC par un adaptateur USB-CAN avec Web Serial, avec le même cadrage SLCAN et le même protocole CAN (ses tableaux et vecteurs sont générés à partir d'URTC-COMMON). Elle apporte leurs principaux flux dans un onglet de navigateur, sans rien installer, et laisse SWD/JTAG, qu'aucun navigateur ne peut piloter, au flasher de bureau. Elle a aussi des onglets bac à sable qui explorent les 25 outils hors ligne et ne transmettent rien.
 
 ## 🏛️ Architecture
 
@@ -284,11 +284,11 @@ Le firmware peut faire partager un bus CAN à plusieurs têtes d'outil (l'extens
 
 | Menace | Défense |
 |---|---|
-| Une trame mal formée atteint le fil ou l'écran | Les deux sens de la liaison SLCAN sont validés : un identifiant hors de `0x000`-`0x7FF`, une charge de plus de 8 octets ou un octet hors de `0x00`-`0xFF` est refusé avant d'être écrit, et une ligne entrante qui n'est pas une vraie trame SLCAN est abandonnée |
+| Une trame mal formée atteint le fil ou l'écran | Les deux sens de la liaison SLCAN sont validés : un identifiant hors de `0x000`-`0x7FF`, une charge utile de plus de 8 octets ou un octet hors de `0x00`-`0xFF` est refusé avant d'être écrit, et une ligne entrante qui n'est pas une vraie trame SLCAN est abandonnée |
 | Un secret voyage dans la page | L'application ne contient aucune clé de signature : Flasher Studio n'envoie que la signature que la compilation d'URTC a publiée à côté de chaque image, si bien que la page peut être hébergée publiquement |
 | Une image de firmware fausse ou manipulée | Un manifeste dont le `sha256` ne correspond pas au fichier bloque le flashage ; chaque image d'une release officielle porte une signature de release Ed25519 que la page vérifie dans le navigateur avant d'envoyer l'image |
 | Une réponse simulée prise pour réelle | Les onglets bac à sable ne transmettent rien et, tant qu'une carte est connectée, ne répondent rien ; leurs trames sont marquées SIM et une trace rejouée REPLAY |
-| Une action sur la carte par erreur | Laser, perceuse, polymérisation UV, soudure, chauffages, mouvement, jetting de pâte, écritures dans la mémoire de la carte, trames risquées saisies à la main et une image signée avec la clé publique de développement demandent d'abord une confirmation |
+| Une action sur la carte par erreur | Laser, perceuse, séchage UV, soudure, chauffages, mouvement, distribution de pâte, écritures dans la mémoire de la carte, trames risquées saisies à la main et une image signée avec la clé publique de développement demandent d'abord une confirmation |
 | Un actionneur qui continue de tourner | Chaque outil doté d'un chien de garde dans le firmware est maintenu en vie par un renvoi et coupé quand le panneau est remplacé, que l'onglet change, que la carte est déconnectée ou que la page se ferme ; STOP ALL coupe tout ce que la page maintient en vie |
 | Une page qui charge du code d'ailleurs | Une politique de sécurité de contenu : scripts seulement de la page elle-même, connexions seulement vers elle-même et GitHub |
 

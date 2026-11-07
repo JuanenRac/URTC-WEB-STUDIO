@@ -15,7 +15,7 @@
   <a href="README_por.md">🇵🇹 Português</a>
 </p>
 
-### Los flujos principales del flasheador y del tester de URTC en una pestaña del navegador, con un adaptador USB-CAN y Web Serial
+### Los flujos principales del flasher y del tester de URTC en una pestaña del navegador, con un adaptador USB-CAN y Web Serial
 
 <p align="center">
   <img src="https://img.shields.io/badge/Licencia-GPL%203.0-blue.svg" alt="GPL 3.0 or later">
@@ -100,7 +100,7 @@ Esta app tiene dos tipos de pestañas:
 
 ## 🧩 Papel en URTC
 
-URTC-WEB-STUDIO es la versión de navegador de los dos programas de escritorio de URTC, URTC-FLASHER y URTC-TESTER: una página React que habla con una placa URTC a través de un adaptador USB-CAN con Web Serial, con el mismo encuadre SLCAN y el mismo protocolo CAN (sus tablas y vectores se generan a partir de URTC-COMMON). Trae sus flujos principales a una pestaña del navegador sin instalar nada, y deja SWD/JTAG, que ningún navegador puede manejar, para el flasheador de escritorio. También tiene pestañas de zona de pruebas que exploran las 25 herramientas sin conexión y no transmiten nada.
+URTC-WEB-STUDIO es la versión de navegador de los dos programas de escritorio de URTC, URTC-FLASHER y URTC-TESTER: una página React que habla con una placa URTC a través de un adaptador USB-CAN con Web Serial, con el mismo encuadre SLCAN y el mismo protocolo CAN (sus tablas y vectores se generan a partir de URTC-COMMON). Trae sus flujos principales a una pestaña del navegador sin instalar nada, y deja SWD/JTAG, que ningún navegador puede manejar, para el flasher de escritorio. También tiene pestañas de zona de pruebas que exploran las 25 herramientas sin conexión y no transmiten nada.
 
 ## 🏛️ Arquitectura
 
@@ -182,7 +182,7 @@ CAN ID:
 - **Consulta del contador de errores CAN** (`0x7FB`/`0x7FC`, TEC/REC leídos
   directamente de los propios registros de error del controlador CAN) - distingue un
   problema genuino de bus de uno del lado de la aplicación/bootloader.
-- **Relectura/respaldo de firmware por CAN** (`0x7FE`/`0x7FF`) - lee el contenido
+- **Relectura/copia de seguridad del firmware por CAN** (`0x7FE`/`0x7FF`) - lee el contenido
   actual del slot principal antes de que lo sobrescribas, a un ritmo de 2KB/página
   con ACKs del host, y lo guarda como una descarga `.bin`.
 - **Consulta de versión de placa en vivo** (`0x7F8`/`0x7F9`/`0x7FA`/`0x7E9`) - muestra el
@@ -226,7 +226,7 @@ de ejecutarse en una sandbox de navegador, no una funcionalidad que falte aquí.
 pestaña SWD/JTAG de Flasher Studio explica los comandos exactos que la herramienta
 de escritorio `URTC Flasher` ejecutaría localmente, como referencia - usa esa
 herramienta directamente para programación de chip completo, comprobaciones de
-option-byte/RDP, o un respaldo de flash completo antes de un borrado masivo.
+option-byte/RDP, o una copia de seguridad completa de la flash antes de un borrado masivo.
 
 ### Tester Studio - cobertura real de funcionalidades
 
@@ -261,13 +261,13 @@ Portado desde los paneles del propio deck Qt Quick de `URTC-TESTER`
   versión de placa (`0x7F8`/`0x7F9`), y un error crítico declarado (`0x111` byte 1)
   aparece como un banner de fallo en vivo.
 
-- **Pestaña Evidencia.** Lee los registros (`urtc-evidence/1`) que escriben el flasher, el tester y el updater, de los archivos que elige la persona (no se sube nada), comprueba cada uno con las mismas reglas y el mismo resumen que el código común y los lista del más reciente al más antiguo, con filtros por tipo, resultado y texto, un resumen, el problema de cada registro no válido y una descarga en CSV. Un registro firmado con Ed25519 muestra si su firma coincide, y una lista de claves de confianza (alias y clave pública, solo claves públicas, guardada en este navegador y nunca subida) hace que diga "firmada por <alias>" o "firma válida, clave desconocida". La lista se puede guardar como fichero JSON y se pueden añadir claves desde un fichero (un fichero con una sola entrada errónea se rechaza entero); la página está en los ocho idiomas.
+- **Pestaña Evidencia.** Lee los registros (`urtc-evidence/1`) que escriben el flasher, el tester y el updater, de los archivos que elige la persona (no se sube nada), comprueba cada uno con las mismas reglas y el mismo resumen que el código común y los lista del más reciente al más antiguo, con filtros por tipo, resultado y texto, un resumen, el problema de cada registro no válido y una descarga en CSV. Un registro firmado con Ed25519 muestra si su firma coincide, y una lista de claves de confianza (alias y clave pública, solo claves públicas, guardada en este navegador y nunca subida) hace que diga "firmada por <alias>" o "firma válida, clave desconocida". La lista se puede guardar como archivo JSON y se pueden añadir claves desde un archivo (un archivo con una sola entrada errónea se rechaza entero); la página está en los ocho idiomas.
 
 - **Tramas construidas por funciones puras.** Las tramas de los paneles (LED y anillo de estado, paso SPI, funciones opcionales, boquilla y extrusor del cabezal de impresora 3D, pulso de soldadura, movimientos de motor paso a paso) se construyen en `toolFrames.ts` y las de la actualización del firmware (START_UPDATE, los cuatro trozos de firma, las tramas de datos de la imagen y END_UPDATE) en `flashFrames.ts`; un valor que no cabe en su campo se lleva al más cercano que sí cabe, y las pruebas fijan los bytes.
 
 - **Banco del rack con respuestas.** El rack simulado responde a cada orden con su trama de respuesta (un acuse, o un rechazo con el motivo); `rackSim.ts` la escribe y la lee (`encodeRackReply`, `parseRackReply`), el panel del banco dice el motivo en el idioma de la página y una orden retenida por llegar demasiado pronto es un rechazo con su motivo, como en el firmware.
 
-- **Pestaña Trazas CAN.** Abre una traza grabada (`.trc`, `.asc`, un registro de candump, líneas JSON o el JSON que exporta) y lista sus tramas nombradas con la especificación (`canTrace.ts`, con los mismos esquemas que los paneles): se marcan los rechazos y los fallos, y también las tramas demasiado cortas, duplicadas, desordenadas o seguidas de un silencio largo; la tabla filtra por identificador, tipo, nodo, resultado, tiempo y texto, una línea de tiempo muestra dónde están los rechazos y la selección se guarda como CSV o JSON. El fichero se lee en la página (no se sube nada y nada de lo que contiene se ejecuta), hasta 5 MB y 200.000 tramas (la tabla dibuja solo las filas visibles y se recorre con el teclado; una línea ilegible se cuenta y se lista, nunca se oculta); la página está en los ocho idiomas.
+- **Pestaña Trazas CAN.** Abre una traza grabada (`.trc`, `.asc`, un registro de candump, líneas JSON o el JSON que exporta) y lista sus tramas nombradas con la especificación (`canTrace.ts`, con los mismos esquemas que los paneles): se marcan los rechazos y los fallos, y también las tramas demasiado cortas, duplicadas, desordenadas o seguidas de un silencio largo; la tabla filtra por identificador, tipo, nodo, resultado, tiempo y texto, una línea de tiempo muestra dónde están los rechazos y la selección se guarda como CSV o JSON. El archivo se lee en la página (no se sube nada y nada de lo que contiene se ejecuta), hasta 5 MB y 200.000 tramas (la tabla dibuja solo las filas visibles y se recorre con el teclado; una línea ilegible se cuenta y se lista, nunca se oculta); la página está en los ocho idiomas.
 
 <!-- urtc-section:heads -->
 ### Varios cabezales en un bus

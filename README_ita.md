@@ -239,7 +239,7 @@ Portato dai pannelli del deck Qt Quick di `URTC-TESTER`
   motore passo-passo semplice condivisi, pickup a vuoto, trapano, AOI, laser,
   riscaldatore/movimento/ventole stampante 3D, sonda di scansione, elettromagnete,
   saldatore a punti/ultrasuoni, sonda flying incl. il percorso avanzato ADS1115,
-  cura UV, rework ad aria calda, crimpatura, ispezione termica, dispensazione
+  polimerizzazione UV, rilavorazione ad aria calda, crimpatura, ispezione termica, dispensazione
   pasta), ciascuno inviando i byte di comando reali dell'utensile e decodificando
   la sua telemetria reale.
 - **Casella attiva + keepalive** per ogni utensile con un watchdog di comunicazione
@@ -283,9 +283,9 @@ Il firmware può far condividere un bus CAN a più teste utensile (l'estensione 
 |---|---|
 | Un frame malformato raggiunge il filo o lo schermo | Entrambe le direzioni del collegamento SLCAN sono validate: un identificatore fuori da `0x000`-`0x7FF`, un payload oltre 8 byte o un byte fuori da `0x00`-`0xFF` viene rifiutato prima di essere scritto, e una riga in ingresso che non è un vero frame SLCAN viene scartata |
 | Un segreto viaggia nella pagina | L'app non contiene alcuna chiave di firma: Flasher Studio invia solo la firma che la compilazione di URTC ha pubblicato accanto a ogni immagine, quindi la pagina può essere ospitata pubblicamente |
-| Un'immagine firmware sbagliata o manomessa | Un manifesto il cui `sha256` non coincide con il file blocca il flashing; ogni immagine di una release ufficiale porta una firma di release Ed25519 che la pagina verifica nel browser prima di inviare l'immagine |
+| Un'immagine firmware sbagliata o manomessa | Un manifesto il cui `sha256` non coincide con il file blocca il flash; ogni immagine di una release ufficiale porta una firma di release Ed25519 che la pagina verifica nel browser prima di inviare l'immagine |
 | Una risposta simulata scambiata per reale | Le schede sandbox non trasmettono nulla e, con una scheda collegata, non rispondono nulla; i loro frame sono marcati SIM e una traccia riprodotta REPLAY |
-| Un'azione sulla scheda per errore | Laser, trapano, polimerizzazione UV, saldatura, riscaldatori, movimento, jetting di pasta, scritture nella memoria della scheda, frame rischiosi digitati a mano e un'immagine firmata con la chiave pubblica di sviluppo chiedono prima una conferma |
+| Un'azione sulla scheda per errore | Laser, trapano, polimerizzazione UV, saldatura, riscaldatori, movimento, erogazione di pasta, scritture nella memoria della scheda, frame rischiosi digitati a mano e un'immagine firmata con la chiave pubblica di sviluppo chiedono prima una conferma |
 | Un attuatore lasciato in funzione | Ogni utensile con watchdog nel firmware è mantenuto vivo da un reinvio e spento quando si sostituisce il pannello, si cambia scheda, si scollega la scheda o si chiude la pagina; STOP ALL spegne tutto ciò che la pagina mantiene vivo |
 | Una pagina che carica codice da altrove | Una content security policy: script solo dalla pagina stessa, connessioni solo a se stessa e a GitHub |
 
@@ -313,7 +313,7 @@ L'unica eccezione è un'immagine compilata in proprio senza manifest, per una
 scheda da banco: l'app chiede allora la chiave di firma, la tiene in memoria
 solo per quel flash e non la salva mai. Le immagini firmate con la chiave
 PUBBLICA di sviluppo (`signing_key_kind: "dev"` nel manifest) si installano
-solo su schede il cui bootloader è stato compilato allo stesso modo - il log
+solo su schede il cui bootloader è stato compilato allo stesso modo - il registro
 lo segnala. Vedi `docs/FIRMWARE_SIGNING.TXT` in URTC.
 
 La cartella **non è in git**: la crea `npm run sync-firmware` (la CI e la build di Pages lo eseguono prima dei test e della build). **Sicurezza della pagina**: script, stili, font e immagini arrivano dalla pagina stessa (i font sono impacchettati con l'app, nessuna richiesta va a un server di font), in linea sono ammessi solo gli attributi di stile che scrive React, e la pagina può raggiungere solo la propria origine e gli host GitHub che servono le release (Content-Security-Policy nell'`index.html` generato). Un host che può inviare intestazioni usa `public/_headers` (la stessa politica, `Permissions-Policy: serial=(self)` e nient'altro di potente); GitHub Pages non può inviare intestazioni, quindi lì vale solo la politica contenuta nella pagina.
@@ -336,7 +336,7 @@ Ogni file di una release ufficiale ha una firma di release (`<file>.sig`, Ed2551
 - Un adattatore USB-CAN con firmware **SLCAN** (es. un CANable con
   `candlelight`/`slcan`, o qualsiasi adattatore che parli il protocollo seriale
   SLCAN `lawicel` standard) - la stessa classe di adattatore supportata da entrambi
-  gli strumenti desktop tramite il proprio transporto Serial.
+  gli strumenti desktop tramite il proprio trasporto Serial.
 - Il bus impostato a **500 kbit/s**. Alla connessione l'app prova a turno 500, 250, 125 kbit/s e le altre velocità standard e mantiene la prima a cui una scheda risponde a una richiesta di versione; non è ancora possibile scegliere la velocità a mano né ascoltare senza che una scheda risponda.
 - Un browser con supporto Web Serial - **Chrome o Edge**. Firefox e Safari non
   implementano Web Serial e non potranno connettersi affatto.

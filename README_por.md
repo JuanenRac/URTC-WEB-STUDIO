@@ -15,7 +15,7 @@
   🇵🇹 <b>Português</b>
 </p>
 
-### Os principais fluxos do gravador e do testador do URTC num separador do navegador, com um adaptador USB-CAN e Web Serial
+### Os principais fluxos do flasher e do tester do URTC num separador do navegador, com um adaptador USB-CAN e Web Serial
 
 <p align="center">
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
@@ -65,7 +65,7 @@
 ## 🎯 Visão geral
 
 Um companheiro baseado no navegador para o **Universal Robot Tool Controller (URTC)** -
-uma aplicação de página única em React/Vite que destina-se a comunicar com hardware URTC real (nunca foi executada com nenhum) através de um
+uma aplicação de página única em React/Vite que se destina a comunicar com hardware URTC real (nunca foi executada com nenhum) através de um
 adaptador USB-CAN, por meio da [Web Serial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API),
 usando o mesmo framing SLCAN e o mesmo protocolo CAN que as duas ferramentas
 de ambiente de trabalho que o acompanham, o [URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER) e o
@@ -83,7 +83,7 @@ Esta aplicação tem dois tipos de separadores:
   enviam e todas as leituras que mostram vêm do barramento CAN (este caminho nunca foi executado com um adaptador ou uma placa reais). Isto inclui a
   **leitura real da câmara térmica** - o painel "Thermal Inspection" do Tester
   Studio (`0x250`/`0x251`/`0x254`/`0x255`) consulta através de CAN o array IR MLX90640 real
-  do cabeçote da ferramenta.
+  da cabeça da ferramenta.
 - **Separadores sandbox offline** - Control (catálogo de ferramentas), OLED,
   Specs/BOM e Thermal IR Inspection. Estes permitem explorar o catálogo de 25
   ferramentas, pré-visualizar os ecrãs de estado OLED, navegar pelo BOM/pinouts e
@@ -100,7 +100,7 @@ Esta aplicação tem dois tipos de separadores:
 
 ## 🧩 Papel no URTC
 
-O URTC-WEB-STUDIO é a versão de navegador dos dois programas de secretária do URTC, URTC-FLASHER e URTC-TESTER: uma página React que fala com uma placa URTC através de um adaptador USB-CAN com Web Serial, com o mesmo enquadramento SLCAN e o mesmo protocolo CAN (as suas tabelas e vetores são gerados a partir do URTC-COMMON). Traz os seus principais fluxos para um separador do navegador sem instalar nada, e deixa o SWD/JTAG, que nenhum navegador consegue controlar, para o gravador de secretária. Tem também separadores de caixa de areia que exploram as 25 ferramentas offline e não transmitem nada.
+O URTC-WEB-STUDIO é a versão de navegador dos dois programas de ambiente de trabalho do URTC, URTC-FLASHER e URTC-TESTER: uma página React que fala com uma placa URTC através de um adaptador USB-CAN com Web Serial, com o mesmo enquadramento SLCAN e o mesmo protocolo CAN (as suas tabelas e vetores são gerados a partir do URTC-COMMON). Traz os seus principais fluxos para um separador do navegador sem instalar nada, e deixa o SWD/JTAG, que nenhum navegador consegue controlar, para o flasher de ambiente de trabalho. Tem também separadores de caixa de areia que exploram as 25 ferramentas offline e não transmitem nada.
 
 ## 🏛️ Arquitetura
 
@@ -171,7 +171,7 @@ CAN IDs:
   e tratamento do estado terminal (incluindo a recuperação de uma trama de
   confirmação perdida da mesma forma que a ferramenta de ambiente de trabalho - volta a
   consultar a versão em vez de reportar uma falsa falha).
-- **Atualização CAN-OTA do slave de expansão** (`0x210`-`0x219`, retransmitida através da
+- **Atualização CAN-OTA do escravo de expansão** (`0x210`-`0x219`, retransmitida através da
   própria ponte I2C da placa principal) - mesmo esquema de assinatura/CRC, sem ACK de página
   nem heartbeat neste caminho (corresponde ao protocolo real; o progresso é consultado por
   polling, não empurrado).
@@ -238,7 +238,7 @@ Portado a partir dos painéis do próprio deck Qt Quick do `URTC-TESTER`
   laser, aquecedor/movimento/ventoinhas de impressora 3D, sonda de digitalização,
   eletroíman, soldadora por pontos/ultrassons, sonda voadora incl. o caminho
   avançado ADS1115, cura UV, retrabalho com ar quente, crimpagem, inspeção
-  térmica, projeção de pasta), cada um enviando os bytes de comando reais da
+  térmica, dosagem de pasta), cada um enviando os bytes de comando reais da
   ferramenta e descodificando a sua telemetria real.
 - **Caixa de seleção ativa + keepalive** para todas as ferramentas com um watchdog de
   comunicação do lado do firmware (ferro de soldar, laser, cura UV, retrabalho com
@@ -283,7 +283,7 @@ O firmware pode fazer várias cabeças de ferramenta partilharem um barramento C
 | Um segredo segue na página | A aplicação não contém nenhuma chave de assinatura: o Flasher Studio só envia a assinatura que a compilação do URTC publicou junto de cada imagem, pelo que a página pode ser alojada publicamente |
 | Uma imagem de firmware errada ou adulterada | Um manifesto cujo `sha256` não coincide com o ficheiro bloqueia a gravação; cada imagem de uma release oficial traz uma assinatura de release Ed25519 que a página verifica no navegador antes de enviar a imagem |
 | Uma resposta simulada tomada por real | Os separadores de caixa de areia não transmitem nada e, com uma placa ligada, não respondem nada; as suas tramas são marcadas SIM e um traço reproduzido REPLAY |
-| Uma ação sobre a placa por engano | Laser, berbequim, cura UV, soldadura, aquecedores, movimento, jetting de pasta, escritas na memória da placa, tramas arriscadas escritas à mão e uma imagem assinada com a chave pública de desenvolvimento pedem primeiro uma confirmação |
+| Uma ação sobre a placa por engano | Laser, berbequim, cura UV, soldadura, aquecedores, movimento, dosagem de pasta, escritas na memória da placa, tramas arriscadas escritas à mão e uma imagem assinada com a chave pública de desenvolvimento pedem primeiro uma confirmação |
 | Um atuador que fica a funcionar | Cada ferramenta com cão de guarda no firmware é mantida viva por um reenvio e desligada quando o painel é substituído, o separador muda, a placa é desligada ou a página fecha; STOP ALL desliga tudo o que a página mantém vivo |
 | Uma página que carrega código de outro lado | Uma política de segurança de conteúdo: scripts só da própria página, ligações só a si mesma e ao GitHub |
 
@@ -293,11 +293,11 @@ STOP ALL é um comando de software, não uma paragem de emergência, e nenhuma d
 
 - Os separadores de sandbox (Control, OLED, Thermal IR) não transmitem nada. As suas tramas levam a marca SIM e, enquanto há uma placa ligada, não produzem nenhuma resposta simulada. Das mensagens predefinidas do analisador de protocolo só são enviadas a uma placa ligada as consultas simples; as restantes continuam simuladas.
 - O Tester Studio mostra um painel de ferramenta apenas para a ferramenta que a própria placa comunicou (`0x111`), e nenhum antes de a placa responder.
-- Laser, berbequim, cura UV, soldadura, aquecedores, movimento, projeção de pasta, escritas na memória da placa e tramas escritas à mão que envolvam risco pedem confirmação antes.
+- Laser, berbequim, cura UV, soldadura, aquecedores, movimento, dosagem de pasta, escritas na memória da placa e tramas escritas à mão que envolvam risco pedem confirmação antes.
 - **PARAR TUDO** no cabeçalho (visível com a ligação ativa) desliga todos os atuadores que esta página mantém ativos; fechar a página e desligar fazem o mesmo. É um comando de software, não uma paragem de emergência.
 - Gravar uma imagem assinada com a chave de desenvolvimento pública pede antes uma confirmação, porque essa chave não prova quem fez a imagem.
 - Quando a placa declara um erro crítico, o aviso indica também o motivo da proteção contra fuga térmica, se a placa o comunicar.
-- **Reprodução de um rastreio gravado** (CAN Bus Protocol Analyzer): um ficheiro `.trc` ou `.asc`, por exemplo o que o Raw Bus Monitor exporta, reproduz as suas tramas recebidas no registo e nos painéis sem placa, de 0,25x a 10x e, se quiser, em ciclo. As tramas são marcadas REPLAY, não se transmite nada, uma gravação nunca responde a um pedido, nunca é exportada como algo que a placa disse e a reprodução fica em pausa enquanto houver uma placa ligada.
+- **Reprodução de um traço gravado** (CAN Bus Protocol Analyzer): um ficheiro `.trc` ou `.asc`, por exemplo o que o Raw Bus Monitor exporta, reproduz as suas tramas recebidas no registo e nos painéis sem placa, de 0,25x a 10x e, se quiser, em ciclo. As tramas são marcadas REPLAY, não se transmite nada, uma gravação nunca responde a um pedido, nunca é exportada como algo que a placa disse e a reprodução fica em pausa enquanto houver uma placa ligada.
 
 ### Nota de segurança: nenhuma chave de assinatura nesta aplicação
 
@@ -339,8 +339,8 @@ Cada ficheiro de uma release oficial tem uma assinatura de release (`<ficheiro>.
 - Um navegador com suporte de Web Serial - **Chrome ou Edge**. O Firefox e o Safari
   não implementam Web Serial e não conseguirão ligar de todo.
 - O Web Serial exige um contexto seguro (HTTPS) ou `localhost` - e não pode ser usado
-  a partir do interior de uma iframe. Se estiver a pré-visualizar esta aplicação dentro de uma
-  frame incorporada, abra-a primeiro no seu próprio separador.
+  a partir do interior de um iframe. Se estiver a pré-visualizar esta aplicação dentro de um
+  frame incorporado, abra-a primeiro no seu próprio separador.
 
 ### Validação de tramas CAN
 

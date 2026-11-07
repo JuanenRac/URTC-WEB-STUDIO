@@ -44,7 +44,7 @@
 | Ziel | Ein Webbrowser auf dem PC des Benutzers |
 | Auf echter Hardware | Nur simuliert: gegen Emulatoren, Attrappen oder Simulatoren getestet; für diese Version ist kein Lauf auf echter Hardware vermerkt |
 
-**Springe zu:** [Überblick](#-überblick) · [Architektur](#-architektur) · [Funktionen](#-funktionen) · [Sicherheit](#-sicherheit-und-schutz) · [Schnittstellen](#-schnittstellen) · [Schnellstart](#-schnellstart) · [Tests](#-tests) · [Struktur](#-struktur-des-repositorys) · [Verwandte](#-verwandte-projekte)
+**Springen Sie zu:** [Überblick](#-überblick) · [Architektur](#-architektur) · [Funktionen](#-funktionen) · [Sicherheit](#-sicherheit-und-schutz) · [Schnittstellen](#-schnittstellen) · [Schnellstart](#-schnellstart) · [Tests](#-tests) · [Struktur](#-struktur-des-repositorys) · [Verwandte](#-verwandte-projekte)
 
 <!-- urtc-section:status_web_studio -->
 ## 🚦 Projektstatus
@@ -82,7 +82,7 @@ Diese App hat zwei Arten von Tabs:
   USB-CAN-Adapter angeschlossen haben (Schaltfläche oben rechts in der
   Kopfzeile); jeder Befehl, den sie senden, und jede Anzeige, die sie zeigen,
   kommt vom CAN-Bus (dieser Weg wurde nie mit einem echten Adapter oder einer echten Platine betrieben). Dies schließt die **echte
-  Wärmebildkamera-Ablesung** ein - das Panel „Thermal Inspection" von Tester
+  Wärmebildkamera-Ablesung** ein - das Panel „Thermal Inspection“ von Tester
   Studio (`0x250`/`0x251`/`0x254`/`0x255`) fragt das tatsächliche MLX90640-IR-Array
   des Werkzeugkopfs über CAN ab.
 - **Offline-Sandbox-Tabs** - Control (Werkzeugkatalog), OLED, Specs/BOM, und
@@ -90,14 +90,14 @@ Diese App hat zwei Arten von Tabs:
   erkunden, die OLED-Statusbildschirme in der Vorschau ansehen, das
   BOM/Pinouts durchsuchen, und einen simulierten Wärmebildkamera-Feed
   betrachten, alles ohne angeschlossene Hardware. Der Umschalter „FW v0.0 /
-  v0.1" in der Kopfzeile beeinflusst nur diese Sandbox-Tabs (welche
+  v0.1“ in der Kopfzeile beeinflusst nur diese Sandbox-Tabs (welche
   Werkzeugprofile ein gegebener Firmware-Build freischalten würde) - er hat
   keinen Bezug zu dem, was eine echte, angeschlossene Platine meldet.
   - **Verwechseln Sie nicht die beiden thermischen Ansichten**: der
-    eigenständige Tab „Thermal IR Inspection" (`ThermalCameraViewer.tsx`) ist
+    eigenständige Tab „Thermal IR Inspection“ (`ThermalCameraViewer.tsx`) ist
     zu 100% clientseitiges `Math.random()`-Rauschen ohne jeglichen
     CAN-Verkehr - es ist ein UI-Mockup, keine Sensorablesung. Die echten
-    MLX9064x-Daten erscheinen nur innerhalb des Panels „Thermal Inspection"
+    MLX9064x-Daten erscheinen nur innerhalb des Panels „Thermal Inspection“
     von Tester Studio, und nur sobald Hardware angeschlossen ist.
 
 ## 🧩 Rolle in URTC
@@ -205,7 +205,7 @@ dieselben CAN-IDs:
   Major.Minor.Patch angezeigt. Der Patch geht nur in den Vergleich ein, wenn
   beide Seiten einen tragen, eine ältere Platine (sie sendet kein `0x7E9`)
   funktioniert weiter mit Major.Minor, und der Patch gelangt nur zu einem
-  Bootloader in END_UPDATE, der ihn angekündigt hat. Das Protokoll sagt, ob
+  Bootloader in END_UPDATE, der ihn angekündigt hat. Das Log sagt, ob
   das Image älter, gleich oder neuer ist als das, was die Platine gemeldet hat.
 - **Firmware aus dem neuesten GitHub-Release** - die Binärdateien sind Anhänge
   des Releases jeder URTC-Version, keine Dateien in git. Die Liste stammt aus
@@ -214,7 +214,7 @@ dieselben CAN-IDs:
   heruntergeladenes Image muss zu den vom Release veröffentlichten Prüfsummen
   passen, und die Prüfungen von Image, Manifest und Signatur bleiben. GitHub
   liefert die Dateien von einem Host ohne CORS-Header aus, ein Browser kann sie
-  daher eventuell nicht herunterladen: das Protokoll sagt es dann, und das
+  daher eventuell nicht herunterladen: das Log sagt es dann, und das
   Image kann aus dem mitgelieferten Ordner genommen oder von der Release-Seite
   heruntergeladen und mit Durchsuchen zusammen mit seiner `.manifest.json`
   gewählt werden.
@@ -260,9 +260,9 @@ Portiert aus den Panels des eigenen Qt-Quick-Decks von `URTC-TESTER`
   Werkzeug), ein **Roher Bus-Monitor** mit `.trc`/`.asc`-Trace-Export, und ein
   **Benutzerdefinierte Nachricht**-Injektor mit optionalem Wiederholungsintervall -
   validiert wie der eigene Frame-Injektor des CAN Bus Protocol Analyzer: ein
-  Identifier außerhalb von `0`-`7FF`, ein ungültiges Datenbyte oder mehr als
+  Kennung außerhalb von `0`-`7FF`, ein ungültiges Datenbyte oder mehr als
   8 Bytes wird mit einer Meldung abgelehnt, nie maskiert, verworfen oder
-  gekürzt. Identifier, die nur die Platine sendet, werden abgelehnt, und
+  gekürzt. Kennungen, die nur die Platine sendet, werden abgelehnt, und
   Schreibzugriffe auf den Platinenspeicher, Bootloader-Befehle und
   Aktor-Befehle werden vorher bestätigt.
 - **Hardware erkennen** fragt das echte aktive Werkzeug (`0x110`/`0x111`) und
@@ -287,11 +287,11 @@ Die Firmware kann mehrere Werkzeugköpfe an einem CAN-Bus betreiben (die Multino
 
 | Bedrohung | Abwehr |
 |---|---|
-| Ein fehlerhafter Frame erreicht die Leitung oder den Bildschirm | Beide Richtungen der SLCAN-Verbindung werden geprüft: Ein Bezeichner außerhalb von `0x000`-`0x7FF`, Nutzdaten über 8 Bytes oder ein Byte außerhalb von `0x00`-`0xFF` werden vor dem Schreiben abgelehnt, und eine eingehende Zeile, die kein echter SLCAN-Frame ist, wird verworfen |
+| Ein fehlerhafter Frame erreicht die Leitung oder den Bildschirm | Beide Richtungen der SLCAN-Verbindung werden geprüft: Eine Kennung außerhalb von `0x000`-`0x7FF`, Nutzdaten über 8 Bytes oder ein Byte außerhalb von `0x00`-`0xFF` werden vor dem Schreiben abgelehnt, und eine eingehende Zeile, die kein echter SLCAN-Frame ist, wird verworfen |
 | Ein Geheimnis steckt in der Seite | Die App enthält keinen Signaturschlüssel: Flasher Studio sendet nur die Signatur, die der URTC-Build neben jedem Image veröffentlicht hat, sodass die Seite öffentlich gehostet werden kann |
 | Ein falsches oder manipuliertes Firmware-Image | Ein Manifest, dessen `sha256` nicht zur Datei passt, blockiert das Flashen; jedes Image eines offiziellen Releases trägt eine Ed25519-Release-Signatur, die die Seite im Browser prüft, bevor sie das Image sendet |
 | Eine simulierte Antwort wird für echt gehalten | Die Sandbox-Tabs senden nichts und antworten, solange eine Platine verbunden ist, nichts; ihre Frames sind mit SIM markiert, ein abgespielter Trace mit REPLAY |
-| Eine Aktion auf der Platine aus Versehen | Laser, Bohrer, UV-Härtung, Schweißen, Heizungen, Bewegung, Pastenjetting, Schreibzugriffe auf den Platinenspeicher, riskante von Hand eingegebene Frames und ein mit dem öffentlichen Entwicklungsschlüssel signiertes Image verlangen vorher eine Bestätigung |
+| Eine Aktion auf der Platine aus Versehen | Laser, Bohrer, UV-Härtung, Schweißen, Heizungen, Bewegung, Pastendosierung, Schreibzugriffe auf den Platinenspeicher, riskante von Hand eingegebene Frames und ein mit dem öffentlichen Entwicklungsschlüssel signiertes Image verlangen vorher eine Bestätigung |
 | Ein Aktor, der weiterläuft | Jedes Werkzeug mit Firmware-Watchdog wird durch erneutes Senden am Leben gehalten und abgeschaltet, wenn das Panel ersetzt wird, der Tab wechselt, die Platine getrennt oder die Seite geschlossen wird; STOP ALL schaltet alles ab, was die Seite am Leben hält |
 | Eine Seite, die Code von anderswo lädt | Eine Content Security Policy: Skripte nur von der Seite selbst, Verbindungen nur zu sich selbst und zu GitHub |
 
@@ -360,18 +360,18 @@ die UI oder die Leitung erreicht (`src/hooks/useSerialCanBus.ts`):
 
 - **Ausgehend** - `sendFrame()` verweigert die Serialisierung eines
   Befehls, dessen Kennung außerhalb des 11-Bit-Standard-CAN-Bereichs
-  (`0x000`-`0x7FF`) liegt, dessen Nutzlast 8 Byte überschreitet, oder deren
-  Nutzlast ein Byte außerhalb von `0x00`-`0xFF` enthält. Die UI zeigt
+  (`0x000`-`0x7FF`) liegt, dessen Nutzdaten 8 Byte überschreiten, oder dessen
+  Nutzdaten ein Byte außerhalb von `0x00`-`0xFF` enthalten. Die UI zeigt
   "Refusing malformed CAN frame: ..." an, statt ungültigen Text an den
   seriellen Port zu schreiben.
 - **Eingehend** - `processBuffer()` verlangt eine echte Übereinstimmung
-  mit `t<3-stellige Hex-ID><1-stelliges Hex-DLC 0-8><Hex-Nutzlast>`, bevor
+  mit `t<3-stellige Hex-ID><1-stelliges Hex-DLC 0-8><Hex-Nutzdaten>`, bevor
   eine empfangene SLCAN-Zeile in einen `CanFrame` umgewandelt wird; ein DLC
-  außerhalb von `0`-`8` oder eine Nutzlast, die kürzer als ihre eigene
-  angegebene Länge ist, wird in der Konsole protokolliert und verworfen,
+  außerhalb von `0`-`8` oder Nutzdaten, die kürzer als ihre eigene
+  angegebene Länge sind, werden in der Konsole protokolliert und verworfen,
   statt einem Werkzeug-Panel als `NaN`-Byte übergeben zu werden. Ein
-  optionaler abschließender Adapter-Zeitstempel wird nach einer gültigen
-  Nutzlast weiterhin akzeptiert.
+  optionaler abschließender Adapter-Zeitstempel wird nach gültigen
+  Nutzdaten weiterhin akzeptiert.
 
 ## 🚀 Schnellstart
 
