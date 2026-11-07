@@ -18,6 +18,7 @@ import {
 } from '../lib/flasher';
 import { dataChunkData, endUpdateData, hmacChunkData, recordChunkData, RECORD_CHUNK_COUNT, RECORD_SIZE, startUpdateData } from '../lib/flashFrames';
 import { imageKeyId, precheckOutcome } from '../lib/signingKeyCheck';
+import { compareWithRotation, minutesLeft, queryKeyRotation } from '../lib/keyRotation';
 import { queryMainVersion, querySlaveVersion, querySlaveApplicationVersion, BoardVersionInfo, SlaveVersionInfo, SlaveAppVersionInfo } from '../lib/boardVersion';
 import { CAN_ID_ERASE_FRAM, CAN_ID_FRAM_STATE_RESP, ERASE_FRAM_MAGIC, VERIFY_FAIL_CODES } from '../lib/canIds';
 
@@ -182,7 +183,30 @@ export function useFlasher(serialCan: SerialCanBus) {
       } catch {
         boardKeyId = undefined;
       }
-      const keyCheck = precheckOutcome(boardKeyId, declaredKeyId, boardIsBootloader);
+      // During a rotation of the signing key the bootloader trusts two keys: both are shown, and the image matches if it names either of them.
+      let rotationVerdict = null as ReturnType<typeof compareWithRotation>;
+      if (boardIsBootloader) {
+        try {
+          const rotation = await queryKeyRotation(serialCan);
+          if (rotation?.currentRevoked) {
+            appendLog(t('flasher.log_key_rotation_revoked', 'The current signing key of the bootloader ({{current}}) is revoked: it accepts no image until its keys are replaced.', { current: rotation.keys[0] ?? '-' }));
+          } else if (rotation && rotation.keys.length === 2) {
+            appendLog(t('flasher.log_key_rotation_status', 'The bootloader trusts two signing keys: {{current}} (current) and {{previous}} (previous, still valid for {{minutes}} more minutes).',
+              { current: rotation.keys[0], previous: rotation.keys[1], minutes: minutesLeft(rotation.secondsLeft) }));
+          } else if (rotation && rotation.keys.length === 1) {
+            appendLog(t('flasher.log_key_rotation_single', 'The bootloader trusts one signing key: {{current}}.', { current: rotation.keys[0] }));
+          }
+          rotationVerdict = compareWithRotation(rotation, declaredKeyId);
+          if (rotationVerdict?.usesPreviousKey && rotation) {
+            appendLog(t('flasher.log_key_rotation_old_key', 'This image is signed with the previous key {{previous}}, which the bootloader stops accepting in {{minutes}} minutes: install it now, and use the new key {{current}} from then on.',
+              { previous: rotationVerdict.fingerprint, current: rotation.keys[0], minutes: minutesLeft(rotation.secondsLeft) }));
+          }
+          if (rotationVerdict) boardKeyId = rotationVerdict.fingerprint;
+        } catch {
+          rotationVerdict = null;   // a bootloader that predates the rotation says nothing: the key is compared as before
+        }
+      }
+      const keyCheck = rotationVerdict ? rotationVerdict.check : precheckOutcome(boardKeyId, declaredKeyId, boardIsBootloader);
       if (keyCheck === 'no_data') {
         appendLog(t('flasher.log_key_unknown', 'The bootloader does not publish the signing key it accepts: the key is not compared before the transfer.'));
       } else if (keyCheck === 'match') {
