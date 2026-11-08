@@ -87,7 +87,7 @@ Esta app tiene dos tipos de pestañas:
 - **Pestañas sandbox sin conexión** - Control (catálogo de herramientas), OLED,
   Specs/BOM, y Thermal IR Inspection. Estas te permiten explorar el catálogo de 25
   herramientas, previsualizar las pantallas de estado OLED, navegar el BOM/pinouts, y
-  ver una alimentación de cámara térmica simulada, todo sin ningún hardware conectado.
+  ver una imagen de cámara térmica simulada, todo sin ningún hardware conectado.
   El interruptor "FW v0.0 / v0.1" de la cabecera solo afecta a estas pestañas sandbox
   (qué perfiles de herramienta desbloquearía un build de firmware dado) - no tiene
   ninguna relación con lo que reporta una placa real conectada.
@@ -100,7 +100,7 @@ Esta app tiene dos tipos de pestañas:
 
 ## 🧩 Papel en URTC
 
-URTC-WEB-STUDIO es la versión de navegador de los dos programas de escritorio de URTC, URTC-FLASHER y URTC-TESTER: una página React que habla con una placa URTC a través de un adaptador USB-CAN con Web Serial, con el mismo encuadre SLCAN y el mismo protocolo CAN (sus tablas y vectores se generan a partir de URTC-COMMON). Trae sus flujos principales a una pestaña del navegador sin instalar nada, y deja SWD/JTAG, que ningún navegador puede manejar, para el flasher de escritorio. También tiene pestañas de zona de pruebas que exploran las 25 herramientas sin conexión y no transmiten nada.
+URTC-WEB-STUDIO es la versión de navegador de los dos programas de escritorio de URTC, URTC-FLASHER y URTC-TESTER: una página React que habla con una placa URTC a través de un adaptador USB-CAN con Web Serial, con el mismo framing SLCAN y el mismo protocolo CAN (sus tablas y vectores se generan a partir de URTC-COMMON). Trae sus flujos principales a una pestaña del navegador sin instalar nada, y deja SWD/JTAG, que ningún navegador puede manejar, para el flasher de escritorio. También tiene pestañas sandbox que exploran las 25 herramientas sin conexión y no transmiten nada.
 
 ## 🏛️ Arquitectura
 
@@ -177,7 +177,7 @@ CAN ID:
   real; el progreso se sondea, no se empuja).
 - **Autorización de downgrade** (`0x7FD`) - una casilla protegida por confirmación
   que autoriza al intento actual a saltarse la comprobación anti-rollback del
-  bootloader, para un revert deliberado a una versión más antigua.
+  bootloader, para volver deliberadamente a una versión más antigua.
 - **Borrado de F-RAM antes de grabar** (`0x192`), opcional, solo placa principal.
 - **Consulta del contador de errores CAN** (`0x7FB`/`0x7FC`, TEC/REC leídos
   directamente de los propios registros de error del controlador CAN) - distingue un
@@ -186,7 +186,7 @@ CAN ID:
   actual del slot principal antes de que lo sobrescribas, a un ritmo de 2KB/página
   con ACKs del host, y lo guarda como una descarga `.bin`.
 - **Consulta de versión de placa en vivo** (`0x7F8`/`0x7F9`/`0x7FA`/`0x7E9`) - muestra el
-  respondedor real (app o bootloader), HardwareID, y versión, no un interruptor
+  emisor real de la respuesta (app o bootloader), HardwareID, y versión, no un interruptor
   simulado.
 - **Firma y resumen publicados** - cada imagen del build de URTC trae
   `<file>.manifest.json` (versión, `sha256` y el valor `hmac_sha256` que espera el bootloader, un HMAC-SHA256 de clave compartida que solo comprueban los bootloaders de la generación anterior; el registro Ed25519 que verifican los actuales es el archivo `<file>.imgsig` junto a la imagen, que la app envía al bootloader) y `<file>.sha256`. La app envía esa firma publicada,
@@ -263,7 +263,7 @@ Portado desde los paneles del propio deck Qt Quick de `URTC-TESTER`
 
 - **Pestaña Evidencia.** Lee los registros (`urtc-evidence/1`) que escriben el flasher, el tester y el updater, de los archivos que elige la persona (no se sube nada), comprueba cada uno con las mismas reglas y el mismo resumen que el código común y los lista del más reciente al más antiguo, con filtros por tipo, resultado y texto, un resumen, el problema de cada registro no válido y una descarga en CSV. Un registro firmado con Ed25519 muestra si su firma coincide, y una lista de claves de confianza (alias y clave pública, solo claves públicas, guardada en este navegador y nunca subida) hace que diga "firmada por <alias>" o "firma válida, clave desconocida". La lista se puede guardar como archivo JSON y se pueden añadir claves desde un archivo (un archivo con una sola entrada errónea se rechaza entero); la página está en los ocho idiomas.
 
-- **Tramas construidas por funciones puras.** Las tramas de los paneles (LED y anillo de estado, paso SPI, funciones opcionales, boquilla y extrusor del cabezal de impresora 3D, pulso de soldadura, movimientos de motor paso a paso) se construyen en `toolFrames.ts` y las de la actualización del firmware (START_UPDATE, los cuatro trozos de firma, las tramas de datos de la imagen y END_UPDATE) en `flashFrames.ts`; un valor que no cabe en su campo se lleva al más cercano que sí cabe, y las pruebas fijan los bytes.
+- **Tramas construidas por funciones puras.** Las tramas de los paneles (LED y anillo de estado, passthrough SPI, funciones opcionales, boquilla y extrusor del cabezal de impresora 3D, pulso de soldadura, movimientos de motor paso a paso) se construyen en `toolFrames.ts` y las de la actualización del firmware (START_UPDATE, los cuatro trozos de firma, las tramas de datos de la imagen y END_UPDATE) en `flashFrames.ts`; un valor que no cabe en su campo se lleva al más cercano que sí cabe, y las pruebas fijan los bytes.
 
 - **Banco del rack con respuestas.** El rack simulado responde a cada orden con su trama de respuesta (un acuse, o un rechazo con el motivo); `rackSim.ts` la escribe y la lee (`encodeRackReply`, `parseRackReply`), el panel del banco dice el motivo en el idioma de la página y una orden retenida por llegar demasiado pronto es un rechazo con su motivo, como en el firmware.
 
@@ -282,9 +282,9 @@ El firmware puede hacer que varios cabezales compartan un bus CAN (la extensión
 | Una trama mal formada llega al cable o a la pantalla | Se validan ambas direcciones del enlace SLCAN: un identificador fuera de `0x000`-`0x7FF`, una carga de más de 8 bytes o un byte fuera de `0x00`-`0xFF` se rechaza antes de escribirse, y una línea entrante que no es una trama SLCAN real se descarta |
 | Un secreto viaja en la página | La aplicación no lleva ninguna clave de firma: Flasher Studio solo envía la firma que la compilación de URTC publicó junto a cada imagen, así que la página puede alojarse públicamente |
 | Una imagen de firmware equivocada o manipulada | Un manifiesto cuyo `sha256` no coincide con el archivo bloquea la grabación; cada imagen de una release oficial lleva una firma de release Ed25519 que la página comprueba en el navegador antes de enviar la imagen |
-| Una respuesta simulada tomada por real | Las pestañas de zona de pruebas no transmiten nada y, con una placa conectada, no responden nada; sus tramas se marcan SIM y una traza reproducida se marca REPLAY |
+| Una respuesta simulada tomada por real | Las pestañas sandbox no transmiten nada y, con una placa conectada, no responden nada; sus tramas se marcan SIM y una traza reproducida se marca REPLAY |
 | Una acción sobre la placa por error | Láser, taladro, curado UV, soldadura, calentadores, movimiento, dosificación de pasta, escrituras en la memoria de la placa, tramas escritas a mano arriesgadas y una imagen firmada con la clave pública de desarrollo piden confirmación antes |
-| Un actuador que se queda funcionando | Cada herramienta con perro guardián en el firmware se mantiene viva con un reenvío y se apaga al reemplazar el panel, cambiar de pestaña, desconectar la placa o cerrar la página; STOP ALL apaga todo lo que la página mantiene vivo |
+| Un actuador que se queda funcionando | Cada herramienta con watchdog en el firmware se mantiene viva con un reenvío y se apaga al reemplazar el panel, cambiar de pestaña, desconectar la placa o cerrar la página; STOP ALL apaga todo lo que la página mantiene vivo |
 | Una página que carga código de otro sitio | Una política de seguridad de contenido: scripts solo de la propia página, conexiones solo a ella misma y a GitHub |
 
 STOP ALL es una orden de software, no una parada de emergencia, y ninguna de las comprobaciones anteriores es una función de seguridad.
@@ -452,9 +452,9 @@ URTC-WEB-STUDIO/
 ├── bump.py bump_manifest_version.py               scripts que suben la versión
 ├── index.html                                     página de entrada de Vite
 ├── ruff.toml                                      ajustes de ruff, el linter de los scripts de Python
-├── package.json package-lock.json tsconfig.json   paquetes, versiones fijadas, TypeScript y Vite
-├── playwright.config.ts vite.config.ts            ajustes de las comprobaciones de extremo a extremo
-├── playwright.screenshots.config.ts               Ajustes de Playwright para las capturas del README
+├── package.json package-lock.json tsconfig.json   paquetes, versiones fijadas y TypeScript
+├── playwright.config.ts vite.config.ts            ajustes de Vite y de las comprobaciones de extremo a extremo
+├── playwright.screenshots.config.ts               ajustes de Playwright para las capturas del README
 ├── urtc_i18n.lock.json                            bloqueo de los archivos de idioma generados
 └── NOTICE LICENSE.md                              aviso de copyright y licencia de la documentación
 ```
@@ -561,7 +561,7 @@ propio repositorio de ese proyecto para el firmware de la placa, los diseños de
 hardware, y la documentación completa del protocolo contra la que trabaja esta
 herramienta. El propio firmware de URTC es GPL-3.0-or-later y sus diseños de hardware son
 CERN-OHL-S v2; la propia licencia de esta herramienta aquí no se extiende a ese
-proyecto separado, y viceversa. También existen 2 alternativas nativas de
+proyecto separado, y viceversa. También existen dos alternativas nativas de
 escritorio que cubren el mismo terreno:
 [URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER) y
 [URTC Tester](https://github.com/JuanenRac/URTC-TESTER).

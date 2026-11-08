@@ -64,13 +64,13 @@
 
 ## 🎯 Panoramica
 
-Un compagno basato su browser per l'**Universal Robot Tool Controller (URTC)** - una
+Uno strumento complementare basato su browser per l'**Universal Robot Tool Controller (URTC)** - una
 app a pagina singola React/Vite che è pensata per parlare con hardware URTC reale (non è mai stata eseguita con nessuno) tramite un
-adattatore USB-CAN via la [Web Serial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API),
-usando lo stesso framing SLCAN e lo stesso protocollo CAN dei due strumenti compagni
-da desktop, [URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER) e
+adattatore USB-CAN con la [Web Serial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API),
+usando lo stesso framing SLCAN e lo stesso protocollo CAN dei due strumenti complementari
+per desktop, [URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER) e
 [URTC Tester](https://github.com/JuanenRac/URTC-TESTER). L'obiettivo è riunire i flussi di lavoro principali di questi due strumenti in un'unica scheda del browser, non una demo semplificata di essi; la parità completa non è ancora raggiunta (vedi «Non ancora coperto» più sotto) - le schede Flasher Studio e Tester Studio inviano e
-ricevono le trame CAN reali descritte in `docs/CANBUS.TXT` del
+ricevono i frame CAN reali descritti in `docs/CANBUS.TXT` del
 [repository firmware di URTC](https://github.com/JuanenRac/URTC).
 
 ### Cosa è reale e cosa è una sandbox
@@ -120,7 +120,7 @@ Come si incastrano le parti di questo repository: chi lo usa, che cosa contiene 
 - **CRC32:** `crc-32` - controllo di integrità dell'immagine firmware, rispecchia
   il calcolo CRC32 proprio del bootloader
 - **Trasporto hardware:** Web Serial API + framing SLCAN (nessuna dipendenza
-  nativa, nessun server backend compagno)
+  nativa, nessun server backend di supporto)
 
 <!-- urtc-section:screenshots -->
 ## 🖼️ Schermate
@@ -128,7 +128,7 @@ Come si incastrano le parti di questo repository: chi lo usa, che cosa contiene 
 Catturate su un banco di prova con dati di esempio inventati e senza alcuna installazione reale dietro.
 
 <p align="center">
-  <img src="images/screenshots/control.png" alt="Matrice degli strumenti e controllo" width="100%">
+  <img src="images/screenshots/control.png" alt="Matrice degli utensili e controllo" width="100%">
 </p>
 
 <p align="center"><em>Matrice degli utensili e controllo: i 25 profili utensile del firmware con i loro jumper e i comandi dell'utensile selezionato (scheda simulatore: non invia nulla al bus).</em></p>
@@ -168,13 +168,13 @@ ID:
 - **Aggiornamento CAN-OTA della scheda principale** (`0x7F0`-`0x7F7`): trigger di
   ingresso nel bootloader, record Ed25519 dell'immagine (testato solo contro un simulatore), trasferimento paginato con controllo
   di flusso via ACK di pagina e retry/backoff, CRC32 + END_UPDATE con versione
-  dichiarata, e gestione dello stato terminale (incluso il recupero da una trama di
-  conferma persa nello stesso modo dello strumento desktop - interroga di nuovo la
+  dichiarata, e gestione dello stato terminale (incluso il recupero da un frame di
+  conferma perso nello stesso modo dello strumento desktop - interroga di nuovo la
   versione invece di segnalare un falso fallimento).
 - **Aggiornamento CAN-OTA dello slave di espansione** (`0x210`-`0x219`, inoltrato
   tramite il proprio bridge I2C della scheda principale) - stesso schema di
   firma/CRC, nessun ACK di pagina né heartbeat su questo percorso (corrisponde al
-  protocollo reale; il progresso viene interrogato, non spinto).
+  protocollo reale; il progresso viene interrogato, non inviato in push).
 - **Autorizzazione al downgrade** (`0x7FD`) - una casella protetta da conferma che
   autorizza il tentativo corrente a bypassare il controllo anti-rollback del
   bootloader, per un ritorno deliberato a una release più vecchia.
@@ -187,7 +187,7 @@ ID:
   attuale dello slot principale prima che tu lo sovrascriva, al ritmo di 2KB/pagina
   con ACK dell'host, e lo salva come download `.bin`.
 - **Interrogazione versione scheda dal vivo** (`0x7F8`/`0x7F9`/`0x7FA`/`0x7E9`) - mostra il
-  vero rispondente (app o bootloader), HardwareID, e versione, non un interruttore
+  vero mittente della risposta (app o bootloader), HardwareID, e versione, non un interruttore
   simulato.
 - **Firma e impronta pubblicate** - ogni immagine della build URTC arriva
   con `<file>.manifest.json` (versione, `sha256` e il valore `hmac_sha256` atteso dal bootloader, un HMAC-SHA256 a chiave condivisa che controllano solo i bootloader della generazione precedente; il record Ed25519 che verificano quelli attuali è il file `<file>.imgsig` accanto all'immagine, che l'app invia al bootloader) e `<file>.sha256`. L'app invia la firma pubblicata,
@@ -217,16 +217,16 @@ ID:
   MLX9064x / configurazione utensile libero (pin ID `11111`) / info periferiche e
   numero di serie - `0x1A0`-`0x1A7`.
 
-#### SWD/JTAG - non disponibile da un browser, per design
+#### SWD/JTAG - non disponibile da un browser, per progetto
 
 Non esiste alcuna API web capace di pilotare una sonda di debug SWD/JTAG - Web
 Serial parla solo con dispositivi a framing seriale (come un adattatore USB-CAN),
 non con il protocollo proprio di una sonda, e STM32CubeProgrammer/pyOCD sono
 sottoprocessi nativi che lo strumento desktop lancia. Questa è una limitazione
-strutturale dell'eseguire in una sandbox browser, non una funzionalità mancante
+strutturale dell'esecuzione in una sandbox del browser, non una funzionalità mancante
 qui. La scheda SWD/JTAG in Flasher Studio spiega i comandi esatti che lo strumento
 desktop `URTC Flasher` eseguirebbe localmente, come riferimento - usa quello
-strumento direttamente per la programmazione a chip completo, i controlli
+strumento direttamente per la programmazione dell'intero chip, i controlli
 option-byte/RDP, o un backup completo della flash prima di una cancellazione di
 massa.
 
@@ -238,8 +238,8 @@ Portato dai pannelli del deck Qt Quick di `URTC-TESTER`
 - Un pannello per utensile (saldatore + alimentatore filo, utensili di movimento a
   motore passo-passo semplice condivisi, pickup a vuoto, trapano, AOI, laser,
   riscaldatore/movimento/ventole stampante 3D, sonda di scansione, elettromagnete,
-  saldatore a punti/ultrasuoni, sonda flying incl. il percorso avanzato ADS1115,
-  polimerizzazione UV, rilavorazione ad aria calda, crimpatura, ispezione termica, dispensazione
+  saldatore a punti/ultrasuoni, flying probe incl. il percorso avanzato ADS1115,
+  polimerizzazione UV, rilavorazione ad aria calda, crimpatura, ispezione termica, erogazione di
   pasta), ciascuno inviando i byte di comando reali dell'utensile e decodificando
   la sua telemetria reale.
 - **Casella attiva + keepalive** per ogni utensile con un watchdog di comunicazione
@@ -269,7 +269,7 @@ Portato dai pannelli del deck Qt Quick di `URTC-TESTER`
 
 - **Banco del rack con risposte.** Il rack simulato risponde a ogni ordine con il suo frame di risposta (una conferma, o un rifiuto con il motivo); `rackSim.ts` lo scrive e lo legge (`encodeRackReply`, `parseRackReply`), il pannello del banco dice il motivo nella lingua della pagina e un comando trattenuto perché troppo presto è un rifiuto con il suo motivo, come nel firmware.
 
-- **Scheda Tracce CAN.** Apre una traccia registrata (`.trc`, `.asc`, un log di candump, righe JSON o il JSON che esporta) ed elenca le sue trame nominate con la specifica (`canTrace.ts`, con gli stessi schemi dei pannelli): i rifiuti e i guasti sono evidenziati, come le trame troppo corte, duplicate, fuori ordine o seguite da un lungo silenzio; la tabella filtra per identificatore, tipo, nodo, risultato, tempo e testo, una linea del tempo mostra dove sono i rifiuti e la selezione si salva in CSV o JSON. Il file viene letto nella pagina (non viene caricato nulla e nulla di ciò che contiene viene eseguito), fino a 5 MB e 200.000 trame (la tabella disegna solo le righe visibili e si scorre con la tastiera; una riga illeggibile viene contata ed elencata, mai nascosta); la pagina è in otto lingue.
+- **Scheda Tracce CAN.** Apre una traccia registrata (`.trc`, `.asc`, un log di candump, righe JSON o il JSON che esporta) ed elenca i suoi frame nominati con la specifica (`canTrace.ts`, con gli stessi schemi dei pannelli): i rifiuti e i guasti sono evidenziati, come i frame troppo corti, duplicati, fuori ordine o seguiti da un lungo silenzio; la tabella filtra per identificatore, tipo, nodo, risultato, tempo e testo, una linea del tempo mostra dove sono i rifiuti e la selezione si salva in CSV o JSON. Il file viene letto nella pagina (non viene caricato nulla e nulla di ciò che contiene viene eseguito), fino a 5 MB e 200.000 frame (la tabella disegna solo le righe visibili e si scorre con la tastiera; una riga illeggibile viene contata ed elencata, mai nascosta); la pagina è in otto lingue.
 
 <!-- urtc-section:heads -->
 ### Più teste utensile su un bus
@@ -293,9 +293,9 @@ STOP ALL è un comando software, non un arresto di emergenza, e nessuno dei cont
 
 ### Separazione del simulatore e conferme (controlli software, non funzioni di sicurezza)
 
-- Le schede sandbox (Control, OLED, Thermal IR) non trasmettono nulla. Le loro trame sono contrassegnate SIM e, finché è collegata una scheda, non producono alcuna risposta simulata. Dei messaggi predefiniti dell'analizzatore di protocollo vengono inviate a una scheda collegata solo le semplici interrogazioni; il resto resta simulato.
+- Le schede sandbox (Control, OLED, Thermal IR) non trasmettono nulla. I loro frame sono contrassegnati SIM e, finché è collegata una scheda, non producono alcuna risposta simulata. Dei messaggi predefiniti dell'analizzatore di protocollo vengono inviate a una scheda collegata solo le semplici interrogazioni; il resto resta simulato.
 - Tester Studio mostra un pannello utensile solo per l'utensile che la scheda stessa ha segnalato (`0x111`), e nessuno prima che la scheda abbia risposto.
-- Laser, trapano, polimerizzazione UV, saldatura, riscaldatori, movimento, erogazione di pasta, scritture nella memoria della scheda e trame digitate a mano rischiose richiedono prima una conferma.
+- Laser, trapano, polimerizzazione UV, saldatura, riscaldatori, movimento, erogazione di pasta, scritture nella memoria della scheda e frame digitati a mano rischiosi richiedono prima una conferma.
 - **FERMA TUTTO** nell'intestazione (visibile a connessione attiva) spegne ogni attuatore che questa pagina mantiene attivo; chiudere la pagina e disconnettersi fanno lo stesso. È un comando software, non un arresto di emergenza.
 - Flashare un'immagine firmata con la chiave di sviluppo pubblica chiede prima una conferma, perché quella chiave non prova nulla su chi ha creato l'immagine.
 - Quando la scheda dichiara un errore critico, il banner indica anche il motivo della protezione contro la fuga termica se la scheda lo comunica.
@@ -303,7 +303,7 @@ STOP ALL è un comando software, non un arresto di emergenza, e nessuno dei cont
 
 ### Nota di sicurezza: nessuna chiave di firma in questa app
 
-Dalla 0.2.3 questa app **non** contiene alcuna chiave di firma HMAC-SHA256.
+Dalla versione 0.2.3 questa app **non** contiene alcuna chiave di firma HMAC-SHA256.
 La build URTC firma da sé ogni immagine applicativa (con una chiave privata solo nelle build di release; le immagini pubblicate usano la chiave pubblica di sviluppo) e pubblica la firma accanto; Flasher Studio si
 limita a trasportare quella firma - lo stesso modello del `URTC Flasher` da
 desktop. Il bundle JS non contiene nulla di segreto, quindi la pagina può
@@ -455,9 +455,9 @@ URTC-WEB-STUDIO/
 ├── bump.py bump_manifest_version.py               script che alzano la versione
 ├── index.html                                     pagina di ingresso di Vite
 ├── ruff.toml                                      impostazioni di ruff, il linter degli script Python
-├── package.json package-lock.json tsconfig.json   pacchetti, versioni bloccate, TypeScript e Vite
-├── playwright.config.ts vite.config.ts            impostazioni dei controlli end-to-end
-├── playwright.screenshots.config.ts               Impostazioni Playwright per le schermate del README
+├── package.json package-lock.json tsconfig.json   pacchetti, versioni bloccate, TypeScript
+├── playwright.config.ts vite.config.ts            impostazioni di Vite e dei controlli end-to-end
+├── playwright.screenshots.config.ts               impostazioni di Playwright per le schermate del README
 ├── urtc_i18n.lock.json                            blocco dei file di lingua generati
 └── NOTICE LICENSE.md                              avviso di copyright e licenza della documentazione
 ```
@@ -511,7 +511,7 @@ URTC è fatto di repository indipendenti, ciascuno con la propria versione, i pr
   modifiche a versione o CHANGELOG), `dev.bat`/`.sh` per lo sviluppo
   locale, e perché il materiale di firma OTA non appartiene mai alla
   configurazione del browser.
-- [`docs/TRACE_VIEWER.md`](docs/TRACE_VIEWER.md) — cosa legge la scheda Tracce CAN, come nomina ed evidenzia ogni trama, i suoi limiti e il CSV e il JSON che scrive.
+- [`docs/TRACE_VIEWER.md`](docs/TRACE_VIEWER.md) — cosa legge la scheda Tracce CAN, come nomina ed evidenzia ogni frame, i suoi limiti e il CSV e il JSON che scrive.
 - [`docs/INTEGRATION_CONTRACT.md`](docs/INTEGRATION_CONTRACT.md) — cosa
   deve fare questo client di fronte a uno schema sconosciuto, un'identità
   del target mancante o un risultato API malformato, e perché la reale
@@ -557,13 +557,13 @@ disponibili sotto licenze diverse - ciascuna adatta a ciò che effettivamente co
    **Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)**.
    Testo completo su https://creativecommons.org/licenses/by-sa/4.0/.
 
-Questo strumento è il compagno basato su browser del progetto
+Questo strumento è lo strumento complementare per browser del progetto
 [URTC (Universal Robot Tool Controller)](https://github.com/JuanenRac/URTC) - vedi
-il repository proprio di quel progetto per il firmware della scheda, i design
-hardware, e la documentazione completa del protocollo contro cui lavora questo
-strumento. Il firmware proprio di URTC è GPL-3.0-or-later e i suoi design hardware sono
-CERN-OHL-S v2; la licenza propria di questo strumento qui non si estende a quel
-progetto separato, e viceversa. Esistono anche 2 alternative desktop native che
+il repository di quel progetto per il firmware della scheda, i design
+hardware, e la documentazione completa del protocollo che questo
+strumento implementa. Il firmware di URTC è GPL-3.0-or-later e i suoi design hardware sono
+CERN-OHL-S v2; la licenza di questo strumento non si estende a quel
+progetto separato, e viceversa. Esistono anche due alternative desktop native che
 coprono lo stesso terreno:
 [URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER) e
 [URTC Tester](https://github.com/JuanenRac/URTC-TESTER).

@@ -109,7 +109,7 @@
           "desc": {
             "en": "bundled firmware, headers, web manifest",
             "es": "firmware incluido, cabeceras, manifiesto web",
-            "de": "mitgeliefertes Firmware, Header, Web-Manifest",
+            "de": "mitgelieferte Firmware, Header, Web-Manifest",
             "fr": "firmware inclus, en-têtes, manifeste web",
             "it": "firmware incluso, header, manifesto web",
             "zh": "内置固件、响应头、Web 清单",
@@ -355,13 +355,13 @@
           "tree_name": "package.json package-lock.json tsconfig.json",
           "desc": {
             "en": "packages, locked versions, TypeScript",
-            "es": "paquetes, versiones fijadas, TypeScript y Vite",
-            "de": "Pakete, feste Versionen, TypeScript und Vite",
-            "fr": "paquets, versions figées, TypeScript et Vite",
-            "it": "pacchetti, versioni bloccate, TypeScript e Vite",
-            "zh": "软件包、锁定的版本、TypeScript 和 Vite",
-            "ja": "パッケージ、固定バージョン、TypeScript、Vite",
-            "pt": "pacotes, versões fixadas, TypeScript e Vite"
+            "es": "paquetes, versiones fijadas y TypeScript",
+            "de": "Pakete, feste Versionen, TypeScript",
+            "fr": "paquets, versions figées, TypeScript",
+            "it": "pacchetti, versioni bloccate, TypeScript",
+            "zh": "软件包、锁定的版本、TypeScript",
+            "ja": "パッケージ、固定バージョン、TypeScript",
+            "pt": "pacotes, versões fixadas, TypeScript"
           }
         },
         {
@@ -369,13 +369,13 @@
           "tree_name": "playwright.config.ts vite.config.ts",
           "desc": {
             "en": "Vite and end-to-end settings",
-            "es": "ajustes de las comprobaciones de extremo a extremo",
-            "de": "Einstellungen der End-to-End-Prüfungen",
-            "fr": "réglages des contrôles de bout en bout",
-            "it": "impostazioni dei controlli end-to-end",
-            "zh": "端到端检查的设置",
-            "ja": "エンドツーエンド検査の設定",
-            "pt": "definições das verificações de ponta a ponta"
+            "es": "ajustes de Vite y de las comprobaciones de extremo a extremo",
+            "de": "Einstellungen von Vite und der End-to-End-Prüfungen",
+            "fr": "réglages de Vite et des contrôles de bout en bout",
+            "it": "impostazioni di Vite e dei controlli end-to-end",
+            "zh": "Vite 和端到端检查的设置",
+            "ja": "Vite とエンドツーエンド検査の設定",
+            "pt": "definições do Vite e das verificações de ponta a ponta"
           }
         },
         {
@@ -383,13 +383,13 @@
           "tree_name": "playwright.screenshots.config.ts",
           "desc": {
             "en": "Playwright settings of the screenshots of the README",
-            "es": "Ajustes de Playwright para las capturas del README",
+            "es": "ajustes de Playwright para las capturas del README",
             "de": "Playwright-Einstellungen für die Screenshots des README",
-            "fr": "Réglages Playwright pour les captures du README",
-            "it": "Impostazioni Playwright per le schermate del README",
+            "fr": "réglages de Playwright pour les captures du README",
+            "it": "impostazioni di Playwright per le schermate del README",
             "ja": "README のスクリーンショット用 Playwright 設定",
             "zh": "README 屏幕截图使用的 Playwright 设置",
-            "pt": "Definições do Playwright para as capturas do README"
+            "pt": "definições do Playwright para as capturas do README"
           }
         },
         {

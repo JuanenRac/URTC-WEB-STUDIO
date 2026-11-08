@@ -6,7 +6,7 @@
         "en": "Tool matrix and control",
         "es": "Matriz de herramientas y control",
         "fr": "Matrice d'outils et commande",
-        "it": "Matrice degli strumenti e controllo",
+        "it": "Matrice degli utensili e controllo",
         "de": "Werkzeugmatrix und Steuerung",
         "zh": "工具矩阵与控制",
         "ja": "ツールマトリクスと制御",
@@ -61,9 +61,9 @@
       "caption": {
         "en": "Flasher: the flash map of the board, the image and its manifest ready to send, and the options of a CAN-OTA update (modelled board; nothing is sent).",
         "es": "Flasher: el mapa de flash de la placa, la imagen y su manifiesto listos para enviar, y las opciones de una actualización CAN-OTA (placa modelada; no se envía nada).",
-        "fr": "Flasher : la carte flash de la carte, l'image et son manifeste prêts à l'envoi, et les options d'une mise à jour CAN-OTA (carte modélisée ; rien n'est envoyé).",
+        "fr": "Flasher : la cartographie de la mémoire flash de la carte, l'image et son manifeste prêts à l'envoi, et les options d'une mise à jour CAN-OTA (carte modélisée ; rien n'est envoyé).",
         "it": "Flasher: la mappa flash della scheda, l'immagine e il suo manifesto pronti all'invio e le opzioni di un aggiornamento CAN-OTA (scheda modellata; non si invia nulla).",
-        "de": "Flasher: die Flash-Karte der Platine, das Image und sein Manifest versandbereit sowie die Optionen einer CAN-OTA-Aktualisierung (modellierte Platine; es wird nichts gesendet).",
+        "de": "Flasher: die Flash-Speicherbelegung der Platine, das Image und sein Manifest versandbereit sowie die Optionen einer CAN-OTA-Aktualisierung (modellierte Platine; es wird nichts gesendet).",
         "zh": "刷写器：板卡的闪存映射、准备发送的映像及其清单，以及 CAN-OTA 更新的选项（模拟板卡，不发送任何内容）。",
         "ja": "フラッシャー：ボードのフラッシュマップ、送信準備が整ったイメージとそのマニフェスト、CAN-OTA 更新のオプション（モデル化したボード。何も送信しません）。",
         "pt": "Flasher: o mapa de flash da placa, a imagem e o seu manifesto prontos a enviar e as opções de uma atualização CAN-OTA (placa modelada; não se envia nada)."
@@ -76,9 +76,9 @@
         "es": "Inspección térmica",
         "fr": "Inspection thermique",
         "it": "Ispezione termica",
-        "de": "Wärmeinspektion",
+        "de": "Thermische Inspektion",
         "zh": "热成像检查",
-        "ja": "熱検査",
+        "ja": "サーモグラフィ検査",
         "pt": "Inspeção térmica"
       },
       "caption": {
@@ -111,7 +111,7 @@
         "it": "Diagnostica del tester: la scatola nera e i contatori termici nel tempo, letti da una scheda modellata.",
         "de": "Tester-Diagnose: die Blackbox und die thermischen Zähler im Zeitverlauf, gelesen von einer modellierten Platine.",
         "zh": "测试器诊断：黑匣子和随时间变化的热计数器，读取自模拟板卡。",
-        "ja": "テスター診断：ブラックボックスと、時間経過に伴う温度カウンター（モデル化したボードから読み取り）。",
+        "ja": "テスター診断：ブラックボックスと、時間経過に伴う熱カウンター（モデル化したボードから読み取り）。",
         "pt": "Diagnóstico do testador: a caixa negra e os contadores térmicos ao longo do tempo, lidos de uma placa modelada."
       }
     }

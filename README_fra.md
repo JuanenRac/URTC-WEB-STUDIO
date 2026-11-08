@@ -15,7 +15,7 @@
   <a href="README_por.md">🇵🇹 Português</a>
 </p>
 
-### Les principaux flux du flasheur et du testeur d'URTC dans un onglet de navigateur, via un adaptateur USB-CAN et Web Serial
+### Les principaux flux du flasher et du testeur d'URTC dans un onglet de navigateur, via un adaptateur USB-CAN et Web Serial
 
 <p align="center">
   <img src="https://img.shields.io/badge/Licence-GPL%203.0-blue.svg" alt="GPL 3.0 or later">
@@ -91,7 +91,7 @@ Cette app a deux types d'onglets :
   (quels profils d'outils un build de firmware donné débloquerait) - il n'a aucun
   rapport avec ce que rapporte une carte réelle connectée.
   - **Ne confondez pas les deux vues thermiques** : l'onglet autonome « Thermal IR
-    Inspection » (`ThermalCameraViewer.tsx`) est du bruit `Math.random()` à 100%
+    Inspection » (`ThermalCameraViewer.tsx`) est du bruit `Math.random()` à 100 %
     côté client, sans aucun trafic CAN - c'est une maquette d'interface, pas une
     lecture de capteur. Les vraies données MLX9064x n'apparaissent que dans le
     panneau « Thermal Inspection » de Tester Studio, et seulement une fois le
@@ -104,7 +104,7 @@ URTC-WEB-STUDIO est la version navigateur des deux programmes de bureau d'URTC, 
 ## 🏛️ Architecture
 
 <p align="center">
-  <img src="images/architecture.svg" alt="Architecture de URTC-WEB-STUDIO : qui l'utilise, ce qu'il contient et de quoi il dépend" width="100%">
+  <img src="images/architecture.svg" alt="Architecture d'URTC-WEB-STUDIO : qui l'utilise, ce qu'il contient et de quoi il dépend" width="100%">
 </p>
 
 Comment les parties de ce dépôt s'articulent : qui l'utilise, ce qu'il contient et de quoi il dépend. L'image est dessinée à partir de `docs/architecture.json` et vérifiée par rapport au code.
@@ -142,7 +142,7 @@ Capturées sur un banc d'essai avec des données d'exemple fictives et sans inst
   <img src="images/screenshots/flasher.png" alt="Flasher" width="100%">
 </p>
 
-<p align="center"><em>Flasher : la carte flash de la carte, l'image et son manifeste prêts à l'envoi, et les options d'une mise à jour CAN-OTA (carte modélisée ; rien n'est envoyé).</em></p>
+<p align="center"><em>Flasher : la cartographie de la mémoire flash de la carte, l'image et son manifeste prêts à l'envoi, et les options d'une mise à jour CAN-OTA (carte modélisée ; rien n'est envoyé).</em></p>
 
 <p align="center">
   <img src="images/screenshots/thermal.png" alt="Inspection thermique" width="100%">
@@ -187,7 +187,7 @@ CAN ID :
   actuel de l'emplacement principal avant que vous ne l'écrasiez, au rythme de
   2KB/page avec ACK de l'hôte, et l'enregistre sous forme de téléchargement `.bin`.
 - **Requête de version de carte en direct** (`0x7F8`/`0x7F9`/`0x7FA`/`0x7E9`) - affiche le
-  vrai répondant (application ou bootloader), le HardwareID, et la version, pas un
+  véritable émetteur de la réponse (application ou bootloader), le HardwareID, et la version, pas un
   commutateur simulé.
 - **Signature et empreinte publiées** - chaque image issue du build URTC est
   livrée avec `<file>.manifest.json` (version, `sha256` et la valeur `hmac_sha256` attendue par le bootloader, un HMAC-SHA256 à clé partagée que seuls les bootloaders de la génération précédente contrôlent ; l'enregistrement Ed25519 que vérifient les actuels est le fichier `<file>.imgsig` à côté de l'image, que l'application envoie au bootloader) et `<file>.sha256`. L'application
@@ -268,7 +268,7 @@ Porté depuis les panneaux du propre deck Qt Quick d'`URTC-TESTER`
 
 - **Onglet Preuves.** Il lit les enregistrements (`urtc-evidence/1`) qu'écrivent le flasher, le tester et l'updater, depuis les fichiers que la personne choisit (rien n'est envoyé), vérifie chacun avec les mêmes règles et le même condensat que le code commun et les liste du plus récent au plus ancien, avec des filtres par type, résultat et texte, un résumé, le problème de chaque enregistrement non valide et un téléchargement CSV. Un enregistrement signé avec Ed25519 montre si sa signature correspond, et une liste de clés de confiance (alias et clé publique, clés publiques uniquement, conservée dans ce navigateur et jamais envoyée) lui fait dire « signé par <alias> » ou « signature valide, clé inconnue ». La liste peut être enregistrée dans un fichier JSON et des clés peuvent être ajoutées depuis un fichier (un fichier avec une seule entrée erronée est refusé en entier) ; la page est dans les huit langues.
 
-- **Trames construites par des fonctions pures.** Les trames des panneaux (LED et anneau d'état, passage SPI, fonctions optionnelles, buse et extrudeur de la tête d'imprimante 3D, impulsion de soudure, mouvements de moteur pas à pas) sont construites dans `toolFrames.ts` et celles de la mise à jour du firmware (START_UPDATE, les quatre blocs de signature, les trames de données de l'image et END_UPDATE) dans `flashFrames.ts` ; une valeur qui ne tient pas dans son champ est ramenée à la plus proche qui y tient, et les tests figent les octets.
+- **Trames construites par des fonctions pures.** Les trames des panneaux (LED et anneau d'état, passthrough SPI, fonctions optionnelles, buse et extrudeur de la tête d'imprimante 3D, impulsion de soudure, mouvements de moteur pas à pas) sont construites dans `toolFrames.ts` et celles de la mise à jour du firmware (START_UPDATE, les quatre blocs de signature, les trames de données de l'image et END_UPDATE) dans `flashFrames.ts` ; une valeur qui ne tient pas dans son champ est ramenée à la plus proche qui y tient, et les tests figent les octets.
 
 - **Banc du rack avec réponses.** Le rack simulé répond à chaque ordre par sa trame de réponse (un acquittement, ou un refus avec le motif) ; `rackSim.ts` l'écrit et la lit (`encodeRackReply`, `parseRackReply`), le panneau du banc dit le motif dans la langue de la page et une commande retenue pour être arrivée trop tôt est un refus avec son motif, comme dans le firmware.
 
@@ -287,9 +287,9 @@ Le firmware peut faire partager un bus CAN à plusieurs têtes d'outil (l'extens
 | Une trame mal formée atteint le fil ou l'écran | Les deux sens de la liaison SLCAN sont validés : un identifiant hors de `0x000`-`0x7FF`, une charge utile de plus de 8 octets ou un octet hors de `0x00`-`0xFF` est refusé avant d'être écrit, et une ligne entrante qui n'est pas une vraie trame SLCAN est abandonnée |
 | Un secret voyage dans la page | L'application ne contient aucune clé de signature : Flasher Studio n'envoie que la signature que la compilation d'URTC a publiée à côté de chaque image, si bien que la page peut être hébergée publiquement |
 | Une image de firmware fausse ou manipulée | Un manifeste dont le `sha256` ne correspond pas au fichier bloque le flashage ; chaque image d'une release officielle porte une signature de release Ed25519 que la page vérifie dans le navigateur avant d'envoyer l'image |
-| Une réponse simulée prise pour réelle | Les onglets bac à sable ne transmettent rien et, tant qu'une carte est connectée, ne répondent rien ; leurs trames sont marquées SIM et une trace rejouée REPLAY |
-| Une action sur la carte par erreur | Laser, perceuse, séchage UV, soudure, chauffages, mouvement, distribution de pâte, écritures dans la mémoire de la carte, trames risquées saisies à la main et une image signée avec la clé publique de développement demandent d'abord une confirmation |
-| Un actionneur qui continue de tourner | Chaque outil doté d'un chien de garde dans le firmware est maintenu en vie par un renvoi et coupé quand le panneau est remplacé, que l'onglet change, que la carte est déconnectée ou que la page se ferme ; STOP ALL coupe tout ce que la page maintient en vie |
+| Une réponse simulée prise pour réelle | Les onglets bac à sable ne transmettent rien et, tant qu'une carte est connectée, ne répondent rien ; leurs trames sont marquées SIM et une trace rejouée est marquée REPLAY |
+| Une action sur la carte par erreur | Laser, perceuse, séchage UV, soudure, éléments chauffants, mouvement, distribution de pâte, écritures dans la mémoire de la carte, trames risquées saisies à la main et une image signée avec la clé publique de développement demandent d'abord une confirmation |
+| Un actionneur qui continue de tourner | Chaque outil doté d'un watchdog dans le firmware est maintenu en vie par un renvoi et coupé quand le panneau est remplacé, que l'onglet change, que la carte est déconnectée ou que la page se ferme ; STOP ALL coupe tout ce que la page maintient en vie |
 | Une page qui charge du code d'ailleurs | Une politique de sécurité de contenu : scripts seulement de la page elle-même, connexions seulement vers elle-même et GitHub |
 
 STOP ALL est une commande logicielle, pas un arrêt d'urgence, et aucun des contrôles ci-dessus n'est une fonction de sécurité.
@@ -306,7 +306,7 @@ STOP ALL est une commande logicielle, pas un arrêt d'urgence, et aucun des cont
 
 ### Note de sécurité : aucune clé de signature dans cette application
 
-Depuis la 0.2.3, cette application ne contient **aucune** clé de signature
+Depuis la version 0.2.3, cette application ne contient **aucune** clé de signature
 HMAC-SHA256. Le build URTC signe lui-même chaque image d'application (avec une clé privée uniquement pour les versions de release ; les images publiées utilisent la clé publique de développement) et publie la signature à côté ;
 Flasher Studio ne fait que transporter cette signature - le même modèle que
 le `URTC Flasher` de bureau. Le bundle JS ne contient rien de secret, la page
@@ -460,9 +460,9 @@ URTC-WEB-STUDIO/
 ├── bump.py bump_manifest_version.py               scripts qui augmentent la version
 ├── index.html                                     page d'entrée de Vite
 ├── ruff.toml                                      réglages de ruff, le linter des scripts Python
-├── package.json package-lock.json tsconfig.json   paquets, versions figées, TypeScript et Vite
-├── playwright.config.ts vite.config.ts            réglages des contrôles de bout en bout
-├── playwright.screenshots.config.ts               Réglages Playwright pour les captures du README
+├── package.json package-lock.json tsconfig.json   paquets, versions figées, TypeScript
+├── playwright.config.ts vite.config.ts            réglages de Vite et des contrôles de bout en bout
+├── playwright.screenshots.config.ts               réglages de Playwright pour les captures du README
 ├── urtc_i18n.lock.json                            verrou des fichiers de langue générés
 └── NOTICE LICENSE.md                              avis de droit d'auteur et licence de la documentation
 ```
@@ -509,7 +509,7 @@ URTC est fait de dépôts indépendants, chacun avec sa version, ses tests et so
 
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — comment l'UI, les
   paramètres persistés et l'autorité du transport externe restent séparés,
-  et pourquoi les onglets sandbox doivent exposer des états hors-ligne/
+  et pourquoi les onglets sandbox doivent exposer des états hors ligne/
   indisponible plutôt que présenter des données simulées comme réelles.
 - [`docs/BUILD_AND_RUN.md`](docs/BUILD_AND_RUN.md) — le chemin de
   validation non mutant `build-test.bat`/`.sh` (TypeScript + tests, sans
@@ -534,7 +534,7 @@ URTC est fait de dépôts indépendants, chacun avec sa version, ses tests et so
 * Le README existe en huit langues : une modification du texte se fait dans les huit fichiers, et les sections partagées avec d'autres dépôts sont écrites par `tools/readme_sections.py` d'URTC-COMMON.
 * Un changement du protocole CAN commence dans URTC-COMMON (`spec/can_protocol.json`) et arrive dans ce dépôt par la copie vérifiée.
 * Ne décrivez pas comme fonctionnant sur une carte ce qui a seulement été compilé.
-* Signalez une vulnérabilité en privé : [SECURITY.md](SECURITY.md). Questions, idées et rapports : electrohobby3d@gmail.com ([SUPPORT.md](SUPPORT.md)).
+* Signalez une vulnérabilité en privé : [SECURITY.md](SECURITY.md). Questions, idées et signalements : electrohobby3d@gmail.com ([SUPPORT.md](SUPPORT.md)).
 
 ## 👤 AUTEUR
 
@@ -564,10 +564,10 @@ des licences différentes - chacune adaptée à ce qu'elle couvre réellement :
 Cet outil est le compagnon basé sur navigateur du projet
 [URTC (Universal Robot Tool Controller)](https://github.com/JuanenRac/URTC) - voir
 le propre dépôt de ce projet pour le firmware de la carte, les conceptions
-matérielles, et la documentation complète du protocole contre lequel cet outil
-fonctionne. Le propre firmware d'URTC est GPL-3.0-or-later et ses conceptions matérielles
+matérielles, et la documentation complète du protocole que cet outil
+implémente. Le propre firmware d'URTC est GPL-3.0-or-later et ses conceptions matérielles
 sont CERN-OHL-S v2 ; la propre licence de cet outil ici ne s'étend pas à ce projet
-séparé, et vice-versa. Il existe aussi 2 alternatives natives de bureau couvrant le
+séparé, et vice-versa. Il existe aussi deux alternatives natives de bureau couvrant le
 même terrain :
 [URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER) et
 [URTC Tester](https://github.com/JuanenRac/URTC-TESTER).

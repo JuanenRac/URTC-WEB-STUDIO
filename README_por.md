@@ -64,7 +64,7 @@
 
 ## 🎯 Visão geral
 
-Um companheiro baseado no navegador para o **Universal Robot Tool Controller (URTC)** -
+Uma ferramenta complementar baseada no navegador para o **Universal Robot Tool Controller (URTC)** -
 uma aplicação de página única em React/Vite que se destina a comunicar com hardware URTC real (nunca foi executada com nenhum) através de um
 adaptador USB-CAN, por meio da [Web Serial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API),
 usando o mesmo framing SLCAN e o mesmo protocolo CAN que as duas ferramentas
@@ -89,7 +89,7 @@ Esta aplicação tem dois tipos de separadores:
   ferramentas, pré-visualizar os ecrãs de estado OLED, navegar pelo BOM/pinouts e
   ver uma imagem simulada de câmara térmica, tudo sem qualquer hardware ligado.
   O interruptor "FW v0.0 / v0.1" do cabeçalho só afeta estes separadores sandbox
-  (que perfis de ferramenta seria desbloqueados por uma dada build de firmware) - não tem
+  (que perfis de ferramenta seriam desbloqueados por uma dada build de firmware) - não tem
   qualquer relação com o que uma placa real ligada reporta.
   - **Não confunda as duas vistas térmicas**: o separador autónomo "Thermal IR
     Inspection" (`ThermalCameraViewer.tsx`) é ruído `Math.random()` 100% do lado
@@ -100,7 +100,7 @@ Esta aplicação tem dois tipos de separadores:
 
 ## 🧩 Papel no URTC
 
-O URTC-WEB-STUDIO é a versão de navegador dos dois programas de ambiente de trabalho do URTC, URTC-FLASHER e URTC-TESTER: uma página React que fala com uma placa URTC através de um adaptador USB-CAN com Web Serial, com o mesmo enquadramento SLCAN e o mesmo protocolo CAN (as suas tabelas e vetores são gerados a partir do URTC-COMMON). Traz os seus principais fluxos para um separador do navegador sem instalar nada, e deixa o SWD/JTAG, que nenhum navegador consegue controlar, para o flasher de ambiente de trabalho. Tem também separadores de caixa de areia que exploram as 25 ferramentas offline e não transmitem nada.
+O URTC-WEB-STUDIO é a versão de navegador dos dois programas de ambiente de trabalho do URTC, URTC-FLASHER e URTC-TESTER: uma página React que fala com uma placa URTC através de um adaptador USB-CAN com Web Serial, com o mesmo enquadramento SLCAN e o mesmo protocolo CAN (as suas tabelas e vetores são gerados a partir do URTC-COMMON). Traz os seus principais fluxos para um separador do navegador sem instalar nada, e deixa o SWD/JTAG, que nenhum navegador consegue controlar, para o flasher de ambiente de trabalho. Tem também separadores sandbox que exploram as 25 ferramentas offline e não transmitem nada.
 
 ## 🏛️ Arquitetura
 
@@ -120,7 +120,7 @@ Como as partes deste repositório se encaixam: quem o usa, o que contém e de qu
 - **CRC32:** `crc-32` - verificação de integridade da imagem de firmware, espelha
   o próprio cálculo de CRC32 do bootloader
 - **Transporte de hardware:** Web Serial API + framing SLCAN (sem dependências
-  nativas, sem servidor backend companheiro)
+  nativas, sem servidor backend de apoio)
 
 <!-- urtc-section:screenshots -->
 ## 🖼️ Capturas de ecrã
@@ -174,7 +174,7 @@ CAN IDs:
 - **Atualização CAN-OTA do escravo de expansão** (`0x210`-`0x219`, retransmitida através da
   própria ponte I2C da placa principal) - mesmo esquema de assinatura/CRC, sem ACK de página
   nem heartbeat neste caminho (corresponde ao protocolo real; o progresso é consultado por
-  polling, não empurrado).
+  polling, não enviado espontaneamente).
 - **Autorização de downgrade** (`0x7FD`) - uma caixa de seleção protegida por confirmação
   que autoriza a tentativa atual a contornar a verificação anti-rollback do bootloader,
   para uma reversão deliberada para uma versão mais antiga.
@@ -186,7 +186,7 @@ CAN IDs:
   atual do slot principal antes de o sobrescrever, a um ritmo de 2KB/página
   com ACKs do host, e guarda-o como uma transferência `.bin`.
 - **Consulta da versão da placa em direto** (`0x7F8`/`0x7F9`/`0x7FA`/`0x7E9`) - mostra o
-  respondedor real (app ou bootloader), o HardwareID e a versão, não um interruptor
+  emissor real da resposta (app ou bootloader), o HardwareID e a versão, não um interruptor
   simulado.
 - **Assinatura e digest publicados** - cada imagem da build do URTC traz
   `<file>.manifest.json` (versão, `sha256` e o valor `hmac_sha256` que o bootloader espera, um HMAC-SHA256 de chave partilhada que só os bootloaders da geração anterior verificam; o registo Ed25519 que os atuais verificam é o ficheiro `<file>.imgsig` junto à imagem, que a aplicação envia ao bootloader) e `<file>.sha256`. A aplicação envia essa assinatura publicada,
@@ -216,7 +216,7 @@ CAN IDs:
   configuração livre de ferramenta (pinos de ID `11111`) / informação de periféricos e
   número de série - `0x1A0`-`0x1A7`.
 
-#### SWD/JTAG - não disponível a partir de um navegador, por design
+#### SWD/JTAG - não disponível a partir de um navegador, por conceção
 
 Não existe nenhuma Web API capaz de controlar uma sonda de depuração SWD/JTAG - o Web Serial
 só comunica com dispositivos de framing série (como um adaptador USB-CAN), não com o
@@ -263,7 +263,7 @@ Portado a partir dos painéis do próprio deck Qt Quick do `URTC-TESTER`
 
 - **Separador Evidências.** Lê os registos (`urtc-evidence/1`) que o flasher, o tester e o updater escrevem, dos ficheiros que a pessoa escolhe (não se carrega nada), verifica cada um com as mesmas regras e o mesmo resumo que o código comum e lista-os do mais recente para o mais antigo, com filtros por tipo, resultado e texto, um resumo, o problema de cada registo inválido e uma transferência em CSV. Um registo assinado com Ed25519 mostra se a assinatura coincide, e uma lista de chaves de confiança (alias e chave pública, só chaves públicas, guardada neste navegador e nunca enviada) faz com que diga "assinada por <alias>" ou "assinatura válida, chave desconhecida". A lista pode ser guardada num ficheiro JSON e podem adicionar-se chaves a partir de um ficheiro (um ficheiro com uma única entrada errada é recusado por inteiro); a página está nos oito idiomas.
 
-- **Tramas construídas por funções puras.** As tramas dos painéis (LED e anel de estado, passagem SPI, funções opcionais, bico e extrusor da cabeça de impressora 3D, pulso de soldadura, movimentos do motor de passo) são construídas em `toolFrames.ts` e as da atualização do firmware (START_UPDATE, os quatro blocos de assinatura, as tramas de dados da imagem e END_UPDATE) em `flashFrames.ts`; um valor que não cabe no seu campo é levado ao mais próximo que caiba, e os testes fixam os bytes.
+- **Tramas construídas por funções puras.** As tramas dos painéis (LED e anel de estado, passthrough SPI, funções opcionais, bico e extrusor da cabeça de impressora 3D, pulso de soldadura, movimentos do motor de passo) são construídas em `toolFrames.ts` e as da atualização do firmware (START_UPDATE, os quatro blocos de assinatura, as tramas de dados da imagem e END_UPDATE) em `flashFrames.ts`; um valor que não cabe no seu campo é levado ao mais próximo que caiba, e os testes fixam os bytes.
 
 - **Bancada do rack com respostas.** O rack simulado responde a cada ordem com a sua trama de resposta (uma confirmação, ou uma recusa com o motivo); o `rackSim.ts` escreve-a e lê-a (`encodeRackReply`, `parseRackReply`), o painel da bancada diz o motivo na língua da página e um comando retido por chegar cedo demais é uma recusa com o seu motivo, como no firmware.
 
@@ -282,9 +282,9 @@ O firmware pode fazer várias cabeças de ferramenta partilharem um barramento C
 | Uma trama mal formada chega ao fio ou ao ecrã | Os dois sentidos da ligação SLCAN são validados: um identificador fora de `0x000`-`0x7FF`, uma carga acima de 8 bytes ou um byte fora de `0x00`-`0xFF` é recusado antes de ser escrito, e uma linha recebida que não é uma trama SLCAN verdadeira é descartada |
 | Um segredo segue na página | A aplicação não contém nenhuma chave de assinatura: o Flasher Studio só envia a assinatura que a compilação do URTC publicou junto de cada imagem, pelo que a página pode ser alojada publicamente |
 | Uma imagem de firmware errada ou adulterada | Um manifesto cujo `sha256` não coincide com o ficheiro bloqueia a gravação; cada imagem de uma release oficial traz uma assinatura de release Ed25519 que a página verifica no navegador antes de enviar a imagem |
-| Uma resposta simulada tomada por real | Os separadores de caixa de areia não transmitem nada e, com uma placa ligada, não respondem nada; as suas tramas são marcadas SIM e um traço reproduzido REPLAY |
+| Uma resposta simulada tomada por real | Os separadores sandbox não transmitem nada e, com uma placa ligada, não respondem nada; as suas tramas são marcadas SIM e um traço reproduzido REPLAY |
 | Uma ação sobre a placa por engano | Laser, berbequim, cura UV, soldadura, aquecedores, movimento, dosagem de pasta, escritas na memória da placa, tramas arriscadas escritas à mão e uma imagem assinada com a chave pública de desenvolvimento pedem primeiro uma confirmação |
-| Um atuador que fica a funcionar | Cada ferramenta com cão de guarda no firmware é mantida viva por um reenvio e desligada quando o painel é substituído, o separador muda, a placa é desligada ou a página fecha; STOP ALL desliga tudo o que a página mantém vivo |
+| Um atuador que fica a funcionar | Cada ferramenta com watchdog no firmware é mantida viva por um reenvio e desligada quando o painel é substituído, o separador muda, a placa é desligada ou a página fecha; STOP ALL desliga tudo o que a página mantém vivo |
 | Uma página que carrega código de outro lado | Uma política de segurança de conteúdo: scripts só da própria página, ligações só a si mesma e ao GitHub |
 
 STOP ALL é um comando de software, não uma paragem de emergência, e nenhuma das verificações acima é uma função de segurança.
@@ -301,7 +301,7 @@ STOP ALL é um comando de software, não uma paragem de emergência, e nenhuma d
 
 ### Nota de segurança: nenhuma chave de assinatura nesta aplicação
 
-Desde a 0.2.3 esta aplicação **não** contém nenhuma chave de assinatura HMAC-SHA256.
+Desde a versão 0.2.3 esta aplicação **não** contém nenhuma chave de assinatura HMAC-SHA256.
 A build do URTC assina ela própria cada imagem de aplicação (com uma chave privada apenas nas builds de release; as imagens publicadas usam a chave pública de desenvolvimento) e publica a assinatura a seu lado; o Flasher
 Studio apenas transporta essa assinatura - o mesmo modelo do `URTC Flasher` de
 ambiente de trabalho. Nada secreto é incluído no bundle JS, pelo que a página pode
@@ -309,7 +309,7 @@ ser alojada publicamente.
 
 A única exceção é uma imagem compilada por si, sem manifesto, para uma placa de
 bancada: a aplicação pede então a chave de assinatura, mantém-na em memória
-apenas para essa gravação e nunca a armazena. As imagens compiladas com a
+apenas para essa gravação e nunca a armazena. As imagens assinadas com a
 chave de desenvolvimento PÚBLICA (`signing_key_kind: "dev"` no manifesto)
 só se instalam em placas cujo bootloader tenha sido compilado da mesma forma - o
 registo indica-o. Consulte o `docs/FIRMWARE_SIGNING.TXT` do URTC.
@@ -411,7 +411,7 @@ As versões dos programas URTC que funcionam em conjunto, e a versão do protoco
 
 ## 🧪 Testes
 
-`npm test` (Vitest) executa 1357 testes da lógica pura: análise de SLCAN, emparelhamento de pedidos e respostas, verificações de imagens de firmware e manifestos, assinaturas de release, limites de ferramenta, confirmações, as regras que separam o simulador do barramento real, exportação e reprodução de traços, o seletor de nós, o simulador do suporte, o registo de sessão guardado, a cópia offline, a sincronização do firmware e os oito idiomas da interface. `npm run lint` verifica os tipos do código e `npm run test:e2e` executa 25 verificações de ponta a ponta num Chromium real contra um adaptador e uma placa modelados (`npm run test:coverage` acrescenta um mínimo de cobertura). Os ecrãs e o transporte Web Serial não têm testes unitários próprios; as verificações de ponta a ponta comandam-nos. Nada disto correu contra um adaptador ou uma placa reais.
+`npm test` (Vitest) executa 1357 testes da lógica pura: análise de SLCAN, emparelhamento de pedidos e respostas, verificações de imagens de firmware e manifestos, assinaturas de release, limites de ferramenta, confirmações, as regras que separam o simulador do barramento real, exportação e reprodução de traços, o seletor de nós, o simulador do rack, o registo de sessão guardado, a cópia offline, a sincronização do firmware e os oito idiomas da interface. `npm run lint` verifica os tipos do código e `npm run test:e2e` executa 25 verificações de ponta a ponta num Chromium real contra um adaptador e uma placa modelados (`npm run test:coverage` acrescenta um mínimo de cobertura). Os ecrãs e o transporte Web Serial não têm testes unitários próprios; as verificações de ponta a ponta comandam-nos. Nada disto correu contra um adaptador ou uma placa reais.
 
 ## 🏗️ Compilação e publicação
 
@@ -452,9 +452,9 @@ URTC-WEB-STUDIO/
 ├── bump.py bump_manifest_version.py               scripts que sobem a versão
 ├── index.html                                     página de entrada do Vite
 ├── ruff.toml                                      definições do ruff, o verificador dos scripts Python
-├── package.json package-lock.json tsconfig.json   pacotes, versões fixadas, TypeScript e Vite
-├── playwright.config.ts vite.config.ts            definições das verificações de ponta a ponta
-├── playwright.screenshots.config.ts               Definições do Playwright para as capturas do README
+├── package.json package-lock.json tsconfig.json   pacotes, versões fixadas, TypeScript
+├── playwright.config.ts vite.config.ts            definições do Vite e das verificações de ponta a ponta
+├── playwright.screenshots.config.ts               definições do Playwright para as capturas do README
 ├── urtc_i18n.lock.json                            bloqueio dos ficheiros de idioma gerados
 └── NOTICE LICENSE.md                              aviso de direitos de autor e licença da documentação
 ```
@@ -553,9 +553,9 @@ sob licenças diferentes - cada uma adequada ao que realmente cobre:
    International (CC BY-SA 4.0)**. Texto completo em
    https://creativecommons.org/licenses/by-sa/4.0/.
 
-Esta ferramenta é o companheiro baseado no navegador do projeto
-[URTC (Universal Robot Tool Controller)](https://github.com/JuanenRac/URTC)
-- consulte o repositório próprio desse projeto para o firmware da placa, os desenhos
+Esta ferramenta é o complemento, baseado no navegador, do projeto
+[URTC (Universal Robot Tool Controller)](https://github.com/JuanenRac/URTC) -
+consulte o repositório próprio desse projeto para o firmware da placa, os desenhos
 de hardware e a documentação completa do protocolo contra o qual esta ferramenta
 foi implementada. O firmware do próprio URTC é GPL-3.0-or-later e os seus desenhos de hardware são
 CERN-OHL-S v2; a licença desta ferramenta aqui não se estende a esse projeto
@@ -567,7 +567,7 @@ Se construir sobre este projeto, tenha em conta a divisão de licenças: as alte
 de código devem manter-se GPL-3.0-or-later, os derivados da documentação devem manter-se CC
 BY-SA - cada um com atribuição a este projeto e ao seu autor.
 
-**Separadores Caixa negra, Funções opcionais, Bancada do rack e Vista térmica (novos, verificados apenas com simulações):** o Tester Studio lê o registador de falhas (`0x1A8` / `0x1A9`) e descarrega-o em CSV ou JSON, automaticamente uma vez por cada erro indicado pela placa quando essa opção está ativa; liga as funções opcionais do firmware (`0x1AE` / `0x1AF`, desligadas por predefinição, após uma confirmação; atuam após o próximo arranque); simula o rack de ferramentas na página, com a identidade de cada cabeça (tipo e número de série); e desenha a imagem de inspeção térmica em falsa cor (uma imagem simulada di-lo). O catálogo de ferramentas vem agora dos perfis de ferramenta partilhados do URTC-COMMON. Nada disto foi experimentado com uma placa real.
+**Separadores Caixa negra, Funções opcionais, Bancada do rack e Vista térmica (novos, verificados apenas com simulações):** o Tester Studio lê o registador de falhas (`0x1A8` / `0x1A9`) e descarrega-o em CSV ou JSON, automaticamente uma vez por cada erro indicado pela placa quando essa opção está ativa; liga as funções opcionais do firmware (`0x1AE` / `0x1AF`, desligadas por defeito, após uma confirmação; atuam após o próximo arranque); simula o rack de ferramentas na página, com a identidade de cada cabeça (tipo e número de série); e desenha a imagem de inspeção térmica em falsa cor (uma imagem simulada di-lo). O catálogo de ferramentas vem agora dos perfis de ferramenta partilhados do URTC-COMMON. Nada disto foi experimentado com uma placa real.
 
 **Visualizador da caixa negra (novo, verificado só com testes):** o separador Black Box desenha a temperatura medida e o valor pretendido dos segundos gravados antes do erro, com uma linha onde o indicador de erro aparece pela primeira vez, e abre um registo guardado antes (o ficheiro JSON ou CSV que o próprio separador escreve) sem placa ligada; um ficheiro que não é um registo, tem um valor fora do intervalo ou mais de 67 amostras é recusado com o motivo.
 
@@ -575,7 +575,7 @@ BY-SA - cada um com atribuição a este projeto e ao seu autor.
 
 **Contadores térmicos ao longo do tempo (novo, verificado só com testes e uma placa modelada):** no separador Caixa negra os contadores térmicos de toda a vida (`0x1AA` / `0x1AB`) podem ser lidos de novo a cada 10 s, 30 s, 1 min ou 5 min; cada leitura junta-se a um histórico guardado no navegador que desenha as horas do aquecedor e as falhas ao longo do tempo, pode ser descarregado em CSV e limpo; um contador que desce (outra placa) recomeça o histórico.
 
-**Sessão guardada (novo, verificado só com testes e uma placa modelada):** o Monitor de barramento guarda as tramas como um log e um registo que identifica o log pelo seu SHA-256 e pelo seu tamanho, no mesmo formato que o Tester de secretária escreve; **Verificar uma sessão guardada** recebe o registo e o seu log e diz se andam juntos. Mostra que um log não foi editado. Onde o navegador sabe fazer assinaturas Ed25519, o registo leva também uma assinatura feita com uma chave deste navegador (criada na primeira utilização e guardada no navegador): mostra que o registo não foi editado depois de assinado e não diz quem tem a chave. O monitor também pode mostrar só os ID que escrever, ou só as tramas cujos dados mudaram (a taxa e a carga continuam a contar todas as tramas).
+**Sessão guardada (novo, verificado só com testes e uma placa modelada):** o Monitor de barramento guarda as tramas como um log e um registo que identifica o log pelo seu SHA-256 e pelo seu tamanho, no mesmo formato que o Tester de ambiente de trabalho escreve; **Verificar uma sessão guardada** recebe o registo e o seu log e diz se andam juntos. Mostra que um log não foi editado. Onde o navegador sabe fazer assinaturas Ed25519, o registo leva também uma assinatura feita com uma chave deste navegador (criada na primeira utilização e guardada no navegador): mostra que o registo não foi editado depois de assinado e não diz quem tem a chave. O monitor também pode mostrar só os ID que escrever, ou só as tramas cujos dados mudaram (a taxa e a carga continuam a contar todas as tramas).
 
 **Aviso de versão (novo, verificado só com testes):** a compilação escreve um `version.json` junto da página; a página compilada compara-o uma vez, ao abrir e só com a mesma origem, com a sua própria versão e avisa quando é servida uma superior, com um botão Recarregar. Nada recarrega sozinho, uma versão igual ou anterior não diz nada e um ficheiro em falta ou a falta de rede passam em silêncio.
 
