@@ -252,9 +252,9 @@ Portato dai pannelli del deck Qt Quick di `URTC-TESTER`
 - **Controlli Globali** (`0x100`), passthrough SPI di **Scheda di Espansione** + query TMC
   DIAG0 (`0x180`-`0x183`), query/cancellazione **F-RAM** (`0x190`-`0x192`),
   **Autotest** (controlli sicuri, a riposo, per utensile), un **Monitor Bus Grezzo**
-  con esportazione traccia `.trc`/`.asc`, e un iniettore **Trama Personalizzata** con un
+  con esportazione traccia `.trc`/`.asc`, e un iniettore **Frame Personalizzato** con un
   intervallo di ripetizione opzionale - validato come il proprio iniettore di
-  trame del CAN Bus Protocol Analyzer: un identificatore fuori da `0`-`7FF`, un
+  frame del CAN Bus Protocol Analyzer: un identificatore fuori da `0`-`7FF`, un
   byte di dati non valido o più di 8 byte viene rifiutato con un messaggio, mai
   mascherato, scartato o troncato. Gli identificatori che trasmette solo la scheda
   vengono rifiutati, e le scritture nella memoria della scheda, i comandi del
