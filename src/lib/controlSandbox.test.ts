@@ -36,7 +36,7 @@ describe('what the button of the Control tab may do', () => {
   });
 
   it('plans the setpoint frame of the soldering iron to be confirmed, rounded to whole degrees', () => {
-    expect(planControlSend(base)).toEqual({ kind: 'confirm', id: CAN_ID_SOLDER_SETPOINT, data: [0x01, 0x40], action: 'heater', value: 320 });
+    expect(planControlSend(base)).toEqual({ kind: 'confirm', id: CAN_ID_SOLDER_SETPOINT, data: [0x01, 0x40], offData: [0, 0], action: 'heater', value: 320, second: null, heartbeat: true });
     expect(planControlSend({ ...base, value: 320.4 })).toMatchObject({ value: 320, data: [0x01, 0x40] });
     expect(planControlSend({ ...base, value: 445 })).toMatchObject({ kind: 'confirm', value: 445 });
     expect(planControlSend(base)).toMatchObject({ second: null, heartbeat: true, offData: [0, 0], action: 'heater' });
