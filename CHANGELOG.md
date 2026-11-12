@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The panels without props are not drawn again by every frame:** the rack bench panel and the evidence history panel are memoized, so a frame reaching the bus monitor no longer draws them; the state that decides a send, a connection or a failure is not delayed by it (the hook already hands out stable wrappers of `connect`, `disconnect`, `sendFrame`, `request` and the rest, which read the latest state through a reference). The panels that take the shared tool context are not memoized yet.
+
 - **Flasher Studio reads the header inside the image before it sends a frame:** an image built with the header slot sealed states its board, version, length and CRC-32 inside the file; the page refuses an image for another board, a version that differs from the file name, a length or CRC-32 that does not match, a header nobody sealed and a stamped `.urimg` file, and logs the identity it read. The reading is `src/lib/imageHeader.ts`, held to the same vectors as the Python reference and the C header.
 
 - **The "Image header" selector is the compatibility switch for an image without the header:** accept, accept with a warning (the default) or require a header; the choice is remembered in this browser only, and a header that is there is always checked. The texts are in the eight languages.

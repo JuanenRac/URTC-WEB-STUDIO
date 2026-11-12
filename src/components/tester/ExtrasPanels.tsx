@@ -317,7 +317,7 @@ export const PidPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
 };
 
 // ---- Rack bench (simulated) ----
-export const RackBenchPanel: React.FC = () => {
+const RackBenchPanelBody: React.FC = () => {
   const { t } = useTranslation();
   const rackRef = useRef(new SimulatedRack());
   const clock = useRef({ now: 0, seq: 0 });
@@ -449,7 +449,7 @@ export const ThermalViewPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
 const EVIDENCE_FILE_LIMIT = 500;
 const EVIDENCE_SIZE_LIMIT = 8_000_000;
 
-export const EvidenceHistoryPanel: React.FC = () => {
+const EvidenceHistoryPanelBody: React.FC = () => {
   const { t } = useTranslation();
   const [entries, setEntries] = useState<EvidenceEntry[]>([]);
   const [kind, setKind] = useState('');
@@ -575,3 +575,7 @@ export const EvidenceHistoryPanel: React.FC = () => {
     </Section>
   );
 };
+
+// These two panels take no props: memoized, they are drawn again only when their own state changes, never because a frame reached the screen above them.
+export const RackBenchPanel = React.memo(RackBenchPanelBody);
+export const EvidenceHistoryPanel = React.memo(EvidenceHistoryPanelBody);
