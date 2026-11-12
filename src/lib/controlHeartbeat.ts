@@ -57,8 +57,8 @@ export function startHeartbeat(options: HeartbeatOptions): Heartbeat {
   };
 
   stopLoop = startKeepaliveLoop(options.intervalMs ?? HEARTBEAT_INTERVAL_MS, () => ({
-    send: options.send,
-    off: options.off,
+    send: async () => { await options.send(); },
+    off: async () => { await options.off(); },
     onFailure: () => end('connection'),
   }));
   timer = setTimeout(() => end('expired'), options.durationMs);
