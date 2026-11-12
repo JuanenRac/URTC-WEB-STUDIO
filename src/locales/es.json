@@ -160,7 +160,7 @@
     "exp_basic_mlx_motor": "Sin driver de paso a paso ni MCU esclavo"
   },
   "canbus": {
-    "title": "Analizador de Protocolo CAN (500 kbit/s / SocketCAN / SLCAN)",
+    "title": "Analizador de Protocolo CAN (1 Mbit/s / SocketCAN / SLCAN)",
     "subtitle": "Telemetría en Tiempo Real de Baja Latencia y Ping de Watchdog (docs/CANBUS.TXT)",
     "clear_log": "Borrar Registro",
     "presets_title": "Mensajes Predefinidos del Protocolo URTC (docs/CANBUS.TXT):",
@@ -174,7 +174,7 @@
     "desc_placeholder": "Comando personalizado",
     "tx": "Tx",
     "stream_title": "FLUJO DE TRAMAS CAN EN TIEMPO REAL ({{count}} TRAMAS)",
-    "mbps_active": "500 kbit/s",
+    "mbps_active": "1 Mbit/s",
     "th_timestamp": "MARCA TEMPORAL",
     "th_dir": "DIR",
     "th_id": "ID (HEX)",
@@ -696,7 +696,7 @@
     "web_serial_unsupported": "La API Web Serial no es compatible con este navegador. Usa Chrome o Edge.",
     "iframe_blocked": "No se puede acceder a USB/Serie desde aquí: esta página está incrustada en un marco que no lo permite. Abre la página en su propia pestaña del navegador.",
     "connection_failed": "Conexión fallida: {{message}}",
-    "no_bus_response": "Sin respuesta de ninguna placa URTC a ninguna velocidad de bus CAN conocido (probados 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Revisa el cableado y la alimentación.",
+    "no_bus_response": "Sin respuesta de ninguna placa URTC a ninguna velocidad de bus CAN conocido (probados 1M, 500k, 250k, 125k, 100k, 50k, 20k, 10k, 800k). Revisa el cableado y la alimentación.",
     "send_failed": "Fallo al enviar trama CAN ({{description}}): {{message}}",
     "writer_unavailable": "El escritor del puerto serie no está disponible (puerto desconectado).",
     "invalid_frame": "Se rechaza una trama CAN no válida: {{reason}}",

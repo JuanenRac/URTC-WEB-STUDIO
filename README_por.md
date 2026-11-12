@@ -337,7 +337,7 @@ Cada ficheiro de uma release oficial tem uma assinatura de release (`<ficheiro>.
   `candlelight`/`slcan`, ou qualquer adaptador que fale o protocolo série SLCAN
   `lawicel` padrão) - a mesma classe de adaptador que ambas as ferramentas de
   ambiente de trabalho suportam através do seu próprio transporte Serial.
-- O barramento configurado a **500 kbit/s**. Ao ligar, a aplicação experimenta por ordem 500, 250, 125 kbit/s e as restantes velocidades padrão e fica com a primeira em que uma placa responde a um pedido de versão; ainda não é possível escolher a velocidade à mão nem apenas escutar sem que uma placa responda.
+- O barramento configurado a **1 Mbit/s** (500 kbit/s para placas antigas). Ao ligar, a aplicação experimenta por ordem 1000, 500, 250, 125 kbit/s e as restantes velocidades padrão e fica com a primeira em que uma placa responde a um pedido de versão; ainda não é possível escolher a velocidade à mão nem apenas escutar sem que uma placa responda.
 - Um navegador com suporte de Web Serial - **Chrome ou Edge**. O Firefox e o Safari
   não implementam Web Serial e não conseguirão ligar de todo.
 - O Web Serial exige um contexto seguro (HTTPS) ou `localhost` - e não pode ser usado

@@ -25,6 +25,7 @@ import {
   CAN_ID_AOI_TELEMETRY, CAN_ID_VACUUM_TELEMETRY
 } from '../../lib/canIds';
 import { THIS_HARDWARE_ID, CAN_ID_QUERY_VERSION, CAN_ID_VERSION_RESPONSE } from '../../lib/flasher';
+import { BITRATE as BUS_BITRATE } from '../../lib/generated/urtcCanIds';
 
 // ---- Global Controls (0x100) ----
 const GlobalControlsPanelBody: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
@@ -265,8 +266,8 @@ const BusMonitorPanelBody: React.FC<{ ctx: ToolCtx; subscribeAll: (cb: (f: CanFr
     return () => clearInterval(id);
   }, []);
 
-  // URTC's bus runs at 500 kbit/s; the load counts the real length of each frame seen in the last second.
-  const busLoadPct = Math.min(100, (bits / 500000) * 100);
+  // The bus of the tool heads runs at 1 Mbit/s (the specification's default); the load counts the real length of each frame seen in the last second.
+  const busLoadPct = Math.min(100, (bits / BUS_BITRATE) * 100);
 
   const exportTrace = (format: 'trc' | 'asc') => {
     const ordered = frames.slice().reverse();

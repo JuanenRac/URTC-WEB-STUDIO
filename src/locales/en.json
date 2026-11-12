@@ -160,7 +160,7 @@
     "exp_basic_mlx_motor": "No stepper driver, no slave MCU"
   },
   "canbus": {
-    "title": "CAN Bus Protocol Analyzer (500 kbit/s / SocketCAN / SLCAN)",
+    "title": "CAN Bus Protocol Analyzer (1 Mbit/s / SocketCAN / SLCAN)",
     "subtitle": "Low-Latency Real-Time Telemetry & Watchdog Pinger (docs/CANBUS.TXT)",
     "clear_log": "Clear Log",
     "presets_title": "Predefined URTC Protocol Messages (docs/CANBUS.TXT):",
@@ -174,7 +174,7 @@
     "desc_placeholder": "Custom command",
     "tx": "Tx",
     "stream_title": "REAL-TIME CAN FRAME STREAM ({{count}} FRAMES)",
-    "mbps_active": "500 kbit/s",
+    "mbps_active": "1 Mbit/s",
     "th_timestamp": "TIMESTAMP",
     "th_dir": "DIR",
     "th_id": "ID (HEX)",
@@ -696,7 +696,7 @@
     "web_serial_unsupported": "Web Serial API is not supported in this browser. Please use Chrome or Edge.",
     "iframe_blocked": "Cannot access USB/Serial from here: this page is embedded in a frame that does not allow it. Open the page in its own browser tab.",
     "connection_failed": "Connection failed: {{message}}",
-    "no_bus_response": "No response from a URTC board at any known CAN bitrate (tried 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Check wiring and power.",
+    "no_bus_response": "No response from a URTC board at any known CAN bitrate (tried 1M, 500k, 250k, 125k, 100k, 50k, 20k, 10k, 800k). Check wiring and power.",
     "send_failed": "CAN send failed ({{description}}): {{message}}",
     "writer_unavailable": "Serial port writer is not available (port disconnected).",
     "invalid_frame": "Refusing malformed CAN frame: {{reason}}",

@@ -346,7 +346,7 @@ Jede Datei eines offiziellen Releases hat eine Release-Signatur (`<Datei>.sig`, 
   `candlelight`/`slcan`, oder jeder Adapter, der das standardmäßige serielle
   SLCAN-Protokoll `lawicel` spricht) - dieselbe Adapterklasse, die beide
   Desktop-Tools über ihren eigenen seriellen Transport unterstützen.
-- Der Bus auf **500 kbit/s** eingestellt. Beim Verbinden probiert die App nacheinander 500, 250, 125 kbit/s und die übrigen Standardraten und behält die erste, bei der eine Platine auf eine Versionsabfrage antwortet; die Rate lässt sich noch nicht von Hand wählen, und es lässt sich nicht nur mithören, ohne dass eine Platine antwortet.
+- Der Bus auf **1 Mbit/s** eingestellt (500 kbit/s für frühe Platinen). Beim Verbinden probiert die App nacheinander 1000, 500, 250, 125 kbit/s und die übrigen Standardraten und behält die erste, bei der eine Platine auf eine Versionsabfrage antwortet; die Rate lässt sich noch nicht von Hand wählen, und es lässt sich nicht nur mithören, ohne dass eine Platine antwortet.
 - Ein Browser mit Web-Serial-Unterstützung - **Chrome oder Edge**. Firefox und
   Safari implementieren Web Serial nicht und können sich überhaupt nicht
   verbinden.

@@ -14,7 +14,7 @@ server API.
 ## Transport
 
 - The adapter is a USB-CAN device that speaks SLCAN, opened with the Web Serial
-  API. The URTC bus runs at 500 kbit/s; the bitrate is probed on connect.
+  API. The URTC bus runs at 1 Mbit/s (500 kbit/s for early boards); the bitrate is probed on connect, 1 Mbit/s first.
 - Outbound frames are standard 11-bit data frames of at most 8 bytes. A frame
   that does not fit is refused with a message, never repaired.
 - Inbound lines are parsed strictly; a malformed or truncated line is dropped.

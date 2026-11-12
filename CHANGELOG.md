@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The web studio works at 1 Mbit/s, the speed of the tool heads:** the search for the speed of a bus tries 1 Mbit/s first and 500 kbit/s second (`src/lib/busRate.ts`), the bus load is counted against the `BITRATE` of the shared specification, and the texts of the analyzer and of the no-response error say 1 Mbit/s in the eight languages. **Compatibility note:** every board and adapter of one bus must run at the same speed (the default is now 1 Mbit/s; early boards run at 500 kbit/s), the trunk should stay under about 25 m at 1 Mbit/s with short stubs and a 120 ohm termination at each end.
+
 - **The Control tab can hold the soldering iron setpoint and can send the drill and the laser, always behind the same switch (off by default):** a held setpoint is refreshed every 100 ms for a bounded time (30 s by default, 5 to 120) and is cut, with the off frame, on STOP, when the time is up, when the window loses focus, when the tab is left, when the connection is lost, when the switch is turned off and when the page closes. The drill (speed as the byte of the firmware, clockwise) and the laser (power as the byte of the firmware, interlock set) are one confirmed frame each, with two confirmations (the second with an explicit text), limits checked and no refresh; STOP is always visible and sends the off frame of the tool. Tested without a board; nothing has been sent to a real one.
 
 - **The shared document policy check is refreshed:** `tools/_doc_policy.py` and `tools/ci_validate.py` are the current copies, which also fail when a build script changes a version and when a script switches into a virtual environment instead of running its python directly.

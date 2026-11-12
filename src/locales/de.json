@@ -160,7 +160,7 @@
     "exp_basic_mlx_motor": "Kein Schrittmotortreiber, kein Slave-MCU"
   },
   "canbus": {
-    "title": "CAN-Bus-Protokollanalysator (500 kbit/s / SocketCAN / SLCAN)",
+    "title": "CAN-Bus-Protokollanalysator (1 Mbit/s / SocketCAN / SLCAN)",
     "subtitle": "Latenzarme Echtzeit-Telemetrie & Watchdog-Ping (docs/CANBUS.TXT)",
     "clear_log": "Protokoll löschen",
     "presets_title": "Vordefinierte URTC-Protokollnachrichten (docs/CANBUS.TXT):",
@@ -174,7 +174,7 @@
     "desc_placeholder": "Benutzerdefinierter Befehl",
     "tx": "Tx",
     "stream_title": "ECHTZEIT-CAN-FRAME-STROM ({{count}} FRAMES)",
-    "mbps_active": "500 kbit/s",
+    "mbps_active": "1 Mbit/s",
     "th_timestamp": "ZEITSTEMPEL",
     "th_dir": "RICHT.",
     "th_id": "ID (HEX)",
@@ -696,7 +696,7 @@
     "web_serial_unsupported": "Die Web-Serial-API wird von diesem Browser nicht unterstützt. Bitte Chrome oder Edge verwenden.",
     "iframe_blocked": "Von hier ist kein Zugriff auf USB/Seriell möglich: Diese Seite ist in einen Frame eingebettet, der das nicht erlaubt. Öffnen Sie die Seite in einem eigenen Browser-Tab.",
     "connection_failed": "Verbindung fehlgeschlagen: {{message}}",
-    "no_bus_response": "Keine Antwort von einer URTC-Platine bei keiner bekannten CAN-Bitrate (versucht: 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Verkabelung und Stromversorgung prüfen.",
+    "no_bus_response": "Keine Antwort von einer URTC-Platine bei keiner bekannten CAN-Bitrate (versucht: 1M, 500k, 250k, 125k, 100k, 50k, 20k, 10k, 800k). Verkabelung und Stromversorgung prüfen.",
     "send_failed": "Senden des CAN-Frames fehlgeschlagen ({{description}}): {{message}}",
     "writer_unavailable": "Der Serial-Port-Writer ist nicht verfügbar (Port getrennt).",
     "invalid_frame": "Ungültiger CAN-Frame wird abgelehnt: {{reason}}",

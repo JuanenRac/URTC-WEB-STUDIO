@@ -4,22 +4,11 @@ import { CanFrame } from '../types';
 import { CAN_ID_QUERY_VERSION, CAN_ID_VERSION_RESPONSE, CAN_ID_BOOTLOADER_VERSION_RESPONSE } from '../lib/flasher';
 import { parseSlcanLine } from '../lib/slcan';
 import { FrameRouter } from '../lib/frameRouter';
+import { BITRATE_TRY_ORDER } from '../lib/busRate';
 
-// Standard SLCAN/Lawicel "Sx" bitrate codes, in the same most-likely-first try
-// order as URTC-FLASHER/URTC-TESTER's own auto_detect_bitrate: URTC's bus is
-// fixed at 500k, so that's tried first, then its two most common neighbors,
-// then the rest of the table.
-const BITRATE_TRY_ORDER: Array<{ label: string; code: string }> = [
-  { label: '500 kbit/s', code: '6' },
-  { label: '250 kbit/s', code: '5' },
-  { label: '125 kbit/s', code: '4' },
-  { label: '1 Mbit/s', code: '8' },
-  { label: '100 kbit/s', code: '3' },
-  { label: '50 kbit/s', code: '2' },
-  { label: '20 kbit/s', code: '1' },
-  { label: '10 kbit/s', code: '0' },
-  { label: '800 kbit/s', code: '7' },
-];
+// The standard SLCAN/Lawicel "Sx" bitrate codes are tried in lib/busRate.ts's order
+// (1 Mbit/s of the tool heads first, then the legacy 500k), the same as
+// URTC-FLASHER/URTC-TESTER's own auto_detect_bitrate.
 
 export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
   const { t } = useTranslation();
@@ -228,7 +217,7 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
 
       const detectedLabel = await detectAndOpenBitrate();
       if (!detectedLabel) {
-        throw new Error(t('hooks.no_bus_response', 'No response from a URTC board at any known CAN bitrate (tried 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Check wiring and power.'));
+        throw new Error(t('hooks.no_bus_response', 'No response from a URTC board at any known CAN bitrate (tried 1M, 500k, 250k, 125k, 100k, 50k, 20k, 10k, 800k). Check wiring and power.'));
       }
 
       setConnected(true);

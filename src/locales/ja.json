@@ -160,7 +160,7 @@
     "exp_basic_mlx_motor": "ステッピングドライバー・スレーブ MCU なし"
   },
   "canbus": {
-    "title": "CAN バスプロトコルアナライザー（500 kbit/s / SocketCAN / SLCAN）",
+    "title": "CAN バスプロトコルアナライザー（1 Mbit/s / SocketCAN / SLCAN）",
     "subtitle": "低遅延リアルタイムテレメトリとウォッチドッグピンガー（docs/CANBUS.TXT）",
     "clear_log": "ログをクリア",
     "presets_title": "定義済みの URTC プロトコルメッセージ（docs/CANBUS.TXT）：",
@@ -174,7 +174,7 @@
     "desc_placeholder": "カスタムコマンド",
     "tx": "送信",
     "stream_title": "リアルタイム CAN フレームストリーム（{{count}} フレーム）",
-    "mbps_active": "500 kbit/s",
+    "mbps_active": "1 Mbit/s",
     "th_timestamp": "タイムスタンプ",
     "th_dir": "方向",
     "th_id": "ID（16進数）",
@@ -696,7 +696,7 @@
     "web_serial_unsupported": "このブラウザーは Web Serial API をサポートしていません。Chrome または Edge を使用してください。",
     "iframe_blocked": "ここからは USB/シリアルにアクセスできません。このページは許可されていないフレーム内に埋め込まれています。ページを専用のブラウザータブで開いてください。",
     "connection_failed": "接続に失敗しました：{{message}}",
-    "no_bus_response": "既知のどの CAN ビットレート（500k、250k、125k、1M、100k、50k、20k、10k、800k を試行）でも URTC ボードからの応答がありません。配線と電源を確認してください。",
+    "no_bus_response": "既知のどの CAN ビットレート（1M、500k、250k、125k、100k、50k、20k、10k、800k を試行）でも URTC ボードからの応答がありません。配線と電源を確認してください。",
     "send_failed": "CAN 送信に失敗しました（{{description}}）：{{message}}",
     "writer_unavailable": "シリアルポートライターが利用できません（ポートが切断されています）。",
     "invalid_frame": "不正な CAN フレームを拒否しました：{{reason}}",

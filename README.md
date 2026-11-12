@@ -332,7 +332,7 @@ Each file of an official release has a release signature (`<file>.sig`, Ed25519)
   `candlelight`/`slcan`, or any adapter that speaks the standard `lawicel`
   SLCAN serial protocol) - the same adapter class both desktop tools support
   via their own Serial transport.
-- The bus set to **500 kbit/s**. On connect the app tries 500, 250, 125 kbit/s and the other standard rates in turn and keeps the first one at which a board answers a version query; there is no way yet to choose the rate by hand or to listen without a board answering.
+- The bus set to **1 Mbit/s** (500 kbit/s for early boards). On connect the app tries 1000, 500, 250, 125 kbit/s and the other standard rates in turn and keeps the first one at which a board answers a version query; there is no way yet to choose the rate by hand or to listen without a board answering.
 - A browser with Web Serial support - **Chrome or Edge**. Firefox and Safari
   don't implement Web Serial and won't be able to connect at all.
 - Web Serial requires either a secure context (HTTPS) or `localhost` - and it

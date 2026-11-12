@@ -10,7 +10,11 @@ export const PROTOCOL_VERSION = 1;
 export const BYTE_ORDER = 'big';
 
 // --- constants ---
-export const BITRATE = 0x7A120; // Fixed bus bitrate (bit/s)
+export const BITRATE = 0xF4240; // Default bus bit rate of the tool heads (bit/s)
+export const BITRATE_LEGACY = 0x7A120; // Bit rate of the early boards, kept as the legacy option (bit/s)
+export const CAN_SAMPLE_POINT_PERMILLE = 0x36B; // Wanted sample point of the bit (per mille)
+export const CAN_SAMPLE_POINT_MIN_PERMILLE = 0x2EE; // Lowest sample point a timing may have (per mille)
+export const CAN_SJW_TQ = 2; // Wanted synchronisation jump width (time quanta)
 export const STANDARD_ID_MAX = 0x7FF; // Highest standard 11-bit identifier
 export const DLC_MAX = 8; // Classic CAN payload limit (bytes)
 export const HARDWARE_ID_MAIN = 0x303CC01; // HardwareID of the tool-head board (STM32F303CCT6, revision 1)
@@ -345,7 +349,7 @@ export const SLAVE_BOOT_REG_HMAC_EXPECTED = SLAVE_BOOT_REG_DIGEST_EXPECTED;
 
 // --- SLCAN ---
 export const SLCAN_BITRATES: [string, string][] = [["10 kbit/s", "0"], ["20 kbit/s", "1"], ["50 kbit/s", "2"], ["100 kbit/s", "3"], ["125 kbit/s", "4"], ["250 kbit/s", "5"], ["500 kbit/s", "6"], ["800 kbit/s", "7"], ["1 Mbit/s", "8"]];
-export const SLCAN_BITRATE_DEFAULT_CODE = '6';
+export const SLCAN_BITRATE_DEFAULT_CODE = '8';
 export const SLCAN_RX_BUFFER_LIMIT = 4096;
 
 // --- one record per identifier ---

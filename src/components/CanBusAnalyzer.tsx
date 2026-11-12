@@ -70,7 +70,7 @@ export const CanBusAnalyzer: React.FC<CanBusAnalyzerProps> = ({
           <div>
             <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
               <Radio className="w-4 h-4 text-amber-400" />
-              {t('canbus.title', 'CAN Bus Protocol Analyzer (500 kbit/s / SocketCAN / SLCAN)')}
+              {t('canbus.title', 'CAN Bus Protocol Analyzer (1 Mbit/s / SocketCAN / SLCAN)')}
             </h2>
             <p className="text-xs text-slate-400">
               {t('canbus.subtitle', 'Low-Latency Real-Time Telemetry & Watchdog Pinger (docs/CANBUS.TXT)')}
@@ -187,7 +187,7 @@ export const CanBusAnalyzer: React.FC<CanBusAnalyzerProps> = ({
         <div className="px-5 py-3 border-b border-slate-800 flex items-center justify-between text-xs font-mono text-slate-400">
           <span>{t('canbus.stream_title', 'REAL-TIME CAN FRAME STREAM ({{count}} FRAMES)', { count: canFrames.length })}</span>
           <span className="text-emerald-400 flex items-center gap-1">
-            <ShieldCheck className="w-3.5 h-3.5" /> {t('canbus.mbps_active', '500 kbit/s')}
+            <ShieldCheck className="w-3.5 h-3.5" /> {t('canbus.mbps_active', '1 Mbit/s')}
           </span>
         </div>
 

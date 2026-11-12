@@ -343,7 +343,7 @@ Chaque fichier d'une release officielle a une signature de release (`<fichier>.s
   exécutant `candlelight`/`slcan`, ou tout adaptateur parlant le protocole série
   SLCAN `lawicel` standard) - la même classe d'adaptateur que les deux outils de
   bureau supportent via leur propre transport Série.
-- Le bus réglé à **500 kbit/s**. À la connexion, l'app essaie tour à tour 500, 250, 125 kbit/s et les autres débits standard, et garde le premier auquel une carte répond à une requête de version ; on ne peut pas encore choisir le débit à la main ni écouter sans qu'une carte réponde.
+- Le bus réglé à **1 Mbit/s** (500 kbit/s pour les premières cartes). À la connexion, l'app essaie tour à tour 1000, 500, 250, 125 kbit/s et les autres débits standard, et garde le premier auquel une carte répond à une requête de version ; on ne peut pas encore choisir le débit à la main ni écouter sans qu'une carte réponde.
 - Un navigateur avec support Web Serial - **Chrome ou Edge**. Firefox et Safari
   n'implémentent pas Web Serial et ne pourront pas se connecter du tout.
 - Web Serial nécessite soit un contexte sécurisé (HTTPS) soit `localhost` - et ne

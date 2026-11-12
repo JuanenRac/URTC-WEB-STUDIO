@@ -339,7 +339,7 @@ Ogni file di una release ufficiale ha una firma di release (`<file>.sig`, Ed2551
   `candlelight`/`slcan`, o qualsiasi adattatore che parli il protocollo seriale
   SLCAN `lawicel` standard) - la stessa classe di adattatore supportata da entrambi
   gli strumenti desktop tramite il proprio trasporto Serial.
-- Il bus impostato a **500 kbit/s**. Alla connessione l'app prova a turno 500, 250, 125 kbit/s e le altre velocità standard e mantiene la prima a cui una scheda risponde a una richiesta di versione; non è ancora possibile scegliere la velocità a mano né ascoltare senza che una scheda risponda.
+- Il bus impostato a **1 Mbit/s** (500 kbit/s per le schede vecchie). Alla connessione l'app prova a turno 1000, 500, 250, 125 kbit/s e le altre velocità standard e mantiene la prima a cui una scheda risponde a una richiesta di versione; non è ancora possibile scegliere la velocità a mano né ascoltare senza che una scheda risponda.
 - Un browser con supporto Web Serial - **Chrome o Edge**. Firefox e Safari non
   implementano Web Serial e non potranno connettersi affatto.
 - Web Serial richiede un contesto sicuro (HTTPS) o `localhost` - e non può essere

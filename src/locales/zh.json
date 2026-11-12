@@ -160,7 +160,7 @@
     "exp_basic_mlx_motor": "无步进驱动器，无从机 MCU"
   },
   "canbus": {
-    "title": "CAN 总线协议分析器（500 kbit/s / SocketCAN / SLCAN）",
+    "title": "CAN 总线协议分析器（1 Mbit/s / SocketCAN / SLCAN）",
     "subtitle": "低延迟实时遥测与看门狗探测器（docs/CANBUS.TXT）",
     "clear_log": "清除日志",
     "presets_title": "预定义的 URTC 协议消息（docs/CANBUS.TXT）：",
@@ -174,7 +174,7 @@
     "desc_placeholder": "自定义指令",
     "tx": "发送",
     "stream_title": "实时 CAN 帧流（{{count}} 帧）",
-    "mbps_active": "500 kbit/s",
+    "mbps_active": "1 Mbit/s",
     "th_timestamp": "时间戳",
     "th_dir": "方向",
     "th_id": "ID（十六进制）",
@@ -696,7 +696,7 @@
     "web_serial_unsupported": "此浏览器不支持 Web Serial API。请使用 Chrome 或 Edge。",
     "iframe_blocked": "无法从此处访问 USB/串口：本页面嵌入在不允许该操作的框架中。请在独立的浏览器标签页中打开本页面。",
     "connection_failed": "连接失败：{{message}}",
-    "no_bus_response": "在任何已知的 CAN 比特率下均未收到 URTC 板卡的响应（已尝试 500k、250k、125k、1M、100k、50k、20k、10k、800k）。请检查接线和电源。",
+    "no_bus_response": "在任何已知的 CAN 比特率下均未收到 URTC 板卡的响应（已尝试 1M、500k、250k、125k、100k、50k、20k、10k、800k）。请检查接线和电源。",
     "send_failed": "CAN 发送失败（{{description}}）：{{message}}",
     "writer_unavailable": "串口写入器不可用（端口已断开连接）。",
     "invalid_frame": "已拒绝格式错误的 CAN 帧：{{reason}}",

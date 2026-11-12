@@ -160,7 +160,7 @@
     "exp_basic_mlx_motor": "Sans pilote pas à pas ni MCU esclave"
   },
   "canbus": {
-    "title": "Analyseur de Protocole CAN (500 kbit/s / SocketCAN / SLCAN)",
+    "title": "Analyseur de Protocole CAN (1 Mbit/s / SocketCAN / SLCAN)",
     "subtitle": "Télémétrie temps réel basse latence & ping du watchdog (docs/CANBUS.TXT)",
     "clear_log": "Effacer le Journal",
     "presets_title": "Messages de protocole URTC prédéfinis (docs/CANBUS.TXT) :",
@@ -174,7 +174,7 @@
     "desc_placeholder": "Commande personnalisée",
     "tx": "Tx",
     "stream_title": "FLUX DE TRAMES CAN TEMPS RÉEL ({{count}} TRAMES)",
-    "mbps_active": "500 kbit/s",
+    "mbps_active": "1 Mbit/s",
     "th_timestamp": "HORODATAGE",
     "th_dir": "DIR",
     "th_id": "ID (HEX)",
@@ -696,7 +696,7 @@
     "web_serial_unsupported": "L'API Web Serial n'est pas prise en charge par ce navigateur. Veuillez utiliser Chrome ou Edge.",
     "iframe_blocked": "Impossible d'accéder à l'USB/série d'ici : cette page est intégrée dans un cadre qui ne l'autorise pas. Ouvrez la page dans son propre onglet de navigateur.",
     "connection_failed": "Échec de la connexion : {{message}}",
-    "no_bus_response": "Aucune réponse d'une carte URTC à aucun débit CAN connu (essayés : 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Vérifiez le câblage et l'alimentation.",
+    "no_bus_response": "Aucune réponse d'une carte URTC à aucun débit CAN connu (essayés : 1M, 500k, 250k, 125k, 100k, 50k, 20k, 10k, 800k). Vérifiez le câblage et l'alimentation.",
     "send_failed": "Échec de l'envoi de la trame CAN ({{description}}) : {{message}}",
     "writer_unavailable": "L'écrivain du port série n'est pas disponible (port déconnecté).",
     "invalid_frame": "Trame CAN non valide rejetée : {{reason}}",

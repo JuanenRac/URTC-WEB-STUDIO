@@ -160,7 +160,7 @@
     "exp_basic_mlx_motor": "Senza driver passo-passo né MCU slave"
   },
   "canbus": {
-    "title": "Analizzatore Protocollo CAN (500 kbit/s / SocketCAN / SLCAN)",
+    "title": "Analizzatore Protocollo CAN (1 Mbit/s / SocketCAN / SLCAN)",
     "subtitle": "Telemetria in tempo reale a bassa latenza & ping watchdog (docs/CANBUS.TXT)",
     "clear_log": "Cancella Registro",
     "presets_title": "Messaggi Protocollo URTC Predefiniti (docs/CANBUS.TXT):",
@@ -174,7 +174,7 @@
     "desc_placeholder": "Comando personalizzato",
     "tx": "Tx",
     "stream_title": "FLUSSO DI FRAME CAN IN TEMPO REALE ({{count}} FRAME)",
-    "mbps_active": "500 kbit/s",
+    "mbps_active": "1 Mbit/s",
     "th_timestamp": "TIMESTAMP",
     "th_dir": "DIR",
     "th_id": "ID (HEX)",
@@ -696,7 +696,7 @@
     "web_serial_unsupported": "L'API Web Serial non è supportata in questo browser. Usa Chrome o Edge.",
     "iframe_blocked": "Impossibile accedere a USB/seriale da qui: questa pagina è incorporata in un frame che non lo consente. Apri la pagina in una scheda del browser a sé.",
     "connection_failed": "Connessione non riuscita: {{message}}",
-    "no_bus_response": "Nessuna risposta da una scheda URTC a nessun bitrate CAN noto (provati 500k, 250k, 125k, 1M, 100k, 50k, 20k, 10k, 800k). Controlla il cablaggio e l'alimentazione.",
+    "no_bus_response": "Nessuna risposta da una scheda URTC a nessun bitrate CAN noto (provati 1M, 500k, 250k, 125k, 100k, 50k, 20k, 10k, 800k). Controlla il cablaggio e l'alimentazione.",
     "send_failed": "Invio del frame CAN non riuscito ({{description}}): {{message}}",
     "writer_unavailable": "Il writer della porta seriale non è disponibile (porta disconnessa).",
     "invalid_frame": "Frame CAN non valido rifiutato: {{reason}}",
