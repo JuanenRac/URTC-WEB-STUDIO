@@ -11,7 +11,7 @@ export async function openTab(page: Page, tab: TabName): Promise<void> {
 /** Connects the (modelled) adapter from the header and waits until the page says it is connected. */
 export async function connectBoard(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Connect Hardware' }).click();
-  await expect(page.getByRole('button', { name: /USB-CAN Adapter \(500 kbit\/s\)/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /USB-CAN Adapter \(1 Mbit\/s\)/ })).toBeVisible();
 }
 
 /** Opens a sub-tab of the Tester Studio by its visible name. */
