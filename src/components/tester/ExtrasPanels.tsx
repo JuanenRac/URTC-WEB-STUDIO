@@ -99,7 +99,7 @@ const ThermalHistoryView: React.FC<{ history: ThermalSample[] }> = ({ history })
   );
 };
 
-export const BlackBoxPanel: React.FC<{ ctx: ToolCtx; systemError: boolean }> = ({ ctx, systemError }) => {
+const BlackBoxPanelBody: React.FC<{ ctx: ToolCtx; systemError: boolean }> = ({ ctx, systemError }) => {
   const { t } = useTranslation();
   const [record, setRecord] = useState<BlackBoxRecord | null>(null);
   const [message, setMessage] = useState('');
@@ -231,7 +231,7 @@ export const BlackBoxPanel: React.FC<{ ctx: ToolCtx; systemError: boolean }> = (
 };
 
 // ---- Optional functions (0x1AE / 0x1AF) ----
-export const FeaturesPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
+const FeaturesPanelBody: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   const { t } = useTranslation();
   const confirm = useConfirmAction();
   const [mask, setMask] = useState(0);
@@ -269,7 +269,7 @@ export const FeaturesPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
 };
 
 // ---- Heater PID (0x1B9 / 0x1BA) ----
-export const PidPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
+const PidPanelBody: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   const { t } = useTranslation();
   const confirm = useConfirmAction();
   const [kp, setKp] = useState('8');
@@ -386,7 +386,7 @@ const RackBenchPanelBody: React.FC = () => {
 };
 
 // ---- Thermal view (tool 22, 0x250 to 0x255) ----
-export const ThermalViewPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
+const ThermalViewPanelBody: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   const { t } = useTranslation();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [frame, setFrame] = useState<ThermalFrame | null>(null);
@@ -579,3 +579,9 @@ const EvidenceHistoryPanelBody: React.FC = () => {
 // These two panels take no props: memoized, they are drawn again only when their own state changes, never because a frame reached the screen above them.
 export const RackBenchPanel = React.memo(RackBenchPanelBody);
 export const EvidenceHistoryPanel = React.memo(EvidenceHistoryPanelBody);
+
+// Memoized: the page draws again on every frame that reaches it, and the context it hands down is one stable object, so a panel is drawn again only when its own state or props change.
+export const BlackBoxPanel = React.memo(BlackBoxPanelBody);
+export const FeaturesPanel = React.memo(FeaturesPanelBody);
+export const PidPanel = React.memo(PidPanelBody);
+export const ThermalViewPanel = React.memo(ThermalViewPanelBody);

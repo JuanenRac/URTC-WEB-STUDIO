@@ -27,7 +27,7 @@ import {
 import { THIS_HARDWARE_ID, CAN_ID_QUERY_VERSION, CAN_ID_VERSION_RESPONSE } from '../../lib/flasher';
 
 // ---- Global Controls (0x100) ----
-export const GlobalControlsPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
+const GlobalControlsPanelBody: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   const { t } = useTranslation();
   const [statusColor, setStatusColor] = useState({ r: 0, g: 200, b: 255 });
   const [oledMode, setOledMode] = useState<'standard' | 'night' | 'standby'>('standard');
@@ -80,7 +80,7 @@ export const GlobalControlsPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
 };
 
 // ---- Expansion Board (SPI + DIAG0) ----
-export const ExpansionBoardPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
+const ExpansionBoardPanelBody: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   const { t } = useTranslation();
   const [txHex, setTxHex] = useState('01 02 03');
   const [spiResult, setSpiResult] = useState<string | null>(null);
@@ -141,7 +141,7 @@ export const ExpansionBoardPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
 };
 
 // ---- F-RAM ----
-export const FramPanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
+const FramPanelBody: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   const { t } = useTranslation();
   const confirm = useConfirmAction();
   const [state, setState] = useState<{ valid: number; toolId: number; hadError: number; temp: number; speed: number; dirOrInterlock: number; fan: number } | null>(null);
@@ -190,7 +190,7 @@ const SELF_TEST_STEPS: Record<number, { run: (ctx: ToolCtx, log: (s: string) => 
   4: { run: async (ctx, log) => { ctx.flushFrames(CAN_ID_VACUUM_TELEMETRY); const r = await ctx.waitForFrame(CAN_ID_VACUUM_TELEMETRY, 1500); log(r ? 'PASS: 0x145 seen passively' : 'INFO: no 0x145 seen (info-only, cannot force it)'); } },
 };
 
-export const SelfTestPanel: React.FC<{ ctx: ToolCtx; activeToolId: number }> = ({ ctx, activeToolId }) => {
+const SelfTestPanelBody: React.FC<{ ctx: ToolCtx; activeToolId: number }> = ({ ctx, activeToolId }) => {
   const { t } = useTranslation();
   const [log, setLog] = useState<string[]>([]);
   const [running, setRunning] = useState(false);
@@ -231,7 +231,7 @@ export const SelfTestPanel: React.FC<{ ctx: ToolCtx; activeToolId: number }> = (
 };
 
 // ---- Raw Bus Monitor ----
-export const BusMonitorPanel: React.FC<{ ctx: ToolCtx; subscribeAll: (cb: (f: CanFrame) => void) => () => void }> = ({ ctx, subscribeAll }) => {
+const BusMonitorPanelBody: React.FC<{ ctx: ToolCtx; subscribeAll: (cb: (f: CanFrame) => void) => () => void }> = ({ ctx, subscribeAll }) => {
   const { t } = useTranslation();
   const [frames, setFrames] = useState<CanFrame[]>([]);
   const [paused, setPaused] = useState(false);
@@ -340,7 +340,7 @@ export const BusMonitorPanel: React.FC<{ ctx: ToolCtx; subscribeAll: (cb: (f: Ca
 };
 
 // ---- Custom frame injector ----
-export const CustomFramePanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
+const CustomFramePanelBody: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   const { t } = useTranslation();
   const [idHex, setIdHex] = useState('100');
   const [dataHex, setDataHex] = useState('00 00 00 00 00 00 00 00');
@@ -414,3 +414,11 @@ export const CustomFramePanel: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
     </Section>
   );
 };
+
+// Memoized: the page draws again on every frame that reaches it, and the context it hands down is one stable object, so a panel is drawn again only when its own state or props change.
+export const GlobalControlsPanel = React.memo(GlobalControlsPanelBody);
+export const ExpansionBoardPanel = React.memo(ExpansionBoardPanelBody);
+export const FramPanel = React.memo(FramPanelBody);
+export const SelfTestPanel = React.memo(SelfTestPanelBody);
+export const BusMonitorPanel = React.memo(BusMonitorPanelBody);
+export const CustomFramePanel = React.memo(CustomFramePanelBody);

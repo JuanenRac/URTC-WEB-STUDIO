@@ -15,7 +15,7 @@ export interface ToolCtx {
   isConnected: boolean;
 }
 
-export const NoHandlerPanel: React.FC<{ name: string }> = ({ name }) => {
+const NoHandlerPanelBody: React.FC<{ name: string }> = ({ name }) => {
   const { t } = useTranslation();
   return (
     <Section title={name}>
@@ -23,3 +23,6 @@ export const NoHandlerPanel: React.FC<{ name: string }> = ({ name }) => {
     </Section>
   );
 };
+
+// Memoized: the page draws again on every frame that reaches it, and the context it hands down is one stable object, so a panel is drawn again only when its own state or props change.
+export const NoHandlerPanel = React.memo(NoHandlerPanelBody);

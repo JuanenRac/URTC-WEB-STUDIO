@@ -58,6 +58,7 @@ Every file of the repository with a line on what it does: the annotated tree tha
 │   │   ├── useFlasher.ts            CAN-OTA state machine (main board + expansion
 │   │   │                            slave), mirrors flasher_protocol.py
 │   │   ├── useTraceReplay.ts        Plays a recorded trace into the log and the panels
+│   │   ├── useTraceLoad.ts          Reads a recording for the trace viewer: at once when it is short, in a worker when it is long
 │   │   ├── useConfirmAction.ts      Asks for the confirmation before an action that acts on the board
 │   │   ├── useNodePicker.ts         Finds the tool heads of the bus and keeps the selected one
 │   │   ├── usePwa.ts                Offline copy, Install button and the notice of a newer version
@@ -82,6 +83,7 @@ Every file of the repository with a line on what it does: the annotated tree tha
 │   │   ├── nodePicker.ts / multinodeSim.ts Rules of the tool heads window and a model of the nodes to try it without boards
 │   │   ├── rackSim.ts               Simulator of the tool rack (frame version 2, big-endian)
 │   │   ├── sessionRecord.ts / recordSigning.ts / traceExport.ts / download.ts Saved session record (SHA-256 of the log, signed), trace files and downloads
+│   │   ├── traceParseClient.ts / traceWorker.ts The worker that reads a long CAN recording, and the client that falls back to the page
 │   │   ├── safeOff.ts / keepaliveLoop.ts / confirmController.ts / dangerousActions.ts Switching off the actuators kept alive, and which actions ask for a confirmation first
 │   │   ├── pwa.ts / serviceWorkerBuild.ts / selfUpdate.ts Offline copy, the text of the service worker and the notice of a newer version
 │   │   ├── releaseSignature.ts      Check of the signature of a release in the browser

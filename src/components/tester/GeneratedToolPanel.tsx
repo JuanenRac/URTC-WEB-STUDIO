@@ -208,7 +208,7 @@ const SectionView: React.FC<{
 };
 
 // A tool panel drawn from the `panel` of its profile: its controls, readings and commands are data, not a screen written for the tool.
-export const GeneratedToolPanel: React.FC<{ ctx: ToolCtx; panel: UrtcToolPanel; toolName: string }> = ({ ctx, panel, toolName }) => {
+const GeneratedToolPanelBody: React.FC<{ ctx: ToolCtx; panel: UrtcToolPanel; toolName: string }> = ({ ctx, panel, toolName }) => {
   const { t } = useTranslation();
   const tf = t as unknown as TFn;
   const [values, setValues] = useState<PanelValues>(() => initialValues(panel));
@@ -222,3 +222,6 @@ export const GeneratedToolPanel: React.FC<{ ctx: ToolCtx; panel: UrtcToolPanel; 
     </div>
   );
 };
+
+// Memoized: the page draws again on every frame that reaches it, and the context it hands down is one stable object, so a panel is drawn again only when its own state or props change.
+export const GeneratedToolPanel = React.memo(GeneratedToolPanelBody);

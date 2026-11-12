@@ -101,6 +101,8 @@ export default defineConfig({
   base: process.env.URTC_BASE_PATH || '/',
   plugins: [react(), tailwindcss(), contentSecurityPolicy(), versionFile(), serviceWorker()],
   define: { __APP_VERSION__: JSON.stringify(APP_VERSION) },
+  // The worker that reads a long recording of CAN frames (src/lib/traceWorker.ts) is a module worker, served from the page itself (worker-src 'self').
+  worker: { format: 'es' },
   server: {
     // Web Serial only works on https or on localhost, so the development
     // server has no reason to listen on the network.

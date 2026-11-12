@@ -2,11 +2,12 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { downloadBlob } from '../../lib/download';
 import {
-  DEFAULT_TRACE_SETTINGS, MAX_TRACE_BYTES, MAX_TRACE_ROWS, TRACE_ANOMALIES, TRACE_RESULTS, TRACE_TYPES, filterRows, parseCanTrace, parseIdList,
+  DEFAULT_TRACE_SETTINGS, MAX_TRACE_BYTES, MAX_TRACE_ROWS, TRACE_ANOMALIES, TRACE_RESULTS, TRACE_TYPES, filterRows, parseIdList,
   sortRows, summarizeRows, timelineBuckets, traceCsv, traceJson,
   type TraceAnomaly, type TraceDirection, type TraceFilter, type TraceResult, type TraceRow, type TraceSortKey, type TraceType,
 } from '../../lib/canTrace';
 import { LIST_KEYS, moveActive, rowWindow, scrollTopToShow, type ListKey } from '../../lib/traceWindow';
+import { useTraceLoad } from '../../hooks/useTraceLoad';
 import { Field, Section, btnCls, inputCls } from './shared';
 
 /** The table draws only the rows in view (plus a few more above and below), so a file of 200,000 frames does not freeze the page. Every row has this height. */
@@ -23,7 +24,7 @@ const rowClass = (r: TraceRow): string =>
   r.result === 'refused' || r.result === 'fault' ? 'text-red-400' : r.result === 'malformed' || r.anomalies.length > 0 ? 'text-amber-300' : '';
 
 /** Loads a .trc / .asc recording and lists its frames named by the specification, with filters, marks, a timeline and a CSV or JSON download. Read in this page: nothing is uploaded. */
-export const TraceViewerPanel: React.FC = () => {
+const TraceViewerPanelBody: React.FC = () => {
   const { t } = useTranslation();
   const [text, setText] = useState('');
   const [fileName, setFileName] = useState('');
@@ -52,7 +53,7 @@ export const TraceViewerPanel: React.FC = () => {
     duplicateWindowMs: number(dupMs, DEFAULT_TRACE_SETTINGS.duplicateWindowMs),
     rackReplyIds: parseIdList(rackIds).ids,
   }), [gapMs, dupMs, rackIds]);
-  const load = useMemo(() => parseCanTrace(text, settings), [text, settings]);
+  const { load, parsing } = useTraceLoad(text, settings);
 
   const parsedIds = parseIdList(ids);
   const filter: TraceFilter = {
@@ -128,7 +129,7 @@ export const TraceViewerPanel: React.FC = () => {
   };
 
   return (
-    <Section title={t('traceview.title', 'CAN traces')} subtitle={t('traceview.subtitle', 'Open a recorded trace (.trc or .asc): every frame is named with the specification, refusals and odd frames are marked, and the selection can be saved as CSV or JSON. The file is read in this page and nothing is uploaded; nothing in it is run.')}>
+    <Section className={parsing ? 'opacity-60' : undefined} title={t('traceview.title', 'CAN traces')} subtitle={t('traceview.subtitle', 'Open a recorded trace (.trc or .asc): every frame is named with the specification, refusals and odd frames are marked, and the selection can be saved as CSV or JSON. The file is read in this page and nothing is uploaded; nothing in it is run.')}>
       <div data-testid="trace-viewer">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
           <Field label={t('traceview.choose', 'Choose a trace file (.trc, .asc)')}>
@@ -300,3 +301,6 @@ export const TraceViewerPanel: React.FC = () => {
     </Section>
   );
 };
+
+// Memoized: the page draws again on every frame that reaches it, and the context it hands down is one stable object, so a panel is drawn again only when its own state or props change.
+export const TraceViewerPanel = React.memo(TraceViewerPanelBody);
