@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Lizenz-GPL%203.0-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-1357-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1405-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
@@ -39,7 +39,7 @@
 |---|---|
 | Version | `0.5.0` |
 | Reifegrad | Funktionsfähig |
-| Tests | 1357 (`npm test`) |
+| Tests | 1405 (`npm test`) |
 | Technik | Web Serial API / TypeScript |
 | Ziel | Ein Webbrowser auf dem PC des Benutzers |
 | Auf echter Hardware | Nur simuliert: gegen Emulatoren, Attrappen oder Simulatoren getestet; für diese Version ist kein Lauf auf echter Hardware vermerkt |
@@ -207,6 +207,7 @@ dieselben CAN-IDs:
   funktioniert weiter mit Major.Minor, und der Patch gelangt nur zu einem
   Bootloader in END_UPDATE, der ihn angekündigt hat. Das Log sagt, ob
   das Image älter, gleich oder neuer ist als das, was die Platine gemeldet hat.
+- **Header im Image** - ein Image, das mit versiegeltem Header gebaut wurde, nennt in der Datei die Platine, für die es gebaut ist, seine Version, seine Länge und seine CRC-32. Vor dem ersten Frame lehnt die Seite ein Image für eine andere Platine ab, eine Version, die vom Dateinamen abweicht, eine Länge oder CRC-32, die nicht stimmt, einen Header, den niemand versiegelt hat, und eine gestempelte `.urimg`-Datei. Ein älteres Image ohne Header wird mit einer Warnung geflasht; die Auswahl **Image-Header** (akzeptieren, mit Warnung akzeptieren, Header verlangen) ändert das und wird in diesem Browser gemerkt. Ein vorhandener Header wird immer geprüft.
 - **Firmware aus dem neuesten GitHub-Release** - die Binärdateien sind Anhänge
   des Releases jeder URTC-Version, keine Dateien in git. Die Liste stammt aus
   der Releases-API von `JuanenRac/URTC` (nur die Anwendungs-Images der
@@ -427,7 +428,7 @@ Welche Versionen der URTC-Programme zusammenarbeiten und welche Protokollversion
 
 ## 🧪 Tests
 
-`npm test` (Vitest) führt 1357 Tests der reinen Logik aus: SLCAN-Parsing, Zuordnung von Anfragen und Antworten, Prüfungen von Firmware-Images und Manifesten, Release-Signaturen, Werkzeuggrenzen, Bestätigungen, die Regeln, die den Simulator vom echten Bus trennen, Trace-Export und -Wiedergabe, die Knotenauswahl, den Rack-Simulator, die gespeicherte Sitzungsaufzeichnung, die Offline-Kopie, die Firmware-Synchronisierung und die acht Oberflächensprachen. `npm run lint` prüft die Typen des Quelltexts, und `npm run test:e2e` führt 25 End-to-End-Prüfungen in einem echten Chromium gegen einen modellierten Adapter und eine modellierte Platine aus (`npm run test:coverage` fügt eine Abdeckungsschwelle hinzu). Die Bildschirme und der Web-Serial-Transport haben keine eigenen Unit-Tests; die End-to-End-Prüfungen steuern sie an. Nichts davon lief gegen einen echten Adapter oder eine echte Platine.
+`npm test` (Vitest) führt 1405 Tests der reinen Logik aus: SLCAN-Parsing, Zuordnung von Anfragen und Antworten, Prüfungen von Firmware-Images und Manifesten, Release-Signaturen, Werkzeuggrenzen, Bestätigungen, die Regeln, die den Simulator vom echten Bus trennen, Trace-Export und -Wiedergabe, die Knotenauswahl, den Rack-Simulator, die gespeicherte Sitzungsaufzeichnung, die Offline-Kopie, die Firmware-Synchronisierung und die acht Oberflächensprachen. `npm run lint` prüft die Typen des Quelltexts, und `npm run test:e2e` führt 25 End-to-End-Prüfungen in einem echten Chromium gegen einen modellierten Adapter und eine modellierte Platine aus (`npm run test:coverage` fügt eine Abdeckungsschwelle hinzu). Die Bildschirme und der Web-Serial-Transport haben keine eigenen Unit-Tests; die End-to-End-Prüfungen steuern sie an. Nichts davon lief gegen einen echten Adapter oder eine echte Platine.
 
 ## 🏗️ Build und Veröffentlichung
 

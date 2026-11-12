@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+- **Flasher Studio reads the header inside the image before it sends a frame:** an image built with the header slot sealed states its board, version, length and CRC-32 inside the file; the page refuses an image for another board, a version that differs from the file name, a length or CRC-32 that does not match, a header nobody sealed and a stamped `.urimg` file, and logs the identity it read. The reading is `src/lib/imageHeader.ts`, held to the same vectors as the Python reference and the C header.
+
+- **The "Image header" selector is the compatibility switch for an image without the header:** accept, accept with a warning (the default) or require a header; the choice is remembered in this browser only, and a header that is there is always checked. The texts are in the eight languages.
+
 ## [0.5.0] - The Spanish texts say "grabar" and "velocidad de bus": the calques "flashear", "flasheo" and "bitrate" are replaced in the window, the guide, the Spanish README and the shared sections, with the gender of the sentence... (and 4 more changes)
 
 - **The Spanish texts say "grabar" and "velocidad de bus":** the calques "flashear", "flasheo" and "bitrate" are replaced in the window, the guide, the Spanish README and the shared sections, with the gender of the sentence corrected, so the README names what the window shows.

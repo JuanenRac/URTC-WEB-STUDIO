@@ -33,6 +33,7 @@ import { resolveSignature } from './lib/firmwareSignature';
 import { parseImgsig } from './lib/flashFrames';
 import { checkReleaseSignature } from './lib/releaseSignature';
 import { validateImage, checkSidecar, resolveVersion } from './lib/firmwareImage';
+import { HeaderPolicy, inspectImage, headerVersionText, hex32, versionPartsFromName } from './lib/imageHeader';
 import { parseCustomFrame, customFrameErrorText } from './lib/customFrame';
 import { BUNDLED_FIRMWARE } from './lib/bundledFirmware';
 import { CAN_ID_QUERY_ACTIVE_TOOL } from './lib/canIds';
@@ -493,7 +494,7 @@ export default function App() {
     fwFile: string,
     fileObj: File | null | undefined,
     remote: RemoteFirmware | undefined,
-    opts: { triggerBootloader: boolean; eraseFram: boolean; allowDowngrade: boolean; refuseKeyMismatch?: boolean },
+    opts: { triggerBootloader: boolean; eraseFram: boolean; allowDowngrade: boolean; refuseKeyMismatch?: boolean; imageHeaderPolicy?: HeaderPolicy },
     manifestFile?: File | null,
     recordFile?: File | null
   ) => {
@@ -528,6 +529,37 @@ export default function App() {
       };
       refuse(imageErrors[problem]);
       return;
+    }
+
+    // The header inside the image (when it has one): the board it is for, its version, its length and its CRC-32, read before anything is sent. An image without it follows the
+    // switch of the page (warn by default); a header that is there is always checked and a bad one is always refused.
+    {
+      const boardHardware = target === 'slave' ? SLAVE_HARDWARE_ID : THIS_HARDWARE_ID;
+      const header = inspectImage(data, opts.imageHeaderPolicy, boardHardware, versionPartsFromName(fileName));
+      if (!header.accepted) {
+        const reasons: Record<string, string> = {
+          short: t('flasher.image_header_reason_short', 'the file is too short to hold it'),
+          bad_magic: t('flasher.image_header_reason_bad_magic', 'the marker is wrong'),
+          bad_version: t('flasher.image_header_reason_bad_version', 'its header version is unknown'),
+          bad_size: t('flasher.image_header_reason_bad_size', 'its size field is wrong'),
+          bad_header_crc: t('flasher.image_header_reason_bad_header_crc', 'the CRC-32 of the header does not match'),
+          bad_length: t('flasher.image_header_reason_bad_length', 'the length it states is not the length of the file'),
+          bad_payload_crc: t('flasher.image_header_reason_bad_payload_crc', 'the CRC-32 of the image does not match'),
+          bad_flags: t('flasher.image_header_reason_bad_flags', 'the flags are not those of a header inside the image'),
+          not_sealed: t('flasher.image_header_reason_not_sealed', 'the header was never sealed after the build'),
+        };
+        if (header.reason === 'stamped_file') refuse(t('flasher.image_header_stamped', '{{name}} is a stamped file (a header in front of the binary), not an image to flash. Choose the .bin file. Nothing was sent.', { name: fileName }));
+        else if (header.reason === 'header_required') refuse(t('flasher.image_header_required', '{{name}} has no header inside the image, and the "image header" setting requires one. Nothing was sent.', { name: fileName }));
+        else if (header.reason === 'wrong_hardware') refuse(t('flasher.image_header_hardware', '{{name}} is built for hardware {{image}}, not for {{board}}. Nothing was sent.', { name: fileName, image: hex32(header.info!.hardwareId), board: hex32(boardHardware) }));
+        else if (header.reason === 'wrong_version') refuse(t('flasher.image_header_version', '{{name}} states version {{image}} in its header but {{expected}} in its name. Nothing was sent.', { name: fileName, image: headerVersionText(header.info!), expected: (versionPartsFromName(fileName) ?? []).join('.') }));
+        else refuse(t('flasher.image_header_bad', '{{name}}: the header inside the image is not valid ({{reason}}). Nothing was sent.', { name: fileName, reason: reasons[header.reason.replace(/^header_/, '')] ?? header.reason }));
+        return;
+      }
+      if (header.info) {
+        flasher.appendLog(t('flasher.image_header_ok', 'Image header: hardware {{hw}}, version {{version}}, {{length}} bytes, CRC-32 checked.', { hw: hex32(header.info.hardwareId), version: headerVersionText(header.info), length: header.info.payloadLength }));
+      } else if (header.warn) {
+        flasher.appendLog(t('flasher.image_header_none', 'Warning: this image has no header inside it (an older image), so its hardware and version could not be checked.'));
+      }
     }
 
     let manifest: FirmwareManifest | null = null;

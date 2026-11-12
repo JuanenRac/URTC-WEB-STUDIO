@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Licenza-GPL%203.0-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-1357-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1405-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
@@ -39,7 +39,7 @@
 |---|---|
 | Versione | `0.5.0` |
 | Maturità | Funzionale |
-| Test | 1357 (`npm test`) |
+| Test | 1405 (`npm test`) |
 | Tecnologia | Web Serial API / TypeScript |
 | Destinazione | Un browser web sul PC dell'utente |
 | Su hardware reale | Solo simulato: provato con emulatori, test double o simulatori; per questa versione non risulta alcuna esecuzione su hardware reale |
@@ -203,6 +203,7 @@ ID:
   funzionare con major.minor, e la patch va in END_UPDATE solo verso un
   bootloader che l'ha annunciata. Il registro dice se l'immagine è più
   vecchia, uguale o più recente di quanto riportato dalla scheda.
+- **Intestazione nell'immagine** - un'immagine costruita con l'intestazione sigillata indica, nel file, la scheda a cui è destinata, la sua versione, la sua lunghezza e il suo CRC-32. Prima del primo frame la pagina rifiuta un'immagine per un'altra scheda, una versione diversa dal nome del file, una lunghezza o un CRC-32 che non corrispondono, un'intestazione che nessuno ha sigillato e un file `.urimg` timbrato. Un'immagine precedente senza intestazione viene programmata con un avviso; il selettore **Intestazione dell'immagine** (accetta, accetta con un avviso, richiedi l'intestazione) lo cambia e viene ricordato in questo browser. Un'intestazione presente viene sempre verificata.
 - **Firmware dalla release GitHub più recente** - i binari sono file allegati
   alla release di ogni versione di URTC, non file in git. L'elenco viene
   dall'API delle release di `JuanenRac/URTC` (solo le immagini applicative
@@ -414,7 +415,7 @@ Quali versioni dei programmi URTC funzionano insieme, e quale versione del proto
 
 ## 🧪 Test
 
-`npm test` (Vitest) esegue 1357 test della logica pura: parsing SLCAN, abbinamento di richieste e risposte, controlli di immagini firmware e manifesti, firme di release, limiti degli utensili, conferme, le regole che separano il simulatore dal bus reale, esportazione e riproduzione di tracce, il selettore dei nodi, il simulatore del rack, la registrazione di sessione salvata, la copia offline, la sincronizzazione del firmware e le otto lingue dell'interfaccia. `npm run lint` controlla i tipi del codice e `npm run test:e2e` esegue 25 controlli end-to-end in un vero Chromium contro un adattatore e una scheda modellati (`npm run test:coverage` aggiunge una soglia di copertura). Le schermate e il trasporto Web Serial non hanno test unitari propri; i controlli end-to-end li pilotano. Niente di tutto questo è girato contro un vero adattatore o una vera scheda.
+`npm test` (Vitest) esegue 1405 test della logica pura: parsing SLCAN, abbinamento di richieste e risposte, controlli di immagini firmware e manifesti, firme di release, limiti degli utensili, conferme, le regole che separano il simulatore dal bus reale, esportazione e riproduzione di tracce, il selettore dei nodi, il simulatore del rack, la registrazione di sessione salvata, la copia offline, la sincronizzazione del firmware e le otto lingue dell'interfaccia. `npm run lint` controlla i tipi del codice e `npm run test:e2e` esegue 25 controlli end-to-end in un vero Chromium contro un adattatore e una scheda modellati (`npm run test:coverage` aggiunge una soglia di copertura). Le schermate e il trasporto Web Serial non hanno test unitari propri; i controlli end-to-end li pilotano. Niente di tutto questo è girato contro un vero adattatore o una vera scheda.
 
 ## 🏗️ Compilazione e rilascio
 

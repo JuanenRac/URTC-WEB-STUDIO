@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useConfirmAction } from '../hooks/useConfirmAction';
 import { THIS_HARDWARE_ID, SLAVE_HARDWARE_ID, compareVersions, formatVersion } from '../lib/flasher';
 import { installedVersion } from '../lib/boardVersion';
+import { HeaderPolicy, DEFAULT_HEADER_POLICY, parseHeaderPolicy } from '../lib/imageHeader';
 import { parseSerialNumber } from '../lib/boardConfig';
 import { FlasherState, CanFrame } from '../types';
 import { RefreshCw, ShieldCheck, Cpu, CheckCircle2, AlertOctagon, Terminal, DownloadCloud, XCircle, Fingerprint } from 'lucide-react';
@@ -23,7 +24,7 @@ interface FlasherStudioProps {
     firmwareFile: string,
     fileObj: File | null | undefined,
     remote: RemoteFirmware | undefined,
-    opts: { triggerBootloader: boolean; eraseFram: boolean; allowDowngrade: boolean; refuseKeyMismatch?: boolean },
+    opts: { triggerBootloader: boolean; eraseFram: boolean; allowDowngrade: boolean; refuseKeyMismatch?: boolean; imageHeaderPolicy?: HeaderPolicy },
     manifestFile?: File | null,
     recordFile?: File | null
   ) => void;
@@ -85,6 +86,15 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
   const [eraseFram, setEraseFram] = useState<boolean>(false);
   const [allowDowngrade, setAllowDowngrade] = useState<boolean>(false);
   const [refuseKeyMismatch, setRefuseKeyMismatch] = useState<boolean>(false);
+  // What to do with an image that has no header inside it (accept, warn = the default, require); remembered in this browser only.
+  const [imageHeaderPolicy, setImageHeaderPolicy] = useState<HeaderPolicy>(() => {
+    try { return parseHeaderPolicy(window.localStorage.getItem('urtc.imageHeaderPolicy')); } catch { return DEFAULT_HEADER_POLICY; }
+  });
+  const chooseImageHeaderPolicy = (value: string) => {
+    const next = parseHeaderPolicy(value);
+    setImageHeaderPolicy(next);
+    try { window.localStorage.setItem('urtc.imageHeaderPolicy', next); } catch { /* the choice just is not remembered */ }
+  };
   const [activeFlasherTab, setActiveFlasherTab] = useState<'can-ota' | 'swd' | 'config'>('can-ota');
   const [customFile, setCustomFile] = useState<File | null>(null);
   // The <image>.manifest.json picked together with a browsed image: a page cannot read a file next to it, so it is picked with it.
@@ -470,6 +480,18 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
                         <span className="text-[10px] text-slate-500 block leading-tight mt-0.5">{t('flasher.refuse_key_sub', 'Main board only. A bootloader that publishes the fingerprint of its signing key is compared with the key of the image before anything is sent; off, a difference is only logged. A bootloader or a manifest without the fingerprint is never a mismatch.')}</span>
                       </div>
                     </label>
+
+                    <label className="flex items-start gap-2 text-xs text-slate-300">
+                      <div className="flex-1">
+                        <span className="font-semibold block text-slate-200">{t('flasher.image_header_policy_label', 'Image header')}</span>
+                        <span className="text-[10px] text-slate-500 block leading-tight mt-0.5 mb-1">{t('flasher.image_header_policy_hint', 'What to do with an image that has no header inside it. A header that is there is always checked, and a bad one is always refused.')}</span>
+                        <select value={imageHeaderPolicy} onChange={(e) => chooseImageHeaderPolicy(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-xs text-slate-200">
+                          <option value="accept">{t('flasher.image_header_policy_accept', 'Accept')}</option>
+                          <option value="warn">{t('flasher.image_header_policy_warn', 'Accept with a warning')}</option>
+                          <option value="require">{t('flasher.image_header_policy_require', 'Require a header')}</option>
+                        </select>
+                      </div>
+                    </label>
                   </div>
                 </div>
 
@@ -478,7 +500,7 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
                     onClick={() => {
                       if (allowDowngrade && !window.confirm(t('flasher.alert_downgrade_confirm', 'You are about to authorize a firmware DOWNGRADE, bypassing the bootloader\'s anti-rollback protection. Continue?'))) return;
                       if (!window.confirm(t('flasher.alert_flash_confirm', 'Flash "{{firmware}}" to the {{target}} now?', { firmware: selectedFirmware, target: flashTarget === 'slave' ? t('flasher.alert_target_slave', 'expansion slave') : t('flasher.alert_target_main', 'main board') }))) return;
-                      onStartCanOta(flashTarget, selectedFirmware, customFile, githubFirmwares.find(f => f.name === selectedFirmware), { triggerBootloader: runAppTrigger, eraseFram, allowDowngrade, refuseKeyMismatch }, customFile ? customManifest : null, customFile ? customRecord : null);
+                      onStartCanOta(flashTarget, selectedFirmware, customFile, githubFirmwares.find(f => f.name === selectedFirmware), { triggerBootloader: runAppTrigger, eraseFram, allowDowngrade, refuseKeyMismatch, imageHeaderPolicy }, customFile ? customManifest : null, customFile ? customRecord : null);
                     }}
                     disabled={busy || !isConnected}
                     className="flex-1 py-2.5 px-4 rounded-lg bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-slate-950 font-semibold text-xs transition shadow-md shadow-amber-500/10 flex items-center justify-center gap-2"

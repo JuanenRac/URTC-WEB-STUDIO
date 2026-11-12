@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-1357-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1405-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
@@ -39,7 +39,7 @@
 |---|---|
 | Version | `0.5.0` |
 | Maturity | Functional |
-| Tests | 1357 (`npm test`) |
+| Tests | 1405 (`npm test`) |
 | Stack | Web Serial API / TypeScript |
 | Target | A web browser on the user's PC |
 | On real hardware | Simulated only: tested against emulators, fakes or simulators; no run on real hardware is recorded for this version |
@@ -202,6 +202,7 @@ IDs:
   working with major.minor, and the patch goes into END_UPDATE only towards a
   bootloader that announced it. The log says whether the image is older,
   equal or newer than what the board reported.
+- **Header inside the image** - an image built with the header slot sealed states, inside the file, the board it is for, its version, its length and its CRC-32. Before the first frame the page refuses an image for another board, a version that differs from the file name, a length or CRC-32 that does not match, a header nobody sealed and a stamped `.urimg` file. An older image without the header is flashed with a warning; the **Image header** selector (accept, accept with a warning, require a header) changes that and is remembered in this browser. A header that is there is always checked.
 - **Firmware from the newest GitHub release** - the binaries are assets of the
   release of each URTC version, not files in git. The list comes from the
   releases API of `JuanenRac/URTC` (only the application images of the selected
@@ -406,7 +407,7 @@ Which versions of the URTC programs work together, and which protocol version ea
 
 ## 🧪 Testing
 
-`npm test` (Vitest) runs 1357 tests of the pure logic: SLCAN parsing, request and answer matching, firmware image and manifest checks, release signatures, tool limits, confirmations, the rules that keep the simulator apart from the real bus, trace export and replay, the node picker, the rack simulator, the saved session record, the offline copy, the sync of the firmware and the eight interface languages. `npm run lint` type-checks the sources and `npm run test:e2e` runs 25 end-to-end checks in a real Chromium against a modelled adapter and board (`npm run test:coverage` adds a coverage floor). The screens and the Web Serial transport have no unit tests of their own; the end-to-end checks drive them. None of it has run against a real adapter or board.
+`npm test` (Vitest) runs 1405 tests of the pure logic: SLCAN parsing, request and answer matching, firmware image and manifest checks, release signatures, tool limits, confirmations, the rules that keep the simulator apart from the real bus, trace export and replay, the node picker, the rack simulator, the saved session record, the offline copy, the sync of the firmware and the eight interface languages. `npm run lint` type-checks the sources and `npm run test:e2e` runs 25 end-to-end checks in a real Chromium against a modelled adapter and board (`npm run test:coverage` adds a coverage floor). The screens and the Web Serial transport have no unit tests of their own; the end-to-end checks drive them. None of it has run against a real adapter or board.
 
 ## 🏗️ Build & Release
 

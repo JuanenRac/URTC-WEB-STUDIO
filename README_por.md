@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-1357-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1405-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
@@ -39,7 +39,7 @@
 |---|---|
 | Versão | `0.5.0` |
 | Maturidade | Funcional |
-| Testes | 1357 (`npm test`) |
+| Testes | 1405 (`npm test`) |
 | Tecnologia | Web Serial API / TypeScript |
 | Destino | Um navegador web no PC do utilizador |
 | Em hardware real | Só simulado: testado com emuladores, dublês de teste ou simuladores; não há registo de execução em hardware real para esta versão |
@@ -202,6 +202,7 @@ CAN IDs:
   maior.menor, e o patch só vai em END_UPDATE para um bootloader que o tenha
   anunciado. O registo diz se a imagem é mais antiga, igual ou mais recente do
   que o comunicado pela placa.
+- **Cabeçalho dentro da imagem** - uma imagem construída com o cabeçalho selado indica, no ficheiro, a placa a que se destina, a sua versão, o seu comprimento e o seu CRC-32. Antes da primeira trama, a página recusa uma imagem para outra placa, uma versão diferente da do nome do ficheiro, um comprimento ou um CRC-32 que não coincidem, um cabeçalho que ninguém selou e um ficheiro `.urimg` carimbado. Uma imagem anterior sem cabeçalho é gravada com um aviso; o seletor **Cabeçalho da imagem** (aceitar, aceitar com um aviso, exigir cabeçalho) altera isso e fica memorizado neste navegador. Um cabeçalho presente é sempre verificado.
 - **Firmware da release mais recente do GitHub** - os binários são anexos da
   release de cada versão do URTC, não ficheiros no git. A lista vem da API de
   releases de `JuanenRac/URTC` (apenas as imagens de aplicação da placa
@@ -411,7 +412,7 @@ As versões dos programas URTC que funcionam em conjunto, e a versão do protoco
 
 ## 🧪 Testes
 
-`npm test` (Vitest) executa 1357 testes da lógica pura: análise de SLCAN, emparelhamento de pedidos e respostas, verificações de imagens de firmware e manifestos, assinaturas de release, limites de ferramenta, confirmações, as regras que separam o simulador do barramento real, exportação e reprodução de traços, o seletor de nós, o simulador do rack, o registo de sessão guardado, a cópia offline, a sincronização do firmware e os oito idiomas da interface. `npm run lint` verifica os tipos do código e `npm run test:e2e` executa 25 verificações de ponta a ponta num Chromium real contra um adaptador e uma placa modelados (`npm run test:coverage` acrescenta um mínimo de cobertura). Os ecrãs e o transporte Web Serial não têm testes unitários próprios; as verificações de ponta a ponta comandam-nos. Nada disto correu contra um adaptador ou uma placa reais.
+`npm test` (Vitest) executa 1405 testes da lógica pura: análise de SLCAN, emparelhamento de pedidos e respostas, verificações de imagens de firmware e manifestos, assinaturas de release, limites de ferramenta, confirmações, as regras que separam o simulador do barramento real, exportação e reprodução de traços, o seletor de nós, o simulador do rack, o registo de sessão guardado, a cópia offline, a sincronização do firmware e os oito idiomas da interface. `npm run lint` verifica os tipos do código e `npm run test:e2e` executa 25 verificações de ponta a ponta num Chromium real contra um adaptador e uma placa modelados (`npm run test:coverage` acrescenta um mínimo de cobertura). Os ecrãs e o transporte Web Serial não têm testes unitários próprios; as verificações de ponta a ponta comandam-nos. Nada disto correu contra um adaptador ou uma placa reais.
 
 ## 🏗️ Compilação e publicação
 

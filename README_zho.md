@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-1357-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1405-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
@@ -39,7 +39,7 @@
 |---|---|
 | 版本 | `0.5.0` |
 | 成熟度 | 可用 |
-| 测试 | 1357 (`npm test`) |
+| 测试 | 1405 (`npm test`) |
 | 技术栈 | Web Serial API / TypeScript |
 | 目标 | 使用者电脑上的网页浏览器 |
 | 真实硬件 | 仅模拟：使用模拟器、替身或仿真测试；此版本没有在真实硬件上运行的记录 |
@@ -187,6 +187,7 @@ CAN ID：
   以 主版本.次版本.补丁 显示。只有双方都带有补丁号时它才参与比较；早于此功能的
   板卡（不发送 `0x7E9`）继续按 主版本.次版本 工作；补丁号只会发给已声明支持它
   的引导程序，写入 END_UPDATE。日志会说明镜像比板卡报告的版本更旧、相同还是更新。
+- **镜像内部的头** - 用封印后的头构建的镜像会在文件中写明它面向的板卡、版本、长度和 CRC-32。在发送第一帧之前，页面会拒绝：面向其他板卡的镜像、与文件名不一致的版本、长度或 CRC-32 不符的镜像、无人封印的头，以及带戳的 `.urimg` 文件。没有头的旧镜像会带着警告刷写；**镜像头** 选择器（接受、接受并给出警告、要求必须有头）可以改变这一点，并会记在此浏览器中。存在的头总会被校验。
 - **来自最新 GitHub 发布版本的固件**——二进制文件是每个 URTC 版本发布版本的
   附件，而不是 git 中的文件。列表来自 `JuanenRac/URTC` 的发布版本 API（只列出
   所选板卡的应用镜像，每个都带有其 `.sha256` 和 `.manifest.json`）；下载的镜像
@@ -376,7 +377,7 @@ npm run preview
 
 ## 🧪 测试
 
-`npm test`（Vitest）运行 1357 个纯逻辑测试：SLCAN 解析、请求与应答的匹配、固件镜像和清单检查、发布签名、工具限值、确认、把模拟器与真实总线分开的规则、轨迹的导出和回放、节点选择器、机架模拟器、保存的会话记录、离线副本、固件同步以及八种界面语言。`npm run lint` 检查源码类型，`npm run test:e2e` 在真实的 Chromium 中针对建模的适配器和板卡运行 25 个端到端检查（`npm run test:coverage` 增加覆盖率下限）。界面和 Web Serial 传输没有自己的单元测试，由端到端检查来驱动它们。这一切都没有针对真实的适配器或板卡运行过。
+`npm test`（Vitest）运行 1405 个纯逻辑测试：SLCAN 解析、请求与应答的匹配、固件镜像和清单检查、发布签名、工具限值、确认、把模拟器与真实总线分开的规则、轨迹的导出和回放、节点选择器、机架模拟器、保存的会话记录、离线副本、固件同步以及八种界面语言。`npm run lint` 检查源码类型，`npm run test:e2e` 在真实的 Chromium 中针对建模的适配器和板卡运行 25 个端到端检查（`npm run test:coverage` 增加覆盖率下限）。界面和 Web Serial 传输没有自己的单元测试，由端到端检查来驱动它们。这一切都没有针对真实的适配器或板卡运行过。
 
 ## 🏗️ 构建与发布
 
