@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The data of the frames of a firmware update is tested over generated images and records with fixed seeds:** an image of any length is put together again from its frames of eight bytes, nothing is read past the end that is given, the signature and the record are cut in frames and joined, the start and the end of the update are written big-endian and read back, and a .imgsig file is read as written or refused with an error.
+
 - **The page recognises a bus that mixes speeds by its symptoms:** a head at another speed cannot be heard, so the health frames (`0x1B8`) that really arrive are judged (`src/lib/busHealth.ts`, the TypeScript copy of the Python module of URTC-COMMON, held to the same cases) and a warning is shown when the heads that are heard report error counters or a bus-off, or when a head named as built for 500 kbit/s is on the bus; the thresholds are read from this browser (`urtc-web-studio-bus-health`). The four texts are in the eight languages.
 
 - **The web studio works at 1 Mbit/s, the speed of the tool heads:** the search for the speed of a bus tries 1 Mbit/s first and 500 kbit/s second (`src/lib/busRate.ts`), the bus load is counted against the `BITRATE` of the shared specification, and the texts of the analyzer and of the no-response error say 1 Mbit/s in the eight languages. **Compatibility note:** every board and adapter of one bus must run at the same speed (the default is now 1 Mbit/s; early boards run at 500 kbit/s), the trunk should stay under about 25 m at 1 Mbit/s with short stubs and a 120 ohm termination at each end.
