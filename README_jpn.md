@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-1489-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1502-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
@@ -39,7 +39,7 @@
 |---|---|
 | バージョン | `0.5.0` |
 | 成熟度 | 機能する |
-| テスト | 1489 (`npm test`) |
+| テスト | 1502 (`npm test`) |
 | 技術 | Web Serial API / TypeScript |
 | 対象 | 利用者の PC 上の Web ブラウザー |
 | 実機での確認 | シミュレーションのみ：エミュレーター、模擬部品、シミュレーターで試験済み。このバージョンについて実機での動作記録はありません |
@@ -340,6 +340,7 @@ STOP ALL はソフトウェアのコマンドで、非常停止ではなく、�
   ツールがそれぞれの Serial トランスポート経由でサポートしているのと
   同じアダプタークラスです。
 - バスは **1 Mbit/s**（初期の基板は 500 kbit/s）に設定してください。接続時に、アプリは 1000、500、250、125 kbit/s などの標準レートを順に試し、ボードがバージョン問い合わせに応答した最初のレートを使用します。レートを手動で選ぶことや、ボードの応答なしに受信だけを行うことはまだできません。
+- **速度が混在したバス**は、ヘッドが申告する速度ではなく症状で判断します（別の速度のヘッドは聞こえません）。ページは実際に届いたヘルスフレーム（`0x1B8`）を判断し、聞こえたヘッドがエラーカウンターやバスオフを報告した場合、または 500 kbit/s 用に作られたと指定されたヘッドがバス上にある場合に警告を表示します。しきい値はこのブラウザーにキー `urtc-web-studio-bus-health` で、他のツールの `bus_health` セクションと同じ形の JSON オブジェクトとして保存されます（`tec_warn`、`rec_warn`、`bus_off_warn`、1〜255 の整数と `legacy_heads`）。読み取れない場合は既定値（96、96、1）になります。判断は URTC-COMMON の Python モジュールの TypeScript 版で、同じケースで検証されます。フレームでテストしており、実際のバスでは動作していません。
 - Web Serial をサポートするブラウザー——**Chrome または Edge**。Firefox
   と Safari は Web Serial を実装しておらず、まったく接続できません。
 - Web Serial にはセキュアコンテキスト（HTTPS）または `localhost` のいず
@@ -417,7 +418,7 @@ npm run preview
 
 ## 🧪 テスト
 
-`npm test`（Vitest）は純粋なロジックの 1489 件を実行します：SLCAN の解析、要求と応答の対応付け、ファームウェアイメージとマニフェストの検査、リリース署名、ツールの上限、確認、シミュレーターを実バスから分けるルール、トレースのエクスポートと再生、ノードピッカー、ラックシミュレーター、保存されたセッション記録、オフラインコピー、ファームウェアの同期、8 つの画面言語です。`npm run lint` はソースの型を検査し、`npm run test:e2e` は実際の Chromium でモデル化したアダプターとボードに対して 25 件のエンドツーエンド検査を実行します（`npm run test:coverage` はカバレッジ下限を加えます）。画面と Web Serial のトランスポートには独自のユニットテストがなく、エンドツーエンド検査がそれらを動かします。実際のアダプターやボードでは一度も動かしていません。
+`npm test`（Vitest）は純粋なロジックの 1502 件を実行します：SLCAN の解析、要求と応答の対応付け、ファームウェアイメージとマニフェストの検査、リリース署名、ツールの上限、確認、シミュレーターを実バスから分けるルール、トレースのエクスポートと再生、ノードピッカー、ラックシミュレーター、保存されたセッション記録、オフラインコピー、ファームウェアの同期、8 つの画面言語です。`npm run lint` はソースの型を検査し、`npm run test:e2e` は実際の Chromium でモデル化したアダプターとボードに対して 25 件のエンドツーエンド検査を実行します（`npm run test:coverage` はカバレッジ下限を加えます）。画面と Web Serial のトランスポートには独自のユニットテストがなく、エンドツーエンド検査がそれらを動かします。実際のアダプターやボードでは一度も動かしていません。
 
 ## 🏗️ ビルドとリリース
 

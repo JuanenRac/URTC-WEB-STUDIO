@@ -39,6 +39,7 @@ import { BUNDLED_FIRMWARE } from './lib/bundledFirmware';
 import { CAN_ID_QUERY_ACTIVE_TOOL } from './lib/canIds';
 import { createBatcher, Batcher } from './lib/frameBatcher';
 import { summarizeBoardFrames, heaterToolId, BoardStatus, NO_BOARD_STATUS } from './lib/boardTelemetry';
+import { BusWarning, busWarnings, loadThresholds, profileFromFrame } from './lib/busHealth';
 import { planPreset } from './lib/simPresets';
 import { rawSendPolicy, ActionKind } from './lib/dangerousActions';
 import { loadControlSend, saveControlSend, planControlSend, runControlSend, confirmPlan, stopFrameFor, canHoldTool } from './lib/controlSandbox';
@@ -69,6 +70,8 @@ export default function App() {
   // What the real board has said (0x111): the tool it reports and its fault
   // state. Tester Studio works from this, never from the simulator below.
   const [boardStatus, setBoardStatus] = useState<BoardStatus>(NO_BOARD_STATUS);
+  // What the health frames of the heads say about the bus (lib/busHealth.ts); empty while the bus has nothing to say.
+  const [busHealth, setBusHealth] = useState<BusWarning[]>([]);
 
   // The bus can deliver dozens of frames per second. Updating the screen once
   // per frame re-rendered the whole app each time, so frames are collected and
@@ -81,6 +84,11 @@ export default function App() {
 
       const facts = summarizeBoardFrames(frames);
       if (facts.status) setBoardStatus(facts.status);
+      if (facts.healthFrames) {
+        // the judgement of the bus from the health frames heard since the last batch: a head at another speed cannot be heard, so a bus that mixes speeds is known by its symptoms
+        const profiles = facts.healthFrames.map(profileFromFrame).filter((profile): profile is NonNullable<typeof profile> => profile !== null);
+        setBusHealth(busWarnings(profiles, false, [], loadThresholds(typeof localStorage === 'undefined' ? undefined : localStorage)));
+      }
       setHardwareState(prev => {
         const next = { ...prev, canActive: true, lastCanTimestamp: Date.now() };
         if (facts.status) {
@@ -300,7 +308,7 @@ export default function App() {
 
   // What the board reported is only valid while it is connected.
   useEffect(() => {
-    if (!serialCan.isConnected) setBoardStatus(NO_BOARD_STATUS);
+    if (!serialCan.isConnected) { setBoardStatus(NO_BOARD_STATUS); setBusHealth([]); }
   }, [serialCan.isConnected]);
 
   // Handle jumper toggle (sandbox only: it changes the simulated board, nothing is sent)
@@ -865,6 +873,17 @@ export default function App() {
         pwa={pwa}
       />
       <NodePickerDialog open={headsOpen} onClose={() => setHeadsOpen(false)} picker={nodePicker} />
+
+      {busHealth.length > 0 && (
+        <div className="max-w-[1400px] w-full mx-auto px-2 md:px-4 pt-3" role="alert" data-testid="bus-health-warning">
+          <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-red-950/80 text-red-200 border border-red-800/80 text-xs font-medium">
+            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+            <ul className="space-y-1">
+              {busHealth.map((code) => <li key={code}>{t(`bushealth.${code}`, code)}</li>)}
+            </ul>
+          </div>
+        </div>
+      )}
 
       {/* Bench-tool notice - only in the build published on GitHub Pages (VITE_BENCH_NOTICE=1). */}
       {import.meta.env.VITE_BENCH_NOTICE === '1' && (

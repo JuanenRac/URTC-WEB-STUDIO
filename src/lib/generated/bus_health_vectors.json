@@ -1,0 +1,477 @@
+{
+ "about": "Cases of urtc_common.bus_health: the same answers are expected of every copy of the judgement (Python and TypeScript).",
+ "thresholds": [
+  {
+   "section": null,
+   "expected": {
+    "tec_warn": 96,
+    "rec_warn": 96,
+    "bus_off_warn": 1,
+    "legacy_heads": []
+   }
+  },
+  {
+   "section": "oops",
+   "expected": {
+    "tec_warn": 96,
+    "rec_warn": 96,
+    "bus_off_warn": 1,
+    "legacy_heads": []
+   }
+  },
+  {
+   "section": {},
+   "expected": {
+    "tec_warn": 96,
+    "rec_warn": 96,
+    "bus_off_warn": 1,
+    "legacy_heads": []
+   }
+  },
+  {
+   "section": {
+    "tec_warn": 50,
+    "rec_warn": 60,
+    "bus_off_warn": 3,
+    "legacy_heads": [
+     "A",
+     7,
+     true,
+     null
+    ]
+   },
+   "expected": {
+    "tec_warn": 50,
+    "rec_warn": 60,
+    "bus_off_warn": 3,
+    "legacy_heads": [
+     "A",
+     "7"
+    ]
+   }
+  },
+  {
+   "section": {
+    "tec_warn": 0,
+    "rec_warn": 256,
+    "bus_off_warn": true,
+    "legacy_heads": "A"
+   },
+   "expected": {
+    "tec_warn": 96,
+    "rec_warn": 96,
+    "bus_off_warn": 1,
+    "legacy_heads": []
+   }
+  },
+  {
+   "section": {
+    "tec_warn": 1.5,
+    "rec_warn": "9"
+   },
+   "expected": {
+    "tec_warn": 96,
+    "rec_warn": 96,
+    "bus_off_warn": 1,
+    "legacy_heads": []
+   }
+  },
+  {
+   "section": {
+    "tec_warn": 1,
+    "rec_warn": 255,
+    "bus_off_warn": 255
+   },
+   "expected": {
+    "tec_warn": 1,
+    "rec_warn": 255,
+    "bus_off_warn": 255,
+    "legacy_heads": []
+   }
+  }
+ ],
+ "profiles": [
+  {
+   "frame": [],
+   "expected": null
+  },
+  {
+   "frame": [
+    1,
+    2
+   ],
+   "expected": null
+  },
+  {
+   "frame": [
+    0,
+    0,
+    0,
+    16,
+    7,
+    65,
+    12,
+    228
+   ],
+   "expected": {
+    "tec": 0,
+    "rec": 0,
+    "bus_off_count": 0
+   }
+  },
+  {
+   "frame": [
+    100,
+    0,
+    0,
+    16,
+    7,
+    65,
+    12,
+    228
+   ],
+   "expected": {
+    "tec": 100,
+    "rec": 0,
+    "bus_off_count": 0
+   }
+  },
+  {
+   "frame": [
+    0,
+    100,
+    0
+   ],
+   "expected": {
+    "tec": 0,
+    "rec": 100,
+    "bus_off_count": 0
+   }
+  },
+  {
+   "frame": [
+    0,
+    0,
+    1
+   ],
+   "expected": {
+    "tec": 0,
+    "rec": 0,
+    "bus_off_count": 1
+   }
+  },
+  {
+   "frame": [
+    95,
+    95,
+    0
+   ],
+   "expected": {
+    "tec": 95,
+    "rec": 95,
+    "bus_off_count": 0
+   }
+  },
+  {
+   "frame": [
+    96,
+    0,
+    0
+   ],
+   "expected": {
+    "tec": 96,
+    "rec": 0,
+    "bus_off_count": 0
+   }
+  },
+  {
+   "frame": [
+    255,
+    255,
+    255
+   ],
+   "expected": {
+    "tec": 255,
+    "rec": 255,
+    "bus_off_count": 255
+   }
+  }
+ ],
+ "warnings": [
+  {
+   "profiles": [
+    {
+     "tec": 0,
+     "rec": 0,
+     "bus_off_count": 0
+    },
+    {
+     "tec": 0,
+     "rec": 0,
+     "bus_off_count": 0
+    }
+   ],
+   "found_nobody": false,
+   "heads": [],
+   "section": null,
+   "expected": []
+  },
+  {
+   "profiles": [],
+   "found_nobody": false,
+   "heads": [],
+   "section": null,
+   "expected": []
+  },
+  {
+   "profiles": [
+    {
+     "tec": 96,
+     "rec": 0,
+     "bus_off_count": 0
+    }
+   ],
+   "found_nobody": false,
+   "heads": [],
+   "section": null,
+   "expected": [
+    "bus_errors"
+   ]
+  },
+  {
+   "profiles": [
+    {
+     "tec": 0,
+     "rec": 96,
+     "bus_off_count": 0
+    }
+   ],
+   "found_nobody": false,
+   "heads": [],
+   "section": null,
+   "expected": [
+    "bus_errors"
+   ]
+  },
+  {
+   "profiles": [
+    {
+     "tec": 0,
+     "rec": 0,
+     "bus_off_count": 1
+    }
+   ],
+   "found_nobody": false,
+   "heads": [],
+   "section": null,
+   "expected": [
+    "bus_errors"
+   ]
+  },
+  {
+   "profiles": [
+    {
+     "tec": 95,
+     "rec": 95,
+     "bus_off_count": 0
+    }
+   ],
+   "found_nobody": false,
+   "heads": [],
+   "section": null,
+   "expected": []
+  },
+  {
+   "profiles": [
+    {}
+   ],
+   "found_nobody": false,
+   "heads": [],
+   "section": null,
+   "expected": []
+  },
+  {
+   "profiles": [],
+   "found_nobody": true,
+   "heads": [],
+   "section": null,
+   "expected": [
+    "no_head_at_any_speed"
+   ]
+  },
+  {
+   "profiles": [
+    {
+     "tec": 0,
+     "rec": 0,
+     "bus_off_count": 0
+    }
+   ],
+   "found_nobody": false,
+   "heads": [
+    "HEAD-OLD",
+    "HEAD-NEW"
+   ],
+   "section": {
+    "legacy_heads": [
+     "HEAD-OLD"
+    ]
+   },
+   "expected": [
+    "legacy_head_known"
+   ]
+  },
+  {
+   "profiles": [
+    {
+     "tec": 120,
+     "rec": 0,
+     "bus_off_count": 0
+    }
+   ],
+   "found_nobody": false,
+   "heads": [
+    "HEAD-OLD"
+   ],
+   "section": {
+    "legacy_heads": [
+     "HEAD-OLD"
+    ]
+   },
+   "expected": [
+    "mixed_bus_suspected",
+    "bus_errors",
+    "legacy_head_known"
+   ]
+  },
+  {
+   "profiles": [
+    {
+     "tec": 120,
+     "rec": 0,
+     "bus_off_count": 0
+    }
+   ],
+   "found_nobody": false,
+   "heads": [
+    "HEAD-NEW"
+   ],
+   "section": {
+    "legacy_heads": [
+     "HEAD-OLD"
+    ]
+   },
+   "expected": [
+    "bus_errors"
+   ]
+  },
+  {
+   "profiles": [
+    {
+     "tec": 120,
+     "rec": 0,
+     "bus_off_count": 0
+    }
+   ],
+   "found_nobody": false,
+   "heads": [
+    "HEAD-OLD"
+   ],
+   "section": null,
+   "expected": [
+    "bus_errors"
+   ]
+  },
+  {
+   "profiles": [
+    {
+     "tec": 200,
+     "rec": 0,
+     "bus_off_count": 3
+    }
+   ],
+   "found_nobody": true,
+   "heads": [
+    "1"
+   ],
+   "section": {
+    "legacy_heads": [
+     1
+    ]
+   },
+   "expected": [
+    "mixed_bus_suspected",
+    "no_head_at_any_speed",
+    "bus_errors",
+    "legacy_head_known"
+   ]
+  },
+  {
+   "profiles": [
+    {
+     "tec": 40,
+     "rec": 0,
+     "bus_off_count": 0
+    }
+   ],
+   "found_nobody": false,
+   "heads": [],
+   "section": {
+    "tec_warn": 40
+   },
+   "expected": [
+    "bus_errors"
+   ]
+  },
+  {
+   "profiles": [
+    {
+     "tec": 39,
+     "rec": 0,
+     "bus_off_count": 0
+    }
+   ],
+   "found_nobody": false,
+   "heads": [],
+   "section": {
+    "tec_warn": 40
+   },
+   "expected": []
+  },
+  {
+   "profiles": [
+    {
+     "tec": 0,
+     "rec": 0,
+     "bus_off_count": 2
+    }
+   ],
+   "found_nobody": false,
+   "heads": [],
+   "section": {
+    "bus_off_warn": 3
+   },
+   "expected": []
+  },
+  {
+   "profiles": [
+    {
+     "tec": 0,
+     "rec": 0,
+     "bus_off_count": 0
+    },
+    {
+     "tec": 130,
+     "rec": 0,
+     "bus_off_count": 0
+    }
+   ],
+   "found_nobody": false,
+   "heads": [],
+   "section": null,
+   "expected": [
+    "bus_errors"
+   ]
+  }
+ ]
+}

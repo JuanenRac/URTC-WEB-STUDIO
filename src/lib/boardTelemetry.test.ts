@@ -37,6 +37,16 @@ describe("what the real board has said", () => {
     expect(summarizeBoardFrames([rx(0x135, [0x00, 0xdc])]).heaterTemp).toBe(220);
   });
 
+  it("keeps the health frames (0x1B8) that really arrived, in order, for the judgement of the bus", () => {
+    const facts = summarizeBoardFrames([rx(0x1b8, [100, 0, 0, 16, 7, 65, 12, 228]), rx(0x111, [0, 0, 0, 0]), rx(0x1b8, [0, 3, 1])]);
+    expect(facts.healthFrames).toEqual([[100, 0, 0, 16, 7, 65, 12, 228], [0, 3, 1]]);
+    expect(summarizeBoardFrames([rx(0x111, [0, 0, 0, 0])]).healthFrames).toBeUndefined();
+  });
+
+  it("ignores a health frame this app made up or sent itself", () => {
+    expect(summarizeBoardFrames([{ id: 0x1b8, data: [100, 0, 0], direction: "Tx" as const }, rx(0x1b8, [100, 0, 0], { simulated: true })]).healthFrames).toBeUndefined();
+  });
+
   it("assigns the temperature to the hot air station only when that is the tool", () => {
     expect(heaterToolId(19)).toBe(19);
     expect(heaterToolId(0)).toBe(0);

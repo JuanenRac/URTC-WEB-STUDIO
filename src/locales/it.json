@@ -90,6 +90,12 @@
     "pin_mapping_title": "Mappatura Pin & Segnali Hardware",
     "capabilities_title": "Funzionalità del Firmware"
   },
+  "bushealth": {
+    "mixed_bus_suspected": "Il bus potrebbe mescolare le velocità: c'è una testa da 500 kbit/s e le teste mostrano errori",
+    "no_head_at_any_speed": "Nessuna testa ha risposto a nessuna velocità: controlla cablaggio, alimentazione e terminazione, o una testa fatta per un'altra velocità",
+    "bus_errors": "Le teste segnalano errori CAN o un bus-off: controlla cablaggio, terminazione e velocità di ogni scheda",
+    "legacy_head_known": "C'è una testa da 500 kbit/s su questo bus: ricompila tutte le schede con l'opzione storica o dalle un bus a parte"
+  },
   "oled": {
     "title": "OLED SSD1306 / SSD1315 (128x64 bicolore)",
     "subtitle": "Bus I2C2 hardware (PA9/PA10) • 16px superiori Giallo / 48px inferiori Blu",

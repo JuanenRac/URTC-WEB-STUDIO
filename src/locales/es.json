@@ -90,6 +90,12 @@
     "pin_mapping_title": "Mapeo de Pines y Señales de Hardware",
     "capabilities_title": "Capacidades del Firmware"
   },
+  "bushealth": {
+    "mixed_bus_suspected": "El bus puede mezclar velocidades: hay un cabezal de 500 kbit/s y los cabezales muestran errores",
+    "no_head_at_any_speed": "Ningún cabezal respondió a ninguna velocidad: revisa el cableado, la alimentación y la terminación, o un cabezal hecho para otra velocidad",
+    "bus_errors": "Los cabezales informan de errores CAN o de bus-off: revisa el cableado, la terminación y la velocidad de cada placa",
+    "legacy_head_known": "Hay un cabezal de 500 kbit/s en este bus: recompila todas las placas con la opción heredada o dale un bus propio"
+  },
   "oled": {
     "title": "OLED SSD1306 / SSD1315 (128x64 Bicolor)",
     "subtitle": "Bus I2C2 de Hardware (PA9/PA10) • 16px Superiores Amarillo / 48px Inferiores Azul",

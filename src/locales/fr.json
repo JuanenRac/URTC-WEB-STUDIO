@@ -90,6 +90,12 @@
     "pin_mapping_title": "Brochage & Signaux Matériels",
     "capabilities_title": "Fonctionnalités du Firmware"
   },
+  "bushealth": {
+    "mixed_bus_suspected": "Le bus mélange peut-être les vitesses : une tête prévue pour 500 kbit/s y est et les têtes montrent des erreurs",
+    "no_head_at_any_speed": "Aucune tête n'a répondu à aucune vitesse : vérifiez le câblage, l'alimentation et la terminaison, ou une tête prévue pour une autre vitesse",
+    "bus_errors": "Les têtes signalent des erreurs CAN ou un bus-off : vérifiez le câblage, la terminaison et la vitesse de chaque carte",
+    "legacy_head_known": "Une tête prévue pour 500 kbit/s est sur ce bus : recompilez toutes les cartes avec l'option héritée ou donnez-lui un bus à part"
+  },
   "oled": {
     "title": "OLED SSD1306 / SSD1315 (128x64 bicolore)",
     "subtitle": "Bus I2C2 matériel (PA9/PA10) • 16px supérieurs Jaune / 48px inférieurs Bleu",

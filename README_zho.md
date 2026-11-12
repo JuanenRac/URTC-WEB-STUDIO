@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-1489-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1502-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
@@ -39,7 +39,7 @@
 |---|---|
 | 版本 | `0.5.0` |
 | 成熟度 | 可用 |
-| 测试 | 1489 (`npm test`) |
+| 测试 | 1502 (`npm test`) |
 | 技术栈 | Web Serial API / TypeScript |
 | 目标 | 使用者电脑上的网页浏览器 |
 | 真实硬件 | 仅模拟：使用模拟器、替身或仿真测试；此版本没有在真实硬件上运行的记录 |
@@ -305,6 +305,7 @@ Studio 只负责传送该签名——与桌面版 `URTC Flasher` 相同的模式
   协议的适配器）——这与两款桌面工具通过各自的串口传输方式所支持的适配器
   类型相同。
 - 总线设置为 **1 Mbit/s**（早期板卡为 500 kbit/s）。连接时，应用会依次尝试 1000、500、250、125 kbit/s 及其他标准速率，并保留第一个有板卡应答版本查询的速率；目前还不能手动选择速率，也不能在没有板卡应答时仅作监听。
+- **混用速度的总线**是通过症状而不是工具头声明的速度来识别的（速度不同的工具头无法被听到）：页面会判断真正到达的健康帧（`0x1B8`），当能听到的工具头报告错误计数器或总线关闭，或总线上有被指定为 500 kbit/s 制作的工具头时，显示警告。阈值保存在此浏览器中，键为 `urtc-web-studio-bus-health`，是一个与其他工具的 `bus_health` 部分相同的 JSON 对象（`tec_warn`、`rec_warn`、`bus_off_warn`，1 到 255 的整数，以及 `legacy_heads`）；无法读取时使用默认值（96、96、1）。该判断是 URTC-COMMON 的 Python 模块的 TypeScript 副本，并按相同的用例验证。已用帧测试；尚未在真实总线上运行。
 - 一款支持 Web Serial 的浏览器——**Chrome 或 Edge**。Firefox 和 Safari
   未实现 Web Serial，将完全无法连接。
 - Web Serial 需要安全上下文（HTTPS）或 `localhost`——并且不能在 iframe
@@ -378,7 +379,7 @@ npm run preview
 
 ## 🧪 测试
 
-`npm test`（Vitest）运行 1489 个纯逻辑测试：SLCAN 解析、请求与应答的匹配、固件镜像和清单检查、发布签名、工具限值、确认、把模拟器与真实总线分开的规则、轨迹的导出和回放、节点选择器、机架模拟器、保存的会话记录、离线副本、固件同步以及八种界面语言。`npm run lint` 检查源码类型，`npm run test:e2e` 在真实的 Chromium 中针对建模的适配器和板卡运行 25 个端到端检查（`npm run test:coverage` 增加覆盖率下限）。界面和 Web Serial 传输没有自己的单元测试，由端到端检查来驱动它们。这一切都没有针对真实的适配器或板卡运行过。
+`npm test`（Vitest）运行 1502 个纯逻辑测试：SLCAN 解析、请求与应答的匹配、固件镜像和清单检查、发布签名、工具限值、确认、把模拟器与真实总线分开的规则、轨迹的导出和回放、节点选择器、机架模拟器、保存的会话记录、离线副本、固件同步以及八种界面语言。`npm run lint` 检查源码类型，`npm run test:e2e` 在真实的 Chromium 中针对建模的适配器和板卡运行 25 个端到端检查（`npm run test:coverage` 增加覆盖率下限）。界面和 Web Serial 传输没有自己的单元测试，由端到端检查来驱动它们。这一切都没有针对真实的适配器或板卡运行过。
 
 ## 🏗️ 构建与发布
 

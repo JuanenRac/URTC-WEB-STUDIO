@@ -1,6 +1,7 @@
 import { CanFrame } from '../types';
 import { decodeQuickState } from './quickState';
 import { CAN_ID_ACTIVE_TOOL_RESP, CAN_ID_SOLDER_TELEMETRY } from './canIds';
+import { CAN_ID_HEALTH_PROFILE } from './busHealth';
 
 // What the real board has said, taken from frames that really arrived. Only
 // frames received from the bus count: a frame this app sent itself, or one the
@@ -21,6 +22,8 @@ export interface BoardFacts {
   status?: BoardStatus;
   /** Heater temperature from 0x135, in degrees C. */
   heaterTemp?: number;
+  /** The payloads of the health frames (0x1B8) of the heads that were heard in the batch; the judgement of the bus (lib/busHealth.ts) is made from them. */
+  healthFrames?: number[][];
 }
 
 const isFromBoard = (f: Pick<CanFrame, 'direction' | 'simulated'>) => f.direction === 'Rx' && !f.simulated;
@@ -35,6 +38,8 @@ export function summarizeBoardFrames(frames: Array<Pick<CanFrame, 'id' | 'data' 
       facts.status = { toolId: f.data[0] & 0x1f, systemError: quick.systemError, errorMessage: quick.errorMessage, thermalFault: quick.thermalFault || null };
     } else if (f.id === CAN_ID_SOLDER_TELEMETRY && f.data.length >= 2) {
       facts.heaterTemp = (f.data[0] << 8) | f.data[1];
+    } else if (f.id === CAN_ID_HEALTH_PROFILE) {
+      (facts.healthFrames ??= []).push([...f.data]);
     }
   }
   return facts;

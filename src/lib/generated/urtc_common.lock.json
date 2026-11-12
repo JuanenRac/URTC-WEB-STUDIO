@@ -6,6 +6,10 @@
       "from": "conformance/blackbox_vectors.json",
       "sha256": "f34f95b1edd9ecf61f08181df095f2f0df32086241ee155a78115596c3c0e265"
     },
+    "bus_health_vectors.json": {
+      "from": "conformance/bus_health_vectors.json",
+      "sha256": "b81f7d4d8a6853c2ec63cffce5c27d7171061a06bb581c07310967199180aeff"
+    },
     "firmwareNames.ts": {
       "from": "generated/firmwareNames.ts",
       "sha256": "0a2dac695a25b2992dd670fd2675f9a1d61142d58ef1a5459d06c47a8a961369"

@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Licence-GPL%203.0-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-1489-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1502-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
@@ -39,7 +39,7 @@
 |---|---|
 | Version | `0.5.0` |
 | Maturité | Fonctionnel |
-| Tests | 1489 (`npm test`) |
+| Tests | 1502 (`npm test`) |
 | Technologie | Web Serial API / TypeScript |
 | Cible | Un navigateur web sur le PC de l'utilisateur |
 | Sur matériel réel | Simulé seulement : testé avec des émulateurs, des doubles de test ou des simulateurs ; aucune exécution sur du matériel réel n'est consignée pour cette version |
@@ -344,6 +344,7 @@ Chaque fichier d'une release officielle a une signature de release (`<fichier>.s
   SLCAN `lawicel` standard) - la même classe d'adaptateur que les deux outils de
   bureau supportent via leur propre transport Série.
 - Le bus réglé à **1 Mbit/s** (500 kbit/s pour les premières cartes). À la connexion, l'app essaie tour à tour 1000, 500, 250, 125 kbit/s et les autres débits standard, et garde le premier auquel une carte répond à une requête de version ; on ne peut pas encore choisir le débit à la main ni écouter sans qu'une carte réponde.
+- **Un bus qui mélange les vitesses** est reconnu à ses symptômes, et non à une vitesse que les têtes déclareraient (une tête à une autre vitesse ne s'entend pas) : la page juge les trames de santé (`0x1B8`) qui arrivent réellement et affiche un avertissement quand les têtes entendues signalent des compteurs d'erreurs ou un bus-off, ou quand une tête désignée comme prévue pour 500 kbit/s est sur le bus. Les seuils sont conservés dans ce navigateur sous la clé `urtc-web-studio-bus-health`, comme un objet JSON semblable à la section `bus_health` des autres outils (`tec_warn`, `rec_warn`, `bus_off_warn`, entiers de 1 à 255, et `legacy_heads`) ; ce qui est illisible donne les valeurs par défaut (96, 96, 1). Le jugement est la copie TypeScript du module Python d'URTC-COMMON et est tenu aux mêmes cas. Testé avec des trames ; rien n'a tourné sur un vrai bus.
 - Un navigateur avec support Web Serial - **Chrome ou Edge**. Firefox et Safari
   n'implémentent pas Web Serial et ne pourront pas se connecter du tout.
 - Web Serial nécessite soit un contexte sécurisé (HTTPS) soit `localhost` - et ne
@@ -421,7 +422,7 @@ Les versions des programmes URTC qui fonctionnent ensemble, et la version du pro
 
 ## 🧪 Tests
 
-`npm test` (Vitest) exécute 1489 tests de la logique pure : analyse SLCAN, appariement des requêtes et réponses, contrôles des images de firmware et des manifestes, signatures de release, limites d'outil, confirmations, les règles qui séparent le simulateur du vrai bus, export et relecture de traces, le sélecteur de nœuds, le simulateur de râtelier, l'enregistrement de session sauvegardé, la copie hors ligne, la synchronisation du firmware et les huit langues de l'interface. `npm run lint` vérifie les types du code et `npm run test:e2e` exécute 25 contrôles de bout en bout dans un vrai Chromium face à un adaptateur et une carte modélisés (`npm run test:coverage` ajoute un plancher de couverture). Les écrans et le transport Web Serial n'ont pas de tests unitaires propres ; les contrôles de bout en bout les pilotent. Rien de tout cela n'a tourné contre un vrai adaptateur ou une vraie carte.
+`npm test` (Vitest) exécute 1502 tests de la logique pure : analyse SLCAN, appariement des requêtes et réponses, contrôles des images de firmware et des manifestes, signatures de release, limites d'outil, confirmations, les règles qui séparent le simulateur du vrai bus, export et relecture de traces, le sélecteur de nœuds, le simulateur de râtelier, l'enregistrement de session sauvegardé, la copie hors ligne, la synchronisation du firmware et les huit langues de l'interface. `npm run lint` vérifie les types du code et `npm run test:e2e` exécute 25 contrôles de bout en bout dans un vrai Chromium face à un adaptateur et une carte modélisés (`npm run test:coverage` ajoute un plancher de couverture). Les écrans et le transport Web Serial n'ont pas de tests unitaires propres ; les contrôles de bout en bout les pilotent. Rien de tout cela n'a tourné contre un vrai adaptateur ou une vraie carte.
 
 ## 🏗️ Compilation et publication
 

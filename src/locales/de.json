@@ -90,6 +90,12 @@
     "pin_mapping_title": "Hardware-Pinbelegung & Signale",
     "capabilities_title": "Firmware-Funktionen"
   },
+  "bushealth": {
+    "mixed_bus_suspected": "Der Bus mischt möglicherweise Geschwindigkeiten: Ein Kopf für 500 kbit/s hängt daran und die Köpfe zeigen Fehler",
+    "no_head_at_any_speed": "Kein Kopf antwortete bei irgendeiner Geschwindigkeit: Verkabelung, Stromversorgung und Abschluss prüfen oder ein Kopf für eine andere Geschwindigkeit",
+    "bus_errors": "Die Köpfe melden CAN-Fehler oder Bus-off: Verkabelung, Abschluss und Geschwindigkeit jeder Platine prüfen",
+    "legacy_head_known": "Ein Kopf für 500 kbit/s hängt an diesem Bus: alle Platinen mit der Altoption neu bauen oder ihm einen eigenen Bus geben"
+  },
   "oled": {
     "title": "OLED SSD1306 / SSD1315 (128x64, zweifarbig)",
     "subtitle": "Hardware-I2C2-Bus (PA9/PA10) • Obere 16px Gelb / Untere 48px Blau",
