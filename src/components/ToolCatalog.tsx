@@ -14,6 +14,8 @@ interface ToolCatalogProps {
   onSaveToFram: () => void;
   firmwareVersion: string;
   onSwitchToFirmware11?: () => void;
+  /** Sending one real frame from this tab: the switch (off by default), the button, whether a board is connected and the last answer. */
+  realSend?: { allowed: boolean; connected: boolean; onAllowedChange: (value: boolean) => void; onSend: () => void; message: string };
 }
 
 export const ToolCatalog: React.FC<ToolCatalogProps> = ({
@@ -25,7 +27,8 @@ export const ToolCatalog: React.FC<ToolCatalogProps> = ({
   hardwareState,
   onSaveToFram,
   firmwareVersion,
-  onSwitchToFirmware11
+  onSwitchToFirmware11,
+  realSend
 }) => {
   const { t } = useTranslation();
   const [filterCategory, setFilterCategory] = useState<'All' | 'Shipped (v0.0)' | 'Expansion (v0.1)'>('All');
@@ -263,6 +266,32 @@ export const ToolCatalog: React.FC<ToolCatalogProps> = ({
                 <span>{activeTool.maxVal} {activeTool.heroMetricUnit}</span>
               </div>
             </div>
+
+            {realSend && (
+              <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800/80 space-y-2">
+                <label className="flex items-center gap-2 text-xs font-mono text-slate-300">
+                  <input
+                    type="checkbox"
+                    data-testid="real-send-switch"
+                    checked={realSend.allowed}
+                    onChange={(e) => realSend.onAllowedChange(e.target.checked)}
+                  />
+                  {t('toolcatalog.real_send_label', 'Allow sending real frames from this tab')}
+                </label>
+                <p className="text-[10px] text-slate-500">{t('toolcatalog.real_send_hint', 'Off by default. While it is off, this tab only simulates and nothing reaches the bus. When it is on and a board is connected, the button below sends one frame, and only after you confirm that frame.')}</p>
+                {realSend.allowed && realSend.connected && (
+                  <button
+                    type="button"
+                    data-testid="real-send-button"
+                    onClick={realSend.onSend}
+                    className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-white font-semibold text-xs"
+                  >
+                    {t('toolcatalog.real_send_button', 'Send this setpoint to the real board')}
+                  </button>
+                )}
+                {realSend.message && <p role="status" className="text-[10px] text-amber-300">{realSend.message}</p>}
+              </div>
+            )}
 
             {/* Simulated Live Telemetry Reading Card */}
             <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between">

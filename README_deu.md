@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Lizenz-GPL%203.0-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-1441-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1458-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
@@ -39,7 +39,7 @@
 |---|---|
 | Version | `0.5.0` |
 | Reifegrad | Funktionsfähig |
-| Tests | 1441 (`npm test`) |
+| Tests | 1458 (`npm test`) |
 | Technik | Web Serial API / TypeScript |
 | Ziel | Ein Webbrowser auf dem PC des Benutzers |
 | Auf echter Hardware | Nur simuliert: gegen Emulatoren, Attrappen oder Simulatoren getestet; für diese Version ist kein Lauf auf echter Hardware vermerkt |
@@ -301,6 +301,7 @@ STOP ALL ist ein Software-Befehl, kein Not-Halt, und keine der obigen Prüfungen
 ### Trennung vom Simulator und Bestätigungen (Software-Prüfungen, keine Sicherheitsfunktionen)
 
 - Die Sandbox-Tabs (Control, OLED, Thermal IR) übertragen nichts. Ihre Frames sind mit SIM markiert, und solange eine Platine verbunden ist, erzeugen sie keine simulierte Antwort. Von den vordefinierten Nachrichten des Protokollanalysators werden an eine verbundene Platine nur einfache Abfragen gesendet; der Rest bleibt simuliert.
+- Der Tab Control kann einen echten Frame senden, aber nur, wenn du „Das Senden echter Frames von diesem Tab erlauben“ einschaltest (standardmäßig aus, in diesem Browser gespeichert) und eine Platine verbunden ist. Dann erscheint die Schaltfläche, der Frame ist der Sollwert des Lötkolbens (die anderen Werkzeuge haben keinen einzelnen Frame, der von diesem Tab gesendet werden kann, und sagen das), ein Wert außerhalb der Grenzen des Werkzeugs wird abgelehnt und jeder einzelne Frame verlangt seine eigene Bestätigung. Bei ausgeschaltetem Schalter simuliert der Tab nur gegen den Zwilling und nichts erreicht den Bus.
 - Tester Studio zeigt ein Werkzeugpanel nur für das Werkzeug, das die Platine selbst gemeldet hat (`0x111`), und keines, bevor die Platine geantwortet hat.
 - Laser, Bohrer, UV-Härtung, Schweißen, Heizungen, Bewegung, Pastendosierung, Schreibzugriffe auf den Platinenspeicher und riskante von Hand getippte Frames verlangen vorher eine Bestätigung.
 - **ALLES STOPPEN** in der Kopfzeile (sichtbar bei bestehender Verbindung) schaltet jeden Aktor ab, den diese Seite am Leben hält; das Schließen der Seite und das Trennen tun dasselbe. Es ist ein Software-Befehl, kein Not-Halt.
@@ -428,7 +429,7 @@ Welche Versionen der URTC-Programme zusammenarbeiten und welche Protokollversion
 
 ## 🧪 Tests
 
-`npm test` (Vitest) führt 1441 Tests der reinen Logik aus: SLCAN-Parsing, Zuordnung von Anfragen und Antworten, Prüfungen von Firmware-Images und Manifesten, Release-Signaturen, Werkzeuggrenzen, Bestätigungen, die Regeln, die den Simulator vom echten Bus trennen, Trace-Export und -Wiedergabe, die Knotenauswahl, den Rack-Simulator, die gespeicherte Sitzungsaufzeichnung, die Offline-Kopie, die Firmware-Synchronisierung und die acht Oberflächensprachen. `npm run lint` prüft die Typen des Quelltexts, und `npm run test:e2e` führt 25 End-to-End-Prüfungen in einem echten Chromium gegen einen modellierten Adapter und eine modellierte Platine aus (`npm run test:coverage` fügt eine Abdeckungsschwelle hinzu). Die Bildschirme und der Web-Serial-Transport haben keine eigenen Unit-Tests; die End-to-End-Prüfungen steuern sie an. Nichts davon lief gegen einen echten Adapter oder eine echte Platine.
+`npm test` (Vitest) führt 1458 Tests der reinen Logik aus: SLCAN-Parsing, Zuordnung von Anfragen und Antworten, Prüfungen von Firmware-Images und Manifesten, Release-Signaturen, Werkzeuggrenzen, Bestätigungen, die Regeln, die den Simulator vom echten Bus trennen, Trace-Export und -Wiedergabe, die Knotenauswahl, den Rack-Simulator, die gespeicherte Sitzungsaufzeichnung, die Offline-Kopie, die Firmware-Synchronisierung und die acht Oberflächensprachen. `npm run lint` prüft die Typen des Quelltexts, und `npm run test:e2e` führt 25 End-to-End-Prüfungen in einem echten Chromium gegen einen modellierten Adapter und eine modellierte Platine aus (`npm run test:coverage` fügt eine Abdeckungsschwelle hinzu). Die Bildschirme und der Web-Serial-Transport haben keine eigenen Unit-Tests; die End-to-End-Prüfungen steuern sie an. Nichts davon lief gegen einen echten Adapter oder eine echte Platine.
 
 ## 🏗️ Build und Veröffentlichung
 

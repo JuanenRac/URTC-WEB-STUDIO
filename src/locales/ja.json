@@ -5,7 +5,8 @@
     "browser_unsupported_banner": "このブラウザーは Web Serial API に対応していないため、実機への接続はできません。Chrome または Edge に切り替えてください。",
     "simulator_notice": "シミュレーター：このタブはボードを模擬するだけで、バスには何も送信しません。実際のボードを扱うには、USB-CAN アダプターを接続して Tester Studio と Flasher Studio を使用してください。",
     "simulator_notice_connected": "シミュレーター：このタブはボードを模擬するだけで、バスには何も送信しません。ここに表示される内容は、接続中のボードが報告する内容ではありません。実際のボードには Tester Studio と Flasher Studio を使用してください。",
-    "loading": "読み込み中..."
+    "loading": "読み込み中...",
+    "simulator_notice_real_send": "実送信がオンのシミュレーター：このタブはボードを模擬します。実機のボードに送信すると書かれたボタンだけが 1 フレームをバスに載せ、そのフレームを確認した後にのみ送信されます。"
   },
   "config": {
     "language_en": "English",
@@ -68,6 +69,13 @@
     "watchdog_label": "ウォッチドッグ",
     "watchdog_active": "アクティブ",
     "watchdog_none": "タイムアウトなし",
+    "real_send_label": "このタブから実際のフレームの送信を許可する",
+    "real_send_hint": "既定ではオフです。オフの間、このタブはシミュレーションのみを行い、バスには何も届きません。オンにしてボードを接続すると、下のボタンで 1 フレームを送信できます。そのフレームごとに確認した後にのみ送信されます。",
+    "real_send_button": "この設定値を実機のボードに送信",
+    "real_send_unsupported": "このツールには、このタブから送信できる単一のフレームがありません。Tester Studio を使ってください。何も送信されていません。",
+    "real_send_out_of_range": "値がツールの範囲外です。何も送信されていません。",
+    "real_send_sent": "ボードに送信しました：0x{{id}} {{data}}",
+    "real_send_cancelled": "キャンセルしました。何も送信されていません。",
     "pin_mapping_title": "ハードウェアピンマッピングと信号",
     "capabilities_title": "ファームウェア機能"
   },

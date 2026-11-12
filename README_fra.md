@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Licence-GPL%203.0-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-1441-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1458-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
@@ -39,7 +39,7 @@
 |---|---|
 | Version | `0.5.0` |
 | Maturité | Fonctionnel |
-| Tests | 1441 (`npm test`) |
+| Tests | 1458 (`npm test`) |
 | Technologie | Web Serial API / TypeScript |
 | Cible | Un navigateur web sur le PC de l'utilisateur |
 | Sur matériel réel | Simulé seulement : testé avec des émulateurs, des doubles de test ou des simulateurs ; aucune exécution sur du matériel réel n'est consignée pour cette version |
@@ -298,6 +298,7 @@ STOP ALL est une commande logicielle, pas un arrêt d'urgence, et aucun des cont
 ### Séparation du simulateur et confirmations (contrôles logiciels, pas des fonctions de sécurité)
 
 - Les onglets bac à sable (Control, OLED, Thermal IR) ne transmettent rien. Leurs trames portent la marque SIM et, tant qu'une carte est connectée, ils ne produisent aucune réponse simulée. Parmi les messages prédéfinis de l'analyseur de protocole, seules les requêtes simples sont envoyées à une carte connectée ; le reste reste simulé.
+- L'onglet Control peut envoyer une trame réelle, mais seulement si tu actives « Autoriser l'envoi de trames réelles depuis cet onglet » (désactivé par défaut, conservé dans ce navigateur) et qu'une carte est connectée. Le bouton apparaît alors, la trame est la consigne du fer à souder (les autres outils n'ont pas de trame unique à envoyer depuis cet onglet et le disent), une valeur hors des limites de l'outil est refusée et chaque trame demande sa propre confirmation. Interrupteur éteint, l'onglet ne fait que simuler contre le jumeau et rien n'atteint le bus.
 - Tester Studio n'affiche un panneau d'outil que pour l'outil que la carte a elle-même signalé (`0x111`), et aucun avant que la carte ait répondu.
 - Laser, perceuse, séchage UV, soudage, éléments chauffants, mouvement, distribution de pâte, écritures dans la mémoire de la carte et trames saisies à la main présentant un risque demandent d'abord une confirmation.
 - **TOUT ARRÊTER** dans l'en-tête (visible une fois connecté) éteint chaque actionneur que cette page maintient actif ; fermer la page et se déconnecter font de même. C'est une commande logicielle, pas un arrêt d'urgence.
@@ -420,7 +421,7 @@ Les versions des programmes URTC qui fonctionnent ensemble, et la version du pro
 
 ## 🧪 Tests
 
-`npm test` (Vitest) exécute 1441 tests de la logique pure : analyse SLCAN, appariement des requêtes et réponses, contrôles des images de firmware et des manifestes, signatures de release, limites d'outil, confirmations, les règles qui séparent le simulateur du vrai bus, export et relecture de traces, le sélecteur de nœuds, le simulateur de râtelier, l'enregistrement de session sauvegardé, la copie hors ligne, la synchronisation du firmware et les huit langues de l'interface. `npm run lint` vérifie les types du code et `npm run test:e2e` exécute 25 contrôles de bout en bout dans un vrai Chromium face à un adaptateur et une carte modélisés (`npm run test:coverage` ajoute un plancher de couverture). Les écrans et le transport Web Serial n'ont pas de tests unitaires propres ; les contrôles de bout en bout les pilotent. Rien de tout cela n'a tourné contre un vrai adaptateur ou une vraie carte.
+`npm test` (Vitest) exécute 1458 tests de la logique pure : analyse SLCAN, appariement des requêtes et réponses, contrôles des images de firmware et des manifestes, signatures de release, limites d'outil, confirmations, les règles qui séparent le simulateur du vrai bus, export et relecture de traces, le sélecteur de nœuds, le simulateur de râtelier, l'enregistrement de session sauvegardé, la copie hors ligne, la synchronisation du firmware et les huit langues de l'interface. `npm run lint` vérifie les types du code et `npm run test:e2e` exécute 25 contrôles de bout en bout dans un vrai Chromium face à un adaptateur et une carte modélisés (`npm run test:coverage` ajoute un plancher de couverture). Les écrans et le transport Web Serial n'ont pas de tests unitaires propres ; les contrôles de bout en bout les pilotent. Rien de tout cela n'a tourné contre un vrai adaptateur ou une vraie carte.
 
 ## 🏗️ Compilation et publication
 

@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Licenza-GPL%203.0-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-1441-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1458-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
@@ -39,7 +39,7 @@
 |---|---|
 | Versione | `0.5.0` |
 | Maturità | Funzionale |
-| Test | 1441 (`npm test`) |
+| Test | 1458 (`npm test`) |
 | Tecnologia | Web Serial API / TypeScript |
 | Destinazione | Un browser web sul PC dell'utente |
 | Su hardware reale | Solo simulato: provato con emulatori, test double o simulatori; per questa versione non risulta alcuna esecuzione su hardware reale |
@@ -295,6 +295,7 @@ STOP ALL è un comando software, non un arresto di emergenza, e nessuno dei cont
 ### Separazione del simulatore e conferme (controlli software, non funzioni di sicurezza)
 
 - Le schede sandbox (Control, OLED, Thermal IR) non trasmettono nulla. I loro frame sono contrassegnati SIM e, finché è collegata una scheda, non producono alcuna risposta simulata. Dei messaggi predefiniti dell'analizzatore di protocollo vengono inviate a una scheda collegata solo le semplici interrogazioni; il resto resta simulato.
+- La scheda Control può inviare una trama reale, ma solo se attivi «Consenti l'invio di trame reali da questa scheda» (disattivato per impostazione predefinita, conservato in questo browser) e una scheda è collegata. Compare allora il pulsante, la trama è il setpoint del saldatore (gli altri utensili non hanno una singola trama da inviare da questa scheda e lo dicono), un valore fuori dai limiti dell'utensile viene rifiutato e ogni singola trama chiede la propria conferma. Con l'interruttore spento la scheda si limita a simulare contro il gemello e nulla raggiunge il bus.
 - Tester Studio mostra un pannello utensile solo per l'utensile che la scheda stessa ha segnalato (`0x111`), e nessuno prima che la scheda abbia risposto.
 - Laser, trapano, polimerizzazione UV, saldatura, riscaldatori, movimento, erogazione di pasta, scritture nella memoria della scheda e frame digitati a mano rischiosi richiedono prima una conferma.
 - **FERMA TUTTO** nell'intestazione (visibile a connessione attiva) spegne ogni attuatore che questa pagina mantiene attivo; chiudere la pagina e disconnettersi fanno lo stesso. È un comando software, non un arresto di emergenza.
@@ -415,7 +416,7 @@ Quali versioni dei programmi URTC funzionano insieme, e quale versione del proto
 
 ## 🧪 Test
 
-`npm test` (Vitest) esegue 1441 test della logica pura: parsing SLCAN, abbinamento di richieste e risposte, controlli di immagini firmware e manifesti, firme di release, limiti degli utensili, conferme, le regole che separano il simulatore dal bus reale, esportazione e riproduzione di tracce, il selettore dei nodi, il simulatore del rack, la registrazione di sessione salvata, la copia offline, la sincronizzazione del firmware e le otto lingue dell'interfaccia. `npm run lint` controlla i tipi del codice e `npm run test:e2e` esegue 25 controlli end-to-end in un vero Chromium contro un adattatore e una scheda modellati (`npm run test:coverage` aggiunge una soglia di copertura). Le schermate e il trasporto Web Serial non hanno test unitari propri; i controlli end-to-end li pilotano. Niente di tutto questo è girato contro un vero adattatore o una vera scheda.
+`npm test` (Vitest) esegue 1458 test della logica pura: parsing SLCAN, abbinamento di richieste e risposte, controlli di immagini firmware e manifesti, firme di release, limiti degli utensili, conferme, le regole che separano il simulatore dal bus reale, esportazione e riproduzione di tracce, il selettore dei nodi, il simulatore del rack, la registrazione di sessione salvata, la copia offline, la sincronizzazione del firmware e le otto lingue dell'interfaccia. `npm run lint` controlla i tipi del codice e `npm run test:e2e` esegue 25 controlli end-to-end in un vero Chromium contro un adattatore e una scheda modellati (`npm run test:coverage` aggiunge una soglia di copertura). Le schermate e il trasporto Web Serial non hanno test unitari propri; i controlli end-to-end li pilotano. Niente di tutto questo è girato contro un vero adattatore o una vera scheda.
 
 ## 🏗️ Compilazione e rilascio
 

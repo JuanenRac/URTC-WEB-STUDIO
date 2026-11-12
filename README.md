@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-1441-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1458-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
@@ -39,7 +39,7 @@
 |---|---|
 | Version | `0.5.0` |
 | Maturity | Functional |
-| Tests | 1441 (`npm test`) |
+| Tests | 1458 (`npm test`) |
 | Stack | Web Serial API / TypeScript |
 | Target | A web browser on the user's PC |
 | On real hardware | Simulated only: tested against emulators, fakes or simulators; no run on real hardware is recorded for this version |
@@ -131,7 +131,7 @@ Captured on a test bench with made-up sample data and no real installation behin
   <img src="images/screenshots/control.png" alt="Tool matrix and control" width="100%">
 </p>
 
-<p align="center"><em>Tool matrix and control: the 25 tool profiles of the firmware with their jumpers, and the controls of the selected tool (a simulator tab: it sends nothing to the bus).</em></p>
+<p align="center"><em>Tool matrix and control: the 25 tool profiles of the firmware with their jumpers, and the controls of the selected tool (a simulator tab: it sends nothing to the bus unless you switch on real sending, which is off by default).</em></p>
 
 <p align="center">
   <img src="images/screenshots/oled.png" alt="OLED and hardware monitor" width="100%">
@@ -290,6 +290,7 @@ STOP ALL is a software command, not an emergency stop, and none of the checks ab
 ### Simulator separation and confirmations (software checks, not safety functions)
 
 - The sandbox tabs (Control, OLED, Thermal IR) transmit nothing. Their frames are marked SIM, and while a board is connected they produce no simulated answer. Of the protocol analyzer's predefined messages only plain queries are sent to a connected board; the rest stay simulated.
+- The Control tab can send one real frame, but only when you switch on "Allow sending real frames from this tab" (off by default, kept in this browser) and a board is connected. The button then appears, the frame is the setpoint of the soldering iron (the other tools have no single frame to send from this tab and say so), a value outside the limits of the tool is refused, and every single frame asks for its own confirmation. With the switch off, the tab only simulates against the twin and nothing reaches the bus.
 - Tester Studio shows a tool panel only for the tool the board itself reported (`0x111`), and none before the board has answered.
 - Laser, drill, UV curing, welding, heaters, motion, paste jetting, writes to the board memory and risky hand-typed frames ask for confirmation first.
 - **STOP ALL** in the header (shown while connected) switches off every actuator that this page keeps alive; closing the page and disconnecting do the same. It is a software command, not an emergency stop.
@@ -407,7 +408,7 @@ Which versions of the URTC programs work together, and which protocol version ea
 
 ## 🧪 Testing
 
-`npm test` (Vitest) runs 1441 tests of the pure logic: SLCAN parsing, request and answer matching, firmware image and manifest checks, release signatures, tool limits, confirmations, the rules that keep the simulator apart from the real bus, trace export and replay, the node picker, the rack simulator, the saved session record, the offline copy, the sync of the firmware and the eight interface languages. `npm run lint` type-checks the sources and `npm run test:e2e` runs 25 end-to-end checks in a real Chromium against a modelled adapter and board (`npm run test:coverage` adds a coverage floor). The screens and the Web Serial transport have no unit tests of their own; the end-to-end checks drive them. None of it has run against a real adapter or board.
+`npm test` (Vitest) runs 1458 tests of the pure logic: SLCAN parsing, request and answer matching, firmware image and manifest checks, release signatures, tool limits, confirmations, the rules that keep the simulator apart from the real bus, trace export and replay, the node picker, the rack simulator, the saved session record, the offline copy, the sync of the firmware and the eight interface languages. `npm run lint` type-checks the sources and `npm run test:e2e` runs 25 end-to-end checks in a real Chromium against a modelled adapter and board (`npm run test:coverage` adds a coverage floor). The screens and the Web Serial transport have no unit tests of their own; the end-to-end checks drive them. None of it has run against a real adapter or board.
 
 ## 🏗️ Build & Release
 

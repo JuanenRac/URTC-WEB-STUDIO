@@ -5,7 +5,8 @@
     "browser_unsupported_banner": "Este navegador no admite la API Web Serial - no es posible conectar con hardware real aquí. Cambia a Chrome o Edge.",
     "simulator_notice": "Simulador: esta pestaña modela una placa y no envía nada al bus. Conecta un adaptador USB-CAN para trabajar con la placa real en Tester Studio y Flasher Studio.",
     "simulator_notice_connected": "Simulador: esta pestaña modela una placa y no envía nada al bus. Lo que muestra no es lo que informa la placa conectada; usa Tester Studio y Flasher Studio para la placa real.",
-    "loading": "Cargando..."
+    "loading": "Cargando...",
+    "simulator_notice_real_send": "Simulador con envío real activado: esta pestaña modela una placa. Solo el botón que dice que envía a la placa real pone una trama en el bus, y solo después de que confirmes esa trama."
   },
   "config": {
     "language_en": "English",
@@ -68,6 +69,13 @@
     "watchdog_label": "WATCHDOG",
     "watchdog_active": "ACTIVO",
     "watchdog_none": "SIN TIMEOUT",
+    "real_send_label": "Permitir enviar tramas reales desde esta pestaña",
+    "real_send_hint": "Apagado por defecto. Mientras está apagado, esta pestaña solo simula y nada llega al bus. Con él encendido y una placa conectada, el botón de abajo envía una trama, y solo después de que confirmes esa trama.",
+    "real_send_button": "Enviar esta consigna a la placa real",
+    "real_send_unsupported": "Esta herramienta no tiene una trama única que se pueda enviar desde esta pestaña; usa Tester Studio. No se envió nada.",
+    "real_send_out_of_range": "El valor está fuera de los límites de la herramienta. No se envió nada.",
+    "real_send_sent": "Enviado a la placa: 0x{{id}} {{data}}",
+    "real_send_cancelled": "Cancelado. No se envió nada.",
     "pin_mapping_title": "Mapeo de Pines y Señales de Hardware",
     "capabilities_title": "Capacidades del Firmware"
   },

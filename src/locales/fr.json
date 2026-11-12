@@ -5,7 +5,8 @@
     "browser_unsupported_banner": "Ce navigateur ne prend pas en charge l'API Web Serial - il n'est pas possible de se connecter à du matériel réel ici. Veuillez passer à Chrome ou Edge.",
     "simulator_notice": "Simulateur : cet onglet modélise une carte et n'envoie rien sur le bus. Branchez un adaptateur USB-CAN pour travailler avec la vraie carte dans Tester Studio et Flasher Studio.",
     "simulator_notice_connected": "Simulateur : cet onglet modélise une carte et n'envoie rien sur le bus. Ce qu'il affiche n'est pas ce que la carte connectée signale ; utilisez Tester Studio et Flasher Studio pour la vraie carte.",
-    "loading": "Chargement..."
+    "loading": "Chargement...",
+    "simulator_notice_real_send": "Simulateur avec envoi réel activé : cet onglet modélise une carte. Seul le bouton qui indique envoyer à la vraie carte met une trame sur le bus, et seulement après que tu as confirmé cette trame."
   },
   "config": {
     "language_en": "English",
@@ -68,6 +69,13 @@
     "watchdog_label": "WATCHDOG",
     "watchdog_active": "ACTIF",
     "watchdog_none": "AUCUN TIMEOUT",
+    "real_send_label": "Autoriser l'envoi de trames réelles depuis cet onglet",
+    "real_send_hint": "Désactivé par défaut. Tant qu'il est désactivé, cet onglet ne fait que simuler et rien n'atteint le bus. Activé et avec une carte connectée, le bouton ci-dessous envoie une trame, et seulement après que tu as confirmé cette trame.",
+    "real_send_button": "Envoyer cette consigne à la vraie carte",
+    "real_send_unsupported": "Cet outil n'a pas de trame unique qui puisse être envoyée depuis cet onglet ; utilise Tester Studio. Rien n'a été envoyé.",
+    "real_send_out_of_range": "La valeur est hors des limites de l'outil. Rien n'a été envoyé.",
+    "real_send_sent": "Envoyé à la carte : 0x{{id}} {{data}}",
+    "real_send_cancelled": "Annulé. Rien n'a été envoyé.",
     "pin_mapping_title": "Brochage & Signaux Matériels",
     "capabilities_title": "Fonctionnalités du Firmware"
   },

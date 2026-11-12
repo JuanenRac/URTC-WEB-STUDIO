@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-1441-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1458-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
@@ -39,7 +39,7 @@
 |---|---|
 | Versão | `0.5.0` |
 | Maturidade | Funcional |
-| Testes | 1441 (`npm test`) |
+| Testes | 1458 (`npm test`) |
 | Tecnologia | Web Serial API / TypeScript |
 | Destino | Um navegador web no PC do utilizador |
 | Em hardware real | Só simulado: testado com emuladores, dublês de teste ou simuladores; não há registo de execução em hardware real para esta versão |
@@ -293,6 +293,7 @@ STOP ALL é um comando de software, não uma paragem de emergência, e nenhuma d
 ### Separação do simulador e confirmações (verificações de software, não funções de segurança)
 
 - Os separadores de sandbox (Control, OLED, Thermal IR) não transmitem nada. As suas tramas levam a marca SIM e, enquanto há uma placa ligada, não produzem nenhuma resposta simulada. Das mensagens predefinidas do analisador de protocolo só são enviadas a uma placa ligada as consultas simples; as restantes continuam simuladas.
+- O separador Control pode enviar uma trama real, mas só se ativares «Permitir o envio de tramas reais a partir deste separador» (desligado por omissão, guardado neste navegador) e houver uma placa ligada. O botão aparece então, a trama é o valor de referência do ferro de soldar (as outras ferramentas não têm uma única trama para enviar a partir deste separador e dizem-no), um valor fora dos limites da ferramenta é recusado e cada trama pede a sua própria confirmação. Com o interruptor desligado, o separador só simula contra o gémeo e nada chega ao barramento.
 - O Tester Studio mostra um painel de ferramenta apenas para a ferramenta que a própria placa comunicou (`0x111`), e nenhum antes de a placa responder.
 - Laser, berbequim, cura UV, soldadura, aquecedores, movimento, dosagem de pasta, escritas na memória da placa e tramas escritas à mão que envolvam risco pedem confirmação antes.
 - **PARAR TUDO** no cabeçalho (visível com a ligação ativa) desliga todos os atuadores que esta página mantém ativos; fechar a página e desligar fazem o mesmo. É um comando de software, não uma paragem de emergência.
@@ -412,7 +413,7 @@ As versões dos programas URTC que funcionam em conjunto, e a versão do protoco
 
 ## 🧪 Testes
 
-`npm test` (Vitest) executa 1441 testes da lógica pura: análise de SLCAN, emparelhamento de pedidos e respostas, verificações de imagens de firmware e manifestos, assinaturas de release, limites de ferramenta, confirmações, as regras que separam o simulador do barramento real, exportação e reprodução de traços, o seletor de nós, o simulador do rack, o registo de sessão guardado, a cópia offline, a sincronização do firmware e os oito idiomas da interface. `npm run lint` verifica os tipos do código e `npm run test:e2e` executa 25 verificações de ponta a ponta num Chromium real contra um adaptador e uma placa modelados (`npm run test:coverage` acrescenta um mínimo de cobertura). Os ecrãs e o transporte Web Serial não têm testes unitários próprios; as verificações de ponta a ponta comandam-nos. Nada disto correu contra um adaptador ou uma placa reais.
+`npm test` (Vitest) executa 1458 testes da lógica pura: análise de SLCAN, emparelhamento de pedidos e respostas, verificações de imagens de firmware e manifestos, assinaturas de release, limites de ferramenta, confirmações, as regras que separam o simulador do barramento real, exportação e reprodução de traços, o seletor de nós, o simulador do rack, o registo de sessão guardado, a cópia offline, a sincronização do firmware e os oito idiomas da interface. `npm run lint` verifica os tipos do código e `npm run test:e2e` executa 25 verificações de ponta a ponta num Chromium real contra um adaptador e uma placa modelados (`npm run test:coverage` acrescenta um mínimo de cobertura). Os ecrãs e o transporte Web Serial não têm testes unitários próprios; as verificações de ponta a ponta comandam-nos. Nada disto correu contra um adaptador ou uma placa reais.
 
 ## 🏗️ Compilação e publicação
 

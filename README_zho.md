@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-1441-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1458-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
@@ -39,7 +39,7 @@
 |---|---|
 | 版本 | `0.5.0` |
 | 成熟度 | 可用 |
-| 测试 | 1441 (`npm test`) |
+| 测试 | 1458 (`npm test`) |
 | 技术栈 | Web Serial API / TypeScript |
 | 目标 | 使用者电脑上的网页浏览器 |
 | 真实硬件 | 仅模拟：使用模拟器、替身或仿真测试；此版本没有在真实硬件上运行的记录 |
@@ -266,6 +266,7 @@ STOP ALL 是软件命令，不是紧急停止，以上检查都不是安全功�
 ### 模拟器隔离与确认（软件检查，并非安全功能）
 
 - 沙盒标签页（Control、OLED、Thermal IR）不会发送任何内容。它们的帧带有 SIM 标记，并且在已连接板卡时不会产生模拟应答。协议分析器的预定义消息中，只有简单查询会发送给已连接的板卡；其余仍为模拟。
+- Control 标签页可以发送一个真实帧，但前提是你开启了“允许从此标签页发送真实帧”（默认关闭，保存在此浏览器中）并且已连接开发板。此时按钮才会出现，所发的帧是烙铁的设定值（其他工具没有可从此标签页发送的单帧，并会如实说明），超出工具限制的值会被拒绝，每一帧都要单独确认。开关关闭时，该标签页只针对孪生模型做模拟，不会有任何内容到达总线。
 - Tester Studio 仅为板卡自己上报（`0x111`）的工具显示工具面板，在板卡应答之前不显示任何面板。
 - 激光器、钻头、UV 固化、焊接、加热器、运动、焊膏喷射、写入板卡存储器以及有风险的手动输入帧，都会先要求确认。
 - 页眉中的 **全部停止**（连接时显示）会关闭此页面正在保持运行的所有执行器；关闭页面和断开连接时也会执行同样的操作。它是软件命令，不是紧急停止。
@@ -377,7 +378,7 @@ npm run preview
 
 ## 🧪 测试
 
-`npm test`（Vitest）运行 1441 个纯逻辑测试：SLCAN 解析、请求与应答的匹配、固件镜像和清单检查、发布签名、工具限值、确认、把模拟器与真实总线分开的规则、轨迹的导出和回放、节点选择器、机架模拟器、保存的会话记录、离线副本、固件同步以及八种界面语言。`npm run lint` 检查源码类型，`npm run test:e2e` 在真实的 Chromium 中针对建模的适配器和板卡运行 25 个端到端检查（`npm run test:coverage` 增加覆盖率下限）。界面和 Web Serial 传输没有自己的单元测试，由端到端检查来驱动它们。这一切都没有针对真实的适配器或板卡运行过。
+`npm test`（Vitest）运行 1458 个纯逻辑测试：SLCAN 解析、请求与应答的匹配、固件镜像和清单检查、发布签名、工具限值、确认、把模拟器与真实总线分开的规则、轨迹的导出和回放、节点选择器、机架模拟器、保存的会话记录、离线副本、固件同步以及八种界面语言。`npm run lint` 检查源码类型，`npm run test:e2e` 在真实的 Chromium 中针对建模的适配器和板卡运行 25 个端到端检查（`npm run test:coverage` 增加覆盖率下限）。界面和 Web Serial 传输没有自己的单元测试，由端到端检查来驱动它们。这一切都没有针对真实的适配器或板卡运行过。
 
 ## 🏗️ 构建与发布
 

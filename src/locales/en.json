@@ -5,7 +5,8 @@
     "browser_unsupported_banner": "This browser does not support the Web Serial API - connecting to real hardware is not possible here. Please switch to Chrome or Edge.",
     "simulator_notice": "Simulator: this tab models a board and sends nothing to the bus. Connect a USB-CAN adapter to work with the real board in Tester Studio and Flasher Studio.",
     "simulator_notice_connected": "Simulator: this tab models a board and sends nothing to the bus. What it shows is not what the connected board reports; use Tester Studio and Flasher Studio for the real board.",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "simulator_notice_real_send": "Simulator with real sending on: this tab models a board. Only the button that says it sends to the real board puts one frame on the bus, and only after you confirm that frame."
   },
   "config": {
     "language_en": "English",
@@ -68,6 +69,13 @@
     "watchdog_label": "WATCHDOG",
     "watchdog_active": "ACTIVE",
     "watchdog_none": "NO TIMEOUT",
+    "real_send_label": "Allow sending real frames from this tab",
+    "real_send_hint": "Off by default. While it is off, this tab only simulates and nothing reaches the bus. When it is on and a board is connected, the button below sends one frame, and only after you confirm that frame.",
+    "real_send_button": "Send this setpoint to the real board",
+    "real_send_unsupported": "This tool has no single frame that can be sent from this tab; use Tester Studio. Nothing was sent.",
+    "real_send_out_of_range": "The value is outside the limits of the tool. Nothing was sent.",
+    "real_send_sent": "Sent to the board: 0x{{id}} {{data}}",
+    "real_send_cancelled": "Cancelled. Nothing was sent.",
     "pin_mapping_title": "Hardware Pin Mapping & Signals",
     "capabilities_title": "Firmware Capabilities"
   },

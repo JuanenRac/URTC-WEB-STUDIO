@@ -5,7 +5,8 @@
     "browser_unsupported_banner": "此浏览器不支持 Web Serial API，无法连接真实硬件。请切换到 Chrome 或 Edge。",
     "simulator_notice": "模拟器：此标签页仅模拟一块板卡，不会向总线发送任何内容。请连接 USB-CAN 适配器，在 Tester Studio 和 Flasher Studio 中操作真实的板卡。",
     "simulator_notice_connected": "模拟器：此标签页仅模拟一块板卡，不会向总线发送任何内容。这里显示的并非已连接板卡上报的内容；请使用 Tester Studio 和 Flasher Studio 操作真实的板卡。",
-    "loading": "正在加载..."
+    "loading": "正在加载...",
+    "simulator_notice_real_send": "已开启真实发送的模拟器：此标签页模拟一块开发板。只有标明发送到真实开发板的按钮才会向总线发出一帧，且只有在你确认该帧之后才会发送。"
   },
   "config": {
     "language_en": "English",
@@ -68,6 +69,13 @@
     "watchdog_label": "看门狗",
     "watchdog_active": "启用中",
     "watchdog_none": "无超时",
+    "real_send_label": "允许从此标签页发送真实帧",
+    "real_send_hint": "默认关闭。关闭时，此标签页只做模拟，不会有任何内容到达总线。开启并连接开发板后，下方按钮可发送一帧，且只有在你确认该帧之后才会发送。",
+    "real_send_button": "将此设定值发送到真实开发板",
+    "real_send_unsupported": "此工具没有可从此标签页发送的单帧；请使用 Tester Studio。未发送任何内容。",
+    "real_send_out_of_range": "该值超出工具的限制。未发送任何内容。",
+    "real_send_sent": "已发送到开发板：0x{{id}} {{data}}",
+    "real_send_cancelled": "已取消。未发送任何内容。",
     "pin_mapping_title": "硬件引脚映射与信号",
     "capabilities_title": "固件能力"
   },

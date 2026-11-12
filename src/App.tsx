@@ -41,6 +41,7 @@ import { createBatcher, Batcher } from './lib/frameBatcher';
 import { summarizeBoardFrames, heaterToolId, BoardStatus, NO_BOARD_STATUS } from './lib/boardTelemetry';
 import { planPreset } from './lib/simPresets';
 import { rawSendPolicy } from './lib/dangerousActions';
+import { loadControlSend, saveControlSend, planControlSend, runControlSend } from './lib/controlSandbox';
 import { runAllSafeOff } from './lib/safeOff';
 import { downloadBlob } from './lib/download';
 
@@ -332,6 +333,34 @@ export default function App() {
   };
 
   // Save to F-RAM in the sandbox: snapshots the simulated setpoints.
+  // The only way this tab reaches the bus: the switch is off by default (kept in this browser), the button exists only with the switch on and a board
+  // connected, the frame is checked against the limits of the tool, and the person confirms every single frame. See lib/controlSandbox.ts.
+  const [allowRealSend, setAllowRealSend] = useState<boolean>(() => loadControlSend(typeof localStorage === 'undefined' ? undefined : localStorage));
+  const [realSendMessage, setRealSendMessage] = useState('');
+  const handleAllowRealSend = (value: boolean) => {
+    setAllowRealSend(value);
+    setRealSendMessage('');
+    saveControlSend(typeof localStorage === 'undefined' ? undefined : localStorage, value);
+  };
+  const handleRealSetpointSend = async () => {
+    const plan = planControlSend({
+      allowReal: allowRealSend, connected: serialCan.isConnected, toolId: activeToolId,
+      value: setpoints[activeToolId] ?? activeTool.defaultSetpoint, toolMin: activeTool.minVal, toolMax: activeTool.maxVal,
+    });
+    try {
+      const outcome = await runControlSend(plan, confirm, (id, data) => serialCan.sendFrame(id, data, 'Setpoint sent from the Control tab'));
+      if (outcome === 'sent' && plan.kind === 'confirm') {
+        setRealSendMessage(t('toolcatalog.real_send_sent', 'Sent to the board: 0x{{id}} {{data}}', {
+          id: plan.id.toString(16).toUpperCase().padStart(3, '0'), data: plan.data.map(b => b.toString(16).toUpperCase().padStart(2, '0')).join(' '),
+        }));
+      } else if (outcome === 'unsupported') setRealSendMessage(t('toolcatalog.real_send_unsupported', 'This tool has no single frame that can be sent from this tab; use Tester Studio. Nothing was sent.'));
+      else if (outcome === 'out_of_range') setRealSendMessage(t('toolcatalog.real_send_out_of_range', 'The value is outside the limits of the tool. Nothing was sent.'));
+      else if (outcome === 'cancelled') setRealSendMessage(t('toolcatalog.real_send_cancelled', 'Cancelled. Nothing was sent.'));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const handleSaveToFram = () => {
     const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 19);
     setHardwareState(prev => ({
@@ -865,7 +894,9 @@ export default function App() {
           {(activeTab === 'control' || activeTab === 'oled' || activeTab === 'thermal') && (
             <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-sky-950/60 text-sky-300 border border-sky-800/70 text-xs font-medium">
               <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-              <span>{serialCan.isConnected
+              <span>{serialCan.isConnected && allowRealSend && activeTab === 'control'
+                ? t('app.simulator_notice_real_send', 'Simulator with real sending on: this tab models a board. Only the button that says it sends to the real board puts one frame on the bus, and only after you confirm that frame.')
+                : serialCan.isConnected
                 ? t('app.simulator_notice_connected', 'Simulator: this tab models a board and sends nothing to the bus. What it shows is not what the connected board reports; use Tester Studio and Flasher Studio for the real board.')
                 : t('app.simulator_notice', 'Simulator: this tab models a board and sends nothing to the bus. Connect a USB-CAN adapter to work with the real board in Tester Studio and Flasher Studio.')}</span>
             </div>
@@ -884,6 +915,13 @@ export default function App() {
               onSaveToFram={handleSaveToFram}
               firmwareVersion={firmwareVersion}
               onSwitchToFirmware11={() => handleSetFirmwareVersion('0.1.0')}
+              realSend={{
+                allowed: allowRealSend,
+                connected: serialCan.isConnected,
+                onAllowedChange: handleAllowRealSend,
+                onSend: () => { void handleRealSetpointSend(); },
+                message: realSendMessage,
+              }}
             />
 
             {/* Compact OLED & Hardware Quick-Peek */}
