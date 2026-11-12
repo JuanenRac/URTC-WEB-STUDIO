@@ -40,8 +40,10 @@ import { CAN_ID_QUERY_ACTIVE_TOOL } from './lib/canIds';
 import { createBatcher, Batcher } from './lib/frameBatcher';
 import { summarizeBoardFrames, heaterToolId, BoardStatus, NO_BOARD_STATUS } from './lib/boardTelemetry';
 import { planPreset } from './lib/simPresets';
-import { rawSendPolicy } from './lib/dangerousActions';
-import { loadControlSend, saveControlSend, planControlSend, runControlSend } from './lib/controlSandbox';
+import { rawSendPolicy, ActionKind } from './lib/dangerousActions';
+import { loadControlSend, saveControlSend, planControlSend, runControlSend, confirmPlan, stopFrameFor, canHoldTool } from './lib/controlSandbox';
+import { CutReason, clampHoldSeconds, loadHoldSeconds, saveHoldSeconds } from './lib/controlHeartbeat';
+import { useControlSession } from './hooks/useControlSession';
 import { runAllSafeOff } from './lib/safeOff';
 import { downloadBlob } from './lib/download';
 
@@ -342,14 +344,53 @@ export default function App() {
     setRealSendMessage('');
     saveControlSend(typeof localStorage === 'undefined' ? undefined : localStorage, value);
   };
+  const [holdSeconds, setHoldSeconds] = useState<number>(() => loadHoldSeconds(typeof localStorage === 'undefined' ? undefined : localStorage));
+  const handleHoldSecondsChange = (seconds: number) => {
+    const clean = clampHoldSeconds(seconds);
+    setHoldSeconds(clean);
+    saveHoldSeconds(typeof localStorage === 'undefined' ? undefined : localStorage, clean);
+  };
+  // What a tool of the Control tab keeps on is cut at once (STOP, the time, focus, the tab, the connection, the switch, the page): see hooks/useControlSession.ts.
+  const sendControlFrame = (id: number, data: number[]) => serialCan.sendFrame(id, data, 'Sent from the Control tab');
+  const controlSession = useControlSession({
+    connected: serialCan.isConnected, tabActive: activeTab === 'control', allowed: allowRealSend, send: sendControlFrame,
+    onEnd: (reason: CutReason) => {
+      if (reason === 'switch' || reason === 'unmount') return;
+      setRealSendMessage(t(`toolcatalog.real_cut_${reason}`, 'Switched off: {{reason}}. The off frame was sent.', { reason }));
+    },
+  });
+  const controlPlan = () => planControlSend({
+    allowReal: allowRealSend, connected: serialCan.isConnected, toolId: activeToolId,
+    value: setpoints[activeToolId] ?? activeTool.defaultSetpoint, toolMin: activeTool.minVal, toolMax: activeTool.maxVal,
+  });
+  const askControl = (kind: ActionKind, options: { value?: number; second?: boolean }) => {
+    if (!options.second) return confirm(kind, { value: options.value });
+    const message = kind === 'laser'
+      ? t('toolcatalog.real_second_laser', 'SECOND CONFIRMATION. The laser will be armed and will fire at {{value}} % now. Is the area clear and the eye protection on? STOP stays visible.', { value: options.value })
+      : t('toolcatalog.real_second_drill', 'SECOND CONFIRMATION. The drill will spin at {{value}} RPM now. Is everything clear of the tool? STOP stays visible.', { value: options.value });
+    return confirm(kind, { value: options.value, message });
+  };
+  const handleRealHold = async () => {
+    const plan = controlPlan();
+    if (plan.kind !== 'confirm' || !plan.heartbeat) return;
+    if (!(await confirmPlan(plan, askControl))) { setRealSendMessage(t('toolcatalog.real_send_cancelled', 'Cancelled. Nothing was sent.')); return; }
+    controlSession.startHold({ id: plan.id, data: plan.data, offData: plan.offData }, holdSeconds);
+    setRealSendMessage(t('toolcatalog.real_held', 'Holding {{value}}: refreshed every 100 ms for {{seconds}} s. It ends on STOP, when the time is up, when the window loses focus, when you leave this tab or when the connection is lost.', { value: plan.value, seconds: holdSeconds }));
+  };
+  const handleRealStop = async () => {
+    controlSession.stop();
+    const stop = stopFrameFor(activeToolId);
+    if (stop && serialCan.isConnected) {
+      try { await sendControlFrame(stop.id, stop.data); } catch (error) { console.error(error); }
+    }
+    setRealSendMessage(t('toolcatalog.real_cut_stop', 'Switched off: {{reason}}. The off frame was sent.', { reason: 'stop' }));
+  };
   const handleRealSetpointSend = async () => {
-    const plan = planControlSend({
-      allowReal: allowRealSend, connected: serialCan.isConnected, toolId: activeToolId,
-      value: setpoints[activeToolId] ?? activeTool.defaultSetpoint, toolMin: activeTool.minVal, toolMax: activeTool.maxVal,
-    });
+    const plan = controlPlan();
     try {
-      const outcome = await runControlSend(plan, confirm, (id, data) => serialCan.sendFrame(id, data, 'Setpoint sent from the Control tab'));
+      const outcome = await runControlSend(plan, askControl, (id, data) => sendControlFrame(id, data));
       if (outcome === 'sent' && plan.kind === 'confirm') {
+        controlSession.rememberSingle({ id: plan.id, data: plan.data, offData: plan.offData });
         setRealSendMessage(t('toolcatalog.real_send_sent', 'Sent to the board: 0x{{id}} {{data}}', {
           id: plan.id.toString(16).toUpperCase().padStart(3, '0'), data: plan.data.map(b => b.toString(16).toUpperCase().padStart(2, '0')).join(' '),
         }));
@@ -921,6 +962,12 @@ export default function App() {
                 onAllowedChange: handleAllowRealSend,
                 onSend: () => { void handleRealSetpointSend(); },
                 message: realSendMessage,
+                canHold: canHoldTool(activeToolId),
+                holding: controlSession.holding,
+                holdSeconds,
+                onHoldSecondsChange: handleHoldSecondsChange,
+                onHold: () => { void handleRealHold(); },
+                onStop: () => { void handleRealStop(); },
               }}
             />
 

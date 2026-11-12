@@ -15,7 +15,11 @@ interface ToolCatalogProps {
   firmwareVersion: string;
   onSwitchToFirmware11?: () => void;
   /** Sending one real frame from this tab: the switch (off by default), the button, whether a board is connected and the last answer. */
-  realSend?: { allowed: boolean; connected: boolean; onAllowedChange: (value: boolean) => void; onSend: () => void; message: string };
+  realSend?: {
+    allowed: boolean; connected: boolean; onAllowedChange: (value: boolean) => void; onSend: () => void; message: string;
+    /** The selected tool can be held (refreshed for a bounded time); the others are one confirmed frame. */
+    canHold?: boolean; holding?: boolean; holdSeconds?: number; onHoldSecondsChange?: (seconds: number) => void; onHold?: () => void; onStop?: () => void;
+  };
 }
 
 export const ToolCatalog: React.FC<ToolCatalogProps> = ({
@@ -280,14 +284,49 @@ export const ToolCatalog: React.FC<ToolCatalogProps> = ({
                 </label>
                 <p className="text-[10px] text-slate-500">{t('toolcatalog.real_send_hint', 'Off by default. While it is off, this tab only simulates and nothing reaches the bus. When it is on and a board is connected, the button below sends one frame, and only after you confirm that frame.')}</p>
                 {realSend.allowed && realSend.connected && (
-                  <button
-                    type="button"
-                    data-testid="real-send-button"
-                    onClick={realSend.onSend}
-                    className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-white font-semibold text-xs"
-                  >
-                    {t('toolcatalog.real_send_button', 'Send this setpoint to the real board')}
-                  </button>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      data-testid="real-send-button"
+                      onClick={realSend.onSend}
+                      className="px-3 py-1.5 rounded-lg bg-red-600 hover:bg-red-500 text-white font-semibold text-xs"
+                    >
+                      {t('toolcatalog.real_send_button', 'Send this setpoint to the real board')}
+                    </button>
+                    {realSend.canHold && (
+                      <>
+                        <button
+                          type="button"
+                          data-testid="real-hold-button"
+                          onClick={realSend.onHold}
+                          disabled={realSend.holding}
+                          className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 disabled:opacity-40 text-white font-semibold text-xs"
+                        >
+                          {t('toolcatalog.real_hold_button', 'Hold this setpoint for {{seconds}} s', { seconds: realSend.holdSeconds ?? 30 })}
+                        </button>
+                        <label className="flex items-center gap-1 text-[10px] font-mono text-slate-400">
+                          {t('toolcatalog.real_hold_seconds', 'Hold time (s)')}
+                          <input
+                            type="number"
+                            data-testid="real-hold-seconds"
+                            min={5}
+                            max={120}
+                            value={realSend.holdSeconds ?? 30}
+                            onChange={(e) => realSend.onHoldSecondsChange?.(parseInt(e.target.value, 10))}
+                            className="w-14 px-1 py-0.5 rounded bg-slate-900 border border-slate-700 text-slate-200"
+                          />
+                        </label>
+                      </>
+                    )}
+                    <button
+                      type="button"
+                      data-testid="real-stop-button"
+                      onClick={realSend.onStop}
+                      className="px-4 py-1.5 rounded-lg bg-white text-red-700 border-2 border-red-600 font-black text-xs tracking-wider"
+                    >
+                      {t('toolcatalog.real_stop_button', 'STOP')}
+                    </button>
+                  </div>
                 )}
                 {realSend.message && <p role="status" className="text-[10px] text-amber-300">{realSend.message}</p>}
               </div>

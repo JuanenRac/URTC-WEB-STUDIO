@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The Control tab can hold the soldering iron setpoint and can send the drill and the laser, always behind the same switch (off by default):** a held setpoint is refreshed every 100 ms for a bounded time (30 s by default, 5 to 120) and is cut, with the off frame, on STOP, when the time is up, when the window loses focus, when the tab is left, when the connection is lost, when the switch is turned off and when the page closes. The drill (speed as the byte of the firmware, clockwise) and the laser (power as the byte of the firmware, interlock set) are one confirmed frame each, with two confirmations (the second with an explicit text), limits checked and no refresh; STOP is always visible and sends the off frame of the tool. Tested without a board; nothing has been sent to a real one.
+
 - **The shared document policy check is refreshed:** `tools/_doc_policy.py` and `tools/ci_validate.py` are the current copies, which also fail when a build script changes a version and when a script switches into a virtual environment instead of running its python directly.
 
 - **The Control tab can send one real frame, behind a switch that is off by default:** "Allow sending real frames from this tab" (kept in this browser) shows a button, with a board connected, that sends the soldering iron setpoint; a value outside the limits of the tool is refused, the other tools say they have no single frame to send from this tab, and every frame asks for its own confirmation. With the switch off the tab only simulates and nothing reaches the bus. 18 tests; the texts are in the eight languages. Nothing has been sent to a real board.
