@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The shared document policy check is refreshed:** `tools/_doc_policy.py` and `tools/ci_validate.py` are the current copies, which also fail when a build script changes a version and when a script switches into a virtual environment instead of running its python directly.
+
 - **The Control tab can send one real frame, behind a switch that is off by default:** "Allow sending real frames from this tab" (kept in this browser) shows a button, with a board connected, that sends the soldering iron setpoint; a value outside the limits of the tool is refused, the other tools say they have no single frame to send from this tab, and every frame asks for its own confirmation. With the switch off the tab only simulates and nothing reaches the bus. 18 tests; the texts are in the eight languages. Nothing has been sent to a real board.
 
 - **The panels that take the shared tool context are memoized too:** the global controls, the expansion board, F-RAM, self-test, bus monitor and custom frame panels, the black box, optional functions, PID and thermal view panels, the panel drawn from a tool profile, the trace viewer and the profile summary are drawn again only when their own state or props change, never because a frame reached the page above them (the context they receive is one stable object). A test holds each of them to being memoized and checks that a page that draws again with the same context does not draw a panel again, and does when the context or a prop changes.
