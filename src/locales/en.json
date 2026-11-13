@@ -401,6 +401,7 @@
     "verify_fail_3": "HMAC signature mismatch (not signed with the key of this board)",
     "verify_fail_4": "HardwareID mismatch (image built for different hardware)",
     "verify_fail_5": "rollback rejected (older than what is already installed)",
+    "verify_fail_7": "a digest block was lost on the bus (fewer than the 4 expected arrived); the image was not installed, try the update again",
     "verify_fail_unknown_code": "unknown reason 0x{{code}}",
     "verify_fail_unknown": "unknown reason",
     "log_dev_key_declined": "Cancelled: the image is signed with the public development key and the confirmation was declined.",

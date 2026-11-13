@@ -401,6 +401,7 @@
     "verify_fail_3": "firma HMAC diversa (non firmata con la chiave di questa scheda)",
     "verify_fail_4": "HardwareID diverso (immagine costruita per un altro hardware)",
     "verify_fail_5": "rollback rifiutato (più vecchia di quella già installata)",
+    "verify_fail_7": "un blocco del digest è andato perso sul bus (ne sono arrivati meno di 4); l'immagine non è stata installata, ripeti l'aggiornamento",
     "verify_fail_unknown_code": "motivo sconosciuto 0x{{code}}",
     "verify_fail_unknown": "motivo sconosciuto",
     "log_dev_key_declined": "Annullato: l'immagine è firmata con la chiave di sviluppo pubblica e la conferma è stata rifiutata.",

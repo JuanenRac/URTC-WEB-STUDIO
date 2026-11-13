@@ -401,6 +401,7 @@
     "verify_fail_3": "HMAC 签名不匹配（未使用本板的密钥签名）",
     "verify_fail_4": "HardwareID 不匹配（镜像是为其他硬件构建的）",
     "verify_fail_5": "回滚被拒绝（比已安装的版本更旧）",
+    "verify_fail_7": "总线上丢失了一个摘要数据块（到达的不足 4 个）；映像未安装，请重新更新",
     "verify_fail_unknown_code": "未知原因 0x{{code}}",
     "verify_fail_unknown": "未知原因",
     "log_dev_key_declined": "已取消：镜像使用公开的开发密钥签名，且确认被拒绝。",
