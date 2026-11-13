@@ -477,7 +477,7 @@ URTC 由相互独立的仓库组成，每个仓库都有自己的版本、测试
 - [`docs/TRACE_VIEWER.md`](docs/TRACE_VIEWER.md) —— CAN 轨迹标签页读取什么、如何命名和标记每一帧、它的限制以及它写出的 CSV 和 JSON。
 - [`docs/INTEGRATION_CONTRACT.md`](docs/INTEGRATION_CONTRACT.md) —— 本客户端遇到
   未知模式、缺失目标身份或格式错误的 API 结果时应如何处理，
-  以及为什么真实的烧录权限保留在服务器端或专用桌面工具中。
+  以及为什么真实的刷写权限保留在服务器端或专用桌面工具中。
 
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** —— 提交 Pull Request 所需的技术栈和编码规范。
 - **[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)** —— 本社区所期望的行为准则。
