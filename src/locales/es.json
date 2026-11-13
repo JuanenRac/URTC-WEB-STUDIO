@@ -94,7 +94,10 @@
     "mixed_bus_suspected": "El bus puede mezclar velocidades: hay un cabezal de 500 kbit/s y los cabezales muestran errores",
     "no_head_at_any_speed": "Ningún cabezal respondió a ninguna velocidad: revisa el cableado, la alimentación y la terminación, o un cabezal hecho para otra velocidad",
     "bus_errors": "Los cabezales informan de errores CAN o de bus-off: revisa el cableado, la terminación y la velocidad de cada placa",
-    "legacy_head_known": "Hay un cabezal de 500 kbit/s en este bus: recompila todas las placas con la opción heredada o dale un bus propio"
+    "legacy_head_known": "Hay un cabezal de 500 kbit/s en este bus: recompila todas las placas con la opción heredada o dale un bus propio",
+    "rates_declared_differ": "Los cabezales de este bus declaran velocidades distintas: pon todos a la misma velocidad o dale a cada velocidad un bus propio",
+    "rate_declared": "Velocidad del bus que declara el cabezal: {{rate}}",
+    "rate_not_declared": "El cabezal no declara la velocidad de su bus (firmware antiguo)"
   },
   "oled": {
     "title": "OLED SSD1306 / SSD1315 (128x64 Bicolor)",

@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "urtc_common_version": "0.2.5",
+  "urtc_common_version": "0.2.6",
   "files": {
     "blackbox_vectors.json": {
       "from": "conformance/blackbox_vectors.json",
@@ -8,7 +8,7 @@
     },
     "bus_health_vectors.json": {
       "from": "conformance/bus_health_vectors.json",
-      "sha256": "b81f7d4d8a6853c2ec63cffce5c27d7171061a06bb581c07310967199180aeff"
+      "sha256": "b467743f85c14f7812cca39acd5959c41432d5a0025790d747b43f53c144fcfd"
     },
     "firmwareNames.ts": {
       "from": "generated/firmwareNames.ts",
@@ -36,7 +36,7 @@
     },
     "urtcCanIds.ts": {
       "from": "generated/urtcCanIds.ts",
-      "sha256": "cd96f042b5e6768fa773f9d9bf9e56950ab9f2b099c5b3f70b8e9bb51689e9b5"
+      "sha256": "b34b966e0ec13af707b016b77f7aaf12de22bf15c4058857ed7d674acdab555e"
     },
     "urtcTools.ts": {
       "from": "generated/urtcTools.ts",

@@ -1,17 +1,19 @@
-// Is the bus of the tool heads healthy, or does it mix speeds? Decided from the symptoms, with no change of the protocol: the same judgement as urtc_common.bus_health of
-// URTC-COMMON (Python), held to the same cases (generated/bus_health_vectors.json).
+// Is the bus of the tool heads healthy, or does it mix speeds? Decided from what the heads declare and, when they declare nothing, from the symptoms: the same judgement as
+// urtc_common.bus_health of URTC-COMMON (Python), held to the same cases (generated/bus_health_vectors.json).
 //
-// A head at another speed than the bus cannot be heard, so it cannot state its speed. What can be seen is what it does to the bus: the error counters of the heads that ARE
+// Heads of protocol version 2 declare the bit rate they run at in their identity frame (0x1BB, see healthInfo.ts): two different declared rates on one bus are a mixed bus for
+// certain. A head at another speed than the bus cannot be heard at all, so the symptoms stay as the fallback. What can be seen is what it does to the bus: the error counters of the heads that ARE
 // heard rise (the health frame 0x1B8 carries tec, rec and bus_off_count), or a head known to have been built for the legacy speed (500 kbit/s) is on a bus of 1 Mbit/s.
 
 export const CAN_ID_HEALTH_PROFILE = 0x1b8;
 
 /** Warning codes, from the most to the least serious. */
+export const RATES_DECLARED_DIFFER = 'rates_declared_differ';
 export const MIXED_BUS_SUSPECTED = 'mixed_bus_suspected';
 export const NO_HEAD_AT_ANY_SPEED = 'no_head_at_any_speed';
 export const BUS_ERRORS = 'bus_errors';
 export const LEGACY_HEAD_KNOWN = 'legacy_head_known';
-export const BUS_WARNING_CODES = [MIXED_BUS_SUSPECTED, NO_HEAD_AT_ANY_SPEED, BUS_ERRORS, LEGACY_HEAD_KNOWN] as const;
+export const BUS_WARNING_CODES = [RATES_DECLARED_DIFFER, MIXED_BUS_SUSPECTED, NO_HEAD_AT_ANY_SPEED, BUS_ERRORS, LEGACY_HEAD_KNOWN] as const;
 export type BusWarning = (typeof BUS_WARNING_CODES)[number];
 
 export interface Thresholds { tec_warn: number; rec_warn: number; bus_off_warn: number; legacy_heads: string[] }
@@ -51,6 +53,7 @@ export function isLegacyHead(name: string | number | null | undefined, threshold
 /** The warning codes for what is known about a bus, most serious first; an empty list is a bus with nothing to say. */
 export function busWarnings(
   profiles: PartialProfile[], foundNobodyAtAnySpeed = false, headsOnBus: Array<string | number> = [], thresholds: Thresholds = DEFAULT_THRESHOLDS,
+  declaredRates: Array<number | null | undefined> = [],
 ): BusWarning[] {
   let errors = false;
   let off = false;
@@ -61,6 +64,7 @@ export function busWarnings(
   }
   const legacy = headsOnBus.some((name) => isLegacyHead(name, thresholds));
   const found: BusWarning[] = [];
+  if (new Set(declaredRates.filter((rate): rate is number => typeof rate === 'number' && rate > 0)).size > 1) found.push(RATES_DECLARED_DIFFER);
   if (legacy && (errors || off)) found.push(MIXED_BUS_SUSPECTED);
   if (foundNobodyAtAnySpeed) found.push(NO_HEAD_AT_ANY_SPEED);
   if (errors || off) found.push(BUS_ERRORS);

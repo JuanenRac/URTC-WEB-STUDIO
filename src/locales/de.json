@@ -94,7 +94,10 @@
     "mixed_bus_suspected": "Der Bus mischt möglicherweise Geschwindigkeiten: Ein Kopf für 500 kbit/s hängt daran und die Köpfe zeigen Fehler",
     "no_head_at_any_speed": "Kein Kopf antwortete bei irgendeiner Geschwindigkeit: Verkabelung, Stromversorgung und Abschluss prüfen oder ein Kopf für eine andere Geschwindigkeit",
     "bus_errors": "Die Köpfe melden CAN-Fehler oder Bus-off: Verkabelung, Abschluss und Geschwindigkeit jeder Platine prüfen",
-    "legacy_head_known": "Ein Kopf für 500 kbit/s hängt an diesem Bus: alle Platinen mit der Altoption neu bauen oder ihm einen eigenen Bus geben"
+    "legacy_head_known": "Ein Kopf für 500 kbit/s hängt an diesem Bus: alle Platinen mit der Altoption neu bauen oder ihm einen eigenen Bus geben",
+    "rates_declared_differ": "Die Köpfe an diesem Bus melden unterschiedliche Geschwindigkeiten: alle auf dieselbe Geschwindigkeit stellen oder jeder Geschwindigkeit einen eigenen Bus geben",
+    "rate_declared": "Vom Kopf gemeldete Busgeschwindigkeit: {{rate}}",
+    "rate_not_declared": "Der Kopf meldet seine Busgeschwindigkeit nicht (ältere Firmware)"
   },
   "oled": {
     "title": "OLED SSD1306 / SSD1315 (128x64, zweifarbig)",

@@ -6,7 +6,7 @@
     "simulator_notice": "Simulatore: questa pagina modella una scheda e non invia nulla al bus. Collega un adattatore USB-CAN per lavorare con la scheda reale in Tester Studio e Flasher Studio.",
     "simulator_notice_connected": "Simulatore: questa pagina modella una scheda e non invia nulla al bus. Ciò che mostra non è ciò che segnala la scheda collegata; usa Tester Studio e Flasher Studio per la scheda reale.",
     "loading": "Caricamento...",
-    "simulator_notice_real_send": "Simulatore, bus reale: questa scheda modella una scheda, e solo il pulsante che indica l'invio alla scheda reale mette una trama sul bus, e solo dopo che hai confermato quella trama."
+    "simulator_notice_real_send": "Simulatore, bus reale: questa scheda modella una scheda, e solo il pulsante che indica l'invio alla scheda reale mette un frame sul bus, e solo dopo che hai confermato quel frame."
   },
   "config": {
     "language_en": "English",
@@ -70,9 +70,9 @@
     "watchdog_active": "ATTIVO",
     "watchdog_none": "NESSUN TIMEOUT",
     "real_send_label": "Bus reale",
-    "real_send_hint": "Con una scheda collegata, questa scheda invia sul bus reale: il pulsante qui sotto vi mette una trama, e solo dopo che hai confermato quella trama (il trapano e il laser chiedono due volte). Il simulatore resta disponibile: il cursore sposta solo il valore simulato. Cambiare la potenza di un trapano o di un laser accesi chiede di nuovo conferma quando la variazione supera la percentuale impostata nel file di configurazione.",
+    "real_send_hint": "Con una scheda collegata, questa scheda invia sul bus reale: il pulsante qui sotto vi mette un frame, e solo dopo che hai confermato quel frame (il trapano e il laser chiedono due volte). Il simulatore resta disponibile: il cursore sposta solo il valore simulato. Cambiare la potenza di un trapano o di un laser accesi chiede di nuovo conferma quando la variazione supera la percentuale impostata nel file di configurazione.",
     "real_send_button": "Invia questo setpoint alla scheda reale",
-    "real_send_unsupported": "Questo utensile non ha una singola trama che si possa inviare da questa scheda; usa Tester Studio. Non è stato inviato nulla.",
+    "real_send_unsupported": "Questo utensile non ha un singolo frame che si possa inviare da questa scheda; usa Tester Studio. Non è stato inviato nulla.",
     "real_send_out_of_range": "Il valore è fuori dai limiti dell'utensile. Non è stato inviato nulla.",
     "real_send_sent": "Inviato alla scheda: 0x{{id}} {{data}}",
     "real_send_cancelled": "Annullato. Non è stato inviato nulla.",
@@ -80,11 +80,11 @@
     "real_hold_seconds": "Tempo di mantenimento (s)",
     "real_stop_button": "STOP",
     "real_held": "{{value}} mantenuto: aggiornato ogni 100 ms per {{seconds}} s. Termina con STOP, allo scadere del tempo, quando la finestra perde il focus, quando lasci questa scheda o quando la connessione si perde.",
-    "real_cut_stop": "Spento: è stato premuto STOP. La trama di spegnimento è stata inviata.",
-    "real_cut_blur": "Spento: la finestra ha perso il focus. La trama di spegnimento è stata inviata.",
-    "real_cut_tab": "Spento: hai lasciato la scheda Control. La trama di spegnimento è stata inviata.",
-    "real_cut_connection": "Spento: la connessione è andata persa. La trama di spegnimento non ha potuto essere inviata; il firmware ferma l'utensile con il proprio timeout.",
-    "real_cut_expired": "Spento: il tempo di mantenimento è scaduto. La trama di spegnimento è stata inviata; conferma di nuovo per mantenere ancora.",
+    "real_cut_stop": "Spento: è stato premuto STOP. Il frame di spegnimento è stato inviato.",
+    "real_cut_blur": "Spento: la finestra ha perso il focus. Il frame di spegnimento è stato inviato.",
+    "real_cut_tab": "Spento: hai lasciato la scheda Control. Il frame di spegnimento è stato inviato.",
+    "real_cut_connection": "Spento: la connessione è andata persa. Il frame di spegnimento non ha potuto essere inviato; il firmware ferma l'utensile con il proprio timeout.",
+    "real_cut_expired": "Spento: il tempo di mantenimento è scaduto. Il frame di spegnimento è stato inviato; conferma di nuovo per mantenere ancora.",
     "real_second_laser": "SECONDA CONFERMA. Il laser verrà armato e sparerà ora al {{value}} %. L'area è libera e la protezione degli occhi è indossata? STOP resta visibile.",
     "real_second_drill": "SECONDA CONFERMA. Il trapano girerà ora a {{value}} giri/min. È tutto lontano dall'utensile? STOP resta visibile.",
     "pin_mapping_title": "Mappatura Pin & Segnali Hardware",
@@ -94,7 +94,10 @@
     "mixed_bus_suspected": "Il bus potrebbe mescolare le velocità: c'è una testa da 500 kbit/s e le teste mostrano errori",
     "no_head_at_any_speed": "Nessuna testa ha risposto a nessuna velocità: controlla cablaggio, alimentazione e terminazione, o una testa fatta per un'altra velocità",
     "bus_errors": "Le teste segnalano errori CAN o un bus-off: controlla cablaggio, terminazione e velocità di ogni scheda",
-    "legacy_head_known": "C'è una testa da 500 kbit/s su questo bus: ricompila tutte le schede con l'opzione storica o dalle un bus a parte"
+    "legacy_head_known": "C'è una testa da 500 kbit/s su questo bus: ricompila tutte le schede con l'opzione storica o dalle un bus a parte",
+    "rates_declared_differ": "Le teste di questo bus dichiarano velocità diverse: imposta tutte alla stessa velocità o dai a ogni velocità un bus a parte",
+    "rate_declared": "Velocità del bus dichiarata dalla testa: {{rate}}",
+    "rate_not_declared": "La testa non dichiara la velocità del suo bus (firmware precedente)"
   },
   "oled": {
     "title": "OLED SSD1306 / SSD1315 (128x64 bicolore)",
