@@ -63,9 +63,9 @@ export function spiPassthrough(values: number[]): number[] {
   return [bytes.length, ...bytes];
 }
 
-/** Optional functions: the magic word ("FEAT") followed by the mask of the four functions. */
+/** Optional functions: the magic word ("FEAT") followed by the mask of the seven functions (the last three: clear error, communication watchdog, magnet release). */
 export const FEATURES_MAGIC = [0x46, 0x45, 0x41, 0x54];
-export const featuresWrite = (mask: number): number[] => [...FEATURES_MAGIC, byte(mask) & 0x0F];
+export const featuresWrite = (mask: number): number[] => [...FEATURES_MAGIC, byte(mask) & 0x7F];
 
 /** 3D printer head: nozzle set point, extruder direction and a 24-bit step count in one frame. */
 export function thermalMotionCommand(celsius: number, forward: boolean, steps: number): number[] {

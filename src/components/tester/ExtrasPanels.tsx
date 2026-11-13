@@ -5,15 +5,16 @@ import { ToolCtx } from './ToolPanels';
 import { useConfirmAction } from '../../hooks/useConfirmAction';
 import { downloadBlob } from '../../lib/download';
 import { featuresWrite } from '../../lib/toolFrames';
+import { CLEAR_RESULT_KEYS, ERROR_REASON_KEYS, clearErrorCommand, clearErrorNeedsConfirmation, parseClearErrorAnswer } from '../../lib/clearError';
 import { EVIDENCE_KINDS, EVIDENCE_OUTCOMES, EvidenceEntry, evidenceCsv, evidenceRow, parseEvidenceFile, selectEvidence, signatureView, summarizeEvidence } from '../../lib/evidenceHistory';
 import { TRUST_FILE_MAX_BYTES, exportTrustFile, formatTrustStore, importTrustFile, loadTrustText, mergeTrustStore, parseTrustStore, saveTrustText } from '../../lib/trustStore';
-import { CAN_ID_SET_FEATURES, CAN_ID_FEATURES_RESP, CAN_ID_PID_CONFIG, CAN_ID_PID_STATE_RESP } from '../../lib/canIds';
+import { CAN_ID_SET_FEATURES, CAN_ID_FEATURES_RESP, CAN_ID_PID_CONFIG, CAN_ID_PID_STATE_RESP, CAN_ID_CLEAR_ERROR, CAN_ID_ACTIVE_TOOL_RESP } from '../../lib/canIds';
 import { PID_ACTION_AUTOTUNE_ABORT, PID_ACTION_AUTOTUNE_START, PID_ACTION_QUERY, PID_ACTION_SET_GAINS, PID_STATE_KEYS, decodePidState, encodePidConfig } from '../../lib/pid';
 import {
   BLACK_BOX_CHUNK_COUNT, BLACK_BOX_CHUNK_ID, BLACK_BOX_FRAMES_PER_CHUNK, BLACK_BOX_QUERY_ID, BlackBoxRecord,
   blackBoxChart, blackBoxCsv, blackBoxFromText, blackBoxJson, chunkRequest, joinFrames, parseBlackBox, triggerIndex,
 } from '../../lib/blackBox';
-import { CAN_ID_THERMAL_STATS_QUERY, CAN_ID_THERMAL_STATS_RESP } from '../../lib/generated/urtcCanIds';
+import { CAN_ID_THERMAL_STATS_QUERY, CAN_ID_THERMAL_STATS_RESP, CLEAR_ERROR_MAX_TEMP_C } from '../../lib/generated/urtcCanIds';
 import { parseThermalStats, thermalFaultTextKey } from '../../lib/thermalStats';
 import { ThermalSample, addSample, faultsAdded, loadHistory, sampleOf, saveHistory, thermalHistoryChart, thermalHistoryCsv } from '../../lib/thermalHistory';
 import { SimulatedRack, RACK_COMMAND_MIN_INTERVAL_MS, encodeSetPreheat, parseRackReply, unitKey } from '../../lib/rackSim';
@@ -23,7 +24,7 @@ import {
 } from '../../lib/thermalView';
 import { retryUntil } from '../../lib/retryUntil';
 
-const FEATURE_BITS: Array<[number, string]> = [[1, 'feature_motion_ramps'], [2, 'feature_health_profile'], [4, 'feature_hsi_autotrim'], [8, 'feature_thermal_pid']];
+const FEATURE_BITS: Array<[number, string]> = [[1, 'feature_motion_ramps'], [2, 'feature_health_profile'], [4, 'feature_hsi_autotrim'], [8, 'feature_thermal_pid'], [16, 'feature_clear_error'], [32, 'feature_comms_watchdog'], [64, 'feature_magnet_release']];
 
 async function collectFrames(ctx: ToolCtx, requestId: number, data: number[], answerId: number, wanted: number, timeoutMs: number, description: string): Promise<number[][] | null> {
   const frames: number[][] = [];
@@ -241,14 +242,28 @@ const FeaturesPanelBody: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
 
   const show = (data: number[] | undefined) => {
     if (!data || data.length !== 3) { setStatus(t('testerextras.features_no_answer', 'No answer (firmware without these functions)')); return; }
-    setMask(data[0] & 0x0F);
+    setMask(data[0] & 0x7F);
     setStatus(t('testerextras.features_status', 'Stored: {{stored}} | In force: {{running}} | Supported: {{supported}}', { stored: names(data[0]), running: names(data[1]), supported: names(data[2]) }));
   };
   const query = async () => { const r = await ctx.request(CAN_ID_FEATURES_RESP, [], CAN_ID_FEATURES_RESP, 1000, 'Query optional functions'); show(r?.data); };
   const write = async () => {
     if (!(await confirm('program_config'))) return;
-    const r = await ctx.request(CAN_ID_SET_FEATURES, featuresWrite(mask), CAN_ID_FEATURES_RESP, 1000, 'Write optional functions');
+    // the release policy of the electromagnet belongs to the communication watchdog: without it the bit would do nothing
+    const r = await ctx.request(CAN_ID_SET_FEATURES, featuresWrite((mask & 32) !== 0 ? mask : mask & ~64), CAN_ID_FEATURES_RESP, 1000, 'Write optional functions');
     show(r?.data);
+  };
+  const [clearStatus, setClearStatus] = useState('');
+  const clearError = async () => {
+    if (clearErrorNeedsConfirmation() && !(await confirm('motion', { message: t('testerextras.clear_error_confirm', 'The board lifts its error. Make sure the cause is gone and that nothing near the tool can move, heat up or fire.') }))) return;
+    const r = await ctx.request(CAN_ID_CLEAR_ERROR, clearErrorCommand(), CAN_ID_ACTIVE_TOOL_RESP, 1000, 'Clear error');
+    const answer = r ? parseClearErrorAnswer(r.data) : null;
+    if (!answer) { setClearStatus(t('testerextras.features_no_answer', 'No answer (firmware without these functions)')); return; }
+    const outcomeKey = CLEAR_RESULT_KEYS[answer.clearResult];
+    const outcome = outcomeKey ? t(`testerextras.${outcomeKey}`, { limit: CLEAR_ERROR_MAX_TEMP_C }) : `CODE_${answer.clearResult}`;
+    const reasonKey = ERROR_REASON_KEYS[answer.errorReason];
+    const lines = [t('testerextras.clear_error_result', 'Clear error: {{result}}', { result: outcome })];
+    if (answer.systemError && reasonKey) lines.push(t('testerextras.error_reason_line', 'Error reason: {{reason}}', { reason: t(`testerextras.${reasonKey}`) }));
+    setClearStatus(lines.join('\n'));
   };
 
   return (
@@ -263,8 +278,10 @@ const FeaturesPanelBody: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
       <div className="flex gap-3 mb-3">
         <button className={btnCls} onClick={query} disabled={!ctx.isConnected}>{t('testerextras.features_query', 'Query')}</button>
         <button className={btnPrimaryCls} onClick={write} disabled={!ctx.isConnected}>{t('testerextras.features_write', 'Write')}</button>
+        <button className={btnCls} onClick={clearError} disabled={!ctx.isConnected}>{t('testerextras.clear_error_button', 'Clear error')}</button>
       </div>
       {status && <div className="text-xs text-slate-300 font-mono">{status}</div>}
+      {clearStatus && <div className="text-xs text-slate-300 font-mono whitespace-pre-line" data-testid="clear-error-status">{clearStatus}</div>}
     </Section>
   );
 };
