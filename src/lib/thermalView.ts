@@ -13,6 +13,40 @@ const STOPS: Array<[number, [number, number, number]]> = [[0, [0, 0, 0]], [0.33,
 
 export class ThermalError extends Error {}
 
+/** Why the status of the head (0x251) stopped a reading: the head reports a capture error, or it never said it was ready. */
+export class ThermalStatusError extends ThermalError {
+  constructor(readonly reason: 'capture_error' | 'not_ready') {
+    super(reason === 'capture_error' ? 'the head reports a capture error' : 'the head did not become ready');
+  }
+}
+
+export const THERMAL_STATUS_READY = 0x02;
+export const THERMAL_STATUS_ERROR = 0xFF;
+
+export type ThermalStatus = 'ready' | 'busy' | 'error' | 'unknown';
+
+/** The status frame (0x251) carries one byte: 0x02 the image is ready, 0xFF a capture error, anything else the capture goes on. Another length is not a status. */
+export function thermalStatus(data: ArrayLike<number>): ThermalStatus {
+  if (data.length !== 1) return 'unknown';
+  if (data[0] === THERMAL_STATUS_ERROR) return 'error';
+  return data[0] === THERMAL_STATUS_READY ? 'ready' : 'busy';
+}
+
+/**
+ * Asks for the status until the head says the image is ready, before any chunk is asked for. `readStatus` returns the payload of the answer, or null for
+ * none (a lost answer is asked again). Throws ThermalStatusError on a capture error at once, or when the head was not ready after `attempts` asks.
+ */
+export async function waitThermalReady(readStatus: () => Promise<ArrayLike<number> | null>, attempts = 50): Promise<void> {
+  for (let i = 0; i < attempts; i++) {
+    const answer = await readStatus();
+    if (!answer) continue;
+    const status = thermalStatus(answer);
+    if (status === 'error') throw new ThermalStatusError('capture_error');
+    if (status === 'ready') return;
+  }
+  throw new ThermalStatusError('not_ready');
+}
+
 export type ThermalFrame = number[][]; // rows of degrees C; NaN for a pixel without a value
 
 export function thermalChunkCount(variant: string): number {

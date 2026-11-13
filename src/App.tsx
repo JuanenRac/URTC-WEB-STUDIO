@@ -879,6 +879,8 @@ export default function App() {
         onOpenHeads={() => setHeadsOpen(true)}
         headsSummary={nodePicker.snapshot.mode === 'multi' ? (nodePicker.snapshot.selected !== null ? t('nodes.bus_selected', { node: nodePicker.snapshot.selected }) : t('nodes.bus_found', { count: nodePicker.snapshot.count })) : undefined}
         portName={serialCan.portName}
+        bitrateChoice={serialCan.bitrateChoice}
+        onBitrateChange={serialCan.setBitrateChoice}
         pwa={pwa}
       />
       <NodePickerDialog open={headsOpen} onClose={() => setHeadsOpen(false)} picker={nodePicker} />

@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Zap, AlertTriangle, Usb, Globe, Power, Cpu, Download, WifiOff, HardDriveDownload } from 'lucide-react';
 import type { PwaState } from '../hooks/usePwa';
 import { HardwareState } from '../types';
+import { AUTO_RATE } from '../lib/busDetect';
+import { BITRATE_TRY_ORDER } from '../lib/busRate';
 import urtcLogoTester from '../../images/urtc_custom_icon.svg';
 
 const LANGUAGE_STORAGE_KEY = 'urtc-web-studio-language';
@@ -21,6 +23,9 @@ interface HeaderProps {
   onOpenHeads?: () => void;
   headsSummary?: string;
   portName?: string;
+  /** The speed of the bus: 'auto' (the bus is only listened to) or the SLCAN code of one speed. Shown while not connected. */
+  bitrateChoice?: string;
+  onBitrateChange?: (value: string) => void;
   /** The offline copy and the install offer of the browser. */
   pwa?: PwaState;
 }
@@ -37,6 +42,8 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenHeads,
   headsSummary,
   portName,
+  bitrateChoice,
+  onBitrateChange,
   pwa
 }) => {
   const { t, i18n } = useTranslation();
@@ -177,6 +184,22 @@ export const Header: React.FC<HeaderProps> = ({
                 <span>{portName || t('header.connected_fallback', 'Connected')}</span>
               </button>
             ) : (
+              <>
+              {onBitrateChange && (
+                <label className="flex items-center gap-1.5 text-slate-400">
+                  <span>{t('header.bitrate_label', 'Bus speed')}</span>
+                  <select
+                    data-testid="bitrate-select"
+                    value={bitrateChoice ?? AUTO_RATE}
+                    onChange={(event) => onBitrateChange(event.target.value)}
+                    title={t('header.bitrate_title', 'Automatic only listens to the bus at each speed; a speed chosen here is opened directly')}
+                    className="px-2 py-1.5 rounded-lg bg-slate-800 text-slate-300 border border-slate-700"
+                  >
+                    <option value={AUTO_RATE}>{t('header.bitrate_auto', 'Automatic (listen only)')}</option>
+                    {BITRATE_TRY_ORDER.map((entry) => <option key={entry.code} value={entry.code}>{entry.label}</option>)}
+                  </select>
+                </label>
+              )}
               <button
                 onClick={onConnect}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition-colors"
@@ -185,6 +208,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <Usb className="w-3.5 h-3.5" />
                 <span>{t('header.connect_button', 'Connect Hardware')}</span>
               </button>
+              </>
             )}
 
             {/* The offline copy: running from the stored copy (no network), or ready to run without one; and the install offer */}
