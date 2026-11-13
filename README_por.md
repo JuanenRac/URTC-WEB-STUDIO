@@ -57,7 +57,7 @@
 | Interface | 🟡 | A janela funciona e é verificada contra uma placa simulada; não foi experimentada com um adaptador real. |
 | Testes | 🟢 | A bateria de testes passa na CI em cada envio. |
 | Hardware real | 🟠 | Ainda não correu numa placa real: o ensaio de bancada continua pendente. |
-| Idiomas e acessibilidade | 🟡 | A interface e a sua ajuda estão em oito idiomas; a utilização com teclado e leitor de ecrã não foi testada |
+| Idiomas e acessibilidade | 🟡 | A interface e a sua ajuda estão em oito idiomas; a utilização com teclado e leitor de ecrã não foi testada. |
 | Documentação | 🟡 | README em oito línguas e documentos de referência; as traduções não foram revistas por falantes nativos. |
 
 <!-- /urtc-section:status_web_studio -->
@@ -155,7 +155,7 @@ Capturadas numa bancada de testes com dados de exemplo inventados e sem qualquer
   <img src="images/screenshots/tester.png" alt="Diagnóstico do Tester" width="100%">
 </p>
 
-<p align="center"><em>Diagnóstico do testador: a caixa negra e os contadores térmicos ao longo do tempo, lidos de uma placa modelada.</em></p>
+<p align="center"><em>Diagnóstico do Tester: a caixa negra e os contadores térmicos ao longo do tempo, lidos de uma placa modelada.</em></p>
 <!-- /urtc-section:screenshots -->
 
 ## ✨ Funcionalidades
@@ -173,8 +173,8 @@ CAN IDs:
   consultar a versão em vez de reportar uma falsa falha).
 - **Atualização CAN-OTA do escravo de expansão** (`0x210`-`0x219`, retransmitida através da
   própria ponte I2C da placa principal) - mesmo esquema de assinatura/CRC, sem ACK de página
-  nem sinal de vida neste caminho (corresponde ao protocolo real; o progresso é consultado por
-  polling, não enviado espontaneamente).
+  nem sinal de vida neste caminho (corresponde ao protocolo real; o progresso é consultado
+  periodicamente, não enviado espontaneamente).
 - **Autorização de downgrade** (`0x7FD`) - uma caixa de seleção protegida por confirmação
   que autoriza a tentativa atual a contornar a verificação anti-rollback do bootloader,
   para uma reversão deliberada para uma versão mais antiga.
@@ -183,7 +183,7 @@ CAN IDs:
   dos próprios registos de erro do controlador CAN) - distingue um problema genuíno
   do barramento de um problema do lado da aplicação/bootloader.
 - **Leitura de volta / cópia de segurança do firmware por CAN** (`0x7FE`/`0x7FF`) - lê o conteúdo
-  atual do slot principal antes de o sobrescrever, a um ritmo de 2KB/página
+  atual da ranhura principal antes de o sobrescrever, a um ritmo de 2KB/página
   com ACKs do host, e guarda-o como uma transferência `.bin`.
 - **Consulta da versão da placa em direto** (`0x7F8`/`0x7F9`/`0x7FA`/`0x7E9`) - mostra o
   emissor real da resposta (app ou bootloader), o HardwareID e a versão, não um interruptor
@@ -198,8 +198,8 @@ CAN IDs:
 - **Número de patch do firmware** (`0x7E9`, e o `0x218` alargado do escravo) -
   o firmware instalado e a imagem selecionada são mostrados como
   maior.menor.patch. O patch só entra na comparação quando os dois lados o
-  trazem, uma placa anterior (não envia `0x7E9`) continua a funcionar com
-  maior.menor, e o patch só vai em END_UPDATE para um bootloader que o tenha
+  trazem; uma placa anterior (não envia `0x7E9`) continua a funcionar com
+  maior.menor; e o patch só vai em END_UPDATE para um bootloader que o tenha
   anunciado. O registo diz se a imagem é mais antiga, igual ou mais recente do
   que o comunicado pela placa.
 - **Cabeçalho dentro da imagem** - uma imagem construída com o cabeçalho selado indica, no ficheiro, a placa a que se destina, a sua versão, o seu comprimento e o seu CRC-32. Antes da primeira trama, a página recusa uma imagem para outra placa, uma versão diferente da do nome do ficheiro, um comprimento ou um CRC-32 que não coincidem, um cabeçalho que ninguém selou e um ficheiro `.urimg` carimbado. Uma imagem anterior sem cabeçalho é gravada com um aviso; o seletor **Cabeçalho da imagem** (aceitar, aceitar com um aviso, exigir cabeçalho) altera isso e fica memorizado neste navegador. Um cabeçalho presente é sempre verificado.
@@ -231,7 +231,7 @@ cópia de segurança completa da flash antes de um apagamento total.
 
 ### Tester Studio - cobertura real de funcionalidades
 
-Portado a partir dos painéis do próprio painel Qt Quick do `URTC-TESTER`
+Portado a partir dos painéis do painel Qt Quick do `URTC-TESTER`
 (`assets/qml/TesterDeck.qml`), contra os mesmos CAN IDs:
 
 - Um painel por ferramenta (ferro de soldar + alimentador de fio, ferramentas de
@@ -262,7 +262,7 @@ Portado a partir dos painéis do próprio painel Qt Quick do `URTC-TESTER`
   versão da placa (`0x7F8`/`0x7F9`), e um erro crítico declarado (`0x111` byte 1)
   surge como um banner de falha em direto.
 
-- **Separador Evidências.** Lê os registos (`urtc-evidence/1`) que o flasher, o tester e o updater escrevem, dos ficheiros que a pessoa escolhe (não se carrega nada), verifica cada um com as mesmas regras e o mesmo resumo que o código comum e lista-os do mais recente para o mais antigo, com filtros por tipo, resultado e texto, um resumo, o problema de cada registo inválido e uma transferência em CSV. Um registo assinado com Ed25519 mostra se a assinatura coincide, e uma lista de chaves de confiança (alias e chave pública, só chaves públicas, guardada neste navegador e nunca enviada) faz com que diga "assinada por <alias>" ou "assinatura válida, chave desconhecida". A lista pode ser guardada num ficheiro JSON e podem adicionar-se chaves a partir de um ficheiro (um ficheiro com uma única entrada errada é recusado por inteiro); a página está nos oito idiomas.
+- **Separador Evidências.** Lê os registos (`urtc-evidence/1`) que o flasher, o tester e o updater escrevem, dos ficheiros que a pessoa escolhe (não se carrega nada), verifica cada um com as mesmas regras e o mesmo resumo que o código comum e lista-os do mais recente para o mais antigo, com filtros por tipo, resultado e texto, um resumo, o problema de cada registo inválido e uma exportação em CSV. Um registo assinado com Ed25519 mostra se a assinatura coincide, e uma lista de chaves de confiança (alias e chave pública, só chaves públicas, guardada neste navegador e nunca enviada) faz com que diga «assinada por <alias>» ou «assinatura válida, chave desconhecida». A lista pode ser guardada num ficheiro JSON e podem adicionar-se chaves a partir de um ficheiro (um ficheiro com uma única entrada errada é recusado por inteiro); a página está nos oito idiomas.
 
 - **Tramas construídas por funções puras.** As tramas dos painéis (LED e anel de estado, passagem direta SPI, funções opcionais, bico e extrusor da cabeça de impressora 3D, pulso de soldadura, movimentos do motor de passo) são construídas em `toolFrames.ts` e as da atualização do firmware (START_UPDATE, os quatro blocos de assinatura, as tramas de dados da imagem e END_UPDATE) em `flashFrames.ts`; um valor que não cabe no seu campo é levado ao mais próximo que caiba, e os testes fixam os bytes.
 
@@ -273,7 +273,7 @@ Portado a partir dos painéis do próprio painel Qt Quick do `URTC-TESTER`
 <!-- urtc-section:heads -->
 ### Várias cabeças de ferramenta num barramento
 
-O firmware pode fazer várias cabeças de ferramenta partilharem um barramento CAN (a extensão multinó). Vem **desativada por defeito**, e um barramento com uma só cabeça funciona exatamente como antes. A janela **Cabeças** encontra as cabeças, lista cada uma com o seu endereço, ferramenta e número de série, e mostra o seu estado: pronta, selecionada, conflito de endereço, falha retida, no seu bootloader ou perdida. Seleciona uma, o programa pede confirmação e só depois lhe envia alguma coisa; enquanto houver várias cabeças no barramento, um comando é recusado até uma estar selecionada e o ter confirmado. Se a cabeça selecionada se perder, todas as cabeças passam ao estado seguro (uma caixa da janela desativa-o). Só foi testada contra um modelo do barramento, não com placas. Veja `docs/MULTINODE.md` em URTC-COMMON.
+O firmware pode fazer várias cabeças de ferramenta partilharem um barramento CAN (a extensão multinó). Vem **desativada por defeito**, e um barramento com uma só cabeça funciona exatamente como antes. A janela **Cabeças** encontra as cabeças, lista cada uma com o seu endereço, ferramenta e número de série, e mostra o seu estado: pronta, selecionada, conflito de endereço, falha retida, no seu bootloader ou perdida. Ao selecionar uma, o programa pede confirmação e só depois lhe envia alguma coisa; enquanto houver várias cabeças no barramento, um comando é recusado até haver uma selecionada e confirmada. Se a cabeça selecionada se perder, todas as cabeças passam ao estado seguro (uma caixa da janela desativa-o). Só foi testada contra um modelo do barramento, não com placas. Veja `docs/MULTINODE.md` em URTC-COMMON.
 <!-- /urtc-section:heads -->
 
 ## 🔒 Segurança e proteção
@@ -293,7 +293,7 @@ STOP ALL é um comando de software, não uma paragem de emergência, e nenhuma d
 ### Separação do simulador e confirmações (verificações de software, não funções de segurança)
 
 - Os separadores de sandbox (Control, OLED, Thermal IR) não transmitem nada. As suas tramas levam a marca SIM e, enquanto há uma placa ligada, não produzem nenhuma resposta simulada. Das mensagens predefinidas do analisador de protocolo só são enviadas a uma placa ligada as consultas simples; as restantes continuam simuladas.
-- O separador Control pode enviar tramas reais, mas só se você ativar «Permitir o envio de tramas reais a partir deste separador» (desligado por omissão, guardado neste navegador) e houver uma placa ligada. O valor de referência do ferro de soldar pode ser enviado uma vez ou mantido: um valor mantido é renovado a cada 100 ms durante um tempo limitado (30 s por omissão, de 5 a 120 no campo junto ao botão) e termina com PARAGEM, quando o tempo acaba, quando a janela perde o foco, quando você sai do separador, quando a ligação se perde ou quando o interruptor é desligado, sempre com a trama de desligar. O berbequim e o laser são uma única trama confirmada cada um, com duas confirmações (a segunda com um texto explícito) e sem renovação. Um valor fora dos limites da ferramenta é recusado, cada trama pede a sua própria confirmação e PARAGEM está sempre visível. Com o interruptor desligado, o separador só simula contra o gémeo e nada chega ao barramento.
+- O separador Control pode enviar tramas reais, mas só se ativar «Permitir o envio de tramas reais a partir deste separador» (desligado por omissão, guardado neste navegador) e houver uma placa ligada. O valor de referência do ferro de soldar pode ser enviado uma vez ou mantido: um valor mantido é renovado a cada 100 ms durante um tempo limitado (30 s por omissão, de 5 a 120 no campo junto ao botão) e termina com PARAGEM, quando o tempo acaba, quando a janela perde o foco, quando sair do separador, quando a ligação se perde ou quando o interruptor é desligado, sempre com a trama de desligar. O berbequim e o laser são uma única trama confirmada cada um, com duas confirmações (a segunda com um texto explícito) e sem renovação. Um valor fora dos limites da ferramenta é recusado, cada trama pede a sua própria confirmação e PARAGEM está sempre visível. Com o interruptor desligado, o separador só simula contra o gémeo e nada chega ao barramento.
 - O Tester Studio mostra um painel de ferramenta apenas para a ferramenta que a própria placa comunicou (`0x111`), e nenhum antes de a placa responder.
 - Laser, berbequim, cura UV, soldadura, aquecedores, movimento, dosagem de pasta, escritas na memória da placa e tramas escritas à mão que envolvam risco pedem confirmação antes.
 - **PARAR TUDO** no cabeçalho (visível com a ligação ativa) desliga todos os atuadores que esta página mantém ativos; fechar a página e desligar fazem o mesmo. É um comando de software, não uma paragem de emergência.
@@ -342,25 +342,25 @@ Cada ficheiro de uma release oficial tem uma assinatura de release (`<ficheiro>.
 - Um navegador com suporte de Web Serial - **Chrome ou Edge**. O Firefox e o Safari
   não implementam Web Serial e não conseguirão ligar de todo.
 - O Web Serial exige um contexto seguro (HTTPS) ou `localhost` - e não pode ser usado
-  a partir do interior de um iframe. Se estiver a pré-visualizar esta aplicação dentro de um
-  frame incorporado, abra-a primeiro no seu próprio separador.
+  a partir do interior de um iframe. Se estiver a pré-visualizar esta aplicação dentro de uma
+  moldura incorporada, abra-a primeiro no seu próprio separador.
 
 ### Validação de tramas CAN
 
 Ambos os sentidos da ligação SLCAN são validados antes de qualquer coisa chegar à
-UI ou ao cabo (`src/hooks/useSerialCanBus.ts`):
+interface ou ao cabo (`src/hooks/useSerialCanBus.ts`):
 
 - **Saída** - `sendFrame()` recusa-se a serializar um comando cujo
   identificador fique fora do intervalo CAN padrão de 11 bits (`0x000`-`0x7FF`),
-  cujo carga exceda 8 bytes, ou cujo carga contenha um byte fora de
+  cuja carga exceda 8 bytes, ou cuja carga contenha um byte fora de
   `0x00`-`0xFF`. A interface mostra «Refusing malformed CAN frame: ...» em vez de
   escrever texto inválido na porta série.
 - **Entrada** - `processBuffer()` exige uma correspondência real
   `t<3-hex ID><1-hex DLC 0-8><hex payload>` antes de converter uma linha
-  SLCAN recebida num `CanFrame`; um DLC fora de `0`-`8` ou um carga mais curto
+  SLCAN recebida num `CanFrame`; um DLC fora de `0`-`8` ou uma carga mais curta
   do que o seu próprio comprimento declarado é registado na consola e descartado em vez de
   ser entregue a um painel de ferramenta como um byte `NaN`. Uma marca de tempo
-  opcional do adaptador no final continua a ser aceite depois de um carga válido.
+  opcional do adaptador no final continua a ser aceite depois de uma carga válida.
 
 ## 🚀 Início rápido
 
@@ -387,9 +387,9 @@ Depois abra `http://localhost:3000` no Chrome ou no Edge.
 
 O servidor de desenvolvimento escuta apenas em `localhost`: o Web Serial funciona com https ou em localhost, por isso abri-lo à rede não traria nada.
 
-### Build estático
+### Compilação estática
 
-Compila para um bundle estático e otimizado em `dist/`:
+Compila para um pacote estático e otimizado em `dist/`:
 - **Windows:** faça duplo clique em `build.bat` ou execute `npm run build`
 - **Linux/Mac:** execute `./build.sh` ou `npm run build`
 

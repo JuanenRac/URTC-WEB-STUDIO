@@ -387,7 +387,7 @@ Luego abre `http://localhost:3000` en Chrome o Edge.
 
 El servidor de desarrollo escucha solo en `localhost`: Web Serial funciona con https o en localhost, así que abrirlo a la red no aportaría nada.
 
-### Build estático
+### Compilación estática
 
 Compila en un paquete estático y optimizado en `dist/`:
 - **Windows:** doble clic en `build.bat` o ejecuta `npm run build`
