@@ -85,10 +85,10 @@ Cette app a deux types d'onglets :
   la matrice IR MLX90640 réelle de la tête d'outil via CAN.
 - **Onglets bac à sable hors ligne** - Control (catalogue d'outils), OLED, Specs/BOM,
   et Thermal IR Inspection. Ceux-ci vous permettent d'explorer le catalogue de 25
-  outils, prévisualiser les écrans d'état OLED, parcourir le BOM/pinouts, et voir un
+  outils, prévisualiser les écrans d'état OLED, parcourir le nomenclature (BOM) et brochages, et voir un
   flux de caméra thermique simulé, tout cela sans aucun matériel connecté. Le
   commutateur « FW v0.0 / v0.1 » de l'en-tête n'affecte que ces onglets bac à sable
-  (quels profils d'outils un build de firmware donné débloquerait) - il n'a aucun
+  (quels profils d'outils une compilation de firmware donnée débloquerait) - il n'a aucun
   rapport avec ce que rapporte une carte réelle connectée.
   - **Ne confondez pas les deux vues thermiques** : l'onglet autonome « Thermal IR
     Inspection » (`ThermalCameraViewer.tsx`) est du bruit `Math.random()` à 100 %
@@ -189,7 +189,7 @@ CAN ID :
 - **Requête de version de carte en direct** (`0x7F8`/`0x7F9`/`0x7FA`/`0x7E9`) - affiche le
   véritable émetteur de la réponse (application ou bootloader), le HardwareID, et la version, pas un
   commutateur simulé.
-- **Signature et empreinte publiées** - chaque image issue du build URTC est
+- **Signature et empreinte publiées** - chaque image issue de la compilation d'URTC est
   livrée avec `<file>.manifest.json` (version, `sha256` et la valeur `hmac_sha256` attendue par le bootloader, un HMAC-SHA256 à clé partagée que seuls les bootloaders de la génération précédente contrôlent ; l'enregistrement Ed25519 que vérifient les actuels est le fichier `<file>.imgsig` à côté de l'image, que l'application envoie au bootloader) et `<file>.sha256`. L'application
   envoie cette signature publiée, un `sha256` du manifeste qui ne correspond
   pas au fichier **bloque** le flashage, et c'est la version du manifeste qui
@@ -311,7 +311,7 @@ STOP ALL est une commande logicielle, pas un arrêt d'urgence, et aucun des cont
 Depuis la version 0.2.3, cette application ne contient **aucune** clé de signature
 HMAC-SHA256. Le build URTC signe lui-même chaque image d'application (avec une clé privée uniquement pour les versions de release ; les images publiées utilisent la clé publique de développement) et publie la signature à côté ;
 Flasher Studio ne fait que transporter cette signature - le même modèle que
-le `URTC Flasher` de bureau. Le bundle JS ne contient rien de secret, la page
+le `URTC Flasher` de bureau. Le paquet JS ne contient rien de secret, la page
 peut donc être hébergée publiquement.
 
 La seule exception est une image compilée soi-même sans manifeste, pour une

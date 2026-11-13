@@ -169,15 +169,15 @@ dieselben CAN-IDs:
 
 - **CAN-OTA-Update der Hauptplatine** (`0x7F0`-`0x7F7`): Bootloader-Eintritts-
   Trigger, Ed25519-Eintrag des Images (nur gegen einen Simulator getestet), seitenweise Übertragung mit
-  Seiten-ACK-Flusssteuerung und Retry/Backoff, CRC32 + END_UPDATE mit
+  Seiten-ACK-Flusssteuerung und Wiederholung mit steigender Wartezeit, CRC32 + END_UPDATE mit
   deklarierter Version, und Behandlung des Endstatus (einschließlich der
   Wiederherstellung von einem verlorenen Bestätigungs-Frame auf dieselbe
   Weise wie das Desktop-Tool - es fragt die Version erneut ab, statt einen
   falschen Fehlschlag zu melden).
 - **CAN-OTA-Update des Erweiterungs-Slaves** (`0x210`-`0x219`, weitergeleitet
-  über die eigene I2C-Bridge der Hauptplatine) - dasselbe Signier-/CRC-Schema,
+  über die eigene I2C-Brücke der Hauptplatine) - dasselbe Signier-/CRC-Schema,
   kein Seiten-ACK oder Heartbeat auf diesem Pfad (entspricht dem echten
-  Protokoll; der Fortschritt wird abgefragt, nicht gepusht).
+  Protokoll; der Fortschritt wird abgefragt, nicht gesendet).
 - **Downgrade-Autorisierung** (`0x7FD`) - eine bestätigungsgeschützte
   Checkbox, die den aktuellen Versuch autorisiert, die
   Anti-Rollback-Prüfung des Bootloaders zu umgehen, für eine gezielte
@@ -314,7 +314,7 @@ STOP ALL ist ein Software-Befehl, kein Not-Halt, und keine der obigen Prüfungen
 Seit 0.2.3 enthält diese App **keinen** HMAC-SHA256-Signierschlüssel. Der
 URTC-Build signiert jedes Anwendungs-Image selbst (bei Release-Builds mit einem privaten Schlüssel; die veröffentlichten Images verwenden den öffentlichen Entwicklungsschlüssel) und veröffentlicht die Signatur daneben; Flasher
 Studio transportiert nur diese Signatur - dasselbe Modell wie der
-Desktop-`URTC Flasher`. Im JS-Bundle steckt nichts Geheimes, die Seite kann
+Desktop-`URTC Flasher`. Im JS-Paket steckt nichts Geheimes, die Seite kann
 also öffentlich gehostet werden.
 
 Einzige Ausnahme ist ein selbst gebautes Image ohne Manifest für eine

@@ -89,7 +89,7 @@ Esta aplicação tem dois tipos de separadores:
   ferramentas, pré-visualizar os ecrãs de estado OLED, navegar pelo BOM/pinouts e
   ver uma imagem simulada de câmara térmica, tudo sem qualquer hardware ligado.
   O interruptor «FW v0.0 / v0.1» do cabeçalho só afeta estes separadores sandbox
-  (que perfis de ferramenta seriam desbloqueados por uma dada build de firmware) - não tem
+  (que perfis de ferramenta seriam desbloqueados por uma dada compilação de firmware) - não tem
   qualquer relação com o que uma placa real ligada reporta.
   - **Não confunda as duas vistas térmicas**: o separador autónomo "Thermal IR
     Inspection" (`ThermalCameraViewer.tsx`) é ruído `Math.random()` 100% do lado
@@ -173,7 +173,7 @@ CAN IDs:
   consultar a versão em vez de reportar uma falsa falha).
 - **Atualização CAN-OTA do escravo de expansão** (`0x210`-`0x219`, retransmitida através da
   própria ponte I2C da placa principal) - mesmo esquema de assinatura/CRC, sem ACK de página
-  nem heartbeat neste caminho (corresponde ao protocolo real; o progresso é consultado por
+  nem sinal de vida neste caminho (corresponde ao protocolo real; o progresso é consultado por
   polling, não enviado espontaneamente).
 - **Autorização de downgrade** (`0x7FD`) - uma caixa de seleção protegida por confirmação
   que autoriza a tentativa atual a contornar a verificação anti-rollback do bootloader,
@@ -188,7 +188,7 @@ CAN IDs:
 - **Consulta da versão da placa em direto** (`0x7F8`/`0x7F9`/`0x7FA`/`0x7E9`) - mostra o
   emissor real da resposta (app ou bootloader), o HardwareID e a versão, não um interruptor
   simulado.
-- **Assinatura e digest publicados** - cada imagem da build do URTC traz
+- **Assinatura e resumos publicados** - cada imagem da compilação do URTC traz
   `<file>.manifest.json` (versão, `sha256` e o valor `hmac_sha256` que o bootloader espera, um HMAC-SHA256 de chave partilhada que só os bootloaders da geração anterior verificam; o registo Ed25519 que os atuais verificam é o ficheiro `<file>.imgsig` junto à imagem, que a aplicação envia ao bootloader) e `<file>.sha256`. A aplicação envia essa assinatura publicada,
   um `sha256` do manifesto que não corresponda ao ficheiro **bloqueia** a gravação,
   e a versão do manifesto é a que é comunicada ao bootloader. Um ficheiro escolhido
@@ -207,7 +207,7 @@ CAN IDs:
   release de cada versão do URTC, não ficheiros no git. A lista vem da API de
   releases de `JuanenRac/URTC` (apenas as imagens de aplicação da placa
   selecionada, cada uma com o seu `.sha256` e o seu `.manifest.json`); uma
-  imagem transferida tem de corresponder aos digests que a release publica, e
+  imagem transferida tem de corresponder aos resumos que a release publica, e
   mantêm-se as verificações de imagem, manifesto e assinatura. O GitHub serve os
   ficheiros a partir de um anfitrião que não envia cabeçalhos CORS, pelo que um
   navegador pode não os conseguir transferir: o registo di-lo, e a imagem pode
@@ -220,7 +220,7 @@ CAN IDs:
 #### SWD/JTAG - não disponível a partir de um navegador, por conceção
 
 Não existe nenhuma Web API capaz de controlar uma sonda de depuração SWD/JTAG - o Web Serial
-só comunica com dispositivos de framing série (como um adaptador USB-CAN), não com o
+só comunica com dispositivos de comunicação série (como um adaptador USB-CAN), não com o
 protocolo próprio de uma sonda, e o STM32CubeProgrammer/pyOCD são subprocessos nativos
 que a ferramenta de ambiente de trabalho invoca. Esta é uma limitação estrutural de
 correr numa sandbox de navegador, não uma funcionalidade em falta aqui. O separador
@@ -231,7 +231,7 @@ cópia de segurança completa da flash antes de um apagamento total.
 
 ### Tester Studio - cobertura real de funcionalidades
 
-Portado a partir dos painéis do próprio deck Qt Quick do `URTC-TESTER`
+Portado a partir dos painéis do próprio painel Qt Quick do `URTC-TESTER`
 (`assets/qml/TesterDeck.qml`), contra os mesmos CAN IDs:
 
 - Um painel por ferramenta (ferro de soldar + alimentador de fio, ferramentas de
@@ -304,9 +304,9 @@ STOP ALL é um comando de software, não uma paragem de emergência, e nenhuma d
 ### Nota de segurança: nenhuma chave de assinatura nesta aplicação
 
 Desde a versão 0.2.3 esta aplicação **não** contém nenhuma chave de assinatura HMAC-SHA256.
-A build do URTC assina ela própria cada imagem de aplicação (com uma chave privada apenas nas builds de release; as imagens publicadas usam a chave pública de desenvolvimento) e publica a assinatura a seu lado; o Flasher
+A compilação do URTC assina ela própria cada imagem de aplicação (com uma chave privada apenas nas compilações de release; as imagens publicadas usam a chave pública de desenvolvimento) e publica a assinatura a seu lado; o Flasher
 Studio apenas transporta essa assinatura - o mesmo modelo do `URTC Flasher` de
-ambiente de trabalho. Nada secreto é incluído no bundle JS, pelo que a página pode
+ambiente de trabalho. Nada secreto é incluído no pacote JS, pelo que a página pode
 ser alojada publicamente.
 
 A única exceção é uma imagem compilada por si, sem manifesto, para uma placa de
@@ -324,7 +324,7 @@ estão no git: são anexos da release de cada versão no GitHub.
 `npm run sync-firmware` transfere a release mais recente
 (`npm run sync-firmware -- --tag v0.3.5` para uma em concreto), ou recebe uma
 pasta local como argumento (`npm run sync-firmware -- ../URTC/firmware` para
-uma build de bancada). Em ambos os casos verifica cada digest e os campos de
+uma compilação de bancada). Em ambos os casos verifica cada resumo e os campos de
 assinatura antes de tocar em `public/firmware/`, e regenera
 `src/lib/bundledFirmware.ts`; um teste verifica o pacote contra os seus
 manifestos.
@@ -353,13 +353,13 @@ UI ou ao cabo (`src/hooks/useSerialCanBus.ts`):
 - **Saída** - `sendFrame()` recusa-se a serializar um comando cujo
   identificador fique fora do intervalo CAN padrão de 11 bits (`0x000`-`0x7FF`),
   cujo carga exceda 8 bytes, ou cujo carga contenha um byte fora de
-  `0x00`-`0xFF`. A UI mostra «Refusing malformed CAN frame: ...» em vez de
+  `0x00`-`0xFF`. A interface mostra «Refusing malformed CAN frame: ...» em vez de
   escrever texto inválido na porta série.
 - **Entrada** - `processBuffer()` exige uma correspondência real
   `t<3-hex ID><1-hex DLC 0-8><hex payload>` antes de converter uma linha
   SLCAN recebida num `CanFrame`; um DLC fora de `0`-`8` ou um carga mais curto
   do que o seu próprio comprimento declarado é registado na consola e descartado em vez de
-  ser entregue a um painel de ferramenta como um byte `NaN`. Um timestamp
+  ser entregue a um painel de ferramenta como um byte `NaN`. Uma marca de tempo
   opcional do adaptador no final continua a ser aceite depois de um carga válido.
 
 ## 🚀 Início rápido
@@ -502,7 +502,7 @@ O URTC é feito de repositórios independentes, cada um com a sua versão, os se
 
 ## 📚 Documentação
 
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — como a UI, as definições
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — como a interface, as definições
   persistidas e a autoridade do transporte externo se mantêm separadas, e porque
   é que os separadores sandbox têm de expor estados offline/indisponível em vez de
   apresentar dados simulados como reais.

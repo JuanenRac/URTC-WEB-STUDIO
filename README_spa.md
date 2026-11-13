@@ -304,9 +304,9 @@ STOP ALL es una orden de software, no una parada de emergencia, y ninguna de las
 ### Nota de seguridad: esta app no lleva clave de firma
 
 Desde la 0.2.3 esta app **no** contiene ninguna clave de firma HMAC-SHA256.
-El build de URTC firma él mismo cada imagen de aplicación (con una clave privada solo en las versiones de release; las imágenes publicadas usan la clave pública de desarrollo) y publica la firma a su lado; Flasher
+La compilación de URTC firma ella misma cada imagen de aplicación (con una clave privada solo en las versiones de release; las imágenes publicadas usan la clave pública de desarrollo) y publica la firma a su lado; Flasher
 Studio solo transporta esa firma - el mismo modelo que el `URTC Flasher` de
-escritorio. El bundle JS no contiene nada secreto, así que la página puede
+escritorio. El paquete JS no contiene nada secreto, así que la página puede
 publicarse abiertamente.
 
 La única excepción es una imagen compilada por ti sin manifiesto, para una
@@ -324,7 +324,7 @@ están en git: son archivos adjuntos de la release de cada versión.
 `npm run sync-firmware` descarga la release más reciente
 (`npm run sync-firmware -- --tag v0.3.5` para una concreta), o toma una carpeta
 local como argumento (`npm run sync-firmware -- ../URTC/firmware` para un
-build de banco). En ambos casos comprueba cada resumen y los campos de firma
+compilación de banco). En ambos casos comprueba cada resumen y los campos de firma
 antes de tocar `public/firmware/`, y regenera `src/lib/bundledFirmware.ts`; un
 test verifica el paquete contra sus manifiestos.
 
@@ -347,20 +347,20 @@ Cada archivo de una release oficial tiene una firma de release (`<archivo>.sig`,
 ### Validación de tramas CAN
 
 Ambas direcciones del enlace SLCAN se validan antes de que nada llegue a la
-UI o al cable (`src/hooks/useSerialCanBus.ts`):
+interfaz o al cable (`src/hooks/useSerialCanBus.ts`):
 
 - **Saliente** - `sendFrame()` se niega a serializar un comando cuyo
   identificador quede fuera del rango CAN estándar de 11 bits
-  (`0x000`-`0x7FF`), cuyo payload supere los 8 bytes, o cuyo payload
-  contenga un byte fuera de `0x00`-`0xFF`. La UI muestra "Refusing malformed
+  (`0x000`-`0x7FF`), cuya carga supere los 8 bytes, o cuyo carga
+  contenga un byte fuera de `0x00`-`0xFF`. La interfaz muestra "Refusing malformed
   CAN frame: ..." en vez de escribir texto inválido al puerto serie.
 - **Entrante** - `processBuffer()` exige una coincidencia real
   `t<3 hex ID><1 hex DLC 0-8><payload hex>` antes de convertir una línea
-  SLCAN recibida en un `CanFrame`; un DLC fuera de `0`-`8` o un payload más
+  SLCAN recibida en un `CanFrame`; un DLC fuera de `0`-`8` o una carga más
   corto que su propia longitud declarada se registra en consola y se
   descarta en vez de entregarse a un panel de herramienta como un byte
   `NaN`. Una marca de tiempo opcional del adaptador al final sigue
-  aceptándose después de un payload válido.
+  aceptándose después de una carga válida.
 
 ## 🚀 Inicio rápido
 
@@ -389,7 +389,7 @@ El servidor de desarrollo escucha solo en `localhost`: Web Serial funciona con h
 
 ### Build estático
 
-Compila en un bundle estático y optimizado en `dist/`:
+Compila en un paquete estático y optimizado en `dist/`:
 - **Windows:** doble clic en `build.bat` o ejecuta `npm run build`
 - **Linux/Mac:** ejecuta `./build.sh` o `npm run build`
 
@@ -502,7 +502,7 @@ URTC se compone de repositorios independientes, cada uno con su versión, sus pr
 
 ## 📚 Documentación
 
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — cómo la UI, la
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — cómo la interfaz, la
   configuración persistida y la autoridad del transporte externo se
   mantienen separadas, y por qué las pestañas sandbox deben exponer
   estados offline/no disponible en vez de presentar datos simulados como
