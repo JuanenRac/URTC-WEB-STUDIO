@@ -230,7 +230,7 @@ des sous-processus natifs que l'outil de bureau exécute. C'est une limitation
 structurelle de l'exécution dans un bac à sable navigateur, pas une fonctionnalité
 manquante ici. L'onglet SWD/JTAG dans Flasher Studio explique les commandes
 exactes que l'outil de bureau `URTC Flasher` exécuterait localement, à titre de
-référence - utilisez cet outil directement pour la programmation à puce complète,
+référence - utilisez ce programme directement pour la programmation à puce complète,
 les vérifications option-byte/RDP, ou une sauvegarde complète de la flash avant un
 effacement de masse.
 
@@ -354,12 +354,12 @@ Chaque fichier d'une release officielle a une signature de release (`<fichier>.s
 ### Validation des trames CAN
 
 Les deux sens de la liaison SLCAN sont validés avant que quoi que ce soit
-n'atteigne l'UI ou le fil (`src/hooks/useSerialCanBus.ts`) :
+n'atteigne l'interface ou le fil (`src/hooks/useSerialCanBus.ts`) :
 
 - **Sortant** - `sendFrame()` refuse de sérialiser une commande dont
   l'identifiant sort de la plage CAN standard 11 bits (`0x000`-`0x7FF`),
   dont la charge utile dépasse 8 octets, ou dont un octet de charge utile
-  sort de `0x00`-`0xFF`. L'UI affiche « Refusing malformed CAN frame: ... »
+  sort de `0x00`-`0xFF`. L'interface affiche « Refusing malformed CAN frame: ... »
   au lieu d'écrire du texte invalide sur le port série.
 - **Entrant** - `processBuffer()` exige une correspondance réelle
   `t<ID hex sur 3><DLC hex sur 1, 0-8><charge utile hex>` avant de
@@ -510,7 +510,7 @@ URTC est fait de dépôts indépendants, chacun avec sa version, ses tests et so
 
 ## 📚 Documentation
 
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — comment l'UI, les
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — comment l'interface, les
   paramètres persistés et l'autorité du transport externe restent séparés,
   et pourquoi les onglets sandbox doivent exposer des états hors ligne/
   indisponible plutôt que présenter des données simulées comme réelles.
@@ -564,12 +564,12 @@ des licences différentes - chacune adaptée à ce qu'elle couvre réellement :
    **Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)**.
    Texte complet sur https://creativecommons.org/licenses/by-sa/4.0/.
 
-Cet outil est le compagnon basé sur navigateur du projet
+Cette application est le compagnon basé sur navigateur du projet
 [URTC (Universal Robot Tool Controller)](https://github.com/JuanenRac/URTC) - voir
-le propre dépôt de ce projet pour le firmware de la carte, les conceptions
-matérielles, et la documentation complète du protocole que cet outil
-implémente. Le propre firmware d'URTC est GPL-3.0-or-later et ses conceptions matérielles
-sont CERN-OHL-S v2 ; la propre licence de cet outil ici ne s'étend pas à ce projet
+le dépôt de ce projet pour le firmware de la carte, les conceptions
+matérielles et la documentation complète du protocole que cette application
+implémente. Le firmware d'URTC est GPL-3.0-or-later et ses conceptions matérielles
+sont CERN-OHL-S v2 ; la licence de cette application ne s'étend pas à ce projet
 séparé, et vice-versa. Il existe aussi deux alternatives natives de bureau couvrant le
 même terrain :
 [URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER) et

@@ -558,12 +558,12 @@ licencias distintas - cada una adecuada a lo que realmente cubre:
    **Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)**.
    Texto completo en https://creativecommons.org/licenses/by-sa/4.0/.
 
-Esta herramienta es el compañero basado en navegador del proyecto
-[URTC (Universal Robot Tool Controller)](https://github.com/JuanenRac/URTC) - ver el
-propio repositorio de ese proyecto para el firmware de la placa, los diseños de
-hardware, y la documentación completa del protocolo contra la que trabaja esta
-herramienta. El propio firmware de URTC es GPL-3.0-or-later y sus diseños de hardware son
-CERN-OHL-S v2; la propia licencia de esta herramienta aquí no se extiende a ese
+Esta aplicación es el compañero basado en navegador del proyecto
+[URTC (Universal Robot Tool Controller)](https://github.com/JuanenRac/URTC) - consulta el
+repositorio de ese proyecto para el firmware de la placa, los diseños de
+hardware, y la documentación completa del protocolo con el que trabaja esta
+aplicación. El firmware de URTC es GPL-3.0-or-later y sus diseños de hardware son
+CERN-OHL-S v2; la licencia de esta aplicación no se extiende a ese
 proyecto separado, y viceversa. También existen dos alternativas nativas de
 escritorio que cubren el mismo terreno:
 [URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER) y
