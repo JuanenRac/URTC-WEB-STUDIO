@@ -10,7 +10,7 @@ export interface ControlSessionOptions {
   connected: boolean;
   /** The Control tab is the one on screen. */
   tabActive: boolean;
-  /** The switch of real sending. */
+  /** Real sending is on (the Control tab always sends for real with a board connected). */
   allowed: boolean;
   send: Send;
   /** Called once when something that was running ends, with why. */
@@ -48,7 +48,8 @@ export function useControlSession(options: ControlSessionOptions) {
 
   /** One confirmed frame went out: remember how to switch the tool off. */
   const rememberSingle = useCallback((frame: HeldFrame) => {
-    cut('switch');
+    // A new setpoint for the tool that is already on replaces the old one: the off frame of the old one must not follow it onto the bus.
+    if (!(single.current && !heartbeat.current && single.current.id === frame.id)) cut('switch');
     single.current = frame;
     setActive(true);
   }, [cut]);

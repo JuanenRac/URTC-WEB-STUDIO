@@ -1,23 +1,30 @@
-// The Control tab is a simulator. It may send real frames to the connected board, and only when the person has switched that on (off by default, kept in this
-// browser), only for a tool whose setpoint is one single frame, only inside the limits of the tool, and only after the person confirms that very frame (the drill
-// and the laser ask twice, the second time with an explicit text). With the switch off, or with no board connected, nothing reaches the bus.
+// The Control tab models a board, and with a board connected it sends real frames to the bus (always real; the simulator stays for the slider and for no board).
+// It sends only for a tool whose setpoint is one single frame, only inside the limits of the tool, and only after the person confirms that very frame (the drill
+// and the laser ask twice, the second time with an explicit text). A drill or a laser that is on is asked again only when the power changes by more than the
+// percentage of the configuration file (controlConfig.json). With no board connected, nothing reaches the bus.
 
 import { byte, drillCommand, drillStop, laserCommand, laserOff, solderOff, solderSetpoint } from './toolFrames';
 import { MAX_HEATER_SETPOINT_C } from './toolLimits';
 import { CAN_ID_DRILL_CMD, CAN_ID_LASER_CMD, CAN_ID_SOLDER_SETPOINT } from './canIds';
 import type { ActionKind } from './dangerousActions';
+import controlConfig from './controlConfig.json';
 
-export const CONTROL_SEND_STORAGE_KEY = 'urtc-web-studio-control-real-send';
+export const DEFAULT_RECONFIRM_PERCENT = 10;
+export const MAX_RECONFIRM_PERCENT = 500;
 
-type StorageLike = Pick<Storage, 'getItem' | 'setItem'>;
-
-/** The switch: off unless it was explicitly saved as on; a storage that cannot be read means off. */
-export function loadControlSend(storage?: StorageLike): boolean {
-  try { return storage?.getItem(CONTROL_SEND_STORAGE_KEY) === '1'; } catch { return false; }
+/** The percentage of change of the power of a drill or a laser that is on above which it asks again: a number from 0 to 500, else the default. */
+export function reconfirmPercent(config: { power_change_reconfirm_percent?: unknown } = controlConfig): number {
+  const value = config?.power_change_reconfirm_percent;
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= MAX_RECONFIRM_PERCENT ? value : DEFAULT_RECONFIRM_PERCENT;
 }
 
-export function saveControlSend(storage: StorageLike | undefined, value: boolean): void {
-  try { storage?.setItem(CONTROL_SEND_STORAGE_KEY, value ? '1' : '0'); } catch { /* a convenience only: the default is the protective one */ }
+/**
+ * True when changing the power of a tool that is on from `current` to `next` needs a new confirmation: the change (up or down) is over `percent` of the current
+ * power. A current power of zero (or one that is not a number) is a tool that is off, which always asks.
+ */
+export function powerChangeNeedsConfirmation(current: number | null | undefined, next: number, percent: number = reconfirmPercent()): boolean {
+  if (typeof current !== 'number' || !Number.isFinite(current) || current <= 0 || !Number.isFinite(next)) return true;
+  return Math.abs(next - current) > (current * percent) / 100;
 }
 
 export type SecondConfirmation = 'drill' | 'laser';
@@ -58,13 +65,19 @@ export type ControlSendPlan =
   | {
       kind: 'confirm'; id: number; data: number[]; offData: number[]; action: ActionKind; value: number;
       second: SecondConfirmation | null; heartbeat: boolean;
+      /** False when the tool is already on and the change of power is within the percentage: the frame goes out without asking again. */
+      ask: boolean;
     };
 
-export interface ControlSendInput { allowReal: boolean; connected: boolean; toolId: number; value: number; toolMin?: number; toolMax?: number }
+export interface ControlSendInput {
+  connected: boolean; toolId: number; value: number; toolMin?: number; toolMax?: number;
+  /** The power the drill or the laser was last set to and is still on at (null when it is off); a change within the percentage does not ask again. */
+  activePower?: number | null; reconfirmPercent?: number;
+}
 
 /** What the button of the Control tab may do. Anything but `confirm` sends nothing. */
 export function planControlSend(input: ControlSendInput): ControlSendPlan {
-  if (!input.allowReal || !input.connected) return { kind: 'simulate' };
+  if (!input.connected) return { kind: 'simulate' };
   const entry = REAL_SETPOINTS[input.toolId];
   if (!entry) return { kind: 'unsupported' };
   const value = Math.round(input.value);
@@ -74,6 +87,7 @@ export function planControlSend(input: ControlSendInput): ControlSendPlan {
   return {
     kind: 'confirm', id: entry.canId, data: entry.encode(value, input.toolMax ?? entry.max), offData: entry.off(), action: entry.kind, value,
     second: entry.second, heartbeat: entry.heartbeat,
+    ask: entry.second === null || powerChangeNeedsConfirmation(input.activePower, value, input.reconfirmPercent),
   };
 }
 
@@ -93,6 +107,7 @@ export type Confirm = (kind: ActionKind, options: { value?: number; second?: boo
 /** Asks what the plan needs: the confirmation of the action and, for the drill and the laser, a second one. Only a true answer to each counts. */
 export async function confirmPlan(plan: ControlSendPlan, confirm: Confirm): Promise<boolean> {
   if (plan.kind !== 'confirm') return false;
+  if (!plan.ask) return true;
   if ((await confirm(plan.action, { value: plan.value })) !== true) return false;
   if (plan.second && (await confirm(plan.second, { value: plan.value, second: true })) !== true) return false;
   return true;

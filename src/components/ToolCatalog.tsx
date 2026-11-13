@@ -14,9 +14,9 @@ interface ToolCatalogProps {
   onSaveToFram: () => void;
   firmwareVersion: string;
   onSwitchToFirmware11?: () => void;
-  /** Sending one real frame from this tab: the switch (off by default), the button, whether a board is connected and the last answer. */
+  /** Sending one real frame from this tab: the real-bus label, the button, whether a board is connected and the last answer. */
   realSend?: {
-    allowed: boolean; connected: boolean; onAllowedChange: (value: boolean) => void; onSend: () => void; message: string;
+    connected: boolean; onSend: () => void; message: string;
     /** The selected tool can be held (refreshed for a bounded time); the others are one confirmed frame. */
     canHold?: boolean; holding?: boolean; holdSeconds?: number; onHoldSecondsChange?: (seconds: number) => void; onHold?: () => void; onStop?: () => void;
   };
@@ -273,17 +273,16 @@ export const ToolCatalog: React.FC<ToolCatalogProps> = ({
 
             {realSend && (
               <div className="p-3 rounded-lg bg-slate-950/60 border border-slate-800/80 space-y-2">
-                <label className="flex items-center gap-2 text-xs font-mono text-slate-300">
-                  <input
-                    type="checkbox"
-                    data-testid="real-send-switch"
-                    checked={realSend.allowed}
-                    onChange={(e) => realSend.onAllowedChange(e.target.checked)}
-                  />
-                  {t('toolcatalog.real_send_label', 'Allow sending real frames from this tab')}
-                </label>
-                <p className="text-[10px] text-slate-500">{t('toolcatalog.real_send_hint', 'Off by default. While it is off, this tab only simulates and nothing reaches the bus. When it is on and a board is connected, the button below sends one frame, and only after you confirm that frame.')}</p>
-                {realSend.allowed && realSend.connected && (
+                <div className="flex items-center gap-2 text-xs font-mono text-slate-300">
+                  <span
+                    data-testid="real-bus-badge"
+                    className={realSend.connected ? 'px-2 py-0.5 rounded bg-red-600 text-white font-black tracking-wider' : 'px-2 py-0.5 rounded bg-slate-800 text-slate-400 font-bold tracking-wider'}
+                  >
+                    {t('toolcatalog.real_send_label', 'Real bus')}
+                  </span>
+                </div>
+                <p className="text-[10px] text-slate-500">{t('toolcatalog.real_send_hint', 'With a board connected, this tab sends to the real bus: the button below puts one frame on it, and only after you confirm that frame (the drill and the laser ask twice). The simulator stays available: the slider only moves the simulated setpoint. Changing the power of a drill or a laser that is on asks again when the change is over the percentage set in the configuration file.')}</p>
+                {realSend.connected && (
                   <div className="flex flex-wrap items-center gap-2">
                     <button
                       type="button"

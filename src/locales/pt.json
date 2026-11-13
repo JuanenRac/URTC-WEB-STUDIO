@@ -6,7 +6,7 @@
     "simulator_notice": "Simulador: este separador simula uma placa e não envia nada para o barramento. Ligue um adaptador USB-CAN para trabalhar com a placa real no Tester Studio e no Flasher Studio.",
     "simulator_notice_connected": "Simulador: este separador simula uma placa e não envia nada para o barramento. O que mostra não é o que a placa ligada comunica; use o Tester Studio e o Flasher Studio para a placa real.",
     "loading": "A carregar...",
-    "simulator_notice_real_send": "Simulador com envio real ativado: este separador modela uma placa. Só o botão que diz enviar para a placa real coloca uma trama no barramento, e só depois de você confirmar essa trama."
+    "simulator_notice_real_send": "Simulador, barramento real: este separador modela uma placa, e só o botão que diz enviar para a placa real coloca uma trama no barramento, e só depois de você confirmar essa trama."
   },
   "config": {
     "language_en": "English",
@@ -69,8 +69,8 @@
     "watchdog_label": "WATCHDOG",
     "watchdog_active": "ATIVO",
     "watchdog_none": "SEM TIMEOUT",
-    "real_send_label": "Permitir o envio de tramas reais a partir deste separador",
-    "real_send_hint": "Desligado por omissão. Enquanto estiver desligado, este separador só simula e nada chega ao barramento. Com ele ligado e uma placa ligada, o botão abaixo envia uma trama, e só depois de você confirmar essa trama.",
+    "real_send_label": "Barramento real",
+    "real_send_hint": "Com uma placa ligada, este separador envia para o barramento real: o botão abaixo coloca uma trama nele, e só depois de você confirmar essa trama (o berbequim e o laser perguntam duas vezes). O simulador continua disponível: o cursor só move o valor simulado. Alterar a potência de um berbequim ou de um laser ligados volta a perguntar quando a alteração ultrapassa a percentagem definida no ficheiro de configuração.",
     "real_send_button": "Enviar este valor de referência à placa real",
     "real_send_unsupported": "Esta ferramenta não tem uma única trama que possa ser enviada a partir deste separador; use o Tester Studio. Não foi enviado nada.",
     "real_send_out_of_range": "O valor está fora dos limites da ferramenta. Não foi enviado nada.",
