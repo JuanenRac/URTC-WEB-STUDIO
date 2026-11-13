@@ -127,7 +127,7 @@ URTC-WEB-STUDIO 是 URTC 两个桌面程序 URTC-FLASHER 和 URTC-TESTER 的浏�
   <img src="images/screenshots/control.png" alt="工具矩阵与控制" width="100%">
 </p>
 
-<p align="center"><em>工具矩阵与控制：固件的 25 个工具配置及其跳线，以及所选工具的控件（模拟器标签页：不会向总线发送任何内容）。</em></p>
+<p align="center"><em>工具矩阵与控制：固件的 25 个工具配置及其跳线，以及所选工具的控件（模拟器标签页：除非您开启真实发送（默认关闭），否则不会向总线发送任何内容）。</em></p>
 
 <p align="center">
   <img src="images/screenshots/oled.png" alt="OLED 与硬件监视器" width="100%">
