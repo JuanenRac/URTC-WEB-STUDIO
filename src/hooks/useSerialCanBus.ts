@@ -4,11 +4,12 @@ import { CanFrame } from '../types';
 import { CAN_ID_QUERY_VERSION, CAN_ID_VERSION_RESPONSE, CAN_ID_BOOTLOADER_VERSION_RESPONSE } from '../lib/flasher';
 import { parseSlcanLine } from '../lib/slcan';
 import { FrameRouter } from '../lib/frameRouter';
-import { BITRATE_TRY_ORDER } from '../lib/busRate';
+import { AUTO_RATE, BusDetectIo, chosenRate, detectBusRate, openAtBusRate, passiveIdentifiers } from '../lib/busDetect';
 
-// The standard SLCAN/Lawicel "Sx" bitrate codes are tried in lib/busRate.ts's order
-// (1 Mbit/s of the tool heads first, then the legacy 500k), the same as
-// URTC-FLASHER/URTC-TESTER's own auto_detect_bitrate.
+const BITRATE_CHOICE_KEY = 'urtc-web-studio-bitrate';
+
+// The standard SLCAN/Lawicel "Sx" bitrate codes are listened to in lib/busRate.ts's order
+// (1 Mbit/s of the tool heads first, then the legacy 500k) by lib/busDetect.ts.
 
 export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
   const { t } = useTranslation();
@@ -139,20 +140,15 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
   }, [handlePortGone]);
   onNativeDisconnectRef.current = onNativeDisconnect;
 
-  // Resolves true as soon as a CAN_ID_VERSION_RESPONSE or
-  // CAN_ID_BOOTLOADER_VERSION_RESPONSE frame is dispatched (whichever the
-  // board answers CAN_ID_QUERY_VERSION with - application or bootloader),
-  // false if neither arrives within timeoutMs. Used by the bitrate
-  // auto-detect loop below. Filtered to these two specific IDs rather than
-  // "any parsed frame at all", so that noise which happens to parse into a
-  // well-formed-looking SLCAN line at the wrong bitrate can't be mistaken
-  // for a real board response.
-  const probeForResponse = (timeoutMs: number): Promise<boolean> => {
+  // Resolves true as soon as a frame with one of these identifiers is dispatched, false when the time is up. Filtered to specific identifiers
+  // rather than "any parsed frame", so that noise which happens to parse into a well-formed-looking SLCAN line at the wrong bitrate can't be
+  // mistaken for a real board.
+  const listenForIdentifiers = (identifiers: readonly number[], timeoutMs: number): Promise<boolean> => {
     return new Promise((resolve) => {
       let settled = false;
       const unsubscribe = subscribeAll((frame) => {
         if (settled) return;
-        if (frame.id !== CAN_ID_VERSION_RESPONSE && frame.id !== CAN_ID_BOOTLOADER_VERSION_RESPONSE) return;
+        if (!identifiers.includes(frame.id)) return;
         settled = true;
         unsubscribe();
         clearTimeout(timer);
@@ -167,31 +163,40 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
     });
   };
 
-  // Tries each candidate bitrate in BITRATE_TRY_ORDER: (re)opens the SLCAN
-  // channel at that bitrate, sends a CAN_ID_QUERY_VERSION probe (empty
-  // payload - the same frame the app uses elsewhere to ask "what's on the
-  // bus"), and waits briefly for any response. Mirrors
-  // URTC-FLASHER/URTC-TESTER's own auto_detect_bitrate. Returns the matching
-  // bitrate label with the channel left open on it, or null if nothing
-  // answered at any bitrate (channel is left closed in that case).
+  // What lib/busDetect.ts needs from this connection.
+  const detectIo = (): BusDetectIo => ({
+    send: (command) => _sendRaw(command),
+    settle: (milliseconds) => new Promise(r => setTimeout(r, milliseconds)),
+    clearReceived: () => { rxBufferRef.current = ''; },
+    listen: listenForIdentifiers,
+  });
+
+  // The speed of the bus: the person's choice from the selector, or "auto". Kept in this browser only.
+  const [bitrateChoice, setBitrateChoiceState] = useState<string>(() => {
+    try { return localStorage.getItem(BITRATE_CHOICE_KEY) || AUTO_RATE; } catch { return AUTO_RATE; }
+  });
+  const bitrateChoiceRef = useRef(bitrateChoice);
+  const setBitrateChoice = useCallback((value: string) => {
+    const valid = value === AUTO_RATE || chosenRate(value) ? value : AUTO_RATE;
+    bitrateChoiceRef.current = valid;
+    setBitrateChoiceState(valid);
+    try { localStorage.setItem(BITRATE_CHOICE_KEY, valid); } catch { /* storage unavailable: the choice lasts until the page closes */ }
+  }, []);
+
+  // Opens the channel and returns the label of the speed, or null (channel closed). In "auto" the bus is only listened to, at each speed in turn
+  // (lib/busDetect.ts): nothing is transmitted until a head was heard. A speed chosen by hand is opened in normal mode and the version is asked once.
   const detectAndOpenBitrate = async (): Promise<string | null> => {
     const queryVersionCmd = `t${CAN_ID_QUERY_VERSION.toString(16).padStart(3, '0').toUpperCase()}0`;
-    for (const { label, code } of BITRATE_TRY_ORDER) {
-      await _sendRaw('C'); // close first - SLCAN rejects a bitrate change while already open
-      await new Promise(r => setTimeout(r, 50));
-      rxBufferRef.current = ''; // drop any partial garbage line from the previous bitrate attempt
-      await _sendRaw('S' + code);
-      await new Promise(r => setTimeout(r, 50));
-      await _sendRaw('O');
-      await new Promise(r => setTimeout(r, 50));
-
-      const responded = probeForResponse(800); // register the listener before sending, so a fast reply can't be missed
-      await _sendRaw(queryVersionCmd);
-      if (await responded) {
-        return label;
-      }
+    const rate = chosenRate(bitrateChoiceRef.current);
+    if (rate) {
+      const answered = await openAtBusRate(detectIo(), rate, {
+        queryCommand: queryVersionCmd,
+        answerIdentifiers: [CAN_ID_VERSION_RESPONSE, CAN_ID_BOOTLOADER_VERSION_RESPONSE],
+      });
+      if (!answered) throw new Error(t('hooks.no_bus_response_manual', 'No response from a URTC board at {{rate}}. Check that this is the speed of the bus, the wiring and the power.', { rate: rate.label }));
+      return rate.label;
     }
-    return null;
+    return detectBusRate(detectIo(), { identifiers: passiveIdentifiers(CAN_ID_VERSION_RESPONSE, CAN_ID_BOOTLOADER_VERSION_RESPONSE) });
   };
 
   const connect = async () => {
@@ -217,7 +222,7 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
 
       const detectedLabel = await detectAndOpenBitrate();
       if (!detectedLabel) {
-        throw new Error(t('hooks.no_bus_response', 'No response from a URTC board at any known CAN bitrate (tried 1M, 500k, 250k, 125k, 100k, 50k, 20k, 10k, 800k). Check wiring and power.'));
+        throw new Error(t('hooks.no_bus_response', 'No URTC board was heard at any known CAN speed (the bus was only listened to; nothing was sent). Choose the speed of the bus in the selector and connect again, and check the wiring and the power.'));
       }
 
       setConnected(true);
@@ -238,6 +243,7 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
       // port.close() below can fail on a still-locked readable stream
       // otherwise.
       keepReadingRef.current = false;
+      if (writerRef.current) { try { await _sendRaw('C'); } catch {} } // never leave the SLCAN channel open on a failed connection
       if (readerRef.current) {
         try { await readerRef.current.cancel(); } catch {}
       }
@@ -481,6 +487,8 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
     ...stable,
     subscribe,
     subscribeAll,
+    bitrateChoice,
+    setBitrateChoice,
     injectReplayedFrame,
     setSendGate,
     sendError,

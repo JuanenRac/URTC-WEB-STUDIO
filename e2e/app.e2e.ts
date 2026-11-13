@@ -31,17 +31,17 @@ test.describe('the built Studio', () => {
   test('changes language from the header and remembers it after a reload', async ({ page }) => {
     await page.goto('/');
     await expect(page.getByRole('button', { name: 'Connect Hardware' })).toBeVisible();
-    await page.locator('header select').selectOption('es');
+    await page.getByTestId('language-select').selectOption('es');
     await expect(page.getByRole('button', { name: 'Conectar Hardware' })).toBeVisible();
     await page.reload();
     await expect(page.getByRole('button', { name: 'Conectar Hardware' })).toBeVisible();
-    await page.locator('header select').selectOption('pt');
+    await page.getByTestId('language-select').selectOption('pt');
     await expect(page.getByRole('button', { name: 'Ligar Hardware' })).toBeVisible();
   });
 
   test('offers the eight languages', async ({ page }) => {
     await page.goto('/');
-    const values = await page.locator('header select option').evaluateAll((options) => options.map((o) => (o as HTMLOptionElement).value).sort());
+    const values = await page.getByTestId('language-select').locator('option').evaluateAll((options) => options.map((o) => (o as HTMLOptionElement).value).sort());
     expect(values).toEqual(['de', 'en', 'es', 'fr', 'it', 'ja', 'pt', 'zh']);
   });
 

@@ -19,7 +19,7 @@ import { ThermalSample, addSample, faultsAdded, loadHistory, sampleOf, saveHisto
 import { SimulatedRack, RACK_COMMAND_MIN_INTERVAL_MS, encodeSetPreheat, parseRackReply, unitKey } from '../../lib/rackSim';
 import {
   THERMAL_CALIBRATED_CHUNK_ID, THERMAL_CALIBRATED_REQUEST_ID, THERMAL_FRAMES_PER_CHUNK, THERMAL_STATUS_ID, THERMAL_TRIGGER_ID,
-  ThermalFrame, assembleThermal, syntheticThermalFrame, thermalChunkCount, thermalRegionStats, thermalRgb,
+  ThermalFrame, ThermalStatusError, assembleThermal, waitThermalReady, syntheticThermalFrame, thermalChunkCount, thermalRegionStats, thermalRgb,
 } from '../../lib/thermalView';
 import { retryUntil } from '../../lib/retryUntil';
 
@@ -413,12 +413,7 @@ const ThermalViewPanelBody: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
     if (!ctx.isConnected) return;
     try {
       await ctx.sendFrame(THERMAL_TRIGGER_ID, [], 'Thermal trigger');
-      let ready = false;
-      for (let i = 0; i < 50 && !ready; i++) {
-        const r = await ctx.request(THERMAL_STATUS_ID, [], THERMAL_STATUS_ID, 200, 'Thermal status');
-        if (r && r.data.length === 1) { if (r.data[0] === 0xFF) throw new Error('the head reports a capture error'); ready = r.data[0] === 0x02; }
-      }
-      if (!ready) throw new Error('the head did not become ready');
+      await waitThermalReady(async () => (await ctx.request(THERMAL_STATUS_ID, [], THERMAL_STATUS_ID, 200, 'Thermal status'))?.data ?? null);
       const chunks = new Map<number, number[]>();
       for (let i = 0; i < thermalChunkCount('90640'); i++) {
         const frames = await retryUntil(3, () => collectFrames(ctx, THERMAL_CALIBRATED_REQUEST_ID, [i], THERMAL_CALIBRATED_CHUNK_ID, THERMAL_FRAMES_PER_CHUNK, 500, 'Thermal chunk'));
@@ -427,7 +422,7 @@ const ThermalViewPanelBody: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
       }
       setFrame(assembleThermal(chunks)); setSimulated(false); setMessage('');
     } catch (e) {
-      setMessage(t('testerextras.thermal_failed', 'The thermal image could not be read: {{reason}}', { reason: e instanceof Error ? e.message : String(e) }));
+      setMessage(t('testerextras.thermal_failed', 'The thermal image could not be read: {{reason}}', { reason: e instanceof ThermalStatusError ? (e.reason === 'capture_error' ? t('testerextras.thermal_head_error', 'the head reports a capture error') : t('testerextras.thermal_head_not_ready', 'the head did not become ready')) : e instanceof Error ? e.message : String(e) }));
     }
   };
 
