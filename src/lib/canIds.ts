@@ -143,7 +143,8 @@ export const NO_HANDLER_TOOL_IDS: ReadonlySet<number> = new Set(URTC_TOOL_PROFIL
 
 // --- Bootloader verify-fail reason codes (second byte of a 0x7F5 verify-fail frame) ---
 // The wording lives in the locales as flasher.verify_fail_<code>.
-export const VERIFY_FAIL_CODES: readonly number[] = [0x01, 0x02, 0x03, 0x04, 0x05];
+// 0x07 is only given by the main board when it relays a slave update (0x219): a digest chunk (0x212) was lost on the bus.
+export const VERIFY_FAIL_CODES: readonly number[] = [0x01, 0x02, 0x03, 0x04, 0x05, 0x07];
 
 // --- Keepalive resend intervals ---
 // A real master has to satisfy the firmware's own communication watchdogs by
