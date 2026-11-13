@@ -768,6 +768,7 @@
     "feature_comms_watchdog": "步进电机和电磁铁的通信看门狗",
     "feature_magnet_release": "主机无通信时电磁铁释放(关闭:保持吸住)",
     "clear_error_button": "清除错误",
+    "clear_error_confirm": "将解除板子的错误。请确认原因已消除,并且工具附近没有任何东西会移动、升温或触发。",
     "clear_error_result": "清除错误:{{result}}",
     "clear_result_cleared": "错误已解除",
     "clear_result_switch_off": "此板上该功能已关闭(开启后需重启)",

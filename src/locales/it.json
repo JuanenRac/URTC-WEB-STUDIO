@@ -768,6 +768,7 @@
     "feature_comms_watchdog": "Sorveglianza della comunicazione dei motori passo-passo e dell'elettromagnete",
     "feature_magnet_release": "L'elettromagnete rilascia quando l'host tace (spento: tiene)",
     "clear_error_button": "Cancella errore",
+    "clear_error_confirm": "La scheda toglie il suo errore. Controlla che la causa sia scomparsa e che nulla vicino all'utensile possa muoversi, scaldarsi o attivarsi.",
     "clear_error_result": "Cancella errore: {{result}}",
     "clear_result_cleared": "l'errore è stato tolto",
     "clear_result_switch_off": "la funzione è spenta su questa scheda (accenderla e riavviare)",

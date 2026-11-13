@@ -768,6 +768,7 @@
     "feature_comms_watchdog": "Surveillance de communication des moteurs pas à pas et de l'électroaimant",
     "feature_magnet_release": "L'électroaimant lâche quand l'hôte ne communique plus (désactivé : il tient)",
     "clear_error_button": "Effacer l'erreur",
+    "clear_error_confirm": "La carte lève son erreur. Vérifiez que la cause a disparu et que rien près de l'outil ne peut bouger, chauffer ni se déclencher.",
     "clear_error_result": "Effacer l'erreur : {{result}}",
     "clear_result_cleared": "l'erreur a été levée",
     "clear_result_switch_off": "la fonction est désactivée sur cette carte (l'activer puis redémarrer)",

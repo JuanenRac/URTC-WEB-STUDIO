@@ -85,7 +85,8 @@ describe("0x111 quick state", () => {
     expect(got.bootSequenceActive).toBe(vector.expect.booting);
     expect(got.thermalFault).toBe(vector.expect.thermal_fault);
     expect(got.resetCause).toBe(vector.expect.reset_cause);
-    expect(got.watchdogReset).toBe(vector.expect.watchdog_reset);
+    // the vectors of the error reason and of the clear-error result (bytes 6 and 7) do not state it: it is checked only where the specification does
+    if (vector.expect.watchdog_reset !== undefined) expect(got.watchdogReset).toBe(vector.expect.watchdog_reset);
   });
 });
 

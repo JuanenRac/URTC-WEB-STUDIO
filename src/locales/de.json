@@ -768,6 +768,7 @@
     "feature_comms_watchdog": "Kommunikationsüberwachung der Schrittmotoren und des Elektromagneten",
     "feature_magnet_release": "Der Elektromagnet lässt los, wenn der Host schweigt (aus: er hält)",
     "clear_error_button": "Fehler löschen",
+    "clear_error_confirm": "Die Platine hebt ihren Fehler auf. Stellen Sie sicher, dass die Ursache beseitigt ist und sich nichts am Werkzeug bewegen, erhitzen oder auslösen kann.",
     "clear_error_result": "Fehler löschen: {{result}}",
     "clear_result_cleared": "der Fehler wurde aufgehoben",
     "clear_result_switch_off": "die Funktion ist auf dieser Platine aus (einschalten und neu starten)",

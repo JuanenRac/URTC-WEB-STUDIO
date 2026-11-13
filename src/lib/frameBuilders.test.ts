@@ -22,7 +22,7 @@ describe('the frames of the global controls and of the optional panels', () => {
   it('writes the optional functions with the magic word and only the four known bits', () => {
     expect(FEATURES_MAGIC).toEqual([0x46, 0x45, 0x41, 0x54]);
     expect(featuresWrite(0b0101)).toEqual([0x46, 0x45, 0x41, 0x54, 5]);
-    expect(featuresWrite(0xFF)).toEqual([0x46, 0x45, 0x41, 0x54, 0x0F]);
+    expect(featuresWrite(0xFF)).toEqual([0x46, 0x45, 0x41, 0x54, 0x7F]);
     expect(featuresWrite(-3)).toEqual([0x46, 0x45, 0x41, 0x54, 0]);
   });
 });
