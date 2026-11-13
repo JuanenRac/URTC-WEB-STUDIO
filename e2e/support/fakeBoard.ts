@@ -6,7 +6,7 @@ import {
 } from '../../src/lib/generated/urtcCanIds';
 
 // A USB-CAN adapter with a board behind it, as far as the Studio can tell: the page asks `navigator.serial` for a port, opens it, speaks
-// SLCAN lines to it and reads lines back. The model answers the version query (so the bitrate probe succeeds), the active tool query and
+// SLCAN lines to it and reads lines back. The model sends a health frame when the channel is opened listen-only (so the automatic speed search hears a head) and answers the version query, the active tool query and
 // the thermal counters query, with the readings the test hands it one after the other, and it can play the bootloader of the main board
 // for a CAN-OTA update (listening, erasing, receiving, a page acknowledged each time a page is full, done at END_UPDATE). Nothing here
 // touches a real device.
@@ -81,6 +81,8 @@ export async function installFakeBoard(page: Page, options: FakeBoardOptions | T
     // what the bootloader has been told in the update that is running
     const update = { announced: 0, received: 0, pages: 0, hmacChunks: 0 };
     const answer = (command: string) => {
+      // a head broadcasts its health about once a second: when the channel is opened listen-only (the automatic speed search) it is heard
+      if (command === 'L') { setTimeout(() => push(line(0x1B8, [0, 0, 0, 0, 0, 0, 0, 0])), 20); return; }
       const match = /^t([0-9A-F]{3})([0-8])([0-9A-F]*)$/i.exec(command);
       if (!match) return;
       const id = parseInt(match[1], 16);
