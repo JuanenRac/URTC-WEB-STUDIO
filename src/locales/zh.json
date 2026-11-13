@@ -318,13 +318,13 @@
     "slave_no_answer": "从属板没有应答。",
     "error_fetch_firmware": "获取固件文件失败",
     "log_manifest_found": "找到清单：向引导程序报告声明的版本 {{version}}。",
-    "prompt_signing_key": "此镜像没有已发布的签名（带 hmac_sha256 的 <文件>.manifest.json）。要将自行编译的镜像烧录到台架板，请输入其 {{board}} 签名密钥（64 个十六进制字符）。密钥不会被保存。",
+    "prompt_signing_key": "此镜像没有已发布的签名（带 hmac_sha256 的 <文件>.manifest.json）。要将自行编译的镜像刷写到台架板，请输入其 {{board}} 签名密钥（64 个十六进制字符）。密钥不会被保存。",
     "log_signature_from_manifest": "正在使用清单中发布的签名（密钥：{{kind}}）。",
     "log_dev_key_warning": "注意：使用公开的开发密钥签名——只有引导程序用同一密钥构建的板卡才会接受。",
     "err_release_signature": "此镜像的发布签名无效：文件已被修改，或并非由维护者发布。未向板卡发送任何内容。",
     "log_release_signature_ok": "发布签名已验证：这正是维护者发布的文件。",
     "log_release_signature_none": "此镜像没有可验证的发布签名（或此浏览器无法验证）；板卡仍会验证其自身的签名。",
-    "log_signature_runtime_key": "已使用本次烧录输入的密钥在本地签名。",
+    "log_signature_runtime_key": "已使用本次刷写输入的密钥在本地签名。",
     "status_update_failed": "更新失败",
     "log_error_prefix": "错误：{{message}}",
     "status_reading_back": "正在通过 CAN 读回主槽…",
@@ -356,7 +356,7 @@
     "err_record_download": "无法从 GitHub 发布版下载此镜像的签名记录。",
     "err_record_bad": "签名记录无效：必须在一行中恰好包含 152 个十六进制数字。",
     "browsed_record_found": "已选择签名记录：{{name}}",
-    "browsed_record_hint": "要使用签名记录烧录，请同时选择 .bin 及其 .bin.imgsig（按住 Ctrl 点击）。",
+    "browsed_record_hint": "要使用签名记录刷写，请同时选择 .bin 及其 .bin.imgsig（按住 Ctrl 点击）。",
     "status_signature_accepted": "2/5：签名已接受。正在传输页面…",
     "err_page_ack_timeout": "等待页面 {{page}} 的 ACK 超时",
     "err_page_ack_mismatch": "页面 ACK 不匹配：期望页面 {{expected}}，板卡确认了页面 {{actual}}",
@@ -894,7 +894,7 @@
     "counters_clear": "清除历史"
   },
   "selfupdate": {
-    "new_available": "正在提供更新版本的 Studio（{{served}}；当前页面为 {{built}}）。不会自动刷新：请在没有烧录或台架会话进行时再刷新。",
+    "new_available": "正在提供更新版本的 Studio（{{served}}；当前页面为 {{built}}）。不会自动刷新：请在没有刷写或台架会话进行时再刷新。",
     "reload": "刷新"
   },
   "nodes": {

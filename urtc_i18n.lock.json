@@ -2,7 +2,7 @@
   "format": 1,
   "urtc_common_version": "0.2.6",
   "catalog": "spec/i18n/catalog/web-studio.json",
-  "catalog_sha256": "cbd3638a265d77f9bb933ebaae8a1a3e181e0335fb923770ad4cf2980775b001",
+  "catalog_sha256": "20aba46b4ef9800593a9d8b1077245421ad25964376dd010eca449633d91209e",
   "files": {
     "src/locales/de.json": "0e7159ab2541b408fe72454c8463209f2e09bd5ae83d1e424b5544cecb3e5f2c",
     "src/locales/en.json": "8ccf98bcc15cb37caa46d97260e6ec906eb60312b763e8ac30927e73c549d7bd",
@@ -12,6 +12,6 @@
     "src/locales/it.json": "2b70d44173cd6d501cf7a056f1fb764c64147b30ccc67b7ff38e93deec5b2d09",
     "src/locales/ja.json": "469d937d649d56e4f34f1a6ffcf8461ef3c23f6c9e1b6d70cf8bc36fefe072de",
     "src/locales/pt.json": "f3da99d0eed820ec90d61b6697e0ad6a333386b1b7a0e1de1957220e8a246bc7",
-    "src/locales/zh.json": "d454d52974976fe9f8065eb97226512906215fab90750171dc5fe72d5238ce9a"
+    "src/locales/zh.json": "3ba9a3109905a310077ca2e122f2eb671d39aea62d3dd3ac83301218cfe3a07b"
   }
 }
