@@ -28,6 +28,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **A lost frame of the thermal image is asked for again:** the reading of the image asks for the chunks one by one and gave up the whole image at the first chunk that was not answered with its four frames; each chunk is now asked for up to three times, and the message says that three requests were made. The retry is a function of its own with tests (first answer, asking again, giving up, at least one attempt, an empty answer that is still an answer, and a failure that passes through).
+
 - **Two tests that measured time no longer fail on a slow shared machine:** the one that parses a trace of the largest size has a time limit of a minute instead of five seconds, and the one that draws the rows of the bus monitor keeps a bound that only a render that became quadratic would break.
 
 - **The page shows the bus speed that the heads declare:** heads of protocol version 2 state in their identity frame (`0x1BB`) the bit rate they were built for. The page keeps the last identity frames that go by, shows the declared speed under the header (or that the head declares nothing, as the heads of older firmware do) and adds the warning `rates_declared_differ`, first of all, when two heads declare different speeds; the warnings by symptoms stay as they were. The TypeScript reader `lib/healthInfo.ts` and the judgement in `lib/busHealth.ts` are held to the same vectors as the Python modules of the shared repository, whose generated tables, vectors and texts (three new ones in the eight languages) are refreshed. Tested with the shared vectors and virtual frames; not tried against a bus with real heads.

@@ -21,6 +21,7 @@ import {
   THERMAL_CALIBRATED_CHUNK_ID, THERMAL_CALIBRATED_REQUEST_ID, THERMAL_FRAMES_PER_CHUNK, THERMAL_STATUS_ID, THERMAL_TRIGGER_ID,
   ThermalFrame, assembleThermal, syntheticThermalFrame, thermalChunkCount, thermalRegionStats, thermalRgb,
 } from '../../lib/thermalView';
+import { retryUntil } from '../../lib/retryUntil';
 
 const FEATURE_BITS: Array<[number, string]> = [[1, 'feature_motion_ramps'], [2, 'feature_health_profile'], [4, 'feature_hsi_autotrim'], [8, 'feature_thermal_pid']];
 
@@ -420,8 +421,8 @@ const ThermalViewPanelBody: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
       if (!ready) throw new Error('the head did not become ready');
       const chunks = new Map<number, number[]>();
       for (let i = 0; i < thermalChunkCount('90640'); i++) {
-        const frames = await collectFrames(ctx, THERMAL_CALIBRATED_REQUEST_ID, [i], THERMAL_CALIBRATED_CHUNK_ID, THERMAL_FRAMES_PER_CHUNK, 500, 'Thermal chunk');
-        if (!frames) throw new Error(`chunk ${i} was not answered with four frames`);
+        const frames = await retryUntil(3, () => collectFrames(ctx, THERMAL_CALIBRATED_REQUEST_ID, [i], THERMAL_CALIBRATED_CHUNK_ID, THERMAL_FRAMES_PER_CHUNK, 500, 'Thermal chunk'));
+        if (!frames) throw new Error(`chunk ${i} was not answered with four frames after three requests`);
         chunks.set(i, frames.flat());
       }
       setFrame(assembleThermal(chunks)); setSimulated(false); setMessage('');
