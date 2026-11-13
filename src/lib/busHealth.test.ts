@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import vectors from './generated/bus_health_vectors.json';
 import {
-  BUS_ERRORS, BUS_HEALTH_STORAGE_KEY, BUS_WARNING_CODES, CAN_ID_HEALTH_PROFILE, DEFAULT_THRESHOLDS, LEGACY_HEAD_KNOWN, MIXED_BUS_SUSPECTED, NO_HEAD_AT_ANY_SPEED,
+  BUS_ERRORS, BUS_HEALTH_STORAGE_KEY, RATES_DECLARED_DIFFER, BUS_WARNING_CODES, CAN_ID_HEALTH_PROFILE, DEFAULT_THRESHOLDS, LEGACY_HEAD_KNOWN, MIXED_BUS_SUSPECTED, NO_HEAD_AT_ANY_SPEED,
   busWarnings, isLegacyHead, loadThresholds, profileFromFrame, thresholdsFromConfig,
 } from './busHealth';
 import { CAN_ID_HEALTH_PROFILE as GENERATED_ID } from './generated/urtcCanIds';
@@ -18,7 +18,7 @@ describe('the same judgement as the Python module, held to the same cases', () =
   it('gives the warnings of every case of the vectors', () => {
     expect(vectors.warnings.length).toBeGreaterThanOrEqual(15);
     for (const item of vectors.warnings) {
-      expect(busWarnings(item.profiles as never[], item.found_nobody, item.heads, thresholdsFromConfig(item.section))).toEqual(item.expected);
+      expect(busWarnings(item.profiles as never[], item.found_nobody, item.heads, thresholdsFromConfig(item.section), item.declared)).toEqual(item.expected);
     }
   });
 
@@ -78,5 +78,23 @@ describe('the thresholds kept in this browser', () => {
     expect(loadThresholds(store(null))).toEqual(DEFAULT_THRESHOLDS);
     expect(loadThresholds(undefined)).toEqual(DEFAULT_THRESHOLDS);
     expect(loadThresholds(store(() => { throw new Error('blocked'); }))).toEqual(DEFAULT_THRESHOLDS);
+  });
+});
+
+describe('the speeds the heads declare', () => {
+  const quiet = [{ tec: 0, rec: 0, bus_off_count: 0 }];
+
+  it('two different declared speeds are a mixed bus for certain and come first', () => {
+    expect(busWarnings(quiet, false, [], DEFAULT_THRESHOLDS, [1_000_000, 500_000])).toEqual([RATES_DECLARED_DIFFER]);
+    expect(BUS_WARNING_CODES[0]).toBe(RATES_DECLARED_DIFFER);
+    const noisy = [{ tec: 120, rec: 0, bus_off_count: 0 }];
+    const limits = thresholdsFromConfig({ legacy_heads: ['HEAD-OLD'] });
+    expect(busWarnings(noisy, true, ['HEAD-OLD'], limits, [1_000_000, 500_000])).toEqual([...BUS_WARNING_CODES]);
+  });
+
+  it('equal speeds, heads that declare nothing and nonsense values add nothing', () => {
+    for (const declared of [[], [null], [1_000_000], [1_000_000, 1_000_000], [null, 500_000], [0, 1_000_000, undefined]]) {
+      expect(busWarnings(quiet, false, [], DEFAULT_THRESHOLDS, declared)).toEqual([]);
+    }
   });
 });

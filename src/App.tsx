@@ -40,6 +40,7 @@ import { CAN_ID_QUERY_ACTIVE_TOOL } from './lib/canIds';
 import { createBatcher, Batcher } from './lib/frameBatcher';
 import { summarizeBoardFrames, heaterToolId, BoardStatus, NO_BOARD_STATUS } from './lib/boardTelemetry';
 import { BusWarning, busWarnings, loadThresholds, profileFromFrame } from './lib/busHealth';
+import { distinctRates, parseHealthInfo, rateText } from './lib/healthInfo';
 import { planPreset } from './lib/simPresets';
 import { rawSendPolicy, ActionKind } from './lib/dangerousActions';
 import { planControlSend, runControlSend, confirmPlan, stopFrameFor, canHoldTool } from './lib/controlSandbox';
@@ -72,6 +73,9 @@ export default function App() {
   const [boardStatus, setBoardStatus] = useState<BoardStatus>(NO_BOARD_STATUS);
   // What the health frames of the heads say about the bus (lib/busHealth.ts); empty while the bus has nothing to say.
   const [busHealth, setBusHealth] = useState<BusWarning[]>([]);
+  // The bus speed the heads declare in their identity frames (lib/healthInfo.ts): the distinct rates in bit/s, or null while no identity frame was heard, or [] when the heads declare nothing.
+  const [busRates, setBusRates] = useState<number[] | null>(null);
+  const infoFramesRef = useRef<number[][]>([]);
 
   // The bus can deliver dozens of frames per second. Updating the screen once
   // per frame re-rendered the whole app each time, so frames are collected and
@@ -84,10 +88,16 @@ export default function App() {
 
       const facts = summarizeBoardFrames(frames);
       if (facts.status) setBoardStatus(facts.status);
-      if (facts.healthFrames) {
-        // the judgement of the bus from the health frames heard since the last batch: a head at another speed cannot be heard, so a bus that mixes speeds is known by its symptoms
-        const profiles = facts.healthFrames.map(profileFromFrame).filter((profile): profile is NonNullable<typeof profile> => profile !== null);
-        setBusHealth(busWarnings(profiles, false, [], loadThresholds(typeof localStorage === 'undefined' ? undefined : localStorage)));
+      if (facts.infoFrames) {
+        // the last identity frames (one every ten seconds per head) are kept, so that two heads are judged together
+        infoFramesRef.current = [...infoFramesRef.current, ...facts.infoFrames].slice(-8);
+        setBusRates(distinctRates(infoFramesRef.current));
+      }
+      if (facts.healthFrames || facts.infoFrames) {
+        // the judgement of the bus: the speeds the heads declare, and the symptoms of the health frames heard since the last batch (a head at another speed cannot be heard)
+        const profiles = (facts.healthFrames ?? []).map(profileFromFrame).filter((profile): profile is NonNullable<typeof profile> => profile !== null);
+        const declared = infoFramesRef.current.map((frame) => parseHealthInfo(frame)?.rate_bps ?? null);
+        setBusHealth(busWarnings(profiles, false, [], loadThresholds(typeof localStorage === 'undefined' ? undefined : localStorage), declared));
       }
       setHardwareState(prev => {
         const next = { ...prev, canActive: true, lastCanTimestamp: Date.now() };
@@ -308,7 +318,7 @@ export default function App() {
 
   // What the board reported is only valid while it is connected.
   useEffect(() => {
-    if (!serialCan.isConnected) { setBoardStatus(NO_BOARD_STATUS); setBusHealth([]); }
+    if (!serialCan.isConnected) { setBoardStatus(NO_BOARD_STATUS); setBusHealth([]); setBusRates(null); infoFramesRef.current = []; }
   }, [serialCan.isConnected]);
 
   // Handle jumper toggle (sandbox only: it changes the simulated board, nothing is sent)
@@ -872,6 +882,14 @@ export default function App() {
         pwa={pwa}
       />
       <NodePickerDialog open={headsOpen} onClose={() => setHeadsOpen(false)} picker={nodePicker} />
+
+      {busRates !== null && (
+        <div className="max-w-[1400px] w-full mx-auto px-2 md:px-4 pt-2" data-testid="bus-rate-declared">
+          <p className="text-[11px] text-slate-400">
+            {busRates.length > 0 ? t('bushealth.rate_declared', { rate: busRates.map(rateText).join(' / ') }) : t('bushealth.rate_not_declared')}
+          </p>
+        </div>
+      )}
 
       {busHealth.length > 0 && (
         <div className="max-w-[1400px] w-full mx-auto px-2 md:px-4 pt-3" role="alert" data-testid="bus-health-warning">

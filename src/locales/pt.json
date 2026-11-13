@@ -94,7 +94,10 @@
     "mixed_bus_suspected": "O barramento pode misturar velocidades: há uma cabeça de 500 kbit/s e as cabeças mostram erros",
     "no_head_at_any_speed": "Nenhuma cabeça respondeu a nenhuma velocidade: verifique a cablagem, a alimentação e a terminação, ou uma cabeça feita para outra velocidade",
     "bus_errors": "As cabeças comunicam erros CAN ou um bus-off: verifique a cablagem, a terminação e a velocidade de cada placa",
-    "legacy_head_known": "Há uma cabeça de 500 kbit/s neste barramento: recompile todas as placas com a opção herdada ou dê-lhe um barramento próprio"
+    "legacy_head_known": "Há uma cabeça de 500 kbit/s neste barramento: recompile todas as placas com a opção herdada ou dê-lhe um barramento próprio",
+    "rates_declared_differ": "As cabeças deste barramento declaram velocidades diferentes: ponha todas à mesma velocidade ou dê a cada velocidade um barramento próprio",
+    "rate_declared": "Velocidade do barramento declarada pela cabeça: {{rate}}",
+    "rate_not_declared": "A cabeça não declara a velocidade do seu barramento (firmware mais antigo)"
   },
   "oled": {
     "title": "OLED SSD1306 / SSD1315 (128x64 Bicolor)",

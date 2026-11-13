@@ -3,7 +3,7 @@
   "ecosystem": "URTC",
   "name": "URTC-WEB-STUDIO",
   "version": "0.5.1",
-  "min_common": "0.2.5",
+  "min_common": "0.2.6",
   "role": "ui",
   "stack": "node",
   "technologies": [

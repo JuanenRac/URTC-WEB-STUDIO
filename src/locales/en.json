@@ -94,7 +94,10 @@
     "mixed_bus_suspected": "The bus may mix speeds: a head built for 500 kbit/s is on it and the heads show errors",
     "no_head_at_any_speed": "No head answered at any speed: check wiring, power and termination, or a head built for another speed",
     "bus_errors": "The heads report CAN errors or a bus-off: check the cabling, the termination and the speed of every board",
-    "legacy_head_known": "A head built for 500 kbit/s is on this bus: rebuild every board with the legacy option or give it a bus of its own"
+    "legacy_head_known": "A head built for 500 kbit/s is on this bus: rebuild every board with the legacy option or give it a bus of its own",
+    "rates_declared_differ": "The heads of this bus declare different speeds: set every head to the same speed or give each speed a bus of its own",
+    "rate_declared": "Bus speed the head declares: {{rate}}",
+    "rate_not_declared": "The head does not declare its bus speed (older firmware)"
   },
   "oled": {
     "title": "SSD1306 / SSD1315 OLED (128x64 Two-Tone)",

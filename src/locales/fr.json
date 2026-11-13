@@ -94,7 +94,10 @@
     "mixed_bus_suspected": "Le bus mélange peut-être les vitesses : une tête prévue pour 500 kbit/s y est et les têtes montrent des erreurs",
     "no_head_at_any_speed": "Aucune tête n'a répondu à aucune vitesse : vérifiez le câblage, l'alimentation et la terminaison, ou une tête prévue pour une autre vitesse",
     "bus_errors": "Les têtes signalent des erreurs CAN ou un bus-off : vérifiez le câblage, la terminaison et la vitesse de chaque carte",
-    "legacy_head_known": "Une tête prévue pour 500 kbit/s est sur ce bus : recompilez toutes les cartes avec l'option héritée ou donnez-lui un bus à part"
+    "legacy_head_known": "Une tête prévue pour 500 kbit/s est sur ce bus : recompilez toutes les cartes avec l'option héritée ou donnez-lui un bus à part",
+    "rates_declared_differ": "Les têtes de ce bus déclarent des vitesses différentes : réglez-les toutes à la même vitesse ou donnez un bus à part à chaque vitesse",
+    "rate_declared": "Vitesse du bus déclarée par la tête : {{rate}}",
+    "rate_not_declared": "La tête ne déclare pas la vitesse de son bus (firmware ancien)"
   },
   "oled": {
     "title": "OLED SSD1306 / SSD1315 (128x64 bicolore)",
