@@ -57,7 +57,7 @@
 | Interface | 🟡 | A janela funciona e é verificada contra uma placa simulada; não foi experimentada com um adaptador real. |
 | Testes | 🟢 | A bateria de testes passa na CI em cada envio. |
 | Hardware real | 🟠 | Ainda não correu numa placa real: o ensaio de bancada continua pendente. |
-| Idiomas e acessibilidade | 🟡 | A interface e a sua ajuda estão em oito idiomas; a utilização com teclado e leitor de ecrã não foi testada. |
+| Idiomas e acessibilidade | 🟡 | A interface e a sua ajuda estão em oito idiomas; a utilização com teclado e leitor de ecrã não foi testada |
 | Documentação | 🟡 | README em oito línguas e documentos de referência; as traduções não foram revistas por falantes nativos. |
 
 <!-- /urtc-section:status_web_studio -->
@@ -155,7 +155,7 @@ Capturadas numa bancada de testes com dados de exemplo inventados e sem qualquer
   <img src="images/screenshots/tester.png" alt="Diagnóstico do Tester" width="100%">
 </p>
 
-<p align="center"><em>Diagnóstico do Tester: a caixa negra e os contadores térmicos ao longo do tempo, lidos de uma placa modelada.</em></p>
+<p align="center"><em>Diagnóstico do testador: a caixa negra e os contadores térmicos ao longo do tempo, lidos de uma placa modelada.</em></p>
 <!-- /urtc-section:screenshots -->
 
 ## ✨ Funcionalidades
@@ -273,7 +273,7 @@ Portado a partir dos painéis do painel Qt Quick do `URTC-TESTER`
 <!-- urtc-section:heads -->
 ### Várias cabeças de ferramenta num barramento
 
-O firmware pode fazer várias cabeças de ferramenta partilharem um barramento CAN (a extensão multinó). Vem **desativada por defeito**, e um barramento com uma só cabeça funciona exatamente como antes. A janela **Cabeças** encontra as cabeças, lista cada uma com o seu endereço, ferramenta e número de série, e mostra o seu estado: pronta, selecionada, conflito de endereço, falha retida, no seu bootloader ou perdida. Ao selecionar uma, o programa pede confirmação e só depois lhe envia alguma coisa; enquanto houver várias cabeças no barramento, um comando é recusado até haver uma selecionada e confirmada. Se a cabeça selecionada se perder, todas as cabeças passam ao estado seguro (uma caixa da janela desativa-o). Só foi testada contra um modelo do barramento, não com placas. Veja `docs/MULTINODE.md` em URTC-COMMON.
+O firmware pode fazer várias cabeças de ferramenta partilharem um barramento CAN (a extensão multinó). Vem **desativada por defeito**, e um barramento com uma só cabeça funciona exatamente como antes. A janela **Cabeças** encontra as cabeças, lista cada uma com o seu endereço, ferramenta e número de série, e mostra o seu estado: pronta, selecionada, conflito de endereço, falha retida, no seu bootloader ou perdida. Seleciona uma, o programa pede confirmação e só depois lhe envia alguma coisa; enquanto houver várias cabeças no barramento, um comando é recusado até uma estar selecionada e o ter confirmado. Se a cabeça selecionada se perder, todas as cabeças passam ao estado seguro (uma caixa da janela desativa-o). Só foi testada contra um modelo do barramento, não com placas. Veja `docs/MULTINODE.md` em URTC-COMMON.
 <!-- /urtc-section:heads -->
 
 ## 🔒 Segurança e proteção
