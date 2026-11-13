@@ -111,6 +111,7 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="flex items-center gap-1.5 px-2 py-1.5 rounded-lg bg-slate-800 border border-slate-700/80">
               <Globe className="w-3.5 h-3.5 text-slate-400" />
               <select
+                data-testid="language-select"
                 value={i18n.language}
                 onChange={(e) => handleLanguageChange(e.target.value)}
                 className="bg-transparent text-slate-300 text-xs focus:outline-none cursor-pointer"
