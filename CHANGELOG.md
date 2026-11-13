@@ -28,6 +28,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **A lost digest chunk of a slave update is named:** when the main board answers the verify-fail query (0x219) with reason 7, the page says in its language, in the eight languages, that a digest block was lost on the bus and the image was not installed, instead of an unknown reason. The four chunks are sent in order as before and the main board counts them from the start frame. Tested with the list of reasons and the texts of every language; not tried on a bus with real boards.
+
 - **A lost frame of the thermal image is asked for again:** the reading of the image asks for the chunks one by one and gave up the whole image at the first chunk that was not answered with its four frames; each chunk is now asked for up to three times, and the message says that three requests were made. The retry is a function of its own with tests (first answer, asking again, giving up, at least one attempt, an empty answer that is still an answer, and a failure that passes through).
 
 - **Two tests that measured time no longer fail on a slow shared machine:** the one that parses a trace of the largest size has a time limit of a minute instead of five seconds, and the one that draws the rows of the bus monitor keeps a bound that only a render that became quadratic would break.
