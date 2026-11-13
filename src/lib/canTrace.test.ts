@@ -204,7 +204,7 @@ describe("reading a trace file", () => {
     const load = parseCanTrace(lines.join("\n"));
     expect(load.rows).toHaveLength(MAX_TRACE_ROWS);
     expect(load.omitted).toBe(5);
-  });
+  }, 60_000);   // a long file on a slow shared runner takes seconds: the test is about the count, not about the time
 
   it("takes an empty file as an empty trace", () => {
     expect(parseCanTrace("")).toMatchObject({ format: "unknown", rows: [], problemCount: 0, tooBig: false });
