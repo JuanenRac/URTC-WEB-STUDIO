@@ -133,7 +133,7 @@ Aufgenommen auf einem Prüfstand mit erfundenen Beispieldaten und ohne eine echt
   <img src="images/screenshots/control.png" alt="Werkzeugmatrix und Steuerung" width="100%">
 </p>
 
-<p align="center"><em>Werkzeugmatrix und Steuerung: die 25 Werkzeugprofile der Firmware mit ihren Jumpern und die Bedienelemente des gewählten Werkzeugs (Simulator-Tab: sendet nichts auf den Bus).</em></p>
+<p align="center"><em>Werkzeugmatrix und Steuerung: die 25 Werkzeugprofile der Firmware mit ihren Jumpern und die Bedienelemente des gewählten Werkzeugs (Simulator-Tab: sendet nichts auf den Bus, außer Sie schalten das echte Senden ein, das standardmäßig aus ist).</em></p>
 
 <p align="center">
   <img src="images/screenshots/oled.png" alt="OLED und Hardware-Monitor" width="100%">

@@ -131,7 +131,7 @@ Capturadas numa bancada de testes com dados de exemplo inventados e sem qualquer
   <img src="images/screenshots/control.png" alt="Matriz de ferramentas e controlo" width="100%">
 </p>
 
-<p align="center"><em>Matriz de ferramentas e controlo: os 25 perfis de ferramenta do firmware com os seus jumpers e os controlos da ferramenta selecionada (separador de simulador: não envia nada para o barramento).</em></p>
+<p align="center"><em>Matriz de ferramentas e controlo: os 25 perfis de ferramenta do firmware com os seus jumpers e os controlos da ferramenta selecionada (separador de simulador: não envia nada para o barramento, a menos que ative o envio real, desativado por predefinição).</em></p>
 
 <p align="center">
   <img src="images/screenshots/oled.png" alt="OLED e monitor de hardware" width="100%">

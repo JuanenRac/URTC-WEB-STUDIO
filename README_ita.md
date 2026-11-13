@@ -131,7 +131,7 @@ Catturate su un banco di prova con dati di esempio inventati e senza alcuna inst
   <img src="images/screenshots/control.png" alt="Matrice degli utensili e controllo" width="100%">
 </p>
 
-<p align="center"><em>Matrice degli utensili e controllo: i 25 profili utensile del firmware con i loro jumper e i comandi dell'utensile selezionato (scheda simulatore: non invia nulla al bus).</em></p>
+<p align="center"><em>Matrice degli utensili e controllo: i 25 profili utensile del firmware con i loro jumper e i comandi dell'utensile selezionato (scheda simulatore: non invia nulla al bus a meno che tu non attivi l'invio reale, disattivato per impostazione predefinita).</em></p>
 
 <p align="center">
   <img src="images/screenshots/oled.png" alt="OLED e monitor hardware" width="100%">

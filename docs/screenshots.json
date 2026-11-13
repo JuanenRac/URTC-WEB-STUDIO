@@ -13,14 +13,14 @@
         "pt": "Matriz de ferramentas e controlo"
       },
       "caption": {
-        "en": "Tool matrix and control: the 25 tool profiles of the firmware with their jumpers, and the controls of the selected tool (a simulator tab: it sends nothing to the bus).",
-        "es": "Matriz de herramientas y control: los 25 perfiles de herramienta del firmware con sus puentes, y los controles de la herramienta seleccionada (pestaña de simulador: no envía nada al bus).",
-        "fr": "Matrice des outils et commande : les 25 profils d'outil du firmware avec leurs cavaliers, et les commandes de l'outil sélectionné (onglet simulateur : il n'envoie rien sur le bus).",
-        "it": "Matrice degli utensili e controllo: i 25 profili utensile del firmware con i loro jumper e i comandi dell'utensile selezionato (scheda simulatore: non invia nulla al bus).",
-        "de": "Werkzeugmatrix und Steuerung: die 25 Werkzeugprofile der Firmware mit ihren Jumpern und die Bedienelemente des gewählten Werkzeugs (Simulator-Tab: sendet nichts auf den Bus).",
-        "zh": "工具矩阵与控制：固件的 25 个工具配置及其跳线，以及所选工具的控件（模拟器标签页：不会向总线发送任何内容）。",
-        "ja": "ツールマトリクスと制御：ファームウェアの 25 のツールプロファイルとそのジャンパー、選択したツールの操作（シミュレーターのタブ：バスには何も送信しません）。",
-        "pt": "Matriz de ferramentas e controlo: os 25 perfis de ferramenta do firmware com os seus jumpers e os controlos da ferramenta selecionada (separador de simulador: não envia nada para o barramento)."
+        "en": "Tool matrix and control: the 25 tool profiles of the firmware with their jumpers, and the controls of the selected tool (a simulator tab: it sends nothing to the bus unless you switch on real sending, which is off by default).",
+        "es": "Matriz de herramientas y control: los 25 perfiles de herramienta del firmware con sus puentes, y los controles de la herramienta seleccionada (pestaña de simulador: no envía nada al bus salvo que actives el envío real, desactivado por defecto).",
+        "fr": "Matrice des outils et commande : les 25 profils d'outil du firmware avec leurs cavaliers, et les commandes de l'outil sélectionné (onglet simulateur : il n'envoie rien sur le bus sauf si vous activez l'envoi réel, désactivé par défaut).",
+        "it": "Matrice degli utensili e controllo: i 25 profili utensile del firmware con i loro jumper e i comandi dell'utensile selezionato (scheda simulatore: non invia nulla al bus a meno che tu non attivi l'invio reale, disattivato per impostazione predefinita).",
+        "de": "Werkzeugmatrix und Steuerung: die 25 Werkzeugprofile der Firmware mit ihren Jumpern und die Bedienelemente des gewählten Werkzeugs (Simulator-Tab: sendet nichts auf den Bus, außer Sie schalten das echte Senden ein, das standardmäßig aus ist).",
+        "zh": "工具矩阵与控制：固件的 25 个工具配置及其跳线，以及所选工具的控件（模拟器标签页：除非您开启真实发送（默认关闭），否则不会向总线发送任何内容）。",
+        "ja": "ツールマトリクスと制御：ファームウェアの 25 のツールプロファイルとそのジャンパー、選択したツールの操作（シミュレーターのタブ：実際の送信を有効にしない限り（既定では無効）、バスには何も送信しません）。",
+        "pt": "Matriz de ferramentas e controlo: os 25 perfis de ferramenta do firmware com os seus jumpers e os controlos da ferramenta selecionada (separador de simulador: não envia nada para o barramento, a menos que ative o envio real, desativado por predefinição)."
       }
     },
     {

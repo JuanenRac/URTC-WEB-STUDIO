@@ -134,7 +134,7 @@ URTC-WEB-STUDIO は URTC の 2 つのデスクトッププログラム、URTC-FL
   <img src="images/screenshots/control.png" alt="ツールマトリクスと制御" width="100%">
 </p>
 
-<p align="center"><em>ツールマトリクスと制御：ファームウェアの 25 のツールプロファイルとそのジャンパー、選択したツールの操作（シミュレーターのタブ：バスには何も送信しません）。</em></p>
+<p align="center"><em>ツールマトリクスと制御：ファームウェアの 25 のツールプロファイルとそのジャンパー、選択したツールの操作（シミュレーターのタブ：実際の送信を有効にしない限り（既定では無効）、バスには何も送信しません）。</em></p>
 
 <p align="center">
   <img src="images/screenshots/oled.png" alt="OLED とハードウェアモニター" width="100%">

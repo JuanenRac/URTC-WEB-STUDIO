@@ -130,7 +130,7 @@ Capturées sur un banc d'essai avec des données d'exemple fictives et sans inst
   <img src="images/screenshots/control.png" alt="Matrice d'outils et commande" width="100%">
 </p>
 
-<p align="center"><em>Matrice des outils et commande : les 25 profils d'outil du firmware avec leurs cavaliers, et les commandes de l'outil sélectionné (onglet simulateur : il n'envoie rien sur le bus).</em></p>
+<p align="center"><em>Matrice des outils et commande : les 25 profils d'outil du firmware avec leurs cavaliers, et les commandes de l'outil sélectionné (onglet simulateur : il n'envoie rien sur le bus sauf si vous activez l'envoi réel, désactivé par défaut).</em></p>
 
 <p align="center">
   <img src="images/screenshots/oled.png" alt="OLED et moniteur matériel" width="100%">

@@ -131,7 +131,7 @@ Capturadas en un banco de pruebas con datos de ejemplo inventados y sin ninguna 
   <img src="images/screenshots/control.png" alt="Matriz de herramientas y control" width="100%">
 </p>
 
-<p align="center"><em>Matriz de herramientas y control: los 25 perfiles de herramienta del firmware con sus puentes, y los controles de la herramienta seleccionada (pestaña de simulador: no envía nada al bus).</em></p>
+<p align="center"><em>Matriz de herramientas y control: los 25 perfiles de herramienta del firmware con sus puentes, y los controles de la herramienta seleccionada (pestaña de simulador: no envía nada al bus salvo que actives el envío real, desactivado por defecto).</em></p>
 
 <p align="center">
   <img src="images/screenshots/oled.png" alt="OLED y monitor de hardware" width="100%">
