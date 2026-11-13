@@ -28,6 +28,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The Spanish, German, French and European Portuguese README were read sentence by sentence:** words left from English (retry/backoff, slot, watchdog, passthrough, sandbox, build, payload) are worded in the language of the page.
+
 - **The Spanish, German, French and European Portuguese README were read for register and wording:** the programs are called the same way in every language (tester, updater, Web Studio), calques, straight quotes and words of another language were corrected, and the Related Projects section follows the shared texts.
 
 - **The Chinese texts say "flashing" with one word:** the texts of the program and the README use 刷写 for flashing a firmware image, over the bus or with a probe, instead of mixing it with 烧录 and 烧写; the texts come from the shared catalog.

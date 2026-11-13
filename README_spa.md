@@ -89,8 +89,8 @@ Esta app tiene dos tipos de pestañas:
   herramientas, previsualizar las pantallas de estado OLED, navegar el BOM/pinouts, y
   ver una imagen de cámara térmica simulada, todo sin ningún hardware conectado.
   El interruptor «FW v0.0 / v0.1» de la cabecera solo afecta a estas pestañas sandbox
-  (qué perfiles de herramienta desbloquearía un build de firmware dado) - no tiene
-  ninguna relación con lo que reporta una placa real conectada.
+  (qué perfiles de herramienta desbloquearía un compilación de firmware dada) - no tiene
+  ninguna relación con lo que informa una placa real conectada.
   - **No confundas las dos vistas térmicas**: la pestaña independiente "Thermal IR
     Inspection" (`ThermalCameraViewer.tsx`) es ruido `Math.random()` 100% del lado
     del cliente, sin ningún tráfico CAN en absoluto - es una maqueta de interfaz, no
@@ -167,13 +167,13 @@ CAN ID:
 
 - **Actualización CAN-OTA de la placa principal** (`0x7F0`-`0x7F7`): disparador de
   entrada al bootloader, registro Ed25519 de la imagen (probado solo contra un simulador), transferencia paginada con control de
-  flujo por ACK de página y reintento/backoff, CRC32 + END_UPDATE con versión
+  flujo por ACK de página y reintentos con espera creciente, CRC32 + END_UPDATE con versión
   declarada, y manejo de estado terminal (incluida la recuperación de una trama de
   confirmación perdida de la misma forma que la herramienta de escritorio - vuelve a
-  consultar la versión en vez de reportar un fallo falso).
-- **Actualización CAN-OTA del esclavo de expansión** (`0x210`-`0x219`, relevada a
+  consultar la versión en vez de indicar un fallo falso).
+- **Actualización CAN-OTA del esclavo de expansión** (`0x210`-`0x219`, retransmitida a
   través del propio puente I2C de la placa principal) - mismo esquema de
-  firma/CRC, sin ACK de página ni heartbeat en esta ruta (coincide con el protocolo
+  firma/CRC, sin ACK de página ni latido en esta ruta (coincide con el protocolo
   real; el progreso se sondea, no se empuja).
 - **Autorización de downgrade** (`0x7FD`) - una casilla protegida por confirmación
   que autoriza al intento actual a saltarse la comprobación anti-rollback del
@@ -183,12 +183,12 @@ CAN ID:
   directamente de los propios registros de error del controlador CAN) - distingue un
   problema genuino de bus de uno del lado de la aplicación/bootloader.
 - **Relectura/copia de seguridad del firmware por CAN** (`0x7FE`/`0x7FF`) - lee el contenido
-  actual del slot principal antes de que lo sobrescribas, a un ritmo de 2KB/página
+  actual del ranura principal antes de que lo sobrescribas, a un ritmo de 2KB/página
   con ACKs del host, y lo guarda como una descarga `.bin`.
 - **Consulta de versión de placa en vivo** (`0x7F8`/`0x7F9`/`0x7FA`/`0x7E9`) - muestra el
   emisor real de la respuesta (app o bootloader), HardwareID, y versión, no un interruptor
   simulado.
-- **Firma y resumen publicados** - cada imagen del build de URTC trae
+- **Firma y resumen publicados** - cada imagen dla compilación de URTC trae
   `<file>.manifest.json` (versión, `sha256` y el valor `hmac_sha256` que espera el bootloader, un HMAC-SHA256 de clave compartida que solo comprueban los bootloaders de la generación anterior; el registro Ed25519 que verifican los actuales es el archivo `<file>.imgsig` junto a la imagen, que la app envía al bootloader) y `<file>.sha256`. La app envía esa firma publicada,
   un `sha256` del manifiesto que no coincide con el archivo **bloquea** la
   grabación, y la versión del manifiesto es la que se informa al bootloader.
@@ -220,10 +220,10 @@ CAN ID:
 #### SWD/JTAG - no disponible desde un navegador, por diseño
 
 No existe ninguna API web capaz de manejar una sonda de depuración SWD/JTAG - Web
-Serial solo habla con dispositivos de framing serie (como un adaptador USB-CAN), no
+Serial solo habla con dispositivos con comunicación serie (como un adaptador USB-CAN), no
 con el protocolo propio de una sonda, y STM32CubeProgrammer/pyOCD son subprocesos
 nativos que la herramienta de escritorio invoca. Esto es una limitación estructural
-de ejecutarse en una sandbox de navegador, no una funcionalidad que falte aquí. La
+de ejecutarse en una entorno aislado del navegador, no una funcionalidad que falte aquí. La
 pestaña SWD/JTAG de Flasher Studio explica los comandos exactos que la herramienta
 de escritorio `URTC Flasher` ejecutaría localmente, como referencia - usa esa
 herramienta directamente para programación de chip completo, comprobaciones de
@@ -241,14 +241,14 @@ Portado desde los paneles del propio deck Qt Quick de `URTC-TESTER`
   avanzada ADS1115, curado UV, retrabajo con aire caliente, engarzado, inspección
   térmica, dispensado de pasta), cada uno enviando los bytes de comando reales de
   la herramienta y decodificando su telemetría real.
-- **Casilla activa + keepalive** para toda herramienta con un watchdog de
+- **Casilla activa + keepalive** para toda herramienta con un perro guardián de
   comunicación del lado del firmware (soldador, láser, curado UV, retrabajo con
-  aire caliente, boquilla de impresora 3D - reenvío cada 150ms bajo un watchdog de
+  aire caliente, boquilla de impresora 3D - reenvío cada 150ms bajo un perro guardián de
   250ms; ventilador de capa de impresora 3D - reenvío cada 400ms bajo su propio
-  watchdog de 1000ms), con los mismos intervalos de reenvío que usa la
+  perro guardián de 1000ms), con los mismos intervalos de reenvío que usa la
   herramienta de escritorio. Al desmarcarla, cambiar de panel o de pestaña,
   desconectar o cerrar la página se envía la orden de apagado de la herramienta.
-- **Controles Globales** (`0x100`), passthrough SPI de **Placa de Expansión** + consulta
+- **Controles Globales** (`0x100`), paso directo SPI de **Placa de Expansión** + consulta
   TMC DIAG0 (`0x180`-`0x183`), consulta/borrado de **F-RAM** (`0x190`-`0x192`),
   **Autotest** (comprobaciones seguras, en reposo, por herramienta), un
   **Monitor de Bus en Bruto** con exportación de traza `.trc`/`.asc`, y un inyector de
@@ -264,7 +264,7 @@ Portado desde los paneles del propio deck Qt Quick de `URTC-TESTER`
 
 - **Pestaña Evidencia.** Lee los registros (`urtc-evidence/1`) que escriben el flasher, el tester y el updater, de los archivos que elige la persona (no se sube nada), comprueba cada uno con las mismas reglas y el mismo resumen que el código común y los lista del más reciente al más antiguo, con filtros por tipo, resultado y texto, un resumen, el problema de cada registro no válido y una descarga en CSV. Un registro firmado con Ed25519 muestra si su firma coincide, y una lista de claves de confianza (alias y clave pública, solo claves públicas, guardada en este navegador y nunca subida) hace que diga "firmada por <alias>" o "firma válida, clave desconocida". La lista se puede guardar como archivo JSON y se pueden añadir claves desde un archivo (un archivo con una sola entrada errónea se rechaza entero); la página está en los ocho idiomas.
 
-- **Tramas construidas por funciones puras.** Las tramas de los paneles (LED y anillo de estado, passthrough SPI, funciones opcionales, boquilla y extrusor del cabezal de impresora 3D, pulso de soldadura, movimientos de motor paso a paso) se construyen en `toolFrames.ts` y las de la actualización del firmware (START_UPDATE, los cuatro trozos de firma, las tramas de datos de la imagen y END_UPDATE) en `flashFrames.ts`; un valor que no cabe en su campo se lleva al más cercano que sí cabe, y las pruebas fijan los bytes.
+- **Tramas construidas por funciones puras.** Las tramas de los paneles (LED y anillo de estado, paso directo SPI, funciones opcionales, boquilla y extrusor del cabezal de impresora 3D, pulso de soldadura, movimientos de motor paso a paso) se construyen en `toolFrames.ts` y las de la actualización del firmware (START_UPDATE, los cuatro trozos de firma, las tramas de datos de la imagen y END_UPDATE) en `flashFrames.ts`; un valor que no cabe en su campo se lleva al más cercano que sí cabe, y las pruebas fijan los bytes.
 
 - **Banco del rack con respuestas.** El rack simulado responde a cada orden con su trama de respuesta (un acuse, o un rechazo con el motivo); `rackSim.ts` la escribe y la lee (`encodeRackReply`, `parseRackReply`), el panel del banco dice el motivo en el idioma de la página y una orden retenida por llegar demasiado pronto es un rechazo con su motivo, como en el firmware.
 
@@ -285,7 +285,7 @@ El firmware puede hacer que varios cabezales compartan un bus CAN (la extensión
 | Una imagen de firmware equivocada o manipulada | Un manifiesto cuyo `sha256` no coincide con el archivo bloquea la grabación; cada imagen de una release oficial lleva una firma de release Ed25519 que la página comprueba en el navegador antes de enviar la imagen |
 | Una respuesta simulada tomada por real | Las pestañas sandbox no transmiten nada y, con una placa conectada, no responden nada; sus tramas se marcan SIM y una traza reproducida se marca REPLAY |
 | Una acción sobre la placa por error | Láser, taladro, curado UV, soldadura, calentadores, movimiento, dosificación de pasta, escrituras en la memoria de la placa, tramas escritas a mano arriesgadas y una imagen firmada con la clave pública de desarrollo piden confirmación antes |
-| Un actuador que se queda funcionando | Cada herramienta con watchdog en el firmware se mantiene viva con un reenvío y se apaga al reemplazar el panel, cambiar de pestaña, desconectar la placa o cerrar la página; STOP ALL apaga todo lo que la página mantiene vivo |
+| Un actuador que se queda funcionando | Cada herramienta con perro guardián en el firmware se mantiene viva con un reenvío y se apaga al reemplazar el panel, cambiar de pestaña, desconectar la placa o cerrar la página; STOP ALL apaga todo lo que la página mantiene vivo |
 | Una página que carga código de otro sitio | Una política de seguridad de contenido: scripts solo de la propia página, conexiones solo a ella misma y a GitHub |
 
 STOP ALL es una orden de software, no una parada de emergencia, y ninguna de las comprobaciones anteriores es una función de seguridad.

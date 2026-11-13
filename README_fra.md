@@ -31,7 +31,7 @@
 
 ---
 
-> **État de la sûreté et de la cybersécurité :** cet écosystème n'est pas un système de sécurité certifié et aucune carte URTC assemblée n'existe encore. Le bootloader de la carte principale vérifie un enregistrement Ed25519 de l'image (`<image>.imgsig`) par rapport à une table de clés publiques et ne détient aucun secret, et celui de l'esclave d'extension contrôle un simple SHA-256 et n'installe qu'une image que la carte principale confirme ; la table du build officiel est vide tant que la clé de signature des images n'est pas créée, et un build de banc fait confiance à une clé publique de développement, si bien que n'importe qui peut produire une image qu'un tel bootloader accepte ; rien n'a été transmis à une carte réelle. Lisez la [base de sécurité](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md) et le [modèle de menaces](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md) avant de vous fier à une affirmation de ce dépôt quant à la sécurité d'une personne.
+> **État de la sûreté et de la cybersécurité :** cet écosystème n'est pas un système de sécurité certifié et aucune carte URTC assemblée n'existe encore. Le bootloader de la carte principale vérifie un enregistrement Ed25519 de l'image (`<image>.imgsig`) par rapport à une table de clés publiques et ne détient aucun secret, et celui de l'esclave d'extension contrôle un simple SHA-256 et n'installe qu'une image que la carte principale confirme ; la table de la compilation officielle est vide tant que la clé de signature des images n'est pas créée, et un compilation de banc fait confiance à une clé publique de développement, si bien que n'importe qui peut produire une image qu'un tel bootloader accepte ; rien n'a été transmis à une carte réelle. Lisez la [base de sécurité](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md) et le [modèle de menaces](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md) avant de vous fier à une affirmation de ce dépôt quant à la sécurité d'une personne.
 
 ## 📋 En un coup d'œil
 
@@ -166,7 +166,7 @@ CAN ID :
 
 - **Mise à jour CAN-OTA de la carte principale** (`0x7F0`-`0x7F7`) : déclencheur
   d'entrée dans le bootloader, enregistrement Ed25519 de l'image (testé uniquement contre un simulateur), transfert paginé avec
-  contrôle de flux par ACK de page et retry/backoff, CRC32 + END_UPDATE avec
+  contrôle de flux par ACK de page et réessais avec attente croissante, CRC32 + END_UPDATE avec
   version déclarée, et gestion de statut terminal (y compris la récupération d'une
   trame de confirmation perdue de la même manière que l'outil de bureau - il
   réinterroge la version plutôt que de signaler un faux échec).
@@ -246,14 +246,14 @@ Porté depuis les panneaux du propre deck Qt Quick d'`URTC-TESTER`
   avancé ADS1115, séchage UV, retravail à air chaud, sertissage, inspection
   thermique, distribution de pâte), chacun envoyant les octets de commande réels
   de l'outil et décodant sa télémétrie réelle.
-- **Case active + keepalive** pour chaque outil avec un watchdog de communication
+- **Case active + keepalive** pour chaque outil avec un chien de garde de communication
   côté firmware (fer à souder, laser, séchage UV, retravail à air chaud, buse
-  d'imprimante 3D - renvoi toutes les 150ms sous un watchdog de 250ms ; ventilateur
-  de couche d'imprimante 3D - renvoi toutes les 400ms sous son propre watchdog de
+  d'imprimante 3D - renvoi toutes les 150ms sous un chien de garde de 250ms ; ventilateur
+  de couche d'imprimante 3D - renvoi toutes les 400ms sous son propre chien de garde de
   1000ms), avec les mêmes intervalles de renvoi que l'outil de bureau. La décocher,
   changer de panneau ou d'onglet, se déconnecter ou fermer la page envoie la
   commande d'arrêt de l'outil.
-- **Contrôles Globaux** (`0x100`), passthrough SPI de **Carte d'Extension** + requête
+- **Contrôles Globaux** (`0x100`), passage direct SPI de **Carte d'Extension** + requête
   TMC DIAG0 (`0x180`-`0x183`), requête/effacement **F-RAM** (`0x190`-`0x192`),
   **Auto-test** (contrôles sûrs, au repos, par outil), un **Moniteur de Bus Brut** avec
   export de trace `.trc`/`.asc`, et un injecteur **Trame Personnalisée** avec un
@@ -269,7 +269,7 @@ Porté depuis les panneaux du propre deck Qt Quick d'`URTC-TESTER`
 
 - **Onglet Preuves.** Il lit les enregistrements (`urtc-evidence/1`) qu'écrivent le flasher, le tester et l'updater, depuis les fichiers que la personne choisit (rien n'est envoyé), vérifie chacun avec les mêmes règles et le même condensat que le code commun et les liste du plus récent au plus ancien, avec des filtres par type, résultat et texte, un résumé, le problème de chaque enregistrement non valide et un téléchargement CSV. Un enregistrement signé avec Ed25519 montre si sa signature correspond, et une liste de clés de confiance (alias et clé publique, clés publiques uniquement, conservée dans ce navigateur et jamais envoyée) lui fait dire « signé par <alias> » ou « signature valide, clé inconnue ». La liste peut être enregistrée dans un fichier JSON et des clés peuvent être ajoutées depuis un fichier (un fichier avec une seule entrée erronée est refusé en entier) ; la page est dans les huit langues.
 
-- **Trames construites par des fonctions pures.** Les trames des panneaux (LED et anneau d'état, passthrough SPI, fonctions optionnelles, buse et extrudeur de la tête d'imprimante 3D, impulsion de soudure, mouvements de moteur pas à pas) sont construites dans `toolFrames.ts` et celles de la mise à jour du firmware (START_UPDATE, les quatre blocs de signature, les trames de données de l'image et END_UPDATE) dans `flashFrames.ts` ; une valeur qui ne tient pas dans son champ est ramenée à la plus proche qui y tient, et les tests figent les octets.
+- **Trames construites par des fonctions pures.** Les trames des panneaux (LED et anneau d'état, passage direct SPI, fonctions optionnelles, buse et extrudeur de la tête d'imprimante 3D, impulsion de soudure, mouvements de moteur pas à pas) sont construites dans `toolFrames.ts` et celles de la mise à jour du firmware (START_UPDATE, les quatre blocs de signature, les trames de données de l'image et END_UPDATE) dans `flashFrames.ts` ; une valeur qui ne tient pas dans son champ est ramenée à la plus proche qui y tient, et les tests figent les octets.
 
 - **Banc du rack avec réponses.** Le rack simulé répond à chaque ordre par sa trame de réponse (un acquittement, ou un refus avec le motif) ; `rackSim.ts` l'écrit et la lit (`encodeRackReply`, `parseRackReply`), le panneau du banc dit le motif dans la langue de la page et une commande retenue pour être arrivée trop tôt est un refus avec son motif, comme dans le firmware.
 
@@ -290,7 +290,7 @@ Le firmware peut faire partager un bus CAN à plusieurs têtes d'outil (l'extens
 | Une image de firmware fausse ou manipulée | Un manifeste dont le `sha256` ne correspond pas au fichier bloque le flashage ; chaque image d'une release officielle porte une signature de release Ed25519 que la page vérifie dans le navigateur avant d'envoyer l'image |
 | Une réponse simulée prise pour réelle | Les onglets bac à sable ne transmettent rien et, tant qu'une carte est connectée, ne répondent rien ; leurs trames sont marquées SIM et une trace rejouée est marquée REPLAY |
 | Une action sur la carte par erreur | Laser, perceuse, séchage UV, soudure, éléments chauffants, mouvement, distribution de pâte, écritures dans la mémoire de la carte, trames risquées saisies à la main et une image signée avec la clé publique de développement demandent d'abord une confirmation |
-| Un actionneur qui continue de tourner | Chaque outil doté d'un watchdog dans le firmware est maintenu en vie par un renvoi et coupé quand le panneau est remplacé, que l'onglet change, que la carte est déconnectée ou que la page se ferme ; STOP ALL coupe tout ce que la page maintient en vie |
+| Un actionneur qui continue de tourner | Chaque outil doté d'un chien de garde dans le firmware est maintenu en vie par un renvoi et coupé quand le panneau est remplacé, que l'onglet change, que la carte est déconnectée ou que la page se ferme ; STOP ALL coupe tout ce que la page maintient en vie |
 | Une page qui charge du code d'ailleurs | Une politique de sécurité de contenu : scripts seulement de la page elle-même, connexions seulement vers elle-même et GitHub |
 
 STOP ALL est une commande logicielle, pas un arrêt d'urgence, et aucun des contrôles ci-dessus n'est une fonction de sécurité.
@@ -330,12 +330,12 @@ pas dans git : ce sont des fichiers joints à la release de chaque version.
 `npm run sync-firmware` télécharge la release la plus récente
 (`npm run sync-firmware -- --tag v0.3.5` pour une release donnée), ou prend un
 dossier local en argument (`npm run sync-firmware -- ../URTC/firmware` pour un
-build de banc). Dans les deux cas il vérifie chaque empreinte et les champs de
+compilation de banc). Dans les deux cas il vérifie chaque empreinte et les champs de
 signature avant de toucher à `public/firmware/`, et régénère
 `src/lib/bundledFirmware.ts` ; un test vérifie le paquet par rapport à ses
 manifestes.
 
-Chaque fichier d'une release officielle a une signature de release (`<fichier>.sig`, Ed25519) : la synchronisation la vérifie lorsqu'elle est présente et refuse une signature incorrecte ; un jeu sans signatures (une pré-release de banc ou un build local) demande `--allow-unsigned`. La page vérifie la même signature dans le navigateur (Web Crypto) avant d'envoyer à une carte une image fournie ou une image d'une release GitHub, et s'arrête si elle n'est pas valide.
+Chaque fichier d'une release officielle a une signature de release (`<fichier>.sig`, Ed25519) : la synchronisation la vérifie lorsqu'elle est présente et refuse une signature incorrecte ; un jeu sans signatures (une pré-release de banc ou une compilation locale) demande `--allow-unsigned`. La page vérifie la même signature dans le navigateur (Web Crypto) avant d'envoyer à une carte une image fournie ou une image d'une release GitHub, et s'arrête si elle n'est pas valide.
 
 ## 🔌 Interfaces
 

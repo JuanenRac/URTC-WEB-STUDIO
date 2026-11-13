@@ -167,7 +167,7 @@ CAN IDs:
 
 - **Atualização CAN-OTA da placa principal** (`0x7F0`-`0x7F7`): acionador de
   entrada no bootloader, registo Ed25519 da imagem (testado apenas contra um simulador), transferência paginada com controlo de
-  fluxo por ACK de página e retry/backoff, CRC32 + END_UPDATE com versão declarada,
+  fluxo por ACK de página e repetições com espera crescente, CRC32 + END_UPDATE com versão declarada,
   e tratamento do estado terminal (incluindo a recuperação de uma trama de
   confirmação perdida da mesma forma que a ferramenta de ambiente de trabalho - volta a
   consultar a versão em vez de reportar uma falsa falha).
@@ -241,14 +241,14 @@ Portado a partir dos painéis do próprio deck Qt Quick do `URTC-TESTER`
   avançado ADS1115, cura UV, retrabalho com ar quente, crimpagem, inspeção
   térmica, dosagem de pasta), cada um enviando os bytes de comando reais da
   ferramenta e descodificando a sua telemetria real.
-- **Caixa de seleção ativa + keepalive** para todas as ferramentas com um watchdog de
+- **Caixa de seleção ativa + keepalive** para todas as ferramentas com um cão de guarda de
   comunicação do lado do firmware (ferro de soldar, laser, cura UV, retrabalho com
-  ar quente, bico de impressora 3D - reenvio a cada 150ms sob um watchdog de
+  ar quente, bico de impressora 3D - reenvio a cada 150ms sob um cão de guarda de
   250ms; ventoinha de camada da impressora 3D - reenvio a cada 400ms sob o seu próprio
-  watchdog de 1000ms), com os mesmos intervalos de reenvio da ferramenta de
+  cão de guarda de 1000ms), com os mesmos intervalos de reenvio da ferramenta de
   ambiente de trabalho. Ao desmarcá-la, mudar de painel ou de separador, desligar ou
   fechar a página é enviado o comando de desligar da ferramenta.
-- **Controlos Globais** (`0x100`), passthrough SPI da **Placa de Expansão** + consulta
+- **Controlos Globais** (`0x100`), passagem direta SPI da **Placa de Expansão** + consulta
   TMC DIAG0 (`0x180`-`0x183`), consulta/apagamento da **F-RAM** (`0x190`-`0x192`),
   **Autoteste** (verificações seguras, em repouso, por ferramenta), um
   **Monitor de Barramento em Bruto** com exportação de traço `.trc`/`.asc`, e um injetor de
@@ -264,7 +264,7 @@ Portado a partir dos painéis do próprio deck Qt Quick do `URTC-TESTER`
 
 - **Separador Evidências.** Lê os registos (`urtc-evidence/1`) que o flasher, o tester e o updater escrevem, dos ficheiros que a pessoa escolhe (não se carrega nada), verifica cada um com as mesmas regras e o mesmo resumo que o código comum e lista-os do mais recente para o mais antigo, com filtros por tipo, resultado e texto, um resumo, o problema de cada registo inválido e uma transferência em CSV. Um registo assinado com Ed25519 mostra se a assinatura coincide, e uma lista de chaves de confiança (alias e chave pública, só chaves públicas, guardada neste navegador e nunca enviada) faz com que diga "assinada por <alias>" ou "assinatura válida, chave desconhecida". A lista pode ser guardada num ficheiro JSON e podem adicionar-se chaves a partir de um ficheiro (um ficheiro com uma única entrada errada é recusado por inteiro); a página está nos oito idiomas.
 
-- **Tramas construídas por funções puras.** As tramas dos painéis (LED e anel de estado, passthrough SPI, funções opcionais, bico e extrusor da cabeça de impressora 3D, pulso de soldadura, movimentos do motor de passo) são construídas em `toolFrames.ts` e as da atualização do firmware (START_UPDATE, os quatro blocos de assinatura, as tramas de dados da imagem e END_UPDATE) em `flashFrames.ts`; um valor que não cabe no seu campo é levado ao mais próximo que caiba, e os testes fixam os bytes.
+- **Tramas construídas por funções puras.** As tramas dos painéis (LED e anel de estado, passagem direta SPI, funções opcionais, bico e extrusor da cabeça de impressora 3D, pulso de soldadura, movimentos do motor de passo) são construídas em `toolFrames.ts` e as da atualização do firmware (START_UPDATE, os quatro blocos de assinatura, as tramas de dados da imagem e END_UPDATE) em `flashFrames.ts`; um valor que não cabe no seu campo é levado ao mais próximo que caiba, e os testes fixam os bytes.
 
 - **Bancada do rack com respostas.** O rack simulado responde a cada ordem com a sua trama de resposta (uma confirmação, ou uma recusa com o motivo); o `rackSim.ts` escreve-a e lê-a (`encodeRackReply`, `parseRackReply`), o painel da bancada diz o motivo na língua da página e um comando retido por chegar cedo demais é uma recusa com o seu motivo, como no firmware.
 
@@ -285,7 +285,7 @@ O firmware pode fazer várias cabeças de ferramenta partilharem um barramento C
 | Uma imagem de firmware errada ou adulterada | Um manifesto cujo `sha256` não coincide com o ficheiro bloqueia a gravação; cada imagem de uma release oficial traz uma assinatura de release Ed25519 que a página verifica no navegador antes de enviar a imagem |
 | Uma resposta simulada tomada por real | Os separadores sandbox não transmitem nada e, com uma placa ligada, não respondem nada; as suas tramas são marcadas SIM e um traço reproduzido REPLAY |
 | Uma ação sobre a placa por engano | Laser, berbequim, cura UV, soldadura, aquecedores, movimento, dosagem de pasta, escritas na memória da placa, tramas arriscadas escritas à mão e uma imagem assinada com a chave pública de desenvolvimento pedem primeiro uma confirmação |
-| Um atuador que fica a funcionar | Cada ferramenta com watchdog no firmware é mantida viva por um reenvio e desligada quando o painel é substituído, o separador muda, a placa é desligada ou a página fecha; STOP ALL desliga tudo o que a página mantém vivo |
+| Um atuador que fica a funcionar | Cada ferramenta com cão de guarda no firmware é mantida viva por um reenvio e desligada quando o painel é substituído, o separador muda, a placa é desligada ou a página fecha; STOP ALL desliga tudo o que a página mantém vivo |
 | Uma página que carrega código de outro lado | Uma política de segurança de conteúdo: scripts só da própria página, ligações só a si mesma e ao GitHub |
 
 STOP ALL é um comando de software, não uma paragem de emergência, e nenhuma das verificações acima é uma função de segurança.
@@ -352,15 +352,15 @@ UI ou ao cabo (`src/hooks/useSerialCanBus.ts`):
 
 - **Saída** - `sendFrame()` recusa-se a serializar um comando cujo
   identificador fique fora do intervalo CAN padrão de 11 bits (`0x000`-`0x7FF`),
-  cujo payload exceda 8 bytes, ou cujo payload contenha um byte fora de
+  cujo carga exceda 8 bytes, ou cujo carga contenha um byte fora de
   `0x00`-`0xFF`. A UI mostra «Refusing malformed CAN frame: ...» em vez de
   escrever texto inválido na porta série.
 - **Entrada** - `processBuffer()` exige uma correspondência real
   `t<3-hex ID><1-hex DLC 0-8><hex payload>` antes de converter uma linha
-  SLCAN recebida num `CanFrame`; um DLC fora de `0`-`8` ou um payload mais curto
+  SLCAN recebida num `CanFrame`; um DLC fora de `0`-`8` ou um carga mais curto
   do que o seu próprio comprimento declarado é registado na consola e descartado em vez de
   ser entregue a um painel de ferramenta como um byte `NaN`. Um timestamp
-  opcional do adaptador no final continua a ser aceite depois de um payload válido.
+  opcional do adaptador no final continua a ser aceite depois de um carga válido.
 
 ## 🚀 Início rápido
 
