@@ -15,7 +15,7 @@
   <a href="README_por.md">🇵🇹 Português</a>
 </p>
 
-### Les principaux flux du flasher et du testeur d'URTC dans un onglet de navigateur, via un adaptateur USB-CAN et Web Serial
+### Les principaux flux du flasher et du tester d'URTC dans un onglet de navigateur, via un adaptateur USB-CAN et Web Serial
 
 <p align="center">
   <img src="https://img.shields.io/badge/Licence-GPL%203.0-blue.svg" alt="GPL 3.0 or later">
@@ -27,11 +27,11 @@
 
 ---
 
-**Vérification d'honnêteté - ce qui fonctionne réellement aujourd'hui :** `npm test` (Vitest) couvre la logique pure : l'analyse SLCAN, l'appariement requête/réponse, les contrôles d'image de firmware et de manifeste, les limites des outils, les confirmations, les règles qui séparent le simulateur du vrai bus, l'export de traces et les huit langues de l'interface. Les écrans et le transport Web Serial lui-même n'ont pas de tests unitaires (les contrôles de bout en bout à la fin de ce paragraphe les pilotent face à une carte modélisée), et rien de tout cela n'a tourné contre une vraie carte URTC dans cet environnement (pas d'adaptateur USB-CAN ici pour le tester) : Flasher Studio, Tester Studio et l'Analyseur de Protocole CAN Bus sont du vrai code vérifié uniquement par ces tests, la vérification de types (`npm run lint`) et la relecture du code. Control/OLED/Specs-BOM/Thermal IR Inspection sont des onglets bac à sable ouvertement déclarés comme tels, sans aucun trafic CAN. Voir `CHANGELOG.md` pour savoir exactement ce qui a été livré jusqu'à présent. `npm run test:e2e` ouvre en plus la page compilée dans un vrai navigateur (Playwright) face à une carte modélisée : c'est ainsi que sont vérifiés la copie hors ligne, l'historique des compteurs thermiques et la session enregistrée.
+**Point d'honnêteté : ce qui fonctionne réellement aujourd'hui :** `npm test` (Vitest) couvre la logique pure : l'analyse SLCAN, l'appariement requête/réponse, les contrôles d'image de firmware et de manifeste, les limites des outils, les confirmations, les règles qui séparent le simulateur du vrai bus, l'export de traces et les huit langues de l'interface. Les écrans et le transport Web Serial lui-même n'ont pas de tests unitaires (les contrôles de bout en bout à la fin de ce paragraphe les pilotent face à une carte modélisée), et rien de tout cela n'a tourné contre une vraie carte URTC dans cet environnement (pas d'adaptateur USB-CAN ici pour le tester) : Flasher Studio, Tester Studio et l'Analyseur de Protocole CAN Bus sont du vrai code vérifié uniquement par ces tests, la vérification de types (`npm run lint`) et la relecture du code. Control/OLED/Specs-BOM/Thermal IR Inspection sont des onglets bac à sable ouvertement déclarés comme tels, sans aucun trafic CAN. Voir `CHANGELOG.md` pour savoir exactement ce qui a été livré jusqu'à présent. `npm run test:e2e` ouvre en plus la page compilée dans un vrai navigateur (Playwright) face à une carte modélisée : c'est ainsi que sont vérifiés la copie hors ligne, l'historique des compteurs thermiques et la session enregistrée.
 
 ---
 
-> **État de la sûreté et de la cybersécurité :** cet écosystème n'est pas un système de sécurité certifié et aucune carte URTC assemblée n'existe encore. Le bootloader de la carte principale vérifie un enregistrement Ed25519 de l'image (`<image>.imgsig`) par rapport à une table de clés publiques et ne détient aucun secret, et celui de l'esclave d'extension contrôle un simple SHA-256 et n'installe qu'une image que la carte principale confirme ; la table du build officiel est vide tant que la clé de signature des images n'est pas créée, et un build de banc fait confiance à une clé publique de développement, si bien que n'importe qui peut produire une image qu'un tel bootloader accepte ; rien n'a été transmis à une carte réelle. Lisez la [base de sécurité](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md) et le [modèle de menaces](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md) avant de vous fier à une affirmation d'ici pour la sécurité d'une personne.
+> **État de la sûreté et de la cybersécurité :** cet écosystème n'est pas un système de sécurité certifié et aucune carte URTC assemblée n'existe encore. Le bootloader de la carte principale vérifie un enregistrement Ed25519 de l'image (`<image>.imgsig`) par rapport à une table de clés publiques et ne détient aucun secret, et celui de l'esclave d'extension contrôle un simple SHA-256 et n'installe qu'une image que la carte principale confirme ; la table du build officiel est vide tant que la clé de signature des images n'est pas créée, et un build de banc fait confiance à une clé publique de développement, si bien que n'importe qui peut produire une image qu'un tel bootloader accepte ; rien n'a été transmis à une carte réelle. Lisez la [base de sécurité](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md) et le [modèle de menaces](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md) avant de vous fier à une affirmation de ce dépôt quant à la sécurité d'une personne.
 
 ## 📋 En un coup d'œil
 
@@ -67,7 +67,7 @@
 Un compagnon basé sur navigateur pour l'**Universal Robot Tool Controller (URTC)** -
 une app monopage React/Vite qui est conçue pour parler à du matériel URTC réel (elle n'en a jamais piloté) via un adaptateur
 USB-CAN grâce à la [Web Serial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API),
-utilisant le même framing SLCAN et le même protocole CAN que les deux outils
+utilisant le même format de trames SLCAN et le même protocole CAN que les deux outils
 compagnons de bureau, [URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER) et
 [URTC Tester](https://github.com/JuanenRac/URTC-TESTER). L'objectif est de réunir les principaux flux de travail de ces deux outils dans un seul onglet de navigateur, pas une démo simplifiée de ceux-ci ; la parité complète n'est pas encore atteinte (voir « Pas encore couvert » plus bas) - les onglets Flasher Studio et Tester Studio envoient et
 reçoivent les vraies trames CAN décrites dans `docs/CANBUS.TXT` du
@@ -118,7 +118,7 @@ Comment les parties de ce dépôt s'articulent : qui l'utilise, ce qu'il contien
 - **Icônes :** Lucide React
 - **CRC32 :** `crc-32` - vérification d'intégrité de l'image firmware, reflète le
   propre calcul de CRC32 du bootloader
-- **Transport matériel :** Web Serial API + framing SLCAN (aucune dépendance
+- **Transport matériel :** Web Serial API + format de trames SLCAN (aucune dépendance
   native, aucun serveur backend compagnon)
 
 <!-- urtc-section:screenshots -->
@@ -359,7 +359,7 @@ n'atteigne l'UI ou le fil (`src/hooks/useSerialCanBus.ts`) :
 - **Sortant** - `sendFrame()` refuse de sérialiser une commande dont
   l'identifiant sort de la plage CAN standard 11 bits (`0x000`-`0x7FF`),
   dont la charge utile dépasse 8 octets, ou dont un octet de charge utile
-  sort de `0x00`-`0xFF`. L'UI affiche "Refusing malformed CAN frame: ..."
+  sort de `0x00`-`0xFF`. L'UI affiche « Refusing malformed CAN frame: ... »
   au lieu d'écrire du texte invalide sur le port série.
 - **Entrant** - `processBuffer()` exige une correspondance réelle
   `t<ID hex sur 3><DLC hex sur 1, 0-8><charge utile hex>` avant de
@@ -494,11 +494,11 @@ URTC est fait de dépôts indépendants, chacun avec sa version, ses tests et so
   * [URTC-FLASHER](https://github.com/JuanenRac/URTC-FLASHER) - outil de bureau qui met à jour le firmware de la carte par CAN ou par SWD/JTAG.
   * [URTC-GATEWAY](https://github.com/JuanenRac/URTC-GATEWAY) - passerelle devant le bus CAN : ne laisse passer que les identifiants d'une liste, limite leur cadence et demande une clé de session.
   * [URTC-SMART-RACK](https://github.com/JuanenRac/URTC-SMART-RACK) - logique C indépendante du matériel et protocole de commandes pour un support d'outils avec préchauffage et suivi du cycle de vie.
-  * [URTC-TESTER](https://github.com/JuanenRac/URTC-TESTER) - testeur de bureau du bus CAN en direct qui affiche les commandes et la télémétrie du profil d'outil signalé par une carte.
-  * [URTC-VISION-TOOL](https://github.com/JuanenRac/URTC-VISION-TOOL) - protocole de trames de capteur en C et compagnon Python thermique/RVB pour une tête d'outil d'inspection.
+  * [URTC-TESTER](https://github.com/JuanenRac/URTC-TESTER) - tester de bureau du bus CAN en direct qui affiche les commandes et la télémétrie du profil d'outil signalé par une carte.
+  * [URTC-VISION-TOOL](https://github.com/JuanenRac/URTC-VISION-TOOL) - protocole de trames de capteur en C et compagnon Python thermique/RGB pour une tête d'outil d'inspection.
   * **URTC-WEB-STUDIO** (ce dépôt) - application de navigateur qui flashe et teste la carte via Web Serial et SLCAN, sans rien installer.
 * **Ecosystem Operations:**
-  * [URTC-DEVTOOLS](https://github.com/JuanenRac/URTC-DEVTOOLS) - les outils de dépôt communs de la famille en un ensemble versionné, avec un fichier de verrou qui distingue une copie modifiée d'une copie en retard.
+  * [URTC-DEVTOOLS](https://github.com/JuanenRac/URTC-DEVTOOLS) - les outils de dépôt communs de la famille en un ensemble versionné, avec un fichier de verrouillage qui distingue une copie modifiée d'une copie en retard.
   * [URTC-DOCS](https://github.com/JuanenRac/URTC-DOCS) - architecture, interfaces, base de sécurité et catalogue généré de l'écosystème, plus les outils qui comparent tous les dépôts.
   * [URTC-UPDATER](https://github.com/JuanenRac/URTC-UPDATER) - outil de bureau qui détecte, installe et met à jour les dépôts de la famille URTC, une action explicite à la fois.
 
@@ -525,9 +525,9 @@ URTC est fait de dépôts indépendants, chacun avec sa version, ses tests et so
   manquante ou un résultat d'API malformé, et pourquoi l'autorité réelle de
   flashage reste côté serveur ou dans les outils de bureau dédiés.
 
-- **[CONTRIBUTING.md](CONTRIBUTING.md)** — pile technologique et lignes directrices de codage pour une pull request.
-- **[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)** — les normes de comportement attendues dans cette communauté.
-- **[SECURITY.md](SECURITY.md)** — comment signaler une vulnérabilité, et les véritables axes de sécurité de ce projet.
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** — technologies utilisées et consignes de codage pour une pull request.
+- **[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)** — les règles de conduite attendues dans cette communauté.
+- **[SECURITY.md](SECURITY.md)** — comment signaler une vulnérabilité, et les véritables priorités de sécurité de ce projet.
 - **[SUPPORT.md](SUPPORT.md)** — où poser des questions et signaler des bugs.
 - **[LICENSE.md](LICENSE.md)** — la licence propre de ce projet.
 

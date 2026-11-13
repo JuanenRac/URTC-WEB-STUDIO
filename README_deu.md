@@ -27,11 +27,11 @@
 
 ---
 
-**Ehrlichkeitscheck - was heute wirklich funktioniert:** `npm test` (Vitest) deckt die reine Logik ab: SLCAN-Parsing, Zuordnung von Anfrage und Antwort, Prüfungen von Firmware-Images und Manifesten, Werkzeuggrenzen, Bestätigungen, die Regeln, die den Simulator vom echten Bus trennen, den Trace-Export und die acht Oberflächensprachen. Die Oberflächen und der Web-Serial-Transport selbst haben keine Unit-Tests (die End-to-End-Prüfungen am Ende dieses Absatzes steuern sie gegen eine modellierte Platine), und nichts davon ist in dieser Umgebung gegen eine echte URTC-Platine gelaufen (hier gibt es keinen USB-CAN-Adapter zum Testen): Flasher Studio, Tester Studio und der CAN-Bus-Protokollanalysator sind echter Code, der nur durch diese Tests, die Typprüfung (`npm run lint`) und Code-Durchsicht verifiziert ist. Control/OLED/Specs-BOM/Thermal IR Inspection sind offen als Sandbox-Tabs gekennzeichnet, ohne jeglichen CAN-Verkehr. Siehe `CHANGELOG.md` für das, was bisher genau ausgeliefert wurde. `npm run test:e2e` öffnet außerdem die gebaute Seite in einem echten Browser (Playwright) gegen eine modellierte Platine: So werden die Offline-Kopie, der Verlauf der thermischen Zähler und die gespeicherte Sitzung geprüft.
+**Ehrlicher Zwischenstand: Was heute wirklich funktioniert:** `npm test` (Vitest) deckt die reine Logik ab: SLCAN-Parsing, Zuordnung von Anfrage und Antwort, Prüfungen von Firmware-Images und Manifesten, Werkzeuggrenzen, Bestätigungen, die Regeln, die den Simulator vom echten Bus trennen, den Trace-Export und die acht Oberflächensprachen. Die Oberflächen und der Web-Serial-Transport selbst haben keine Unit-Tests (die End-to-End-Prüfungen am Ende dieses Absatzes steuern sie gegen eine modellierte Platine), und nichts davon ist in dieser Umgebung gegen eine echte URTC-Platine gelaufen (hier gibt es keinen USB-CAN-Adapter zum Testen): Flasher Studio, Tester Studio und der CAN-Bus-Protokollanalysator sind echter Code, der nur durch diese Tests, die Typprüfung (`npm run lint`) und Code-Durchsicht verifiziert ist. Control/OLED/Specs-BOM/Thermal IR Inspection sind offen als Sandbox-Tabs gekennzeichnet, ohne jeglichen CAN-Verkehr. Siehe `CHANGELOG.md` für das, was bisher genau ausgeliefert wurde. `npm run test:e2e` öffnet außerdem die gebaute Seite in einem echten Browser (Playwright) gegen eine modellierte Platine: So werden die Offline-Kopie, der Verlauf der thermischen Zähler und die gespeicherte Sitzung geprüft.
 
 ---
 
-> **Stand von Sicherheit (Safety) und Security:** Dieses Ökosystem ist kein zertifiziertes Sicherheitssystem, und es existiert noch keine bestückte URTC-Platine. Der Bootloader der Hauptplatine prüft einen Ed25519-Eintrag des Images (`<image>.imgsig`) gegen eine Tabelle öffentlicher Schlüssel und hält kein Geheimnis, und der Bootloader des Erweiterungs-Slaves prüft ein einfaches SHA-256 und installiert nur ein Image, das die Hauptplatine bestätigt; die Tabelle des offiziellen Builds ist leer, bis der Schlüssel zum Signieren der Images erzeugt ist, und ein Bench-Build vertraut einem öffentlichen Entwicklungsschlüssel, sodass jeder ein Image erzeugen kann, das ein solcher Bootloader akzeptiert; an eine echte Platine wurde noch nichts gesendet. Lesen Sie die [Sicherheitsbasis](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md) und das [Bedrohungsmodell](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md), bevor Sie sich für die Sicherheit einer Person auf eine Aussage hier verlassen.
+> **Stand von Sicherheit (Safety) und Security:** Dieses Ökosystem ist kein zertifiziertes Sicherheitssystem, und es existiert noch keine bestückte URTC-Platine. Der Bootloader der Hauptplatine prüft einen Ed25519-Eintrag des Images (`<image>.imgsig`) gegen eine Tabelle öffentlicher Schlüssel und hält kein Geheimnis, und der Bootloader des Erweiterungs-Slaves prüft ein einfaches SHA-256 und installiert nur ein Image, das die Hauptplatine bestätigt; die Tabelle des offiziellen Builds ist leer, bis der Schlüssel zum Signieren der Images erzeugt ist, und ein Bench-Build vertraut einem öffentlichen Entwicklungsschlüssel, sodass jeder ein Image erzeugen kann, das ein solcher Bootloader akzeptiert; an eine echte Platine wurde noch nichts gesendet. Lesen Sie die [Sicherheitsbasis](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md) und das [Bedrohungsmodell](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md), bevor Sie sich bei der Sicherheit einer Person auf eine Aussage in diesem Repository verlassen.
 
 ## 📋 Auf einen Blick
 
@@ -44,7 +44,7 @@
 | Ziel | Ein Webbrowser auf dem PC des Benutzers |
 | Auf echter Hardware | Nur simuliert: gegen Emulatoren, Attrappen oder Simulatoren getestet; für diese Version ist kein Lauf auf echter Hardware vermerkt |
 
-**Springe zu:** [Überblick](#-überblick) · [Architektur](#-architektur) · [Funktionen](#-funktionen) · [Sicherheit](#-sicherheit-und-schutz) · [Schnittstellen](#-schnittstellen) · [Schnellstart](#-schnellstart) · [Tests](#-tests) · [Struktur](#-struktur-des-repositorys) · [Verwandte](#-verwandte-projekte)
+**Weiter zu:** [Überblick](#-überblick) · [Architektur](#-architektur) · [Funktionen](#-funktionen) · [Sicherheit](#-sicherheit-und-schutz) · [Schnittstellen](#-schnittstellen) · [Schnellstart](#-schnellstart) · [Tests](#-tests) · [Struktur](#-struktur-des-repositorys) · [Verwandte](#-verwandte-projekte)
 
 <!-- urtc-section:status_web_studio -->
 ## 🚦 Projektstatus
@@ -71,7 +71,7 @@ spricht, wobei dasselbe SLCAN-Framing und CAN-Protokoll wie bei den beiden
 Desktop-Begleit-Tools verwendet wird, [URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER) und
 [URTC Tester](https://github.com/JuanenRac/URTC-TESTER). Das Ziel ist, die wichtigsten Abläufe dieser beiden Tools in einem einzigen Browser-Tab bereitzustellen, keine vereinfachte Demo davon; volle Funktionsparität ist noch nicht erreicht (siehe „Noch nicht abgedeckt“ weiter unten) - die Tabs Flasher Studio und Tester Studio senden
 und empfangen die echten CAN-Frames, die in `docs/CANBUS.TXT` des
-[URTC](https://github.com/JuanenRac/URTC)-Repositorys beschrieben sind.
+[URTC](https://github.com/JuanenRac/URTC)-Repositories beschrieben sind.
 
 ### Was echt ist vs. was eine Sandbox ist
 
@@ -365,7 +365,7 @@ die UI oder die Leitung erreicht (`src/hooks/useSerialCanBus.ts`):
   Befehls, dessen Kennung außerhalb des 11-Bit-Standard-CAN-Bereichs
   (`0x000`-`0x7FF`) liegt, dessen Nutzdaten 8 Byte überschreiten, oder dessen
   Nutzdaten ein Byte außerhalb von `0x00`-`0xFF` enthalten. Die UI zeigt
-  "Refusing malformed CAN frame: ..." an, statt ungültigen Text an den
+  „Refusing malformed CAN frame: ...“ an, statt ungültigen Text an den
   seriellen Port zu schreiben.
 - **Eingehend** - `processBuffer()` verlangt eine echte Übereinstimmung
   mit `t<3-stellige Hex-ID><1-stelliges Hex-DLC 0-8><Hex-Nutzdaten>`, bevor
@@ -503,7 +503,7 @@ URTC besteht aus unabhängigen Repositories mit jeweils eigener Version, eigenen
   * [URTC-GATEWAY](https://github.com/JuanenRac/URTC-GATEWAY) - Gateway vor dem CAN-Bus: lässt nur gelistete Kennungen durch, begrenzt ihre Rate und verlangt einen Sitzungsschlüssel.
   * [URTC-SMART-RACK](https://github.com/JuanenRac/URTC-SMART-RACK) - hardwareunabhängige C-Logik und Befehlsprotokoll für eine Werkzeugablage mit Vorheizen und Lebenszyklusverfolgung.
   * [URTC-TESTER](https://github.com/JuanenRac/URTC-TESTER) - Desktop-Live-Tester für den CAN-Bus, der die Bedienelemente und die Telemetrie des von einer Platine gemeldeten Werkzeugprofils zeigt.
-  * [URTC-VISION-TOOL](https://github.com/JuanenRac/URTC-VISION-TOOL) - Sensorrahmen-Protokoll in C und ein Python-Thermo-/RGB-Begleiter für einen Inspektions-Werkzeugkopf.
+  * [URTC-VISION-TOOL](https://github.com/JuanenRac/URTC-VISION-TOOL) - Sensor-Frame-Protokoll in C und ein Python-Thermo-/RGB-Begleiter für einen Inspektions-Werkzeugkopf.
   * **URTC-WEB-STUDIO** (dieses Repository) - Browser-App, die die Platine über Web Serial und SLCAN flasht und testet, ohne Installation.
 * **Ecosystem Operations:**
   * [URTC-DEVTOOLS](https://github.com/JuanenRac/URTC-DEVTOOLS) - die gemeinsamen Repository-Werkzeuge der Familie als versionierter Satz, mit einer Sperrdatei, die eine bearbeitete von einer veralteten Kopie unterscheidet.
@@ -532,16 +532,16 @@ URTC besteht aus unabhängigen Repositories mit jeweils eigener Version, eigenen
   einem fehlerhaften API-Ergebnis tun muss, und warum die echte
   Flash-Hoheit serverseitig oder in den dedizierten Desktop-Tools bleibt.
 
-- **[CONTRIBUTING.md](CONTRIBUTING.md)** — Technologie-Stack und Coding-Richtlinien für einen Pull Request.
-- **[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)** — die in dieser Community erwarteten Verhaltensstandards.
-- **[SECURITY.md](SECURITY.md)** — wie man eine Schwachstelle meldet, und die echten Sicherheitsschwerpunkte dieses Projekts.
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** — Technologie-Stack und Programmierrichtlinien für einen Pull Request.
+- **[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)** — die in dieser Community erwarteten Verhaltensregeln.
+- **[SECURITY.md](SECURITY.md)** — wie man eine Schwachstelle meldet, und die tatsächlichen Sicherheitsschwerpunkte dieses Projekts.
 - **[SUPPORT.md](SUPPORT.md)** — wo man Fragen stellt und Fehler meldet.
 - **[LICENSE.md](LICENSE.md)** — die eigene Lizenz dieses Projekts.
 
 ## 🤝 Mitwirken und Community
 
 * Führen Sie vor einem Pull Request `URTC_CI=1 python tools/ci_validate.py` aus: es muss bestehen. Siehe [CONTRIBUTING.md](CONTRIBUTING.md) und den [Verhaltenskodex](CODE_OF_CONDUCT.md).
-* Das README gibt es in acht Sprachen: Eine Textänderung wird in allen acht Dateien vorgenommen, und die mit anderen Repositorys geteilten Abschnitte schreibt `tools/readme_sections.py` von URTC-COMMON.
+* Das README gibt es in acht Sprachen: Eine Textänderung wird in allen acht Dateien vorgenommen, und die mit anderen Repositories geteilten Abschnitte schreibt `tools/readme_sections.py` von URTC-COMMON.
 * Eine Änderung am CAN-Protokoll beginnt in URTC-COMMON (`spec/can_protocol.json`) und gelangt über die geprüfte Kopie in dieses Repository.
 * Beschreiben Sie nichts als auf einer Platine funktionierend, was nur gebaut wurde.
 * Melden Sie eine Schwachstelle privat: [SECURITY.md](SECURITY.md). Fragen, Ideen und Meldungen: electrohobby3d@gmail.com ([SUPPORT.md](SUPPORT.md)).
