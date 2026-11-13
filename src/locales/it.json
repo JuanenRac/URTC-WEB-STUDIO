@@ -6,7 +6,7 @@
     "simulator_notice": "Simulatore: questa pagina modella una scheda e non invia nulla al bus. Collega un adattatore USB-CAN per lavorare con la scheda reale in Tester Studio e Flasher Studio.",
     "simulator_notice_connected": "Simulatore: questa pagina modella una scheda e non invia nulla al bus. Ciò che mostra non è ciò che segnala la scheda collegata; usa Tester Studio e Flasher Studio per la scheda reale.",
     "loading": "Caricamento...",
-    "simulator_notice_real_send": "Simulatore con invio reale attivo: questa scheda modella una scheda. Solo il pulsante che indica l'invio alla scheda reale mette una trama sul bus, e solo dopo che hai confermato quella trama."
+    "simulator_notice_real_send": "Simulatore, bus reale: questa scheda modella una scheda, e solo il pulsante che indica l'invio alla scheda reale mette una trama sul bus, e solo dopo che hai confermato quella trama."
   },
   "config": {
     "language_en": "English",
@@ -69,8 +69,8 @@
     "watchdog_label": "WATCHDOG",
     "watchdog_active": "ATTIVO",
     "watchdog_none": "NESSUN TIMEOUT",
-    "real_send_label": "Consenti l'invio di trame reali da questa scheda",
-    "real_send_hint": "Disattivato per impostazione predefinita. Finché è disattivato, questa scheda si limita a simulare e nulla raggiunge il bus. Se è attivo e una scheda è collegata, il pulsante qui sotto invia una trama, e solo dopo che hai confermato quella trama.",
+    "real_send_label": "Bus reale",
+    "real_send_hint": "Con una scheda collegata, questa scheda invia sul bus reale: il pulsante qui sotto vi mette una trama, e solo dopo che hai confermato quella trama (il trapano e il laser chiedono due volte). Il simulatore resta disponibile: il cursore sposta solo il valore simulato. Cambiare la potenza di un trapano o di un laser accesi chiede di nuovo conferma quando la variazione supera la percentuale impostata nel file di configurazione.",
     "real_send_button": "Invia questo setpoint alla scheda reale",
     "real_send_unsupported": "Questo utensile non ha una singola trama che si possa inviare da questa scheda; usa Tester Studio. Non è stato inviato nulla.",
     "real_send_out_of_range": "Il valore è fuori dai limiti dell'utensile. Non è stato inviato nulla.",

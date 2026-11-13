@@ -42,7 +42,7 @@ import { summarizeBoardFrames, heaterToolId, BoardStatus, NO_BOARD_STATUS } from
 import { BusWarning, busWarnings, loadThresholds, profileFromFrame } from './lib/busHealth';
 import { planPreset } from './lib/simPresets';
 import { rawSendPolicy, ActionKind } from './lib/dangerousActions';
-import { loadControlSend, saveControlSend, planControlSend, runControlSend, confirmPlan, stopFrameFor, canHoldTool } from './lib/controlSandbox';
+import { planControlSend, runControlSend, confirmPlan, stopFrameFor, canHoldTool } from './lib/controlSandbox';
 import { CutReason, clampHoldSeconds, loadHoldSeconds, saveHoldSeconds } from './lib/controlHeartbeat';
 import { useControlSession } from './hooks/useControlSession';
 import { runAllSafeOff } from './lib/safeOff';
@@ -343,15 +343,11 @@ export default function App() {
   };
 
   // Save to F-RAM in the sandbox: snapshots the simulated setpoints.
-  // The only way this tab reaches the bus: the switch is off by default (kept in this browser), the button exists only with the switch on and a board
-  // connected, the frame is checked against the limits of the tool, and the person confirms every single frame. See lib/controlSandbox.ts.
-  const [allowRealSend, setAllowRealSend] = useState<boolean>(() => loadControlSend(typeof localStorage === 'undefined' ? undefined : localStorage));
+  // The only way this tab reaches the bus: with a board connected the button sends to the real bus (always real, shown as such), the frame is checked
+  // against the limits of the tool, and the person confirms every single frame (a drill or a laser that is on asks again only for a change of power over the
+  // percentage of controlConfig.json). See lib/controlSandbox.ts.
   const [realSendMessage, setRealSendMessage] = useState('');
-  const handleAllowRealSend = (value: boolean) => {
-    setAllowRealSend(value);
-    setRealSendMessage('');
-    saveControlSend(typeof localStorage === 'undefined' ? undefined : localStorage, value);
-  };
+  const activePowerRef = useRef<Record<number, number>>({});
   const [holdSeconds, setHoldSeconds] = useState<number>(() => loadHoldSeconds(typeof localStorage === 'undefined' ? undefined : localStorage));
   const handleHoldSecondsChange = (seconds: number) => {
     const clean = clampHoldSeconds(seconds);
@@ -361,14 +357,15 @@ export default function App() {
   // What a tool of the Control tab keeps on is cut at once (STOP, the time, focus, the tab, the connection, the switch, the page): see hooks/useControlSession.ts.
   const sendControlFrame = (id: number, data: number[]) => serialCan.sendFrame(id, data, 'Sent from the Control tab');
   const controlSession = useControlSession({
-    connected: serialCan.isConnected, tabActive: activeTab === 'control', allowed: allowRealSend, send: sendControlFrame,
+    connected: serialCan.isConnected, tabActive: activeTab === 'control', allowed: true, send: sendControlFrame,
     onEnd: (reason: CutReason) => {
+      activePowerRef.current = {};
       if (reason === 'switch' || reason === 'unmount') return;
       setRealSendMessage(t(`toolcatalog.real_cut_${reason}`, 'Switched off: {{reason}}. The off frame was sent.', { reason }));
     },
   });
   const controlPlan = () => planControlSend({
-    allowReal: allowRealSend, connected: serialCan.isConnected, toolId: activeToolId,
+    connected: serialCan.isConnected, toolId: activeToolId, activePower: activePowerRef.current[activeToolId] ?? null,
     value: setpoints[activeToolId] ?? activeTool.defaultSetpoint, toolMin: activeTool.minVal, toolMax: activeTool.maxVal,
   });
   const askControl = (kind: ActionKind, options: { value?: number; second?: boolean }) => {
@@ -387,6 +384,7 @@ export default function App() {
   };
   const handleRealStop = async () => {
     controlSession.stop();
+    activePowerRef.current = {};
     const stop = stopFrameFor(activeToolId);
     if (stop && serialCan.isConnected) {
       try { await sendControlFrame(stop.id, stop.data); } catch (error) { console.error(error); }
@@ -399,6 +397,7 @@ export default function App() {
       const outcome = await runControlSend(plan, askControl, (id, data) => sendControlFrame(id, data));
       if (outcome === 'sent' && plan.kind === 'confirm') {
         controlSession.rememberSingle({ id: plan.id, data: plan.data, offData: plan.offData });
+        if (plan.second) activePowerRef.current = { ...activePowerRef.current, [activeToolId]: plan.value };
         setRealSendMessage(t('toolcatalog.real_send_sent', 'Sent to the board: 0x{{id}} {{data}}', {
           id: plan.id.toString(16).toUpperCase().padStart(3, '0'), data: plan.data.map(b => b.toString(16).toUpperCase().padStart(2, '0')).join(' '),
         }));
@@ -954,8 +953,8 @@ export default function App() {
           {(activeTab === 'control' || activeTab === 'oled' || activeTab === 'thermal') && (
             <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-sky-950/60 text-sky-300 border border-sky-800/70 text-xs font-medium">
               <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-              <span>{serialCan.isConnected && allowRealSend && activeTab === 'control'
-                ? t('app.simulator_notice_real_send', 'Simulator with real sending on: this tab models a board. Only the button that says it sends to the real board puts one frame on the bus, and only after you confirm that frame.')
+              <span>{serialCan.isConnected && activeTab === 'control'
+                ? t('app.simulator_notice_real_send', 'Simulator, real bus: this tab models a board, and only the button that says it sends to the real board puts one frame on the bus, and only after you confirm that frame.')
                 : serialCan.isConnected
                 ? t('app.simulator_notice_connected', 'Simulator: this tab models a board and sends nothing to the bus. What it shows is not what the connected board reports; use Tester Studio and Flasher Studio for the real board.')
                 : t('app.simulator_notice', 'Simulator: this tab models a board and sends nothing to the bus. Connect a USB-CAN adapter to work with the real board in Tester Studio and Flasher Studio.')}</span>
@@ -976,9 +975,7 @@ export default function App() {
               firmwareVersion={firmwareVersion}
               onSwitchToFirmware11={() => handleSetFirmwareVersion('0.1.0')}
               realSend={{
-                allowed: allowRealSend,
                 connected: serialCan.isConnected,
-                onAllowedChange: handleAllowRealSend,
                 onSend: () => { void handleRealSetpointSend(); },
                 message: realSendMessage,
                 canHold: canHoldTool(activeToolId),

@@ -6,7 +6,7 @@
     "simulator_notice": "Simulator: Dieser Tab bildet eine Platine nach und sendet nichts auf den Bus. Verbinden Sie einen USB-CAN-Adapter, um in Tester Studio und Flasher Studio mit der echten Platine zu arbeiten.",
     "simulator_notice_connected": "Simulator: Dieser Tab bildet eine Platine nach und sendet nichts auf den Bus. Was er zeigt, ist nicht das, was die angeschlossene Platine meldet; nutzen Sie Tester Studio und Flasher Studio für die echte Platine.",
     "loading": "Wird geladen...",
-    "simulator_notice_real_send": "Simulator mit echtem Senden an: Dieser Tab bildet eine Platine nach. Nur die Schaltfläche, die das Senden an die echte Platine nennt, legt einen Frame auf den Bus, und zwar erst nach Ihrer Bestätigung dieses Frames."
+    "simulator_notice_real_send": "Simulator, echter Bus: Dieser Tab bildet eine Platine nach, und nur die Schaltfläche, die das Senden an die echte Platine nennt, legt einen Frame auf den Bus, und zwar erst nach Ihrer Bestätigung dieses Frames."
   },
   "config": {
     "language_en": "English",
@@ -69,8 +69,8 @@
     "watchdog_label": "WATCHDOG",
     "watchdog_active": "AKTIV",
     "watchdog_none": "KEIN TIMEOUT",
-    "real_send_label": "Das Senden echter Frames von diesem Tab erlauben",
-    "real_send_hint": "Standardmäßig aus. Solange er aus ist, simuliert dieser Tab nur und nichts erreicht den Bus. Ist er an und eine Platine verbunden, sendet die Schaltfläche unten einen Frame, und zwar erst, nachdem Sie diesen Frame bestätigt haben.",
+    "real_send_label": "Echter Bus",
+    "real_send_hint": "Mit einer verbundenen Platine sendet dieser Tab an den echten Bus: Die Schaltfläche unten legt einen Frame darauf, und zwar erst, nachdem Sie diesen Frame bestätigt haben (Bohrer und Laser fragen zweimal). Der Simulator bleibt verfügbar: Der Schieberegler bewegt nur den simulierten Sollwert. Eine Änderung der Leistung eines eingeschalteten Bohrers oder Lasers fragt erneut, wenn die Änderung über dem in der Konfigurationsdatei festgelegten Prozentsatz liegt.",
     "real_send_button": "Diesen Sollwert an die echte Platine senden",
     "real_send_unsupported": "Dieses Werkzeug hat keinen einzelnen Frame, der von diesem Tab gesendet werden kann; nutzen Sie Tester Studio. Es wurde nichts gesendet.",
     "real_send_out_of_range": "Der Wert liegt außerhalb der Grenzen des Werkzeugs. Es wurde nichts gesendet.",

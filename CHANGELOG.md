@@ -28,6 +28,10 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The Control tab always sends to the real bus when a board is connected, and says so:** the switch that was off by default is gone; with a board connected the tab shows a "Real bus" label in the eight languages and the button puts one confirmed frame on the bus (the drill and the laser still ask twice, STOP stays, the list of commands is closed). The simulator stays for the slider and for no board. **Compatibility note:** the saved choice of the old switch is no longer read.
+
+- **A drill or a laser that is on asks again only for a change of power over a percentage:** `src/lib/controlConfig.json` holds `power_change_reconfirm_percent` (10 by default, from 0 to 500; anything else gives 10); a change within it, up or down, goes out without asking, a bigger one asks twice as for a first start. A new setpoint of the tool that is on no longer sends the off frame of the old one after it. Tested on the host with fake frames; nothing has run against a real board.
+
 ## [0.5.0] - The Spanish texts say "grabar" and "velocidad de bus": the calques "flashear", "flasheo" and "bitrate" are replaced in the window, the guide, the Spanish README and the shared sections, with the gender of the sentence... (and 4 more changes)
 
 - **The Spanish texts say "grabar" and "velocidad de bus":** the calques "flashear", "flasheo" and "bitrate" are replaced in the window, the guide, the Spanish README and the shared sections, with the gender of the sentence corrected, so the README names what the window shows.

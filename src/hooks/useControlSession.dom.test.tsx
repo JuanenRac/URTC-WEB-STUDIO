@@ -109,6 +109,28 @@ describe('what the Control tab keeps on', () => {
     }
   });
 
+  it('does not send the off frame of a drill that is on when a new setpoint of the same drill replaces it', async () => {
+    const s = setup();
+    await act(async () => { s.hook.result.current.rememberSingle({ id: 0x140, data: [128, 0], offData: [0, 0] }); });
+    await act(async () => { s.hook.result.current.rememberSingle({ id: 0x140, data: [140, 0], offData: [0, 0] }); await vi.advanceTimersByTimeAsync(0); });
+    expect(s.offSends()).toBe(0);
+    expect(s.ends).toEqual([]);
+    expect(s.hook.result.current.active).toBe(true);
+    await act(async () => { s.hook.result.current.stop(); await vi.advanceTimersByTimeAsync(0); });
+    expect(s.offSends()).toBe(1);
+    expect(s.ends).toEqual(['stop']);
+    s.hook.unmount();
+  });
+
+  it('switches the first tool off when another tool takes its place', async () => {
+    const s = setup();
+    await act(async () => { s.hook.result.current.rememberSingle({ id: 0x140, data: [128, 0], offData: [0, 0] }); });
+    await act(async () => { s.hook.result.current.rememberSingle({ id: 0x141, data: [50, 1], offData: [0, 0] }); await vi.advanceTimersByTimeAsync(0); });
+    expect(s.offSends()).toBe(1);
+    expect(s.ends).toEqual(['switch']);
+    s.hook.unmount();
+  });
+
   it('says nothing and sends nothing when nothing is on', async () => {
     const s = setup();
     await act(async () => { window.dispatchEvent(new Event('blur')); s.hook.rerender({ connected: false, tabActive: false, allowed: false }); await vi.advanceTimersByTimeAsync(0); });

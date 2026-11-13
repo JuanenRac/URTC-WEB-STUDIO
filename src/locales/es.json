@@ -6,7 +6,7 @@
     "simulator_notice": "Simulador: esta pestaña modela una placa y no envía nada al bus. Conecta un adaptador USB-CAN para trabajar con la placa real en Tester Studio y Flasher Studio.",
     "simulator_notice_connected": "Simulador: esta pestaña modela una placa y no envía nada al bus. Lo que muestra no es lo que informa la placa conectada; usa Tester Studio y Flasher Studio para la placa real.",
     "loading": "Cargando...",
-    "simulator_notice_real_send": "Simulador con envío real activado: esta pestaña modela una placa. Solo el botón que dice que envía a la placa real pone una trama en el bus, y solo después de que confirmes esa trama."
+    "simulator_notice_real_send": "Simulador, bus real: esta pestaña modela una placa, y solo el botón que dice que envía a la placa real pone una trama en el bus, y solo después de que confirmes esa trama."
   },
   "config": {
     "language_en": "English",
@@ -69,8 +69,8 @@
     "watchdog_label": "WATCHDOG",
     "watchdog_active": "ACTIVO",
     "watchdog_none": "SIN TIMEOUT",
-    "real_send_label": "Permitir enviar tramas reales desde esta pestaña",
-    "real_send_hint": "Apagado por defecto. Mientras está apagado, esta pestaña solo simula y nada llega al bus. Con él encendido y una placa conectada, el botón de abajo envía una trama, y solo después de que confirmes esa trama.",
+    "real_send_label": "Bus real",
+    "real_send_hint": "Con una placa conectada, esta pestaña envía al bus real: el botón de abajo pone una trama en él, y solo después de que confirmes esa trama (el taladro y el láser preguntan dos veces). El simulador sigue disponible: el control deslizante solo mueve la consigna simulada. Cambiar la potencia de un taladro o de un láser encendidos vuelve a preguntar cuando el cambio supera el porcentaje fijado en el fichero de configuración.",
     "real_send_button": "Enviar esta consigna a la placa real",
     "real_send_unsupported": "Esta herramienta no tiene una trama única que se pueda enviar desde esta pestaña; usa Tester Studio. No se envió nada.",
     "real_send_out_of_range": "El valor está fuera de los límites de la herramienta. No se envió nada.",

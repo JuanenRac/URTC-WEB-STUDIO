@@ -6,7 +6,7 @@
     "simulator_notice": "Simulator: this tab models a board and sends nothing to the bus. Connect a USB-CAN adapter to work with the real board in Tester Studio and Flasher Studio.",
     "simulator_notice_connected": "Simulator: this tab models a board and sends nothing to the bus. What it shows is not what the connected board reports; use Tester Studio and Flasher Studio for the real board.",
     "loading": "Loading...",
-    "simulator_notice_real_send": "Simulator with real sending on: this tab models a board. Only the button that says it sends to the real board puts one frame on the bus, and only after you confirm that frame."
+    "simulator_notice_real_send": "Simulator, real bus: this tab models a board, and only the button that says it sends to the real board puts one frame on the bus, and only after you confirm that frame."
   },
   "config": {
     "language_en": "English",
@@ -69,8 +69,8 @@
     "watchdog_label": "WATCHDOG",
     "watchdog_active": "ACTIVE",
     "watchdog_none": "NO TIMEOUT",
-    "real_send_label": "Allow sending real frames from this tab",
-    "real_send_hint": "Off by default. While it is off, this tab only simulates and nothing reaches the bus. When it is on and a board is connected, the button below sends one frame, and only after you confirm that frame.",
+    "real_send_label": "Real bus",
+    "real_send_hint": "With a board connected, this tab sends to the real bus: the button below puts one frame on it, and only after you confirm that frame (the drill and the laser ask twice). The simulator stays available: the slider only moves the simulated setpoint. Changing the power of a drill or a laser that is on asks again when the change is over the percentage set in the configuration file.",
     "real_send_button": "Send this setpoint to the real board",
     "real_send_unsupported": "This tool has no single frame that can be sent from this tab; use Tester Studio. Nothing was sent.",
     "real_send_out_of_range": "The value is outside the limits of the tool. Nothing was sent.",
