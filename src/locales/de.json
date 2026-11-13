@@ -398,6 +398,7 @@
     "verify_fail_3": "HMAC-Signatur stimmt nicht überein (nicht mit dem Schlüssel dieser Platine signiert)",
     "verify_fail_4": "HardwareID stimmt nicht überein (Image für andere Hardware gebaut)",
     "verify_fail_5": "Rollback abgelehnt (älter als das bereits installierte Image)",
+    "verify_fail_7": "ein Digest-Block ging auf dem Bus verloren (weniger als die 4 kamen an); das Image wurde nicht installiert, Update erneut versuchen",
     "verify_fail_unknown_code": "unbekannter Grund 0x{{code}}",
     "verify_fail_unknown": "unbekannter Grund",
     "log_dev_key_declined": "Abgebrochen: Das Image ist mit dem öffentlichen Entwicklungsschlüssel signiert und die Bestätigung wurde abgelehnt.",

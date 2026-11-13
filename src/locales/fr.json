@@ -398,6 +398,7 @@
     "verify_fail_3": "signature HMAC différente (non signée avec la clé de cette carte)",
     "verify_fail_4": "HardwareID différent (image construite pour un autre matériel)",
     "verify_fail_5": "retour en arrière refusé (plus ancienne que la version déjà installée)",
+    "verify_fail_7": "un bloc du condensé a été perdu sur le bus (moins de 4 sont arrivés) ; l'image n'a pas été installée, relancez la mise à jour",
     "verify_fail_unknown_code": "raison inconnue 0x{{code}}",
     "verify_fail_unknown": "raison inconnue",
     "log_dev_key_declined": "Annulé : l'image est signée avec la clé de développement publique et la confirmation a été refusée.",

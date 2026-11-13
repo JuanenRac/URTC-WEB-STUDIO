@@ -398,6 +398,7 @@
     "verify_fail_3": "firma HMAC distinta (no está firmada con la clave de esta placa)",
     "verify_fail_4": "HardwareID distinto (imagen compilada para otro hardware)",
     "verify_fail_5": "retroceso rechazado (más antigua que la ya instalada)",
+    "verify_fail_7": "se perdió un bloque del resumen en el bus (llegaron menos de los 4 esperados); la imagen no se instaló, repite la actualización",
     "verify_fail_unknown_code": "motivo desconocido 0x{{code}}",
     "verify_fail_unknown": "motivo desconocido",
     "log_dev_key_declined": "Cancelado: la imagen está firmada con la clave de desarrollo pública y no se confirmó.",
