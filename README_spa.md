@@ -27,11 +27,11 @@
 
 ---
 
-**Comprobación de honestidad - lo que realmente funciona hoy:** `npm test` (Vitest) cubre la lógica pura: el análisis SLCAN, la correspondencia petición/respuesta, las comprobaciones de imagen de firmware y de manifiesto, los límites de las herramientas, las confirmaciones, las reglas que separan el simulador del bus real, la exportación de trazas y los ocho idiomas de la interfaz. Las pantallas y el propio transporte Web Serial no tienen tests unitarios (las comprobaciones de extremo a extremo del final de este párrafo los manejan frente a una placa modelada), y nada de esto se ha ejecutado contra una placa URTC real en este entorno (aquí no hay un adaptador USB-CAN con el que probarlo): Flasher Studio, Tester Studio y el Analizador de Protocolo CAN Bus son código real verificado solo con esos tests, la comprobación de tipos (`npm run lint`) y la revisión del código. Control/OLED/Specs-BOM/Thermal IR Inspection son pestañas de sandbox declaradas abiertamente como tales, sin tráfico CAN de ningún tipo. Consulta `CHANGELOG.md` para ver exactamente qué se ha entregado hasta ahora. `npm run test:e2e` además abre la página compilada en un navegador real (Playwright) frente a una placa modelada: así se comprueban la copia sin red, el historial de los contadores térmicos y la sesión guardada.
+**Aviso de honestidad: lo que realmente funciona hoy:** `npm test` (Vitest) cubre la lógica pura: el análisis SLCAN, la correspondencia petición/respuesta, las comprobaciones de imagen de firmware y de manifiesto, los límites de las herramientas, las confirmaciones, las reglas que separan el simulador del bus real, la exportación de trazas y los ocho idiomas de la interfaz. Las pantallas y el propio transporte Web Serial no tienen tests unitarios (las comprobaciones de extremo a extremo del final de este párrafo los manejan frente a una placa modelada), y nada de esto se ha ejecutado contra una placa URTC real en este entorno (aquí no hay un adaptador USB-CAN con el que probarlo): Flasher Studio, Tester Studio y el Analizador de Protocolo CAN Bus son código real verificado solo con esos tests, la comprobación de tipos (`npm run lint`) y la revisión del código. Control/OLED/Specs-BOM/Thermal IR Inspection son pestañas de sandbox declaradas abiertamente como tales, sin tráfico CAN de ningún tipo. Consulta `CHANGELOG.md` para ver exactamente qué se ha entregado hasta ahora. `npm run test:e2e` además abre la página compilada en un navegador real (Playwright) frente a una placa modelada: así se comprueban la copia sin red, el historial de los contadores térmicos y la sesión guardada.
 
 ---
 
-> **Estado de seguridad física y de ciberseguridad:** este ecosistema no es un sistema de seguridad certificado y todavía no existe ninguna placa URTC poblada. El bootloader de la placa principal verifica un registro Ed25519 de la imagen (`<imagen>.imgsig`) contra una tabla de claves públicas y no guarda ningún secreto, y el bootloader del esclavo de expansión comprueba un SHA-256 simple e instala solo una imagen que la placa principal confirma; la tabla de la compilación oficial está vacía hasta que se cree la clave de firma de imágenes, y una compilación de banco confía en una clave pública de desarrollo, así que cualquiera puede producir una imagen que un bootloader así acepte; no se ha transmitido nada a una placa real. Lee la [línea base de seguridad](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md) y el [modelo de amenazas](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md) antes de fiarte de cualquier afirmación de aquí para la seguridad de una persona.
+> **Estado de seguridad física y de ciberseguridad:** este ecosistema no es un sistema de seguridad certificado y todavía no existe ninguna placa URTC poblada. El bootloader de la placa principal verifica un registro Ed25519 de la imagen (`<imagen>.imgsig`) contra una tabla de claves públicas y no guarda ningún secreto, y el bootloader del esclavo de expansión comprueba un SHA-256 simple e instala solo una imagen que la placa principal confirma; la tabla de la compilación oficial está vacía hasta que se cree la clave de firma de imágenes, y una compilación de banco confía en una clave pública de desarrollo, así que cualquiera puede producir una imagen que un bootloader así acepte; no se ha transmitido nada a una placa real. Lee la [línea base de seguridad](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md) y el [modelo de amenazas](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md) antes de fiarte de cualquier afirmación de este repositorio sobre la seguridad de una persona.
 
 ## 📋 De un vistazo
 
@@ -67,7 +67,7 @@
 Un compañero basado en navegador para el **Universal Robot Tool Controller (URTC)** -
 una app de una sola página en React/Vite que está pensada para hablar con hardware URTC real (nunca se ha ejecutado con ninguno) a través de
 un adaptador USB-CAN mediante la [Web Serial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API),
-usando el mismo framing SLCAN y el mismo protocolo CAN que las dos herramientas
+usando el mismo formato de tramas SLCAN y el mismo protocolo CAN que las dos herramientas
 compañeras de escritorio, [URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER) y
 [URTC Tester](https://github.com/JuanenRac/URTC-TESTER). El objetivo es llevar los flujos principales de esas dos herramientas a una sola pestaña del navegador, no una demo simplificada de ellas; todavía no alcanza la paridad completa (véase «Aún no cubierto» más abajo) - las pestañas Flasher Studio y Tester Studio envían y
 reciben las tramas CAN reales descritas en `docs/CANBUS.TXT` del
@@ -81,26 +81,26 @@ Esta app tiene dos tipos de pestañas:
   CAN Bus Protocol Analyzer. Estas solo hacen algo una vez que has conectado un
   adaptador USB-CAN real (botón de la cabecera arriba a la derecha); cada comando que
   envían y cada lectura que muestran proviene del bus CAN (este camino nunca se ha ejecutado con un adaptador ni una placa reales). Esto incluye la
-  **lectura real de la cámara térmica** - el panel "Thermal Inspection" de Tester
+  **lectura real de la cámara térmica** - el panel «Thermal Inspection» de Tester
   Studio (`0x250`/`0x251`/`0x254`/`0x255`) consulta el array IR MLX90640 real del
   cabezal de herramienta por CAN.
 - **Pestañas sandbox sin conexión** - Control (catálogo de herramientas), OLED,
   Specs/BOM, y Thermal IR Inspection. Estas te permiten explorar el catálogo de 25
   herramientas, previsualizar las pantallas de estado OLED, navegar el BOM/pinouts, y
   ver una imagen de cámara térmica simulada, todo sin ningún hardware conectado.
-  El interruptor "FW v0.0 / v0.1" de la cabecera solo afecta a estas pestañas sandbox
+  El interruptor «FW v0.0 / v0.1» de la cabecera solo afecta a estas pestañas sandbox
   (qué perfiles de herramienta desbloquearía un build de firmware dado) - no tiene
   ninguna relación con lo que reporta una placa real conectada.
   - **No confundas las dos vistas térmicas**: la pestaña independiente "Thermal IR
     Inspection" (`ThermalCameraViewer.tsx`) es ruido `Math.random()` 100% del lado
     del cliente, sin ningún tráfico CAN en absoluto - es una maqueta de interfaz, no
     una lectura de sensor. Los datos reales de MLX9064x solo aparecen dentro del
-    panel "Thermal Inspection" de Tester Studio, y solo una vez que hay hardware
+    panel «Thermal Inspection» de Tester Studio, y solo una vez que hay hardware
     conectado.
 
 ## 🧩 Papel en URTC
 
-URTC-WEB-STUDIO es la versión de navegador de los dos programas de escritorio de URTC, URTC-FLASHER y URTC-TESTER: una página React que habla con una placa URTC a través de un adaptador USB-CAN con Web Serial, con el mismo framing SLCAN y el mismo protocolo CAN (sus tablas y vectores se generan a partir de URTC-COMMON). Trae sus flujos principales a una pestaña del navegador sin instalar nada, y deja SWD/JTAG, que ningún navegador puede manejar, para el flasher de escritorio. También tiene pestañas sandbox que exploran las 25 herramientas sin conexión y no transmiten nada.
+URTC-WEB-STUDIO es la versión de navegador de los dos programas de escritorio de URTC, URTC-FLASHER y URTC-TESTER: una página React que habla con una placa URTC a través de un adaptador USB-CAN con Web Serial, con el mismo formato de tramas SLCAN y el mismo protocolo CAN (sus tablas y vectores se generan a partir de URTC-COMMON). Trae sus flujos principales a una pestaña del navegador sin instalar nada, y deja SWD/JTAG, que ningún navegador puede manejar, para el flasher de escritorio. También tiene pestañas sandbox que exploran las 25 herramientas sin conexión y no transmiten nada.
 
 ## 🏛️ Arquitectura
 
@@ -110,7 +110,7 @@ URTC-WEB-STUDIO es la versión de navegador de los dos programas de escritorio d
 
 Cómo encajan las partes de este repositorio: quién lo usa, qué contiene y de qué depende. La imagen se dibuja desde `docs/architecture.json` y se comprueba contra el código.
 
-### Stack tecnológico
+### Tecnologías usadas
 
 - **Lenguaje:** TypeScript
 - **Framework de frontend:** React 19
@@ -119,7 +119,7 @@ Cómo encajan las partes de este repositorio: quién lo usa, qué contiene y de 
 - **Iconos:** Lucide React
 - **CRC32:** `crc-32` - comprobación de integridad de la imagen de firmware, refleja
   el propio cálculo de CRC32 del bootloader
-- **Transporte de hardware:** Web Serial API + framing SLCAN (sin dependencias
+- **Transporte de hardware:** Web Serial API + formato de tramas SLCAN (sin dependencias
   nativas, sin servidor backend compañero)
 
 <!-- urtc-section:screenshots -->
@@ -486,11 +486,11 @@ URTC se compone de repositorios independientes, cada uno con su versión, sus pr
   * [URTC-FLASHER](https://github.com/JuanenRac/URTC-FLASHER) - herramienta de escritorio que actualiza el firmware de la placa por CAN o por SWD/JTAG.
   * [URTC-GATEWAY](https://github.com/JuanenRac/URTC-GATEWAY) - pasarela delante del bus CAN: solo deja pasar los identificadores de una lista, limita su frecuencia y pide una clave de sesión.
   * [URTC-SMART-RACK](https://github.com/JuanenRac/URTC-SMART-RACK) - lógica en C independiente del hardware y protocolo de órdenes para un soporte de herramientas con precalentamiento y seguimiento del ciclo de vida.
-  * [URTC-TESTER](https://github.com/JuanenRac/URTC-TESTER) - probador de escritorio del bus CAN en vivo que muestra los controles y la telemetría del perfil de herramienta que informa una placa.
+  * [URTC-TESTER](https://github.com/JuanenRac/URTC-TESTER) - tester de escritorio del bus CAN en vivo que muestra los controles y la telemetría del perfil de herramienta que informa una placa.
   * [URTC-VISION-TOOL](https://github.com/JuanenRac/URTC-VISION-TOOL) - protocolo de tramas de sensor en C y un acompañante en Python térmico/RGB para un cabezal de inspección.
   * **URTC-WEB-STUDIO** (este repositorio) - aplicación de navegador que graba y prueba la placa por Web Serial y SLCAN, sin instalar nada.
 * **Ecosystem Operations:**
-  * [URTC-DEVTOOLS](https://github.com/JuanenRac/URTC-DEVTOOLS) - las herramientas de repositorio compartidas de la familia como un conjunto con versión y un fichero de bloqueo que distingue una copia editada de una desfasada.
+  * [URTC-DEVTOOLS](https://github.com/JuanenRac/URTC-DEVTOOLS) - las herramientas de repositorio compartidas de la familia como un conjunto con versión y un archivo de bloqueo que distingue una copia editada de una desfasada.
   * [URTC-DOCS](https://github.com/JuanenRac/URTC-DOCS) - arquitectura, interfaces, línea base de seguridad y catálogo generado del ecosistema, más las herramientas que comparan todos los repositorios.
   * [URTC-UPDATER](https://github.com/JuanenRac/URTC-UPDATER) - herramienta de escritorio que detecta, instala y actualiza los repositorios de la familia URTC, una acción explícita cada vez.
 
@@ -519,15 +519,15 @@ URTC se compone de repositorios independientes, cada uno con su versión, sus pr
   grabación se mantiene en el servidor o en las herramientas de escritorio
   dedicadas.
 
-- **[CONTRIBUTING.md](CONTRIBUTING.md)** — stack tecnológico y pautas de codificación para un pull request.
-- **[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)** — los estándares de comportamiento esperados en esta comunidad.
-- **[SECURITY.md](SECURITY.md)** — cómo reportar una vulnerabilidad, y las áreas reales de enfoque en seguridad de este proyecto.
-- **[SUPPORT.md](SUPPORT.md)** — dónde hacer preguntas y reportar errores.
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** — tecnologías usadas y normas de código para una pull request.
+- **[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)** — las normas de comportamiento que se esperan en esta comunidad.
+- **[SECURITY.md](SECURITY.md)** — cómo informar de una vulnerabilidad y en qué aspectos de seguridad se centra realmente este proyecto.
+- **[SUPPORT.md](SUPPORT.md)** — dónde hacer preguntas y notificar errores.
 - **[LICENSE.md](LICENSE.md)** — la licencia propia de este proyecto.
 
 ## 🤝 Contribuir y comunidad
 
-* Antes de una pull request ejecuta `URTC_CI=1 python tools/ci_validate.py`: debe pasar. Consulta [CONTRIBUTING.md](CONTRIBUTING.md) y el [código de conducta](CODE_OF_CONDUCT.md).
+* Antes de abrir una pull request, ejecuta `URTC_CI=1 python tools/ci_validate.py`: debe pasar. Consulta [CONTRIBUTING.md](CONTRIBUTING.md) y el [código de conducta](CODE_OF_CONDUCT.md).
 * El README existe en ocho idiomas: un cambio en el texto se hace en los ocho archivos, y las secciones compartidas con otros repositorios las escribe `tools/readme_sections.py` de URTC-COMMON.
 * Un cambio en el protocolo CAN empieza en URTC-COMMON (`spec/can_protocol.json`) y llega a este repositorio mediante la copia comprobada.
 * No describas como funcionando en una placa lo que solo se ha compilado.

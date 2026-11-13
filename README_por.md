@@ -27,11 +27,11 @@
 
 ---
 
-**Verificação de honestidade - o que realmente funciona hoje:** `npm test` (Vitest) cobre a lógica pura: a análise SLCAN, a correspondência pedido/resposta, as verificações de imagem de firmware e de manifesto, os limites das ferramentas, as confirmações, as regras que separam o simulador do barramento real, a exportação de traços e os oito idiomas da interface. Os ecrãs e o próprio transporte Web Serial não têm testes unitários (as verificações de ponta a ponta no fim deste parágrafo conduzem-nos perante uma placa modelada), e nada disto foi executado contra uma placa URTC real neste ambiente (aqui não há um adaptador USB-CAN com que testar): o Flasher Studio, o Tester Studio e o Analisador de Protocolo CAN Bus são código real verificado apenas por esses testes, pela verificação de tipos (`npm run lint`) e pela revisão do código. Control/OLED/Specs-BOM/Thermal IR Inspection são separadores de sandbox declarados abertamente como tal, sem qualquer tráfego CAN. Consulte o `CHANGELOG.md` para ver exatamente o que foi entregue até agora. `npm run test:e2e` abre ainda a página compilada num navegador real (Playwright) perante uma placa modelada: é assim que se verificam a cópia sem rede, o histórico dos contadores térmicos e a sessão guardada.
+**Ponto de honestidade: o que realmente funciona hoje:** `npm test` (Vitest) cobre a lógica pura: a análise SLCAN, a correspondência pedido/resposta, as verificações de imagem de firmware e de manifesto, os limites das ferramentas, as confirmações, as regras que separam o simulador do barramento real, a exportação de traços e os oito idiomas da interface. Os ecrãs e o próprio transporte Web Serial não têm testes unitários (as verificações de ponta a ponta no fim deste parágrafo conduzem-nos perante uma placa modelada), e nada disto foi executado contra uma placa URTC real neste ambiente (aqui não há um adaptador USB-CAN com que testar): o Flasher Studio, o Tester Studio e o Analisador de Protocolo CAN Bus são código real verificado apenas por esses testes, pela verificação de tipos (`npm run lint`) e pela revisão do código. Control/OLED/Specs-BOM/Thermal IR Inspection são separadores de sandbox declarados abertamente como tal, sem qualquer tráfego CAN. Consulte o `CHANGELOG.md` para ver exatamente o que foi entregue até agora. `npm run test:e2e` abre ainda a página compilada num navegador real (Playwright) perante uma placa modelada: é assim que se verificam a cópia sem rede, o histórico dos contadores térmicos e a sessão guardada.
 
 ---
 
-> **Estado de segurança (safety e security):** este ecossistema não é um sistema de segurança certificado e ainda não existe nenhuma placa URTC montada. O bootloader da placa principal verifica um registo Ed25519 da imagem (`<image>.imgsig`) contra uma tabela de chaves públicas e não guarda nenhum segredo, e o bootloader do escravo de expansão verifica um SHA-256 simples e só instala uma imagem que a placa principal confirma; a tabela da compilação oficial está vazia até a chave de assinatura de imagens ser criada, e uma compilação de bancada confia numa chave pública de desenvolvimento, pelo que qualquer pessoa pode produzir uma imagem que um bootloader assim aceita; nada foi transmitido a uma placa real. Leia a [base de segurança](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md) e o [modelo de ameaças](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md) antes de confiar em qualquer afirmação aqui para a segurança de uma pessoa.
+> **Estado de segurança (safety e security):** este ecossistema não é um sistema de segurança certificado e ainda não existe nenhuma placa URTC montada. O bootloader da placa principal verifica um registo Ed25519 da imagem (`<image>.imgsig`) contra uma tabela de chaves públicas e não guarda nenhum segredo, e o bootloader do escravo de expansão verifica um SHA-256 simples e só instala uma imagem que a placa principal confirma; a tabela da compilação oficial está vazia até a chave de assinatura de imagens ser criada, e uma compilação de bancada confia numa chave pública de desenvolvimento, pelo que qualquer pessoa pode produzir uma imagem que um bootloader assim aceita; nada foi transmitido a uma placa real. Leia a [base de segurança](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md) e o [modelo de ameaças](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md) antes de confiar em qualquer afirmação deste repositório sobre a segurança de uma pessoa.
 
 ## 📋 Num relance
 
@@ -67,7 +67,7 @@
 Uma ferramenta complementar baseada no navegador para o **Universal Robot Tool Controller (URTC)** -
 uma aplicação de página única em React/Vite que se destina a comunicar com hardware URTC real (nunca foi executada com nenhum) através de um
 adaptador USB-CAN, por meio da [Web Serial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API),
-usando o mesmo framing SLCAN e o mesmo protocolo CAN que as duas ferramentas
+usando o mesmo formato de tramas SLCAN e o mesmo protocolo CAN que as duas ferramentas
 de ambiente de trabalho que o acompanham, o [URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER) e o
 [URTC Tester](https://github.com/JuanenRac/URTC-TESTER). O objetivo é reunir os principais fluxos de trabalho dessas duas ferramentas num único separador do navegador, não uma demonstração simplificada das mesmas; a paridade completa ainda não foi alcançada (veja «Ainda não coberto» mais abaixo) - os separadores Flasher Studio e Tester Studio enviam e
 recebem as tramas CAN reais descritas em `docs/CANBUS.TXT` do
@@ -81,21 +81,21 @@ Esta aplicação tem dois tipos de separadores:
   Bus Protocol Analyzer. Estes só fazem alguma coisa depois de ligar um
   adaptador USB-CAN real (botão do cabeçalho, no canto superior direito); todos os comandos que
   enviam e todas as leituras que mostram vêm do barramento CAN (este caminho nunca foi executado com um adaptador ou uma placa reais). Isto inclui a
-  **leitura real da câmara térmica** - o painel "Thermal Inspection" do Tester
+  **leitura real da câmara térmica** - o painel «Thermal Inspection» do Tester
   Studio (`0x250`/`0x251`/`0x254`/`0x255`) consulta através de CAN o array IR MLX90640 real
   da cabeça da ferramenta.
 - **Separadores sandbox offline** - Control (catálogo de ferramentas), OLED,
   Specs/BOM e Thermal IR Inspection. Estes permitem explorar o catálogo de 25
   ferramentas, pré-visualizar os ecrãs de estado OLED, navegar pelo BOM/pinouts e
   ver uma imagem simulada de câmara térmica, tudo sem qualquer hardware ligado.
-  O interruptor "FW v0.0 / v0.1" do cabeçalho só afeta estes separadores sandbox
+  O interruptor «FW v0.0 / v0.1» do cabeçalho só afeta estes separadores sandbox
   (que perfis de ferramenta seriam desbloqueados por uma dada build de firmware) - não tem
   qualquer relação com o que uma placa real ligada reporta.
   - **Não confunda as duas vistas térmicas**: o separador autónomo "Thermal IR
     Inspection" (`ThermalCameraViewer.tsx`) é ruído `Math.random()` 100% do lado
     do cliente, sem qualquer tráfego CAN - é uma maqueta de interface, não
     uma leitura de sensor. Os dados reais do MLX9064x só aparecem dentro do painel
-    "Thermal Inspection" do Tester Studio, e apenas depois de o hardware estar
+    «Thermal Inspection» do Tester Studio, e apenas depois de o hardware estar
     ligado.
 
 ## 🧩 Papel no URTC
@@ -119,7 +119,7 @@ Como as partes deste repositório se encaixam: quem o usa, o que contém e de qu
 - **Ícones:** Lucide React
 - **CRC32:** `crc-32` - verificação de integridade da imagem de firmware, espelha
   o próprio cálculo de CRC32 do bootloader
-- **Transporte de hardware:** Web Serial API + framing SLCAN (sem dependências
+- **Transporte de hardware:** Web Serial API + formato de tramas SLCAN (sem dependências
   nativas, sem servidor backend de apoio)
 
 <!-- urtc-section:screenshots -->
@@ -353,7 +353,7 @@ UI ou ao cabo (`src/hooks/useSerialCanBus.ts`):
 - **Saída** - `sendFrame()` recusa-se a serializar um comando cujo
   identificador fique fora do intervalo CAN padrão de 11 bits (`0x000`-`0x7FF`),
   cujo payload exceda 8 bytes, ou cujo payload contenha um byte fora de
-  `0x00`-`0xFF`. A UI mostra "Refusing malformed CAN frame: ..." em vez de
+  `0x00`-`0xFF`. A UI mostra «Refusing malformed CAN frame: ...» em vez de
   escrever texto inválido na porta série.
 - **Entrada** - `processBuffer()` exige uma correspondência real
   `t<3-hex ID><1-hex DLC 0-8><hex payload>` antes de converter uma linha
@@ -484,10 +484,10 @@ O URTC é feito de repositórios independentes, cada um com a sua versão, os se
   * [URTC](https://github.com/JuanenRac/URTC) - firmware da placa da cabeça de ferramenta (25 perfis de ferramenta, bootloader CAN) e a referência do protocolo CAN.
   * [URTC-COMMON](https://github.com/JuanenRac/URTC-COMMON) - o protocolo CAN escrito uma só vez como dados (especificação, tabelas geradas, vetores de conformidade) e o código que os programas partilham.
   * [URTC-FLASHER](https://github.com/JuanenRac/URTC-FLASHER) - ferramenta de ambiente de trabalho que atualiza o firmware da placa por CAN ou por SWD/JTAG.
-  * [URTC-GATEWAY](https://github.com/JuanenRac/URTC-GATEWAY) - gateway à frente do barramento CAN: só deixa passar os identificadores de uma lista, limita a sua taxa e pede uma chave de sessão.
+  * [URTC-GATEWAY](https://github.com/JuanenRac/URTC-GATEWAY) - gateway à frente do barramento CAN: só deixa passar os identificadores de uma lista, limita a sua frequência e pede uma chave de sessão.
   * [URTC-SMART-RACK](https://github.com/JuanenRac/URTC-SMART-RACK) - lógica em C independente do hardware e protocolo de comandos para um suporte de ferramentas com pré-aquecimento e acompanhamento do ciclo de vida.
-  * [URTC-TESTER](https://github.com/JuanenRac/URTC-TESTER) - testador de ambiente de trabalho do barramento CAN em direto que mostra os controlos e a telemetria do perfil de ferramenta que uma placa reporta.
-  * [URTC-VISION-TOOL](https://github.com/JuanenRac/URTC-VISION-TOOL) - protocolo de tramas de sensor em C e um companheiro em Python térmico/RGB para uma cabeça de ferramenta de inspeção.
+  * [URTC-TESTER](https://github.com/JuanenRac/URTC-TESTER) - tester de ambiente de trabalho do barramento CAN em direto que mostra os controlos e a telemetria do perfil de ferramenta que uma placa reporta.
+  * [URTC-VISION-TOOL](https://github.com/JuanenRac/URTC-VISION-TOOL) - protocolo de tramas de sensor em C e um acompanhante em Python térmico/RGB para uma cabeça de ferramenta de inspeção.
   * **URTC-WEB-STUDIO** (este repositório) - aplicação de navegador que grava e testa a placa por Web Serial e SLCAN, sem instalar nada.
 * **Ecosystem Operations:**
   * [URTC-DEVTOOLS](https://github.com/JuanenRac/URTC-DEVTOOLS) - as ferramentas de repositório partilhadas da família como um conjunto com versão e um ficheiro de bloqueio que distingue uma cópia editada de uma desatualizada.
@@ -516,7 +516,7 @@ O URTC é feito de repositórios independentes, cada um com a sua versão, os se
   em falta ou um resultado de API malformado, e porque é que a autoridade real de
   gravação permanece no servidor ou nas ferramentas de ambiente de trabalho dedicadas.
 
-- **[CONTRIBUTING.md](CONTRIBUTING.md)** — stack tecnológica e diretrizes de codificação para um pull request.
+- **[CONTRIBUTING.md](CONTRIBUTING.md)** — tecnologias utilizadas e diretrizes de código para um pull request.
 - **[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)** — as normas de comportamento esperadas nesta comunidade.
 - **[SECURITY.md](SECURITY.md)** — como reportar uma vulnerabilidade, e as áreas reais de foco em segurança deste projeto.
 - **[SUPPORT.md](SUPPORT.md)** — onde colocar questões e reportar erros.
