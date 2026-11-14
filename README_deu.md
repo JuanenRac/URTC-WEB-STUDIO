@@ -37,7 +37,7 @@
 
 | | |
 |---|---|
-| Version | `0.5.1` |
+| Version | `0.5.2` |
 | Reifegrad | Funktionsfähig |
 | Tests | 1712 (`npm test`) |
 | Technik | Web Serial API / TypeScript |
