@@ -6,7 +6,7 @@
     "simulator_notice": "Simulador: este separador simula uma placa e não envia nada para o barramento. Ligue um adaptador USB-CAN para trabalhar com a placa real no Tester Studio e no Flasher Studio.",
     "simulator_notice_connected": "Simulador: este separador simula uma placa e não envia nada para o barramento. O que mostra não é o que a placa ligada comunica; use o Tester Studio e o Flasher Studio para a placa real.",
     "loading": "A carregar...",
-    "simulator_notice_real_send": "Simulador, barramento real: este separador modela uma placa, e só o botão que diz enviar para a placa real coloca uma trama no barramento, e só depois de você confirmar essa trama."
+    "simulator_notice_real_send": "Simulador, barramento real: este separador modela uma placa, e só o botão que diz enviar para a placa real coloca uma trama no barramento, e só depois de confirmar essa trama."
   },
   "config": {
     "language_en": "English",
@@ -73,7 +73,7 @@
     "watchdog_active": "ATIVO",
     "watchdog_none": "SEM TIMEOUT",
     "real_send_label": "Barramento real",
-    "real_send_hint": "Com uma placa ligada, este separador envia para o barramento real: o botão abaixo coloca uma trama nele, e só depois de você confirmar essa trama (o berbequim e o laser perguntam duas vezes). O simulador continua disponível: o cursor só move o valor simulado. Alterar a potência de um berbequim ou de um laser ligados volta a perguntar quando a alteração ultrapassa a percentagem definida no ficheiro de configuração.",
+    "real_send_hint": "Com uma placa ligada, este separador envia para o barramento real: o botão abaixo coloca uma trama nele, e só depois de confirmar essa trama (o berbequim e o laser perguntam duas vezes). O simulador continua disponível: o cursor só move o valor simulado. Alterar a potência de um berbequim ou de um laser ligados volta a perguntar quando a alteração ultrapassa a percentagem definida no ficheiro de configuração.",
     "real_send_button": "Enviar este valor de referência à placa real",
     "real_send_unsupported": "Esta ferramenta não tem uma única trama que possa ser enviada a partir deste separador; use o Tester Studio. Não foi enviado nada.",
     "real_send_out_of_range": "O valor está fora dos limites da ferramenta. Não foi enviado nada.",
@@ -82,7 +82,7 @@
     "real_hold_button": "Manter este valor de referência durante {{seconds}} s",
     "real_hold_seconds": "Tempo de manutenção (s)",
     "real_stop_button": "PARAGEM",
-    "real_held": "A manter {{value}}: renovado a cada 100 ms durante {{seconds}} s. Termina com PARAGEM, quando o tempo acaba, quando a janela perde o foco, quando você sai deste separador ou quando a ligação se perde.",
+    "real_held": "A manter {{value}}: renovado a cada 100 ms durante {{seconds}} s. Termina com PARAGEM, quando o tempo acaba, quando a janela perde o foco, quando se sai deste separador ou quando a ligação se perde.",
     "real_cut_stop": "Desligado: foi premida PARAGEM. A trama de desligar foi enviada.",
     "real_cut_blur": "Desligado: a janela perdeu o foco. A trama de desligar foi enviada.",
     "real_cut_tab": "Desligado: o separador Control foi abandonado. A trama de desligar foi enviada.",
