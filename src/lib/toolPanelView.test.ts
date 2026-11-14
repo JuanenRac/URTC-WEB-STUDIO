@@ -144,7 +144,7 @@ describe('what a panel does with the bus', () => {
     expect(sent[3]).toEqual([0x254, 3]);
     expect(flushed.every((id) => id === 0x255)).toBe(true);
     expect(progress[0]).toBe(2);
-    expect(progress.at(-1)).toBe(100);
+    expect(progress[progress.length - 1]).toBe(100);
   });
 
   it('gives up with the chunk and the frame that did not arrive', async () => {
