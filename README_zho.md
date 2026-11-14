@@ -31,7 +31,7 @@
 
 ---
 
-> **安全与安防现状：**本生态系统不是经认证的安全系统，目前也不存在已组装的 URTC 板卡。主板的引导程序用公钥表校验映像的 Ed25519 记录（`<image>.imgsig`），自身不保存任何机密；扩展从机的引导程序只检查普通 SHA-256，并且只安装主板确认过的映像；正式构建的公钥表在创建映像签名密钥之前为空，而台架构建信任一把公开的开发密钥，因此任何人都可以生成这类引导程序接受的映像；尚未向任何真实板卡发送过任何内容。在依赖此处任何说法来保障人身安全之前，请先阅读[安全基线](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md)和[威胁模型](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md)。
+> **安全与安防现状：**本生态系统不是经认证的安全系统，目前也不存在已组装的 URTC 板卡。主板的引导程序用公钥表校验镜像的 Ed25519 记录（`<image>.imgsig`），自身不保存任何机密；扩展从机的引导程序只检查普通 SHA-256，并且只安装主板确认过的镜像；正式构建的公钥表在创建镜像签名密钥之前为空，而台架构建信任一把公开的开发密钥，因此任何人都可以生成这类引导程序接受的镜像；尚未向任何真实板卡发送过任何内容。在依赖此处任何说法来保障人身安全之前，请先阅读[安全基线](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md)和[威胁模型](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md)。
 
 ## 📋 速览
 
@@ -139,7 +139,7 @@ URTC-WEB-STUDIO 是 URTC 两个桌面程序 URTC-FLASHER 和 URTC-TESTER 的浏�
   <img src="images/screenshots/flasher.png" alt="Flasher" width="100%">
 </p>
 
-<p align="center"><em>刷写器：板卡的闪存映射、准备发送的映像及其清单，以及 CAN-OTA 更新的选项（模拟板卡，不发送任何内容）。</em></p>
+<p align="center"><em>刷写器：板卡的闪存映射、准备发送的镜像及其清单，以及 CAN-OTA 更新的选项（模拟板卡，不发送任何内容）。</em></p>
 
 <p align="center">
   <img src="images/screenshots/thermal.png" alt="热成像检查" width="100%">

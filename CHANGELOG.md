@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The texts follow the corrected shared catalog:** German writes "Heizungs-PID" and "Heizungsausgang" instead of "Heizer", Chinese writes the image as "镜像" and the expansion slave as "从机" in every text and in the Chinese README, and European Portuguese no longer addresses the user as "você" in three texts.
+
 - **The deployment to GitHub Pages is retried when the service fails to create it:** the deploy step of the `pages` workflow makes up to three attempts, 30 s and 90 s apart, and only that step is retried (the build of the site is not); a third failure still fails the run.
 
 ## [0.5.2] - Clear-error button, real bus control, bus speed search without transmitting and thermal image recovery
