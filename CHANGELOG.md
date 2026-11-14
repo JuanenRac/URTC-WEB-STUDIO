@@ -2,6 +2,10 @@
 
 All notable changes to this project are documented here.
 
+## [Unreleased]
+
+- **The deployment to GitHub Pages is retried when the service fails to create it:** the deploy step of the `pages` workflow makes up to three attempts, 30 s and 90 s apart, and only that step is retried (the build of the site is not); a third failure still fails the run.
+
 ## [0.5.2] - Clear-error button, real bus control, bus speed search without transmitting and thermal image recovery
 
 - **The tests no longer depend on `Array.prototype.at`:** the last item of a list is taken by its index, so a newer compiler or a different target library cannot turn six test lines into type errors that hide the rest of the checks.
