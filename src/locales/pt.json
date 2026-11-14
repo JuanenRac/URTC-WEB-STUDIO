@@ -768,6 +768,7 @@
     "feature_comms_watchdog": "Vigilância da comunicação dos motores passo a passo e do eletroíman",
     "feature_magnet_release": "O eletroíman larga quando o anfitrião fica em silêncio (desligado: mantém)",
     "clear_error_button": "Limpar erro",
+    "clear_error_confirm": "A placa levanta o seu erro. Confirme que a causa desapareceu e que nada junto à ferramenta se pode mover, aquecer ou disparar.",
     "clear_error_result": "Limpar erro: {{result}}",
     "clear_result_cleared": "o erro foi removido",
     "clear_result_switch_off": "a função está desligada nesta placa (ligá-la e reiniciar)",

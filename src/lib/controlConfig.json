@@ -1,3 +1,4 @@
 {
-  "power_change_reconfirm_percent": 10
+  "power_change_reconfirm_percent": 10,
+  "clear_error_confirm": true
 }

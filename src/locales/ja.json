@@ -768,6 +768,7 @@
     "feature_comms_watchdog": "ステッピングモーターと電磁石の通信ウォッチドッグ",
     "feature_magnet_release": "ホストが無通信になると電磁石を離す(オフ:保持したまま)",
     "clear_error_button": "エラーを解除",
+    "clear_error_confirm": "基板のエラーを解除します。原因がなくなっていること、ツールの近くで動いたり、加熱したり、作動したりするものがないことを確認してください。",
     "clear_error_result": "エラー解除: {{result}}",
     "clear_result_cleared": "エラーを解除しました",
     "clear_result_switch_off": "この基板では機能がオフです(オンにして再起動してください)",

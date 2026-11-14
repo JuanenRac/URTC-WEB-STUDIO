@@ -768,6 +768,7 @@
     "feature_comms_watchdog": "Communication watchdog of the steppers and the electromagnet",
     "feature_magnet_release": "The electromagnet lets go when the host is silent (off: it holds)",
     "clear_error_button": "Clear error",
+    "clear_error_confirm": "The board lifts its error. Make sure the cause is gone and that nothing near the tool can move, heat up or fire.",
     "clear_error_result": "Clear error: {{result}}",
     "clear_result_cleared": "the error was lifted",
     "clear_result_switch_off": "the function is off in this board (switch it on and restart)",

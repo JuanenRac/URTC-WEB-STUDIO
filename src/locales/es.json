@@ -768,6 +768,7 @@
     "feature_comms_watchdog": "Vigilancia de comunicación de los motores paso a paso y del electroimán",
     "feature_magnet_release": "El electroimán suelta si el host calla (apagado: mantiene)",
     "clear_error_button": "Borrar error",
+    "clear_error_confirm": "La placa levanta su error. Comprueba que la causa ya no está y que nada junto a la herramienta puede moverse, calentarse ni dispararse.",
     "clear_error_result": "Borrar error: {{result}}",
     "clear_result_cleared": "se quitó el error",
     "clear_result_switch_off": "la función está apagada en esta placa (hay que activarla y reiniciar)",
