@@ -11,6 +11,9 @@ import {
 
 const SINGLE_HEAD = 0x120;
 
+// the last item of a list, written without Array.prototype.at so that the tests do not depend on the version of the library the compiler targets
+const last = <T>(items: T[]): T | undefined => items[items.length - 1];
+
 function makeBus(addresses: number[], options: { releaseOnLapse?: boolean; config?: { stored: number; running: number } | null } = {}) {
   const bus = new SimBus();
   addresses.forEach((address, index) => bus.add(new SimNode(address, 3 + address, 0x1000 + address + (index > 0 && addresses[index - 1] === address ? 0x100 : 0), 0)));
@@ -84,7 +87,7 @@ describe('the window of the tool heads', () => {
     expect(picker.wanted).toBe(5);
     expect(picker.maySend()).toBe(true);
     expect(picker.rows().find(r => r.address === 5)).toMatchObject({ status: 'selected', mine: true });
-    expect(picker.takeNotices().at(-1)).toMatchObject({ key: 'msg_selected', params: { node: 5 } });
+    expect(last(picker.takeNotices())).toMatchObject({ key: 'msg_selected', params: { node: 5 } });
     await picker.release();
     expect(picker.wanted).toBeNull();
     expect(picker.maySend()).toBe(false);
@@ -108,7 +111,7 @@ describe('the window of the tool heads', () => {
     bus.step(MN_NODE_TIMEOUT_MS + 100);
     expect(picker.rows().find(r => r.address === 11)?.status).toBe('lost');
     expect(picker.ask(11)).toBe(false);
-    expect(picker.takeNotices().at(-1)?.key).toBe('fail_gone');
+    expect(last(picker.takeNotices())?.key).toBe('fail_gone');
     expect(picker.wanted).toBeNull();
     await expect(picker.select(6)).rejects.toBeInstanceOf(NodeNotReady);
   });
@@ -135,7 +138,7 @@ describe('the window of the tool heads', () => {
     picker.takeNotices();
     bus.nodes[0].enabled = false;
     for (let i = 0; i < MN_NODE_TIMEOUT_MS / 10 + 20; i++) { bus.step(10); await picker.tick(); }
-    expect(picker.takeNotices().at(-1)).toMatchObject({ key: 'lapse_released', level: 'warning', params: { node: 2, whyKey: 'why_gone' } });
+    expect(last(picker.takeNotices())).toMatchObject({ key: 'lapse_released', level: 'warning', params: { node: 2, whyKey: 'why_gone' } });
     expect(bus.safeStateCalls.get(5)).toBe(1);
     expect(bus.nodes[1].stopReason).toBe(STOP_REASON_HOST_LAPSE);
     expect(picker.wanted).toBeNull();
@@ -151,7 +154,7 @@ describe('the window of the tool heads', () => {
     bus.nodes[0].fault = true;
     bus.nodes[0].statusNow = true;
     for (let i = 0; i < 30; i++) { bus.step(10); await picker.tick(); }
-    expect(picker.takeNotices().filter(n => n.key.startsWith('lapse')).at(-1)).toMatchObject({ key: 'lapse_kept', level: 'error', params: { whyKey: 'why_fault' } });
+    expect(last(picker.takeNotices().filter(n => n.key.startsWith('lapse')))).toMatchObject({ key: 'lapse_kept', level: 'error', params: { whyKey: 'why_fault' } });
     expect(bus.safeStateCalls.size).toBe(0);
     expect(picker.wanted).toBeNull();
   });
@@ -212,6 +215,6 @@ describe('the window of the tool heads', () => {
     const picker = new NodePicker({ send: () => { throw new Error('adapter unplugged'); }, now: () => 0, sleep: async () => {} });
     await picker.scan();
     expect(picker.mode).toBe('idle');
-    expect(picker.takeNotices().at(-1)).toMatchObject({ key: 'msg_scan_failed', level: 'error', params: { text: 'adapter unplugged' } });
+    expect(last(picker.takeNotices())).toMatchObject({ key: 'msg_scan_failed', level: 'error', params: { text: 'adapter unplugged' } });
   });
 });
