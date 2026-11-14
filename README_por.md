@@ -89,7 +89,7 @@ Esta aplicação tem dois tipos de separadores:
   ferramentas, pré-visualizar os ecrãs de estado OLED, navegar pelo BOM/pinouts e
   ver uma imagem simulada de câmara térmica, tudo sem qualquer hardware ligado.
   O interruptor «FW v0.0 / v0.1» do cabeçalho só afeta estes separadores sandbox
-  (que perfis de ferramenta seriam desbloqueados por uma dada build de firmware) - não tem
+  (que perfis de ferramenta seriam desbloqueados por uma dada compilação de firmware) - não tem
   qualquer relação com o que uma placa real ligada reporta.
   - **Não confunda as duas vistas térmicas**: o separador autónomo "Thermal IR
     Inspection" (`ThermalCameraViewer.tsx`) é ruído `Math.random()` 100% do lado
@@ -167,14 +167,14 @@ CAN IDs:
 
 - **Atualização CAN-OTA da placa principal** (`0x7F0`-`0x7F7`): acionador de
   entrada no bootloader, registo Ed25519 da imagem (testado apenas contra um simulador), transferência paginada com controlo de
-  fluxo por ACK de página e retry/backoff, CRC32 + END_UPDATE com versão declarada,
+  fluxo por ACK de página e repetições com espera crescente, CRC32 + END_UPDATE com versão declarada,
   e tratamento do estado terminal (incluindo a recuperação de uma trama de
   confirmação perdida da mesma forma que a ferramenta de ambiente de trabalho - volta a
   consultar a versão em vez de reportar uma falsa falha).
 - **Atualização CAN-OTA do escravo de expansão** (`0x210`-`0x219`, retransmitida através da
   própria ponte I2C da placa principal) - mesmo esquema de assinatura/CRC, sem ACK de página
-  nem heartbeat neste caminho (corresponde ao protocolo real; o progresso é consultado por
-  polling, não enviado espontaneamente).
+  nem sinal de vida neste caminho (corresponde ao protocolo real; o progresso é consultado
+  periodicamente, não enviado espontaneamente).
 - **Autorização de downgrade** (`0x7FD`) - uma caixa de seleção protegida por confirmação
   que autoriza a tentativa atual a contornar a verificação anti-rollback do bootloader,
   para uma reversão deliberada para uma versão mais antiga.
@@ -183,12 +183,12 @@ CAN IDs:
   dos próprios registos de erro do controlador CAN) - distingue um problema genuíno
   do barramento de um problema do lado da aplicação/bootloader.
 - **Leitura de volta / cópia de segurança do firmware por CAN** (`0x7FE`/`0x7FF`) - lê o conteúdo
-  atual do slot principal antes de o sobrescrever, a um ritmo de 2KB/página
+  atual da ranhura principal antes de o sobrescrever, a um ritmo de 2KB/página
   com ACKs do host, e guarda-o como uma transferência `.bin`.
 - **Consulta da versão da placa em direto** (`0x7F8`/`0x7F9`/`0x7FA`/`0x7E9`) - mostra o
   emissor real da resposta (app ou bootloader), o HardwareID e a versão, não um interruptor
   simulado.
-- **Assinatura e digest publicados** - cada imagem da build do URTC traz
+- **Assinatura e resumos publicados** - cada imagem da compilação do URTC traz
   `<file>.manifest.json` (versão, `sha256` e o valor `hmac_sha256` que o bootloader espera, um HMAC-SHA256 de chave partilhada que só os bootloaders da geração anterior verificam; o registo Ed25519 que os atuais verificam é o ficheiro `<file>.imgsig` junto à imagem, que a aplicação envia ao bootloader) e `<file>.sha256`. A aplicação envia essa assinatura publicada,
   um `sha256` do manifesto que não corresponda ao ficheiro **bloqueia** a gravação,
   e a versão do manifesto é a que é comunicada ao bootloader. Um ficheiro escolhido
@@ -198,8 +198,8 @@ CAN IDs:
 - **Número de patch do firmware** (`0x7E9`, e o `0x218` alargado do escravo) -
   o firmware instalado e a imagem selecionada são mostrados como
   maior.menor.patch. O patch só entra na comparação quando os dois lados o
-  trazem, uma placa anterior (não envia `0x7E9`) continua a funcionar com
-  maior.menor, e o patch só vai em END_UPDATE para um bootloader que o tenha
+  trazem; uma placa anterior (não envia `0x7E9`) continua a funcionar com
+  maior.menor; e o patch só vai em END_UPDATE para um bootloader que o tenha
   anunciado. O registo diz se a imagem é mais antiga, igual ou mais recente do
   que o comunicado pela placa.
 - **Cabeçalho dentro da imagem** - uma imagem construída com o cabeçalho selado indica, no ficheiro, a placa a que se destina, a sua versão, o seu comprimento e o seu CRC-32. Antes da primeira trama, a página recusa uma imagem para outra placa, uma versão diferente da do nome do ficheiro, um comprimento ou um CRC-32 que não coincidem, um cabeçalho que ninguém selou e um ficheiro `.urimg` carimbado. Uma imagem anterior sem cabeçalho é gravada com um aviso; o seletor **Cabeçalho da imagem** (aceitar, aceitar com um aviso, exigir cabeçalho) altera isso e fica memorizado neste navegador. Um cabeçalho presente é sempre verificado.
@@ -207,7 +207,7 @@ CAN IDs:
   release de cada versão do URTC, não ficheiros no git. A lista vem da API de
   releases de `JuanenRac/URTC` (apenas as imagens de aplicação da placa
   selecionada, cada uma com o seu `.sha256` e o seu `.manifest.json`); uma
-  imagem transferida tem de corresponder aos digests que a release publica, e
+  imagem transferida tem de corresponder aos resumos que a release publica, e
   mantêm-se as verificações de imagem, manifesto e assinatura. O GitHub serve os
   ficheiros a partir de um anfitrião que não envia cabeçalhos CORS, pelo que um
   navegador pode não os conseguir transferir: o registo di-lo, e a imagem pode
@@ -220,7 +220,7 @@ CAN IDs:
 #### SWD/JTAG - não disponível a partir de um navegador, por conceção
 
 Não existe nenhuma Web API capaz de controlar uma sonda de depuração SWD/JTAG - o Web Serial
-só comunica com dispositivos de framing série (como um adaptador USB-CAN), não com o
+só comunica com dispositivos de comunicação série (como um adaptador USB-CAN), não com o
 protocolo próprio de uma sonda, e o STM32CubeProgrammer/pyOCD são subprocessos nativos
 que a ferramenta de ambiente de trabalho invoca. Esta é uma limitação estrutural de
 correr numa sandbox de navegador, não uma funcionalidade em falta aqui. O separador
@@ -231,7 +231,7 @@ cópia de segurança completa da flash antes de um apagamento total.
 
 ### Tester Studio - cobertura real de funcionalidades
 
-Portado a partir dos painéis do próprio deck Qt Quick do `URTC-TESTER`
+Portado a partir dos painéis do painel Qt Quick do `URTC-TESTER`
 (`assets/qml/TesterDeck.qml`), contra os mesmos CAN IDs:
 
 - Um painel por ferramenta (ferro de soldar + alimentador de fio, ferramentas de
@@ -241,14 +241,14 @@ Portado a partir dos painéis do próprio deck Qt Quick do `URTC-TESTER`
   avançado ADS1115, cura UV, retrabalho com ar quente, crimpagem, inspeção
   térmica, dosagem de pasta), cada um enviando os bytes de comando reais da
   ferramenta e descodificando a sua telemetria real.
-- **Caixa de seleção ativa + keepalive** para todas as ferramentas com um watchdog de
+- **Caixa de seleção ativa + keepalive** para todas as ferramentas com um cão de guarda de
   comunicação do lado do firmware (ferro de soldar, laser, cura UV, retrabalho com
-  ar quente, bico de impressora 3D - reenvio a cada 150ms sob um watchdog de
+  ar quente, bico de impressora 3D - reenvio a cada 150ms sob um cão de guarda de
   250ms; ventoinha de camada da impressora 3D - reenvio a cada 400ms sob o seu próprio
-  watchdog de 1000ms), com os mesmos intervalos de reenvio da ferramenta de
+  cão de guarda de 1000ms), com os mesmos intervalos de reenvio da ferramenta de
   ambiente de trabalho. Ao desmarcá-la, mudar de painel ou de separador, desligar ou
   fechar a página é enviado o comando de desligar da ferramenta.
-- **Controlos Globais** (`0x100`), passthrough SPI da **Placa de Expansão** + consulta
+- **Controlos Globais** (`0x100`), passagem direta SPI da **Placa de Expansão** + consulta
   TMC DIAG0 (`0x180`-`0x183`), consulta/apagamento da **F-RAM** (`0x190`-`0x192`),
   **Autoteste** (verificações seguras, em repouso, por ferramenta), um
   **Monitor de Barramento em Bruto** com exportação de traço `.trc`/`.asc`, e um injetor de
@@ -262,9 +262,9 @@ Portado a partir dos painéis do próprio deck Qt Quick do `URTC-TESTER`
   versão da placa (`0x7F8`/`0x7F9`), e um erro crítico declarado (`0x111` byte 1)
   surge como um banner de falha em direto.
 
-- **Separador Evidências.** Lê os registos (`urtc-evidence/1`) que o flasher, o tester e o updater escrevem, dos ficheiros que a pessoa escolhe (não se carrega nada), verifica cada um com as mesmas regras e o mesmo resumo que o código comum e lista-os do mais recente para o mais antigo, com filtros por tipo, resultado e texto, um resumo, o problema de cada registo inválido e uma transferência em CSV. Um registo assinado com Ed25519 mostra se a assinatura coincide, e uma lista de chaves de confiança (alias e chave pública, só chaves públicas, guardada neste navegador e nunca enviada) faz com que diga "assinada por <alias>" ou "assinatura válida, chave desconhecida". A lista pode ser guardada num ficheiro JSON e podem adicionar-se chaves a partir de um ficheiro (um ficheiro com uma única entrada errada é recusado por inteiro); a página está nos oito idiomas.
+- **Separador Evidências.** Lê os registos (`urtc-evidence/1`) que o flasher, o tester e o updater escrevem, dos ficheiros que a pessoa escolhe (não se carrega nada), verifica cada um com as mesmas regras e o mesmo resumo que o código comum e lista-os do mais recente para o mais antigo, com filtros por tipo, resultado e texto, um resumo, o problema de cada registo inválido e uma exportação em CSV. Um registo assinado com Ed25519 mostra se a assinatura coincide, e uma lista de chaves de confiança (alias e chave pública, só chaves públicas, guardada neste navegador e nunca enviada) faz com que diga «assinada por <alias>» ou «assinatura válida, chave desconhecida». A lista pode ser guardada num ficheiro JSON e podem adicionar-se chaves a partir de um ficheiro (um ficheiro com uma única entrada errada é recusado por inteiro); a página está nos oito idiomas.
 
-- **Tramas construídas por funções puras.** As tramas dos painéis (LED e anel de estado, passthrough SPI, funções opcionais, bico e extrusor da cabeça de impressora 3D, pulso de soldadura, movimentos do motor de passo) são construídas em `toolFrames.ts` e as da atualização do firmware (START_UPDATE, os quatro blocos de assinatura, as tramas de dados da imagem e END_UPDATE) em `flashFrames.ts`; um valor que não cabe no seu campo é levado ao mais próximo que caiba, e os testes fixam os bytes.
+- **Tramas construídas por funções puras.** As tramas dos painéis (LED e anel de estado, passagem direta SPI, funções opcionais, bico e extrusor da cabeça de impressora 3D, pulso de soldadura, movimentos do motor de passo) são construídas em `toolFrames.ts` e as da atualização do firmware (START_UPDATE, os quatro blocos de assinatura, as tramas de dados da imagem e END_UPDATE) em `flashFrames.ts`; um valor que não cabe no seu campo é levado ao mais próximo que caiba, e os testes fixam os bytes.
 
 - **Bancada do rack com respostas.** O rack simulado responde a cada ordem com a sua trama de resposta (uma confirmação, ou uma recusa com o motivo); o `rackSim.ts` escreve-a e lê-a (`encodeRackReply`, `parseRackReply`), o painel da bancada diz o motivo na língua da página e um comando retido por chegar cedo demais é uma recusa com o seu motivo, como no firmware.
 
@@ -285,7 +285,7 @@ O firmware pode fazer várias cabeças de ferramenta partilharem um barramento C
 | Uma imagem de firmware errada ou adulterada | Um manifesto cujo `sha256` não coincide com o ficheiro bloqueia a gravação; cada imagem de uma release oficial traz uma assinatura de release Ed25519 que a página verifica no navegador antes de enviar a imagem |
 | Uma resposta simulada tomada por real | Os separadores sandbox não transmitem nada e, com uma placa ligada, não respondem nada; as suas tramas são marcadas SIM e um traço reproduzido REPLAY |
 | Uma ação sobre a placa por engano | Laser, berbequim, cura UV, soldadura, aquecedores, movimento, dosagem de pasta, escritas na memória da placa, tramas arriscadas escritas à mão e uma imagem assinada com a chave pública de desenvolvimento pedem primeiro uma confirmação |
-| Um atuador que fica a funcionar | Cada ferramenta com watchdog no firmware é mantida viva por um reenvio e desligada quando o painel é substituído, o separador muda, a placa é desligada ou a página fecha; STOP ALL desliga tudo o que a página mantém vivo |
+| Um atuador que fica a funcionar | Cada ferramenta com cão de guarda no firmware é mantida viva por um reenvio e desligada quando o painel é substituído, o separador muda, a placa é desligada ou a página fecha; STOP ALL desliga tudo o que a página mantém vivo |
 | Uma página que carrega código de outro lado | Uma política de segurança de conteúdo: scripts só da própria página, ligações só a si mesma e ao GitHub |
 
 STOP ALL é um comando de software, não uma paragem de emergência, e nenhuma das verificações acima é uma função de segurança.
@@ -293,7 +293,7 @@ STOP ALL é um comando de software, não uma paragem de emergência, e nenhuma d
 ### Separação do simulador e confirmações (verificações de software, não funções de segurança)
 
 - Os separadores de sandbox (Control, OLED, Thermal IR) não transmitem nada. As suas tramas levam a marca SIM e, enquanto há uma placa ligada, não produzem nenhuma resposta simulada. Das mensagens predefinidas do analisador de protocolo só são enviadas a uma placa ligada as consultas simples; as restantes continuam simuladas.
-- O separador Control pode enviar tramas reais, mas só se você ativar «Permitir o envio de tramas reais a partir deste separador» (desligado por omissão, guardado neste navegador) e houver uma placa ligada. O valor de referência do ferro de soldar pode ser enviado uma vez ou mantido: um valor mantido é renovado a cada 100 ms durante um tempo limitado (30 s por omissão, de 5 a 120 no campo junto ao botão) e termina com PARAGEM, quando o tempo acaba, quando a janela perde o foco, quando você sai do separador, quando a ligação se perde ou quando o interruptor é desligado, sempre com a trama de desligar. O berbequim e o laser são uma única trama confirmada cada um, com duas confirmações (a segunda com um texto explícito) e sem renovação. Um valor fora dos limites da ferramenta é recusado, cada trama pede a sua própria confirmação e PARAGEM está sempre visível. Com o interruptor desligado, o separador só simula contra o gémeo e nada chega ao barramento.
+- O separador Control pode enviar tramas reais, mas só se ativar «Permitir o envio de tramas reais a partir deste separador» (desligado por omissão, guardado neste navegador) e houver uma placa ligada. O valor de referência do ferro de soldar pode ser enviado uma vez ou mantido: um valor mantido é renovado a cada 100 ms durante um tempo limitado (30 s por omissão, de 5 a 120 no campo junto ao botão) e termina com PARAGEM, quando o tempo acaba, quando a janela perde o foco, quando sair do separador, quando a ligação se perde ou quando o interruptor é desligado, sempre com a trama de desligar. O berbequim e o laser são uma única trama confirmada cada um, com duas confirmações (a segunda com um texto explícito) e sem renovação. Um valor fora dos limites da ferramenta é recusado, cada trama pede a sua própria confirmação e PARAGEM está sempre visível. Com o interruptor desligado, o separador só simula contra o gémeo e nada chega ao barramento.
 - O Tester Studio mostra um painel de ferramenta apenas para a ferramenta que a própria placa comunicou (`0x111`), e nenhum antes de a placa responder.
 - Laser, berbequim, cura UV, soldadura, aquecedores, movimento, dosagem de pasta, escritas na memória da placa e tramas escritas à mão que envolvam risco pedem confirmação antes.
 - **PARAR TUDO** no cabeçalho (visível com a ligação ativa) desliga todos os atuadores que esta página mantém ativos; fechar a página e desligar fazem o mesmo. É um comando de software, não uma paragem de emergência.
@@ -304,9 +304,9 @@ STOP ALL é um comando de software, não uma paragem de emergência, e nenhuma d
 ### Nota de segurança: nenhuma chave de assinatura nesta aplicação
 
 Desde a versão 0.2.3 esta aplicação **não** contém nenhuma chave de assinatura HMAC-SHA256.
-A build do URTC assina ela própria cada imagem de aplicação (com uma chave privada apenas nas builds de release; as imagens publicadas usam a chave pública de desenvolvimento) e publica a assinatura a seu lado; o Flasher
+A compilação do URTC assina ela própria cada imagem de aplicação (com uma chave privada apenas nas compilações de release; as imagens publicadas usam a chave pública de desenvolvimento) e publica a assinatura a seu lado; o Flasher
 Studio apenas transporta essa assinatura - o mesmo modelo do `URTC Flasher` de
-ambiente de trabalho. Nada secreto é incluído no bundle JS, pelo que a página pode
+ambiente de trabalho. Nada secreto é incluído no pacote JS, pelo que a página pode
 ser alojada publicamente.
 
 A única exceção é uma imagem compilada por si, sem manifesto, para uma placa de
@@ -324,7 +324,7 @@ estão no git: são anexos da release de cada versão no GitHub.
 `npm run sync-firmware` transfere a release mais recente
 (`npm run sync-firmware -- --tag v0.3.5` para uma em concreto), ou recebe uma
 pasta local como argumento (`npm run sync-firmware -- ../URTC/firmware` para
-uma build de bancada). Em ambos os casos verifica cada digest e os campos de
+uma compilação de bancada). Em ambos os casos verifica cada resumo e os campos de
 assinatura antes de tocar em `public/firmware/`, e regenera
 `src/lib/bundledFirmware.ts`; um teste verifica o pacote contra os seus
 manifestos.
@@ -342,25 +342,25 @@ Cada ficheiro de uma release oficial tem uma assinatura de release (`<ficheiro>.
 - Um navegador com suporte de Web Serial - **Chrome ou Edge**. O Firefox e o Safari
   não implementam Web Serial e não conseguirão ligar de todo.
 - O Web Serial exige um contexto seguro (HTTPS) ou `localhost` - e não pode ser usado
-  a partir do interior de um iframe. Se estiver a pré-visualizar esta aplicação dentro de um
-  frame incorporado, abra-a primeiro no seu próprio separador.
+  a partir do interior de um iframe. Se estiver a pré-visualizar esta aplicação dentro de uma
+  moldura incorporada, abra-a primeiro no seu próprio separador.
 
 ### Validação de tramas CAN
 
 Ambos os sentidos da ligação SLCAN são validados antes de qualquer coisa chegar à
-UI ou ao cabo (`src/hooks/useSerialCanBus.ts`):
+interface ou ao cabo (`src/hooks/useSerialCanBus.ts`):
 
 - **Saída** - `sendFrame()` recusa-se a serializar um comando cujo
   identificador fique fora do intervalo CAN padrão de 11 bits (`0x000`-`0x7FF`),
-  cujo payload exceda 8 bytes, ou cujo payload contenha um byte fora de
-  `0x00`-`0xFF`. A UI mostra «Refusing malformed CAN frame: ...» em vez de
+  cuja carga exceda 8 bytes, ou cuja carga contenha um byte fora de
+  `0x00`-`0xFF`. A interface mostra «Refusing malformed CAN frame: ...» em vez de
   escrever texto inválido na porta série.
 - **Entrada** - `processBuffer()` exige uma correspondência real
   `t<3-hex ID><1-hex DLC 0-8><hex payload>` antes de converter uma linha
-  SLCAN recebida num `CanFrame`; um DLC fora de `0`-`8` ou um payload mais curto
+  SLCAN recebida num `CanFrame`; um DLC fora de `0`-`8` ou uma carga mais curta
   do que o seu próprio comprimento declarado é registado na consola e descartado em vez de
-  ser entregue a um painel de ferramenta como um byte `NaN`. Um timestamp
-  opcional do adaptador no final continua a ser aceite depois de um payload válido.
+  ser entregue a um painel de ferramenta como um byte `NaN`. Uma marca de tempo
+  opcional do adaptador no final continua a ser aceite depois de uma carga válida.
 
 ## 🚀 Início rápido
 
@@ -387,9 +387,9 @@ Depois abra `http://localhost:3000` no Chrome ou no Edge.
 
 O servidor de desenvolvimento escuta apenas em `localhost`: o Web Serial funciona com https ou em localhost, por isso abri-lo à rede não traria nada.
 
-### Build estático
+### Compilação estática
 
-Compila para um bundle estático e otimizado em `dist/`:
+Compila para um pacote estático e otimizado em `dist/`:
 - **Windows:** faça duplo clique em `build.bat` ou execute `npm run build`
 - **Linux/Mac:** execute `./build.sh` ou `npm run build`
 
@@ -502,7 +502,7 @@ O URTC é feito de repositórios independentes, cada um com a sua versão, os se
 
 ## 📚 Documentação
 
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — como a UI, as definições
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — como a interface, as definições
   persistidas e a autoridade do transporte externo se mantêm separadas, e porque
   é que os separadores sandbox têm de expor estados offline/indisponível em vez de
   apresentar dados simulados como reais.

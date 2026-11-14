@@ -96,7 +96,7 @@ Diese App hat zwei Arten von Tabs:
   - **Verwechseln Sie die beiden thermischen Ansichten nicht**: der
     eigenständige Tab „Thermal IR Inspection“ (`ThermalCameraViewer.tsx`) ist
     zu 100% clientseitiges `Math.random()`-Rauschen ohne jeglichen
-    CAN-Verkehr - es ist ein UI-Mockup, keine Sensorablesung. Die echten
+    CAN-Verkehr - es ist ein Oberflächen-Mockup, keine Sensorablesung. Die echten
     MLX9064x-Daten erscheinen nur innerhalb des Panels „Thermal Inspection“
     von Tester Studio, und nur sobald Hardware angeschlossen ist.
 
@@ -169,15 +169,15 @@ dieselben CAN-IDs:
 
 - **CAN-OTA-Update der Hauptplatine** (`0x7F0`-`0x7F7`): Bootloader-Eintritts-
   Trigger, Ed25519-Eintrag des Images (nur gegen einen Simulator getestet), seitenweise Übertragung mit
-  Seiten-ACK-Flusssteuerung und Retry/Backoff, CRC32 + END_UPDATE mit
+  Seiten-ACK-Flusssteuerung und Wiederholung mit steigender Wartezeit, CRC32 + END_UPDATE mit
   deklarierter Version, und Behandlung des Endstatus (einschließlich der
   Wiederherstellung von einem verlorenen Bestätigungs-Frame auf dieselbe
   Weise wie das Desktop-Tool - es fragt die Version erneut ab, statt einen
   falschen Fehlschlag zu melden).
 - **CAN-OTA-Update des Erweiterungs-Slaves** (`0x210`-`0x219`, weitergeleitet
-  über die eigene I2C-Bridge der Hauptplatine) - dasselbe Signier-/CRC-Schema,
+  über die eigene I2C-Brücke der Hauptplatine) - dasselbe Signier-/CRC-Schema,
   kein Seiten-ACK oder Heartbeat auf diesem Pfad (entspricht dem echten
-  Protokoll; der Fortschritt wird abgefragt, nicht gepusht).
+  Protokoll; der Fortschritt wird abgefragt, nicht gesendet).
 - **Downgrade-Autorisierung** (`0x7FD`) - eine bestätigungsgeschützte
   Checkbox, die den aktuellen Versuch autorisiert, die
   Anti-Rollback-Prüfung des Bootloaders zu umgehen, für eine gezielte
@@ -232,7 +232,7 @@ STM32CubeProgrammer/pyOCD sind native Subprozesse, die das Desktop-Tool
 aufruft. Dies ist eine strukturelle Einschränkung der Ausführung in einer
 Browser-Sandbox, keine hier fehlende Funktion. Der SWD/JTAG-Tab in Flasher
 Studio erklärt die genauen Befehle, die das Desktop-Tool `URTC Flasher`
-lokal ausführen würde, zur Referenz - verwenden Sie dieses Tool direkt für
+lokal ausführen würde, zur Referenz - verwenden Sie dieses Programm direkt für
 die Programmierung des kompletten Chips, Option-Byte/RDP-Prüfungen, oder
 ein vollständiges Flash-Backup vor einer Massenlöschung.
 
@@ -314,7 +314,7 @@ STOP ALL ist ein Software-Befehl, kein Not-Halt, und keine der obigen Prüfungen
 Seit 0.2.3 enthält diese App **keinen** HMAC-SHA256-Signierschlüssel. Der
 URTC-Build signiert jedes Anwendungs-Image selbst (bei Release-Builds mit einem privaten Schlüssel; die veröffentlichten Images verwenden den öffentlichen Entwicklungsschlüssel) und veröffentlicht die Signatur daneben; Flasher
 Studio transportiert nur diese Signatur - dasselbe Modell wie der
-Desktop-`URTC Flasher`. Im JS-Bundle steckt nichts Geheimes, die Seite kann
+Desktop-`URTC Flasher`. Im JS-Paket steckt nichts Geheimes, die Seite kann
 also öffentlich gehostet werden.
 
 Einzige Ausnahme ist ein selbst gebautes Image ohne Manifest für eine
@@ -359,12 +359,12 @@ Jede Datei eines offiziellen Releases hat eine Release-Signatur (`<Datei>.sig`, 
 ### CAN-Frame-Validierung
 
 Beide Richtungen der SLCAN-Verbindung werden validiert, bevor irgendetwas
-die UI oder die Leitung erreicht (`src/hooks/useSerialCanBus.ts`):
+die Oberfläche oder die Leitung erreicht (`src/hooks/useSerialCanBus.ts`):
 
 - **Ausgehend** - `sendFrame()` verweigert die Serialisierung eines
   Befehls, dessen Kennung außerhalb des 11-Bit-Standard-CAN-Bereichs
   (`0x000`-`0x7FF`) liegt, dessen Nutzdaten 8 Byte überschreiten, oder dessen
-  Nutzdaten ein Byte außerhalb von `0x00`-`0xFF` enthalten. Die UI zeigt
+  Nutzdaten ein Byte außerhalb von `0x00`-`0xFF` enthalten. Die Oberfläche zeigt
   „Refusing malformed CAN frame: ...“ an, statt ungültigen Text an den
   seriellen Port zu schreiben.
 - **Eingehend** - `processBuffer()` verlangt eine echte Übereinstimmung
@@ -518,7 +518,7 @@ URTC besteht aus unabhängigen Repositories mit jeweils eigener Version, eigenen
 
 ## 📚 Dokumentation
 
-- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — wie UI, gespeicherte
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — wie Oberfläche, gespeicherte
   Einstellungen und die Hoheit über den externen Transport getrennt
   bleiben, und warum die Sandbox-Tabs Offline-/Nicht-verfügbar-Zustände
   zeigen müssen, statt simulierte Daten als live darzustellen.
@@ -574,13 +574,13 @@ dem, was sie tatsächlich abdeckt:
    (CC BY-SA 4.0)** verfügbar. Vollständiger Text unter
    https://creativecommons.org/licenses/by-sa/4.0/.
 
-Dieses Tool ist der browserbasierte Begleiter des Projekts
+Diese Anwendung ist der browserbasierte Begleiter des Projekts
 [URTC (Universal Robot Tool Controller)](https://github.com/JuanenRac/URTC) -
-siehe das eigene Repository dieses Projekts für die
-Platinen-Firmware, Hardware-Designs, und vollständige
-Protokolldokumentation, gegen die dieses Tool implementiert wurde. Die eigene
+siehe dessen eigenes Repository für die
+Platinen-Firmware, die Hardware-Entwürfe und die vollständige
+Protokolldokumentation, nach der diese Anwendung entwickelt wurde. Die
 Firmware von URTC ist GPL-3.0-or-later und ihre Hardware-Designs sind CERN-OHL-S
-v2; die eigene Lizenz dieses Tools hier erstreckt sich nicht auf dieses
+v2; die Lizenz dieser Anwendung erstreckt sich nicht auf dieses
 separate Projekt, und umgekehrt. Es existieren auch zwei native
 Desktop-Alternativen, die denselben Bereich abdecken:
 [URTC Flasher](https://github.com/JuanenRac/URTC-FLASHER) und
