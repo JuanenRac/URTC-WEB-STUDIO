@@ -139,7 +139,7 @@ URTC-WEB-STUDIO 是 URTC 两个桌面程序 URTC-FLASHER 和 URTC-TESTER 的浏�
   <img src="images/screenshots/flasher.png" alt="Flasher" width="100%">
 </p>
 
-<p align="center"><em>刷写器：板卡的闪存映射、准备发送的镜像及其清单，以及 CAN-OTA 更新的选项（模拟板卡，不发送任何内容）。</em></p>
+<p align="center"><em>刷写器：板卡的闪存映射、准备发送的映像及其清单，以及 CAN-OTA 更新的选项（模拟板卡，不发送任何内容）。</em></p>
 
 <p align="center">
   <img src="images/screenshots/thermal.png" alt="热成像检查" width="100%">
