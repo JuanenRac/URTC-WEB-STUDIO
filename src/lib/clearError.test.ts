@@ -26,9 +26,9 @@ describe("the clear-error command", () => {
     expect(rawSendPolicy(0x1b2)).toEqual({ kind: "confirm", reason: "actuator" });
   });
 
-  it("reaches the seventh bit of the switches and keeps the release policy of the coil as a bit of its own", () => {
+  it("reaches the eighth bit of the switches and keeps the release policy of the coil as a bit of its own", () => {
     expect(featuresWrite(0x7f)).toEqual([0x46, 0x45, 0x41, 0x54, 0x7f]);
-    expect(featuresWrite(0x80)).toEqual([0x46, 0x45, 0x41, 0x54, 0]);
+    expect(featuresWrite(0x80)).toEqual([0x46, 0x45, 0x41, 0x54, 0x80]);
     expect(featuresWrite(16 | 32 | 64)[4]).toBe(0x70);
   });
 });
@@ -48,7 +48,7 @@ describe("the answer of the head", () => {
 
   it("has a text for every outcome and every reason the specification lists", () => {
     expect(Object.keys(CLEAR_RESULT_KEYS).map(Number)).toEqual([1, 2, 3, 4, 5, 6]);
-    expect(Object.keys(ERROR_REASON_KEYS).map(Number)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+    expect(Object.keys(ERROR_REASON_KEYS).map(Number)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
   });
 });
 
@@ -65,7 +65,7 @@ describe("the setting", () => {
 
 describe("the texts", () => {
   const keys = [
-    "feature_clear_error", "feature_comms_watchdog", "feature_magnet_release", "clear_error_button", "clear_error_confirm", "clear_error_result", "error_reason_line",
+    "feature_clear_error", "feature_comms_watchdog", "feature_magnet_release", "feature_estop_follow", "clear_error_button", "clear_error_confirm", "clear_error_result", "error_reason_line",
     ...Object.values(CLEAR_RESULT_KEYS), ...Object.values(ERROR_REASON_KEYS),
   ];
 

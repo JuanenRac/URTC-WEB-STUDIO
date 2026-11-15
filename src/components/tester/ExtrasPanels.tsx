@@ -24,7 +24,7 @@ import {
 } from '../../lib/thermalView';
 import { retryUntil } from '../../lib/retryUntil';
 
-const FEATURE_BITS: Array<[number, string]> = [[1, 'feature_motion_ramps'], [2, 'feature_health_profile'], [4, 'feature_hsi_autotrim'], [8, 'feature_thermal_pid'], [16, 'feature_clear_error'], [32, 'feature_comms_watchdog'], [64, 'feature_magnet_release']];
+const FEATURE_BITS: Array<[number, string]> = [[1, 'feature_motion_ramps'], [2, 'feature_health_profile'], [4, 'feature_hsi_autotrim'], [8, 'feature_thermal_pid'], [16, 'feature_clear_error'], [32, 'feature_comms_watchdog'], [64, 'feature_magnet_release'], [128, 'feature_estop_follow']];
 
 async function collectFrames(ctx: ToolCtx, requestId: number, data: number[], answerId: number, wanted: number, timeoutMs: number, description: string): Promise<number[][] | null> {
   const frames: number[][] = [];
@@ -242,7 +242,7 @@ const FeaturesPanelBody: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
 
   const show = (data: number[] | undefined) => {
     if (!data || data.length !== 3) { setStatus(t('testerextras.features_no_answer', 'No answer (firmware without these functions)')); return; }
-    setMask(data[0] & 0x7F);
+    setMask(data[0] & 0xFF);
     setStatus(t('testerextras.features_status', 'Stored: {{stored}} | In force: {{running}} | Supported: {{supported}}', { stored: names(data[0]), running: names(data[1]), supported: names(data[2]) }));
   };
   const query = async () => { const r = await ctx.request(CAN_ID_FEATURES_RESP, [], CAN_ID_FEATURES_RESP, 1000, 'Query optional functions'); show(r?.data); };
