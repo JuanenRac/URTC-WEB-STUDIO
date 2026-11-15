@@ -4,6 +4,7 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **A check box for the head to follow the emergency stop of the stack sits with the other optional functions (off, as every switch):** the panel of optional functions has the `ESTOP_FOLLOW` function (bit 128 of the mask written with `0x1AE`; the mask now reaches `0xFF`), it is not ticked on opening and a head that was never written has it off. With it on, a head stops on the stop frame `0x001` and when the master of the stop falls silent; the two new reasons of an error, `ESTOP` and `ESTOP_SILENCE`, are named in the line of the clear-error button, and all three texts are in the eight languages. Tested with the frame builders and the language files; not tried on a board.
 - **The texts follow the corrected shared catalog:** German writes "Heizungs-PID" and "Heizungsausgang" instead of "Heizer", Chinese writes the image as "镜像" and the expansion slave as "从机" in every text and in the Chinese README, and European Portuguese no longer addresses the user as "você" in three texts.
 
 - **The deployment to GitHub Pages is retried when the service fails to create it:** the deploy step of the `pages` workflow makes up to three attempts, 30 s and 90 s apart, and only that step is retried (the build of the site is not); a third failure still fails the run.

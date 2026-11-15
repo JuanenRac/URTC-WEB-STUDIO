@@ -48,7 +48,7 @@ describe("the answer of the head", () => {
 
   it("has a text for every outcome and every reason the specification lists", () => {
     expect(Object.keys(CLEAR_RESULT_KEYS).map(Number)).toEqual([1, 2, 3, 4, 5, 6]);
-    expect(Object.keys(ERROR_REASON_KEYS).map(Number)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+    expect(Object.keys(ERROR_REASON_KEYS).map(Number)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
   });
 });
 
@@ -65,7 +65,7 @@ describe("the setting", () => {
 
 describe("the texts", () => {
   const keys = [
-    "feature_clear_error", "feature_comms_watchdog", "feature_magnet_release", "clear_error_button", "clear_error_confirm", "clear_error_result", "error_reason_line",
+    "feature_clear_error", "feature_comms_watchdog", "feature_magnet_release", "feature_estop_follow", "clear_error_button", "clear_error_confirm", "clear_error_result", "error_reason_line",
     ...Object.values(CLEAR_RESULT_KEYS), ...Object.values(ERROR_REASON_KEYS),
   ];
 

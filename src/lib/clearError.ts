@@ -22,6 +22,7 @@ export const CLEAR_RESULT_KEYS: Readonly<Record<number, string>> = {
 export const ERROR_REASON_KEYS: Readonly<Record<number, string>> = {
   1: 'error_reason_unknown', 2: 'error_reason_thermal', 3: 'error_reason_sensor', 4: 'error_reason_tool_id', 5: 'error_reason_comms_watchdog',
   6: 'error_reason_fan_stall', 7: 'error_reason_stepper_silence', 8: 'error_reason_magnet_release',
+  9: 'error_reason_estop', 10: 'error_reason_estop_silence',
 };
 
 export interface ClearErrorAnswer {
