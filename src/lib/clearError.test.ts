@@ -26,9 +26,9 @@ describe("the clear-error command", () => {
     expect(rawSendPolicy(0x1b2)).toEqual({ kind: "confirm", reason: "actuator" });
   });
 
-  it("reaches the seventh bit of the switches and keeps the release policy of the coil as a bit of its own", () => {
+  it("reaches the eighth bit of the switches and keeps the release policy of the coil as a bit of its own", () => {
     expect(featuresWrite(0x7f)).toEqual([0x46, 0x45, 0x41, 0x54, 0x7f]);
-    expect(featuresWrite(0x80)).toEqual([0x46, 0x45, 0x41, 0x54, 0]);
+    expect(featuresWrite(0x80)).toEqual([0x46, 0x45, 0x41, 0x54, 0x80]);
     expect(featuresWrite(16 | 32 | 64)[4]).toBe(0x70);
   });
 });
