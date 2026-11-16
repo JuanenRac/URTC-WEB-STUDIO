@@ -4,7 +4,7 @@ import { Section, Field, inputCls, btnCls, btnPrimaryCls, safeInt } from './shar
 import { ToolCtx } from './ToolPanels';
 import { useConfirmAction } from '../../hooks/useConfirmAction';
 import { downloadBlob } from '../../lib/download';
-import { featuresWrite } from '../../lib/toolFrames';
+import { FEATURES_QUERY_EXTENDED, FEATURE_EXT_WATCHDOG_HOST_ONLY, featuresWriteFor, parseFeaturesAnswer } from '../../lib/featuresMap';
 import { CLEAR_RESULT_KEYS, ERROR_REASON_KEYS, clearErrorCommand, clearErrorNeedsConfirmation, parseClearErrorAnswer } from '../../lib/clearError';
 import { EVIDENCE_KINDS, EVIDENCE_OUTCOMES, EvidenceEntry, evidenceCsv, evidenceRow, parseEvidenceFile, selectEvidence, signatureView, summarizeEvidence } from '../../lib/evidenceHistory';
 import { TRUST_FILE_MAX_BYTES, exportTrustFile, formatTrustStore, importTrustFile, loadTrustText, mergeTrustStore, parseTrustStore, saveTrustText } from '../../lib/trustStore';
@@ -24,6 +24,8 @@ import {
 } from '../../lib/thermalView';
 import { retryUntil } from '../../lib/retryUntil';
 
+// The second byte of the map: it starts with the switch that makes the communication watchdog count only frames of the host side (off by default).
+const FEATURE_EXT_BITS: Array<[number, string]> = [[FEATURE_EXT_WATCHDOG_HOST_ONLY, 'feature_watchdog_host_only']];
 const FEATURE_BITS: Array<[number, string]> = [[1, 'feature_motion_ramps'], [2, 'feature_health_profile'], [4, 'feature_hsi_autotrim'], [8, 'feature_thermal_pid'], [16, 'feature_clear_error'], [32, 'feature_comms_watchdog'], [64, 'feature_magnet_release'], [128, 'feature_estop_follow']];
 
 async function collectFrames(ctx: ToolCtx, requestId: number, data: number[], answerId: number, wanted: number, timeoutMs: number, description: string): Promise<number[][] | null> {
@@ -237,19 +239,29 @@ const FeaturesPanelBody: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   const { t } = useTranslation();
   const confirm = useConfirmAction();
   const [mask, setMask] = useState(0);
+  const [maskExt, setMaskExt] = useState(0);
+  const [supportedExt, setSupportedExt] = useState(0);   // 0 until a head says it has a second byte: an older head is written with the five-byte form
   const [status, setStatus] = useState('');
-  const names = (m: number) => FEATURE_BITS.filter(([bit]) => m & bit).map(([, key]) => t(`testerextras.${key}`)).join(', ') || t('testerextras.features_none', 'none');
+  const names = (m: number, ext = 0) => [
+    ...FEATURE_BITS.filter(([bit]) => m & bit).map(([, key]) => t(`testerextras.${key}`)),
+    ...FEATURE_EXT_BITS.filter(([bit]) => ext & bit).map(([, key]) => t(`testerextras.${key}`)),
+  ].join(', ') || t('testerextras.features_none', 'none');
 
   const show = (data: number[] | undefined) => {
-    if (!data || data.length !== 3) { setStatus(t('testerextras.features_no_answer', 'No answer (firmware without these functions)')); return; }
+    const answer = parseFeaturesAnswer(data);
+    if (!answer || !data) { setStatus(t('testerextras.features_no_answer', 'No answer (firmware without these functions)')); return; }
     setMask(data[0] & 0xFF);
-    setStatus(t('testerextras.features_status', 'Stored: {{stored}} | In force: {{running}} | Supported: {{supported}}', { stored: names(data[0]), running: names(data[1]), supported: names(data[2]) }));
+    setMaskExt(answer.storedExt);
+    setSupportedExt(answer.supportedExt);
+    setStatus(t('testerextras.features_status', 'Stored: {{stored}} | In force: {{running}} | Supported: {{supported}}', {
+      stored: names(answer.stored, answer.storedExt), running: names(answer.running, answer.runningExt), supported: names(answer.supported, answer.supportedExt),
+    }));
   };
-  const query = async () => { const r = await ctx.request(CAN_ID_FEATURES_RESP, [], CAN_ID_FEATURES_RESP, 1000, 'Query optional functions'); show(r?.data); };
+  const query = async () => { const r = await ctx.request(CAN_ID_FEATURES_RESP, FEATURES_QUERY_EXTENDED, CAN_ID_FEATURES_RESP, 1000, 'Query optional functions'); show(r?.data); };
   const write = async () => {
     if (!(await confirm('program_config'))) return;
     // the release policy of the electromagnet belongs to the communication watchdog: without it the bit would do nothing
-    const r = await ctx.request(CAN_ID_SET_FEATURES, featuresWrite((mask & 32) !== 0 ? mask : mask & ~64), CAN_ID_FEATURES_RESP, 1000, 'Write optional functions');
+    const r = await ctx.request(CAN_ID_SET_FEATURES, featuresWriteFor((mask & 32) !== 0 ? mask : mask & ~64, maskExt, supportedExt), CAN_ID_FEATURES_RESP, 1000, 'Write optional functions');
     show(r?.data);
   };
   const [clearStatus, setClearStatus] = useState('');
@@ -272,6 +284,11 @@ const FeaturesPanelBody: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
         {FEATURE_BITS.map(([bit, key]) => (
           <label key={bit} className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer">
             <input type="checkbox" checked={(mask & bit) !== 0} onChange={(e) => setMask(m => (e.target.checked ? m | bit : m & ~bit))} className="accent-purple-500" /> {t(`testerextras.${key}`)}
+          </label>
+        ))}
+        {supportedExt !== 0 && FEATURE_EXT_BITS.filter(([bit]) => (supportedExt & bit) !== 0).map(([bit, key]) => (
+          <label key={`ext${bit}`} className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer" data-testid={`feature-ext-${bit}`}>
+            <input type="checkbox" checked={(maskExt & bit) !== 0} onChange={(e) => setMaskExt(m => (e.target.checked ? m | bit : m & ~bit))} className="accent-purple-500" /> {t(`testerextras.${key}`)}
           </label>
         ))}
       </div>
