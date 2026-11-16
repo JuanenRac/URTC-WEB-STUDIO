@@ -13,14 +13,14 @@
         "pt": "Matriz de ferramentas e controlo"
       },
       "caption": {
-        "en": "Tool matrix and control: the 25 tool profiles of the firmware with their jumpers, and the controls of the selected tool (a simulator tab: it sends nothing to the bus unless you switch on real sending, which is off by default).",
-        "es": "Matriz de herramientas y control: los 25 perfiles de herramienta del firmware con sus puentes, y los controles de la herramienta seleccionada (pestaña de simulador: no envía nada al bus salvo que actives el envío real, desactivado por defecto).",
-        "fr": "Matrice des outils et commande : les 25 profils d'outil du firmware avec leurs cavaliers, et les commandes de l'outil sélectionné (onglet simulateur : il n'envoie rien sur le bus sauf si vous activez l'envoi réel, désactivé par défaut).",
-        "it": "Matrice degli utensili e controllo: i 25 profili utensile del firmware con i loro jumper e i comandi dell'utensile selezionato (scheda simulatore: non invia nulla al bus a meno che tu non attivi l'invio reale, disattivato per impostazione predefinita).",
-        "de": "Werkzeugmatrix und Steuerung: die 25 Werkzeugprofile der Firmware mit ihren Jumpern und die Bedienelemente des gewählten Werkzeugs (Simulator-Tab: sendet nichts auf den Bus, außer Sie schalten das echte Senden ein, das standardmäßig aus ist).",
-        "zh": "工具矩阵与控制：固件的 25 个工具配置及其跳线，以及所选工具的控件（模拟器标签页：除非您开启真实发送（默认关闭），否则不会向总线发送任何内容）。",
-        "ja": "ツールマトリクスと制御：ファームウェアの 25 のツールプロファイルとそのジャンパー、選択したツールの操作（シミュレーターのタブ：実際の送信を有効にしない限り（既定では無効）、バスには何も送信しません）。",
-        "pt": "Matriz de ferramentas e controlo: os 25 perfis de ferramenta do firmware com os seus jumpers e os controlos da ferramenta selecionada (separador de simulador: não envia nada para o barramento, a menos que ative o envio real, desativado por predefinição)."
+        "en": "Tool matrix and control: the 25 tool profiles of the firmware with their jumpers, and the controls of the selected tool (with no board connected it only simulates; with a board connected its button puts real frames on the bus, after the confirmation of each one).",
+        "es": "Matriz de herramientas y control: los 25 perfiles de herramienta del firmware con sus puentes, y los controles de la herramienta seleccionada (sin placa conectada solo simula; con una placa conectada su botón pone tramas reales en el bus, tras la confirmación de cada una).",
+        "fr": "Matrice des outils et commande : les 25 profils d'outil du firmware avec leurs cavaliers, et les commandes de l'outil sélectionné (sans carte connectée il ne fait que simuler ; avec une carte connectée son bouton met des trames réelles sur le bus, après la confirmation de chacune).",
+        "it": "Matrice degli utensili e controllo: i 25 profili utensile del firmware con i loro jumper e i comandi dell'utensile selezionato (senza scheda collegata si limita a simulare; con una scheda collegata il suo pulsante mette frame reali sul bus, dopo la conferma di ciascuno).",
+        "de": "Werkzeugmatrix und Steuerung: die 25 Werkzeugprofile der Firmware mit ihren Jumpern und die Bedienelemente des gewählten Werkzeugs (ohne verbundene Platine simuliert er nur; mit verbundener Platine legt seine Schaltfläche nach der Bestätigung jedes Frames echte Frames auf den Bus).",
+        "zh": "工具矩阵与控制：固件的 25 个工具配置及其跳线，以及所选工具的控件（模拟器标签页：未连接板卡时仅做模拟；连接板卡后，其按钮会在逐帧确认后把真实帧发到总线上）。",
+        "ja": "ツールマトリクスと制御：ファームウェアの 25 のツールプロファイルとそのジャンパー、選択したツールの操作（ボード未接続ではシミュレートのみ。ボード接続時は、確認のたびにボタンが実際のフレームをバスに出します）。",
+        "pt": "Matriz de ferramentas e controlo: os 25 perfis de ferramenta do firmware com os seus jumpers e os controlos da ferramenta selecionada (sem placa ligada só simula; com uma placa ligada o seu botão coloca tramas reais no barramento, depois da confirmação de cada uma)."
       }
     },
     {

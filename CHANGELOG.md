@@ -4,6 +4,7 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The README says what the Control tab really does:** with a board connected its button puts the confirmed frame on the bus (there is no switch to allow it), with no board it only simulates; the sandbox tabs that transmit nothing are OLED and Thermal IR, and the rule that a drill or a laser that is already on asks again only past a percentage of the configuration file is stated. Fixed in the eight READMEs and the screenshot captions.
 - **A check box for the head to follow the emergency stop of the stack sits with the other optional functions (off, as every switch):** the panel of optional functions has the `ESTOP_FOLLOW` function (bit 128 of the mask written with `0x1AE`; the mask now reaches `0xFF`), it is not ticked on opening and a head that was never written has it off. With it on, a head stops on the stop frame `0x001` and when the master of the stop falls silent; the two new reasons of an error, `ESTOP` and `ESTOP_SILENCE`, are named in the line of the clear-error button, and all three texts are in the eight languages. Tested with the frame builders and the language files; not tried on a board.
 - **The texts follow the corrected shared catalog:** German writes "Heizungs-PID" and "Heizungsausgang" instead of "Heizer", Chinese writes the image as "镜像" and the expansion slave as "从机" in every text and in the Chinese README, and European Portuguese no longer addresses the user as "você" in three texts.
 
