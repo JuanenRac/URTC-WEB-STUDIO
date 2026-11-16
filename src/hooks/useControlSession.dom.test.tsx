@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import { useControlSession } from './useControlSession';
 import type { CutReason } from '../lib/controlHeartbeat';
+import { activeSafeOffCount, runAllSafeOff } from '../lib/safeOff';
 
 const frame = { id: 0x130, data: [0x01, 0x40], offData: [0, 0] };
 
@@ -136,5 +137,42 @@ describe('what the Control tab keeps on', () => {
     await act(async () => { window.dispatchEvent(new Event('blur')); s.hook.rerender({ connected: false, tabActive: false, allowed: false }); await vi.advanceTimersByTimeAsync(0); });
     expect(s.ends).toEqual([]);
     expect(s.send).not.toHaveBeenCalled();
+  });
+});
+
+describe('the global switch-off (STOP ALL, disconnecting) reaches what the Control tab keeps on', () => {
+  it('sends the off frame of a single frame that was sent once, and waits for it', async () => {
+    const s = setup();
+    await act(async () => { s.hook.result.current.rememberSingle(frame); });
+    expect(s.hook.result.current.active).toBe(true);
+    expect(activeSafeOffCount()).toBeGreaterThanOrEqual(1);
+    await act(async () => { await runAllSafeOff(); });
+    expect(s.offSends()).toBe(1);
+    expect(s.ends).toEqual(['stop']);
+    expect(s.hook.result.current.active).toBe(false);
+    await act(async () => { await runAllSafeOff(); });
+    expect(s.offSends()).toBe(1);
+  });
+
+  it('ends a held setpoint for good: the refresh does not start again after the switch-off', async () => {
+    const s = setup();
+    await start(s);
+    await act(async () => { await runAllSafeOff(); await vi.advanceTimersByTimeAsync(0); });
+    expect(s.hook.result.current.holding).toBe(false);
+    expect(s.offSends()).toBe(1);
+    const count = s.send.mock.calls.length;
+    await act(async () => { await vi.advanceTimersByTimeAsync(2000); });
+    expect(s.send.mock.calls.length).toBe(count);
+  });
+
+  it('clears the state even when the off frame cannot be sent (fail closed) and leaves nothing registered', async () => {
+    const before = activeSafeOffCount();
+    const s = setup();
+    s.send.mockRejectedValue(new Error('port closed'));
+    await act(async () => { s.hook.result.current.rememberSingle(frame); });
+    await act(async () => { await runAllSafeOff(); });
+    expect(s.hook.result.current.active).toBe(false);
+    expect(s.ends).toEqual(['stop']);
+    expect(activeSafeOffCount()).toBe(before);
   });
 });

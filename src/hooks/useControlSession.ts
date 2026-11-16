@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { CutReason, Heartbeat, startHeartbeat } from '../lib/controlHeartbeat';
+import { registerSafeOff } from '../lib/safeOff';
 
 type Send = (id: number, data: number[]) => Promise<unknown>;
 
@@ -29,11 +30,16 @@ export function useControlSession(options: ControlSessionOptions) {
   const single = useRef<HeldFrame | null>(null);
   const [holding, setHolding] = useState(false);
   const [active, setActive] = useState(false);
+  // While something is on, the global switch-off (STOP ALL, disconnecting, closing the page) reaches it through this entry.
+  const unregister = useRef<(() => void) | null>(null);
+
+  const disarm = useCallback(() => { unregister.current?.(); unregister.current = null; }, []);
 
   const cut = useCallback((reason: CutReason) => {
     const running = heartbeat.current;
     const once = single.current;
     if (!running && !once) return;
+    disarm();
     single.current = null;
     if (running) {
       heartbeat.current = null;
@@ -44,15 +50,34 @@ export function useControlSession(options: ControlSessionOptions) {
     }
     setHolding(false);
     setActive(false);
-  }, []);
+  }, [disarm]);
+
+  /**
+   * The global switch-off: ends a running hold (which sends its off frame) or sends the off frame of a single frame and WAITS for it, so a disconnection that
+   * follows does not close the port first. If the frame cannot be sent the state is still cleared: nothing is left looking as if it were on.
+   */
+  const switchOffAll = useCallback(async () => {
+    if (heartbeat.current) { cut('stop'); return; }
+    const once = single.current;
+    if (!once) return;
+    disarm();
+    single.current = null;
+    try { await latest.current.send(once.id, once.offData); } catch { /* the port may already be gone */ }
+    latest.current.onEnd('stop');
+    setHolding(false);
+    setActive(false);
+  }, [cut, disarm]);
+
+  const arm = useCallback(() => { disarm(); unregister.current = registerSafeOff(switchOffAll); }, [disarm, switchOffAll]);
 
   /** One confirmed frame went out: remember how to switch the tool off. */
   const rememberSingle = useCallback((frame: HeldFrame) => {
     // A new setpoint for the tool that is already on replaces the old one: the off frame of the old one must not follow it onto the bus.
     if (!(single.current && !heartbeat.current && single.current.id === frame.id)) cut('switch');
     single.current = frame;
+    arm();
     setActive(true);
-  }, [cut]);
+  }, [cut, arm]);
 
   /** A confirmed setpoint to refresh for `seconds`. */
   const startHold = useCallback((frame: HeldFrame, seconds: number) => {
@@ -68,9 +93,10 @@ export function useControlSession(options: ControlSessionOptions) {
         latest.current.onEnd(reason);
       },
     });
+    arm();
     setHolding(true);
     setActive(true);
-  }, [cut]);
+  }, [cut, arm]);
 
   useEffect(() => { if (!options.connected) cut('connection'); }, [options.connected, cut]);
   useEffect(() => { if (!options.tabActive) cut('tab'); }, [options.tabActive, cut]);
