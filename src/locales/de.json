@@ -91,9 +91,7 @@
     "real_second_laser": "ZWEITE BESTÄTIGUNG. Der Laser wird jetzt scharf gestellt und feuert mit {{value}} %. Ist der Bereich frei und der Augenschutz angelegt? STOPP bleibt sichtbar.",
     "real_second_drill": "ZWEITE BESTÄTIGUNG. Die Bohrmaschine dreht sich jetzt mit {{value}} U/min. Ist alles vom Werkzeug entfernt? STOPP bleibt sichtbar.",
     "pin_mapping_title": "Hardware-Pinbelegung & Signale",
-    "capabilities_title": "Firmware-Funktionen",
-    "real_send_switch": "Senden an die echte Platine erlauben",
-    "real_send_switch_off": "Das Senden an die echte Platine ist ausgeschaltet: Der Simulator arbeitet weiter und nichts erreicht den Bus. STOP funktioniert weiterhin."
+    "capabilities_title": "Firmware-Funktionen"
   },
   "bushealth": {
     "mixed_bus_suspected": "Der Bus mischt möglicherweise Geschwindigkeiten: Ein Kopf für 500 kbit/s hängt daran und die Köpfe zeigen Fehler",
@@ -431,10 +429,7 @@
     "image_header_policy_hint": "Was mit einem Image ohne Header geschehen soll. Ein vorhandener Header wird immer geprüft, ein fehlerhafter immer abgelehnt.",
     "image_header_policy_accept": "Akzeptieren",
     "image_header_policy_warn": "Mit Warnung akzeptieren",
-    "image_header_policy_require": "Header verlangen",
-    "require_signature_label": "Verifizierte Release-Signatur verlangen",
-    "require_signature_sub": "Standardmäßig aus. Wenn aktiv, wird ein Image aus dem Paket oder aus einem GitHub-Release ohne verifizierte Release-Signatur abgelehnt und nichts an die Platine gesendet. Eine Datei von der Festplatte ist nicht betroffen.",
-    "err_release_signature_required": "Dieses Image hat keine verifizierte Release-Signatur, und die Einstellung, die sie verlangt, ist aktiv. Es wurde nichts an die Platine gesendet."
+    "image_header_policy_require": "Header verlangen"
   },
   "thermal": {
     "title": "MLX90640-Wärmebildkamera 32x24",

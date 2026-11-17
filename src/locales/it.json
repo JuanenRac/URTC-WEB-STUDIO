@@ -91,9 +91,7 @@
     "real_second_laser": "SECONDA CONFERMA. Il laser verrà armato e sparerà ora al {{value}} %. L'area è libera e la protezione degli occhi è indossata? STOP resta visibile.",
     "real_second_drill": "SECONDA CONFERMA. Il trapano girerà ora a {{value}} giri/min. È tutto lontano dall'utensile? STOP resta visibile.",
     "pin_mapping_title": "Mappatura Pin & Segnali Hardware",
-    "capabilities_title": "Funzionalità del Firmware",
-    "real_send_switch": "Consenti l'invio alla scheda reale",
-    "real_send_switch_off": "L'invio alla scheda reale è disattivato: il simulatore continua a funzionare e nulla arriva sul bus. STOP funziona comunque."
+    "capabilities_title": "Funzionalità del Firmware"
   },
   "bushealth": {
     "mixed_bus_suspected": "Il bus potrebbe mescolare le velocità: c'è una testa da 500 kbit/s e le teste mostrano errori",
@@ -431,10 +429,7 @@
     "image_header_policy_hint": "Cosa fare con un'immagine priva di intestazione. Un'intestazione presente viene sempre verificata e una errata viene sempre rifiutata.",
     "image_header_policy_accept": "Accetta",
     "image_header_policy_warn": "Accetta con un avviso",
-    "image_header_policy_require": "Richiedi l'intestazione",
-    "require_signature_label": "Richiedi una firma di rilascio verificata",
-    "require_signature_sub": "Disattivato per impostazione predefinita. Se attivo, un'immagine del pacchetto o di una release di GitHub senza firma di rilascio verificata viene rifiutata e nulla viene inviato alla scheda. Un file dal disco non è interessato.",
-    "err_release_signature_required": "Questa immagine non ha una firma di rilascio verificata e l'impostazione che la richiede è attiva. Non è stato inviato nulla alla scheda."
+    "image_header_policy_require": "Richiedi l'intestazione"
   },
   "thermal": {
     "title": "Termocamera Infrarossa MLX90640 32x24",

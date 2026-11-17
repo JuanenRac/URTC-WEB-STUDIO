@@ -91,9 +91,7 @@
     "real_second_laser": "SEGUNDA CONFIRMAÇÃO. O laser vai ser armado e disparar agora a {{value}} %. A zona está livre e a proteção ocular colocada? PARAGEM continua visível.",
     "real_second_drill": "SEGUNDA CONFIRMAÇÃO. O berbequim vai rodar agora a {{value}} RPM. Está tudo afastado da ferramenta? PARAGEM continua visível.",
     "pin_mapping_title": "Mapeamento de Pinos e Sinais de Hardware",
-    "capabilities_title": "Capacidades do Firmware",
-    "real_send_switch": "Permitir o envio para a placa real",
-    "real_send_switch_off": "O envio para a placa real está desativado: o simulador continua a funcionar e nada chega ao barramento. O STOP continua a funcionar."
+    "capabilities_title": "Capacidades do Firmware"
   },
   "bushealth": {
     "mixed_bus_suspected": "O barramento pode misturar velocidades: há uma cabeça de 500 kbit/s e as cabeças mostram erros",
@@ -431,10 +429,7 @@
     "image_header_policy_hint": "O que fazer com uma imagem sem cabeçalho no interior. Um cabeçalho presente é sempre verificado e um incorreto é sempre recusado.",
     "image_header_policy_accept": "Aceitar",
     "image_header_policy_warn": "Aceitar com um aviso",
-    "image_header_policy_require": "Exigir cabeçalho",
-    "require_signature_label": "Exigir uma assinatura de lançamento verificada",
-    "require_signature_sub": "Desativado por predefinição. Quando ativo, uma imagem do pacote ou de um lançamento do GitHub sem assinatura de lançamento verificada é recusada e não é enviado nada à placa. Um ficheiro do disco não é afetado.",
-    "err_release_signature_required": "Esta imagem não tem uma assinatura de lançamento verificada e a definição que a exige está ativa. Não foi enviado nada à placa."
+    "image_header_policy_require": "Exigir cabeçalho"
   },
   "thermal": {
     "title": "Câmara Térmica Infravermelha MLX90640 de 32x24",

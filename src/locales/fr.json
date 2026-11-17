@@ -91,9 +91,7 @@
     "real_second_laser": "SECONDE CONFIRMATION. Le laser va être armé et tirer maintenant à {{value}} %. La zone est-elle dégagée et la protection oculaire en place ? ARRÊT reste visible.",
     "real_second_drill": "SECONDE CONFIRMATION. La perceuse va tourner maintenant à {{value}} tr/min. Tout est-il dégagé de l'outil ? ARRÊT reste visible.",
     "pin_mapping_title": "Brochage & Signaux Matériels",
-    "capabilities_title": "Fonctionnalités du Firmware",
-    "real_send_switch": "Autoriser l'envoi à la vraie carte",
-    "real_send_switch_off": "L'envoi à la vraie carte est désactivé : le simulateur continue de fonctionner et rien n'arrive sur le bus. STOP fonctionne toujours."
+    "capabilities_title": "Fonctionnalités du Firmware"
   },
   "bushealth": {
     "mixed_bus_suspected": "Le bus mélange peut-être les vitesses : une tête prévue pour 500 kbit/s y est et les têtes montrent des erreurs",
@@ -431,10 +429,7 @@
     "image_header_policy_hint": "Que faire d'une image sans en-tête. Un en-tête présent est toujours vérifié et un en-tête incorrect toujours refusé.",
     "image_header_policy_accept": "Accepter",
     "image_header_policy_warn": "Accepter avec un avertissement",
-    "image_header_policy_require": "Exiger un en-tête",
-    "require_signature_label": "Exiger une signature de publication vérifiée",
-    "require_signature_sub": "Désactivé par défaut. Si activé, une image du paquet ou d'une publication GitHub sans signature de publication vérifiée est refusée et rien n'est envoyé à la carte. Un fichier du disque n'est pas concerné.",
-    "err_release_signature_required": "Cette image n'a pas de signature de publication vérifiée et le réglage qui l'exige est activé. Rien n'a été envoyé à la carte."
+    "image_header_policy_require": "Exiger un en-tête"
   },
   "thermal": {
     "title": "Caméra Thermique Infrarouge MLX90640 32x24",

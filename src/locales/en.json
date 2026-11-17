@@ -91,9 +91,7 @@
     "real_second_laser": "SECOND CONFIRMATION. The laser will be armed and will fire at {{value}} % now. Is the area clear and the eye protection on? STOP stays visible.",
     "real_second_drill": "SECOND CONFIRMATION. The drill will spin at {{value}} RPM now. Is everything clear of the tool? STOP stays visible.",
     "pin_mapping_title": "Hardware Pin Mapping & Signals",
-    "capabilities_title": "Firmware Capabilities",
-    "real_send_switch": "Allow sending to the real board",
-    "real_send_switch_off": "Sending to the real board is switched off: the simulator keeps working and nothing reaches the bus. STOP still works."
+    "capabilities_title": "Firmware Capabilities"
   },
   "bushealth": {
     "mixed_bus_suspected": "The bus may mix speeds: a head built for 500 kbit/s is on it and the heads show errors",
@@ -431,10 +429,7 @@
     "image_header_policy_hint": "What to do with an image that has no header inside it. A header that is there is always checked, and a bad one is always refused.",
     "image_header_policy_accept": "Accept",
     "image_header_policy_warn": "Accept with a warning",
-    "image_header_policy_require": "Require a header",
-    "require_signature_label": "Require a verified release signature",
-    "require_signature_sub": "Off by default. When on, an image of the bundle or of a GitHub release without a verified release signature is refused and nothing is sent to the board. A file from disk is not affected.",
-    "err_release_signature_required": "This image has no verified release signature and the setting that requires one is on. Nothing was sent to the board."
+    "image_header_policy_require": "Require a header"
   },
   "thermal": {
     "title": "MLX90640 32x24 Thermal Infrared Camera Array",
