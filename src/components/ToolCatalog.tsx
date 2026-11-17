@@ -17,6 +17,8 @@ interface ToolCatalogProps {
   /** Sending one real frame from this tab: the real-bus label, the button, whether a board is connected and the last answer. */
   realSend?: {
     connected: boolean; onSend: () => void; message: string;
+    /** The switch that lets this tab put a frame on the real bus (on by default); off keeps the tab as a simulator. */
+    enabled?: boolean; onEnabledChange?: (value: boolean) => void;
     /** The selected tool can be held (refreshed for a bounded time); the others are one confirmed frame. */
     canHold?: boolean; holding?: boolean; holdSeconds?: number; onHoldSecondsChange?: (seconds: number) => void; onHold?: () => void; onStop?: () => void;
   };
@@ -282,8 +284,18 @@ export const ToolCatalog: React.FC<ToolCatalogProps> = ({
                   </span>
                 </div>
                 <p className="text-[10px] text-slate-500">{t('toolcatalog.real_send_hint', 'With a board connected, this tab sends to the real bus: the button below puts one frame on it, and only after you confirm that frame (the drill and the laser ask twice). The simulator stays available: the slider only moves the simulated setpoint. Changing the power of a drill or a laser that is on asks again when the change is over the percentage set in the configuration file.')}</p>
+                {realSend.onEnabledChange && (
+                  <label className="flex items-center gap-2 text-[11px] text-slate-300 cursor-pointer">
+                    <input type="checkbox" data-testid="real-send-switch" checked={realSend.enabled !== false} onChange={(e) => realSend.onEnabledChange?.(e.target.checked)} className="accent-red-600 rounded bg-slate-900 border-slate-700" />
+                    {t('toolcatalog.real_send_switch', 'Allow sending to the real board')}
+                  </label>
+                )}
+                {realSend.enabled === false && (
+                  <p data-testid="real-send-off" className="text-[10px] text-amber-300">{t('toolcatalog.real_send_switch_off', 'Sending to the real board is switched off: the simulator keeps working and nothing reaches the bus. STOP still works.')}</p>
+                )}
                 {realSend.connected && (
                   <div className="flex flex-wrap items-center gap-2">
+                    {realSend.enabled !== false && (<>
                     <button
                       type="button"
                       data-testid="real-send-button"
@@ -317,6 +329,7 @@ export const ToolCatalog: React.FC<ToolCatalogProps> = ({
                         </label>
                       </>
                     )}
+                    </>)}
                     <button
                       type="button"
                       data-testid="real-stop-button"

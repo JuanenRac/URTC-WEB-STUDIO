@@ -44,6 +44,9 @@ interface FlasherStudioProps {
   onSendFrame?: (id: number, data: number[], description?: string) => Promise<void>;
   onWaitForFrame?: (id: number, timeoutMs?: number) => Promise<CanFrame | null>;
   onRequest?: (id: number, data: number[], respId: number, timeoutMs?: number, description?: string) => Promise<CanFrame | null>;
+  /** Refuse an image of the bundle or of a GitHub release that has no verified release signature (off by default). */
+  requireSignature?: boolean;
+  onRequireSignatureChange?: (value: boolean) => void;
 }
 
 // Generated from the URTC release assets by scripts/sync-firmware.mjs: the same files,
@@ -75,7 +78,9 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
   errorCounters,
   onQueryErrorCounters,
   onSendFrame,
-  onRequest
+  onRequest,
+  requireSignature,
+  onRequireSignatureChange
 }) => {
   const { t } = useTranslation();
   const confirm = useConfirmAction();
@@ -464,6 +469,16 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
                         <span className="text-[10px] text-slate-500 block leading-tight mt-0.5">{t('flasher.erase_sub', 'Main board only (no F-RAM on the expansion slave). Only takes effect while the trigger above also runs (F-RAM erase requires the application still running).')}</span>
                       </div>
                     </label>
+
+                    {onRequireSignatureChange && (
+                      <label className="flex items-start gap-2 text-xs cursor-pointer text-slate-300">
+                        <input type="checkbox" data-testid="require-signature" checked={requireSignature === true} onChange={(e) => onRequireSignatureChange(e.target.checked)} className="mt-0.5 accent-amber-500 rounded bg-slate-900 border-slate-700" />
+                        <div>
+                          <span className="font-semibold block text-slate-200">{t('flasher.require_signature_label', 'Require a verified release signature')}</span>
+                          <span className="text-[10px] text-slate-500 block leading-tight mt-0.5">{t('flasher.require_signature_sub', 'Off by default. When on, an image of the bundle or of a GitHub release without a verified release signature is refused and nothing is sent to the board. A file from disk is not affected.')}</span>
+                        </div>
+                      </label>
+                    )}
 
                     <label className={`flex items-start gap-2 text-xs cursor-pointer ${flashTarget === 'slave' ? 'opacity-40 pointer-events-none' : 'text-slate-300'}`}>
                       <input type="checkbox" checked={allowDowngrade} disabled={flashTarget === 'slave'} onChange={(e) => setAllowDowngrade(e.target.checked)} className="mt-0.5 accent-amber-500 rounded bg-slate-900 border-slate-700" />

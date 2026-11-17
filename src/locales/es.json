@@ -91,7 +91,9 @@
     "real_second_laser": "SEGUNDA CONFIRMACIÓN. El láser se armará y disparará ahora al {{value}} %. ¿Está la zona despejada y puesta la protección ocular? PARADA sigue visible.",
     "real_second_drill": "SEGUNDA CONFIRMACIÓN. El taladro girará ahora a {{value}} RPM. ¿Está todo despejado alrededor de la herramienta? PARADA sigue visible.",
     "pin_mapping_title": "Mapeo de Pines y Señales de Hardware",
-    "capabilities_title": "Capacidades del Firmware"
+    "capabilities_title": "Capacidades del Firmware",
+    "real_send_switch": "Permitir el envío a la placa real",
+    "real_send_switch_off": "El envío a la placa real está desactivado: el simulador sigue funcionando y nada llega al bus. STOP sigue funcionando."
   },
   "bushealth": {
     "mixed_bus_suspected": "El bus puede mezclar velocidades: hay un cabezal de 500 kbit/s y los cabezales muestran errores",
@@ -429,7 +431,10 @@
     "image_header_policy_hint": "Qué hacer con una imagen que no lleva cabecera dentro. Una cabecera presente siempre se comprueba y una incorrecta siempre se rechaza.",
     "image_header_policy_accept": "Aceptar",
     "image_header_policy_warn": "Aceptar con un aviso",
-    "image_header_policy_require": "Exigir cabecera"
+    "image_header_policy_require": "Exigir cabecera",
+    "require_signature_label": "Exigir una firma de publicación verificada",
+    "require_signature_sub": "Desactivado por defecto. Si está activo, una imagen del paquete o de una publicación de GitHub sin firma de publicación verificada se rechaza y no se envía nada a la placa. Un archivo del disco no se ve afectado.",
+    "err_release_signature_required": "Esta imagen no tiene una firma de publicación verificada y el ajuste que la exige está activo. No se envió nada a la placa."
   },
   "thermal": {
     "title": "Cámara Térmica Infrarroja MLX90640 de 32x24",

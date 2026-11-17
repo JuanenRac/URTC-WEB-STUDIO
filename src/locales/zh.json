@@ -91,7 +91,9 @@
     "real_second_laser": "第二次确认。激光将立即进入待发状态并以 {{value}} % 发射。周围是否已清空并佩戴护目镜？停止按钮始终可见。",
     "real_second_drill": "第二次确认。钻头将立即以 {{value}} RPM 旋转。刀具周围是否都已清空？停止按钮始终可见。",
     "pin_mapping_title": "硬件引脚映射与信号",
-    "capabilities_title": "固件能力"
+    "capabilities_title": "固件能力",
+    "real_send_switch": "允许发送到真实开发板",
+    "real_send_switch_off": "已关闭向真实开发板发送：模拟器仍可使用，总线上不会收到任何内容。STOP 仍然有效。"
   },
   "bushealth": {
     "mixed_bus_suspected": "总线可能混用了速度：其中有一个 500 kbit/s 的工具头，且各工具头出现错误",
@@ -429,7 +431,10 @@
     "image_header_policy_hint": "选择如何处理内部没有头的镜像。存在的头总会被校验，错误的头总会被拒绝。",
     "image_header_policy_accept": "接受",
     "image_header_policy_warn": "接受并给出警告",
-    "image_header_policy_require": "要求必须有头"
+    "image_header_policy_require": "要求必须有头",
+    "require_signature_label": "要求经过验证的发布签名",
+    "require_signature_sub": "默认关闭。开启后，软件包或 GitHub 发布中没有经过验证的发布签名的镜像会被拒绝，不会向开发板发送任何内容。来自磁盘的文件不受影响。",
+    "err_release_signature_required": "此镜像没有经过验证的发布签名，而要求签名的设置已开启。未向开发板发送任何内容。"
   },
   "thermal": {
     "title": "MLX90640 32x24 热成像红外相机阵列",

@@ -91,7 +91,9 @@
     "real_second_laser": "2 回目の確認。レーザーを今から {{value}} % で待機状態にして発射します。周囲は安全で、保護メガネを着けていますか？停止ボタンは表示されたままです。",
     "real_second_drill": "2 回目の確認。ドリルを今から {{value}} RPM で回転させます。工具の周囲に何もありませんか？停止ボタンは表示されたままです。",
     "pin_mapping_title": "ハードウェアピンマッピングと信号",
-    "capabilities_title": "ファームウェア機能"
+    "capabilities_title": "ファームウェア機能",
+    "real_send_switch": "実機のボードへの送信を許可",
+    "real_send_switch_off": "実機のボードへの送信はオフです。シミュレーターは動作し続け、バスには何も送られません。STOP は引き続き使えます。"
   },
   "bushealth": {
     "mixed_bus_suspected": "バスで速度が混在している可能性があります：500 kbit/s 用のヘッドがあり、各ヘッドにエラーが出ています",
@@ -429,7 +431,10 @@
     "image_header_policy_hint": "ヘッダーのないイメージの扱いを選びます。ヘッダーがある場合は常に検証され、不正なものは常に拒否されます。",
     "image_header_policy_accept": "受け入れる",
     "image_header_policy_warn": "警告付きで受け入れる",
-    "image_header_policy_require": "ヘッダーを必須にする"
+    "image_header_policy_require": "ヘッダーを必須にする",
+    "require_signature_label": "検証済みのリリース署名を必須にする",
+    "require_signature_sub": "既定ではオフです。オンにすると、検証済みのリリース署名がないパッケージ内または GitHub リリースのイメージは拒否され、ボードには何も送信されません。ディスク上のファイルは対象外です。",
+    "err_release_signature_required": "このイメージには検証済みのリリース署名がなく、署名を必須にする設定がオンです。ボードには何も送信されていません。"
   },
   "thermal": {
     "title": "MLX90640 32x24 サーマル赤外線カメラアレイ",
