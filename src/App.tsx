@@ -45,6 +45,7 @@ import { planPreset } from './lib/simPresets';
 import { rawSendPolicy, ActionKind } from './lib/dangerousActions';
 import { planControlSend, runControlSend, confirmPlan, stopFrameFor, canHoldTool } from './lib/controlSandbox';
 import { CutReason, clampHoldSeconds, loadHoldSeconds, saveHoldSeconds } from './lib/controlHeartbeat';
+import { loadRealSend, saveRealSend, loadRequireSignature, saveRequireSignature, signatureRefused } from './lib/sendSettings';
 import { useControlSession } from './hooks/useControlSession';
 import { runAllSafeOff } from './lib/safeOff';
 import { downloadBlob } from './lib/download';
@@ -359,6 +360,11 @@ export default function App() {
   const [realSendMessage, setRealSendMessage] = useState('');
   const activePowerRef = useRef<Record<number, number>>({});
   const [holdSeconds, setHoldSeconds] = useState<number>(() => loadHoldSeconds(typeof localStorage === 'undefined' ? undefined : localStorage));
+  const browserStorage = () => (typeof localStorage === 'undefined' ? undefined : localStorage);
+  const [realSendEnabled, setRealSendEnabled] = useState<boolean>(() => loadRealSend(browserStorage()));
+  const [requireSignature, setRequireSignature] = useState<boolean>(() => loadRequireSignature(browserStorage()));
+  const handleRealSendEnabled = (value: boolean) => { setRealSendEnabled(value); saveRealSend(browserStorage(), value); };
+  const handleRequireSignature = (value: boolean) => { setRequireSignature(value); saveRequireSignature(browserStorage(), value); };
   const handleHoldSecondsChange = (seconds: number) => {
     const clean = clampHoldSeconds(seconds);
     setHoldSeconds(clean);
@@ -367,7 +373,7 @@ export default function App() {
   // What a tool of the Control tab keeps on is cut at once (STOP, the time, focus, the tab, the connection, the switch, the page): see hooks/useControlSession.ts.
   const sendControlFrame = (id: number, data: number[]) => serialCan.sendFrame(id, data, 'Sent from the Control tab');
   const controlSession = useControlSession({
-    connected: serialCan.isConnected, tabActive: activeTab === 'control', allowed: true, send: sendControlFrame,
+    connected: serialCan.isConnected, tabActive: activeTab === 'control', allowed: realSendEnabled, send: sendControlFrame,
     onEnd: (reason: CutReason) => {
       activePowerRef.current = {};
       if (reason === 'switch' || reason === 'unmount') return;
@@ -375,7 +381,7 @@ export default function App() {
     },
   });
   const controlPlan = () => planControlSend({
-    connected: serialCan.isConnected, toolId: activeToolId, activePower: activePowerRef.current[activeToolId] ?? null,
+    connected: serialCan.isConnected && realSendEnabled, toolId: activeToolId, activePower: activePowerRef.current[activeToolId] ?? null,
     value: setpoints[activeToolId] ?? activeTool.defaultSetpoint, toolMin: activeTool.minVal, toolMax: activeTool.maxVal,
   });
   const askControl = (kind: ActionKind, options: { value?: number; second?: boolean }) => {
@@ -705,6 +711,10 @@ export default function App() {
         refuse(t('flasher.err_release_signature', 'The release signature of this image is not valid: the file was changed or was not published by the maintainer. Nothing was sent to the board.'));
         return;
       }
+      if (signatureRefused(state, requireSignature)) {
+        refuse(t('flasher.err_release_signature_required', 'This image has no verified release signature and the setting that requires one is on. Nothing was sent to the board.'));
+        return;
+      }
       flasher.appendLog(state === 'signed'
         ? t('flasher.log_release_signature_ok', 'Release signature verified: this exact file was published by the maintainer.')
         : t('flasher.log_release_signature_none', 'This image has no release signature to check (or this browser cannot check it); the board still verifies its own signature.'));
@@ -996,6 +1006,8 @@ export default function App() {
               onSwitchToFirmware11={() => handleSetFirmwareVersion('0.1.0')}
               realSend={{
                 connected: serialCan.isConnected,
+                enabled: realSendEnabled,
+                onEnabledChange: handleRealSendEnabled,
                 onSend: () => { void handleRealSetpointSend(); },
                 message: realSendMessage,
                 canHold: canHoldTool(activeToolId),
@@ -1117,6 +1129,8 @@ export default function App() {
             onQueryErrorCounters={flasher.queryErrorCounters}
             onSendFrame={serialCan.sendFrame}
             onRequest={serialCan.request}
+            requireSignature={requireSignature}
+            onRequireSignatureChange={handleRequireSignature}
           />
           </Suspense>
         )}
