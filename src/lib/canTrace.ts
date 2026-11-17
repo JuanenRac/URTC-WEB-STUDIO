@@ -154,7 +154,8 @@ export function decodeTraceFrame(id: number, data: number[], declaredDlc: number
   // A query takes any length in its layout; in a file where every frame is received, it is only taken for an empty frame, so a short answer is not mistaken for one.
   const lengthFits = ordered.filter(([, l]) => dlcAllows(l.dlc, data.length) && (l.role === wantRole || !l.dlc.any || data.length === 0));
   // Several layouts of one identifier and one length (the operations of 0x7EA) are told apart by the fixed bytes they start with; without a match the first one fits.
-  const hit = lengthFits.find(([, l]) => fixedBytesMatch(l, data)) ?? lengthFits[0];
+  // A layout that names the bytes it starts with and matches them is more specific than one that takes any frame (0x1AF: the plain query and the one with the format byte).
+  const hit = lengthFits.find(([, l]) => l.fields.some((f) => f.fixed) && fixedBytesMatch(l, data)) ?? lengthFits.find(([, l]) => fixedBytesMatch(l, data)) ?? lengthFits[0];
   if (!hit) {
     const [name, layout] = ordered[0];
     const shortOfSpec = data.length < Math.min(...ordered.map(([, l]) => layoutFloor(l.dlc)));

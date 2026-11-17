@@ -4,6 +4,7 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The trace reader tells the plain feature query from the one with the format byte:** a frame of the feature answer identifier with one byte `02` is read as the extended query and no longer as the plain one that takes any length.
 - **The optional functions panel has the second byte of the switch map, with the switch that makes the communication watchdog count only frames of the host side (off by default):** the query now asks for the six-byte answer (the single byte `02`); a head that answers with three bytes is written with the five-byte form as before and the new box is not shown, and a head that answers with six gets the six-byte form. The switch is kept off unless the communication watchdog is ticked, and its text is in the eight languages.
 - **The refusal of an update because a tool is still active has its wording:** the flasher page names the verify-fail reason 8 in the eight languages instead of showing an unknown reason.
 - **STOP ALL and disconnecting also switch off what the Control tab keeps on:** a single frame sent from the Control tab (a drill or a laser set once) is now registered with the global switch-off, so STOP ALL, the Disconnect button and closing the page send its off frame and wait for it before the port closes, and a held setpoint ends for good instead of being refreshed again after the switch-off. If the off frame cannot be sent, the tab still shows the tool as off. Tested with the session hook.
