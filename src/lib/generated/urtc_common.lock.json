@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "urtc_common_version": "0.2.7",
+  "urtc_common_version": "0.2.8",
   "files": {
     "blackbox_vectors.json": {
       "from": "conformance/blackbox_vectors.json",
@@ -36,7 +36,7 @@
     },
     "urtcCanIds.ts": {
       "from": "generated/urtcCanIds.ts",
-      "sha256": "7d545eabda188fdd00311273851cda0d625ba36163c61d71e283043332383680"
+      "sha256": "0e0d550f7bed8a55505f4b10a32383a602c4ca80b0d47a6966d313aac2f54caf"
     },
     "urtcTools.ts": {
       "from": "generated/urtcTools.ts",
