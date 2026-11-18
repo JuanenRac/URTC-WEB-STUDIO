@@ -7,6 +7,8 @@ export const FEATURES_QUERY_EXTENDED = [0x02];
 
 /** The second byte of the map: bit 0x01 = with the communication watchdog, only frames of the host side count as a sign of life. */
 export const FEATURE_EXT_WATCHDOG_HOST_ONLY = 0x01;
+/** The second byte, bit 0x02: the end of an update of a slave board is accepted while a tool of the head is active (without it the end is refused). Off by default. */
+export const FEATURE_EXT_ALLOW_UPDATE_ACTIVE_ACTUATOR = 0x02;
 export const FEATURE_COMMS_WATCHDOG = 0x20;
 
 export interface FeaturesAnswer {
@@ -34,11 +36,13 @@ export function parseFeaturesAnswer(data: ArrayLike<number> | undefined | null):
 
 /**
  * The frame that writes the switches. The second byte is only sent to a head that said it has one; to an older head the five-byte form goes, which is what it
- * understands. A switch of the second byte that needs the communication watchdog is switched off when the watchdog is not on, as the electromagnet release is.
+ * understands. The switch of the second byte that needs the communication watchdog (host-only frames) is switched off when the watchdog is not on, as the electromagnet
+ * release is; the switch for the end of a slave update does not depend on it and goes as asked.
  */
 export function featuresWriteFor(mask: number, maskExt: number, supportedExt: number): number[] {
   const first = mask & 0xFF;
   if (supportedExt === 0) return [...FEATURES_MAGIC, first];
-  const ext = (first & FEATURE_COMMS_WATCHDOG) !== 0 ? maskExt & supportedExt & 0xFF : 0;
+  const wanted = maskExt & supportedExt & 0xFF;
+  const ext = (first & FEATURE_COMMS_WATCHDOG) !== 0 ? wanted : wanted & ~FEATURE_EXT_WATCHDOG_HOST_ONLY;
   return [...FEATURES_MAGIC, first, ext];
 }

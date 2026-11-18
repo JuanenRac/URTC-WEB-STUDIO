@@ -15,6 +15,9 @@ describe("which actions are confirmed", () => {
     expect(confirmationRisk("dev_key")).toBe("caution");
     expect(confirmationRisk("unsigned_image")).toBe("danger");
   });
+  it("asks, as a danger, before the end of a slave update is allowed with a tool active", () => {
+    expect(confirmationRisk("update_active_actuator")).toBe("danger");
+  });
   it("asks for a heater only when it is going to heat", () => {
     expect(confirmationRisk("heater", 0)).toBeNull();
     expect(confirmationRisk("heater")).toBeNull();

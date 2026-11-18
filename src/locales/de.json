@@ -749,7 +749,8 @@
     "raw_actuator": "Der Identifier 0x{{id}} steuert einen Aktor an; er kann bewegen, heizen oder auslösen.",
     "raw_blocked": "Der Identifier 0x{{id}} wird nur von der Platine selbst gesendet; ihn von hier zu senden würde mit der Platine kollidieren und den anderen Geräten am Bus falsche Daten liefern.",
     "msg_dev_key": "Dieses Image ist mit dem ÖFFENTLICHEN Entwicklungsschlüssel signiert. Dieser Schlüssel sagt nichts darüber aus, wer das Image erstellt hat: Jeder kann damit signieren, und nur Platinen, deren Bootloader mit demselben Schlüssel gebaut wurde, akzeptieren es. Fortfahren?",
-    "msg_unsigned_image": "Das Image {{name}} (sha256 {{sha256}}) hat keine verifizierte Release-Signatur: Nichts beweist, dass der Maintainer genau diese Datei veröffentlicht hat. Wenn Sie fortfahren, wird es an die Platine gesendet und diese Entscheidung im Protokoll festgehalten. Trotzdem senden?"
+    "msg_unsigned_image": "Das Image {{name}} (sha256 {{sha256}}) hat keine verifizierte Release-Signatur: Nichts beweist, dass der Maintainer genau diese Datei veröffentlicht hat. Wenn Sie fortfahren, wird es an die Platine gesendet und diese Entscheidung im Protokoll festgehalten. Trotzdem senden?",
+    "msg_update_active_actuator": "Damit wird das Ende einer Aktualisierung einer Slave-Platine auch bei aktivem Werkzeug des Kopfes angenommen (Heizung, Motor, Laser ...). Während der Signaturprüfung pausieren die Sicherheitsprüfungen der Platine fast eine Sekunde lang. Schalten Sie dies nur ein, wenn in dieser Zeit nichts und niemand zu Schaden kommen kann. Trotzdem auf die Platine schreiben?"
   },
   "testerextras": {
     "black_title": "Fehlerrekorder (Blackbox, 0x1A8/0x1A9)",

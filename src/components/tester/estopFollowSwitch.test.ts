@@ -27,3 +27,20 @@ describe('the switch of the emergency stop following', () => {
     expect(ERROR_REASON_KEYS[10]).toBe('error_reason_estop_silence');
   });
 });
+
+describe('the switch for the end of a slave update while a tool is active', () => {
+  it('is a bit of the second byte with its own text, offered only when the head says it has it', () => {
+    expect(source).toContain("[FEATURE_EXT_ALLOW_UPDATE_ACTIVE_ACTUATOR, 'feature_allow_update_active_actuator']");
+    expect(source).toContain('supportedExt !== 0 && FEATURE_EXT_BITS.filter(([bit]) => (supportedExt & bit) !== 0)');
+  });
+
+  it('starts off, and switching it on asks in a window of its own and writes the decision to the log', () => {
+    expect(source).toContain('const [maskExt, setMaskExt] = useState(0);');
+    expect(source).toContain("confirm('update_active_actuator')");
+    expect(source).toContain('CONFIRMED: the end of a slave update is accepted while a tool is active');
+  });
+
+  it('is asked about only when it goes from off to on', () => {
+    expect(source).toContain('(storedExt & FEATURE_EXT_ALLOW_UPDATE_ACTIVE_ACTUATOR) === 0');
+  });
+});

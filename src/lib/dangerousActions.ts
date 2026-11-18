@@ -11,7 +11,8 @@ export type ActionKind =
   | 'motion' | 'paste' | 'feeder_reset'     // moves or dispenses: caution
   | 'program_config' | 'erase_fram' | 'raw_frame' // writes to the board or can change its mode: danger
   | 'dev_key'                               // an image signed with the public development key: caution
-  | 'unsigned_image';                       // an image without a verified release signature: danger
+  | 'unsigned_image'                        // an image without a verified release signature: danger
+  | 'update_active_actuator';               // the end of a slave update accepted while a tool is active: danger
 
 const RISK: Record<ActionKind, Risk> = {
   laser: 'danger', drill: 'danger', uv: 'danger', weld: 'danger',
@@ -20,6 +21,7 @@ const RISK: Record<ActionKind, Risk> = {
   program_config: 'danger', erase_fram: 'danger', raw_frame: 'danger',
   dev_key: 'caution',
   unsigned_image: 'danger',
+  update_active_actuator: 'danger',
 };
 
 /** The risk level of an action, or null when nothing needs to be confirmed. `value` is the setpoint for a heater. */
