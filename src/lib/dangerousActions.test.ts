@@ -13,6 +13,7 @@ describe("which actions are confirmed", () => {
   });
   it("asks before flashing an image signed with the public development key", () => {
     expect(confirmationRisk("dev_key")).toBe("caution");
+    expect(confirmationRisk("unsigned_image")).toBe("danger");
   });
   it("asks for a heater only when it is going to heat", () => {
     expect(confirmationRisk("heater", 0)).toBeNull();
