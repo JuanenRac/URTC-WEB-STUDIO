@@ -17,6 +17,7 @@ const FALLBACK: Record<string, string> = {
   msg_raw_frame: 'This frame is sent to the board as typed.',
   msg_dev_key: 'This image is signed with the PUBLIC development key. That key proves nothing about who made the image: anyone can sign with it, and only boards whose bootloader was built with the same key accept it. Continue?',
   msg_unsigned_image: 'The image {{name}} (sha256 {{sha256}}) has no verified release signature: nothing proves that the maintainer published this exact file. If you go on, it is sent to the board and this decision is written to the log. Send it anyway?',
+  msg_update_active_actuator: 'This lets the end of an update of a slave board be accepted while a tool of the head is active (a heater, a motor, a laser...). While the signature record is checked, the safety checks of the board pause for most of a second. Switch it on only when nothing and nobody can be hurt or damaged during that time. Write it to the board anyway?',
   title_caution: 'Please confirm',
   title_danger: 'Dangerous action',
 };

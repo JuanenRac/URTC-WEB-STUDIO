@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FEATURES_QUERY_EXTENDED, FEATURE_COMMS_WATCHDOG, FEATURE_EXT_WATCHDOG_HOST_ONLY, featuresWriteFor, parseFeaturesAnswer } from './featuresMap';
+import { FEATURES_QUERY_EXTENDED, FEATURE_COMMS_WATCHDOG, FEATURE_EXT_ALLOW_UPDATE_ACTIVE_ACTUATOR, FEATURE_EXT_WATCHDOG_HOST_ONLY, featuresWriteFor, parseFeaturesAnswer } from './featuresMap';
 import { FEATURES_MAGIC, featuresWrite } from './toolFrames';
 
 describe('the second byte of the map of optional functions', () => {
@@ -42,5 +42,24 @@ describe('the second byte of the map of optional functions', () => {
 
   it('never sends a switch the head did not say it has', () => {
     expect(featuresWriteFor(FEATURE_COMMS_WATCHDOG, 0xFF, 1)[5]).toBe(1);
+  });
+});
+
+describe('the switch for the end of a slave update while a tool is active', () => {
+  it('is the bit 0x02 of the second byte and is off in a frame that does not ask for it', () => {
+    expect(FEATURE_EXT_ALLOW_UPDATE_ACTIVE_ACTUATOR).toBe(0x02);
+    expect(featuresWriteFor(0x00, 0, 3)[5]).toBe(0);
+    expect(featuresWriteFor(FEATURE_COMMS_WATCHDOG, 0, 3)[5]).toBe(0);
+  });
+
+  it('does not depend on the communication watchdog, unlike the host-only switch', () => {
+    expect(featuresWriteFor(0x00, 0x02, 3)[5]).toBe(0x02);
+    expect(featuresWriteFor(0x00, 0x03, 3)[5]).toBe(0x02);
+    expect(featuresWriteFor(FEATURE_COMMS_WATCHDOG, 0x03, 3)[5]).toBe(0x03);
+  });
+
+  it('is never sent to a head that did not say it has it', () => {
+    expect(featuresWriteFor(0x00, 0x02, 1)[5]).toBe(0);
+    expect(featuresWriteFor(0x00, 0x02, 0)).toEqual([...FEATURES_MAGIC, 0x00]);
   });
 });

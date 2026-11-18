@@ -4,7 +4,7 @@ import { Section, Field, inputCls, btnCls, btnPrimaryCls, safeInt } from './shar
 import { ToolCtx } from './ToolPanels';
 import { useConfirmAction } from '../../hooks/useConfirmAction';
 import { downloadBlob } from '../../lib/download';
-import { FEATURES_QUERY_EXTENDED, FEATURE_EXT_WATCHDOG_HOST_ONLY, featuresWriteFor, parseFeaturesAnswer } from '../../lib/featuresMap';
+import { FEATURES_QUERY_EXTENDED, FEATURE_EXT_ALLOW_UPDATE_ACTIVE_ACTUATOR, FEATURE_EXT_WATCHDOG_HOST_ONLY, featuresWriteFor, parseFeaturesAnswer } from '../../lib/featuresMap';
 import { CLEAR_RESULT_KEYS, ERROR_REASON_KEYS, clearErrorCommand, clearErrorNeedsConfirmation, parseClearErrorAnswer } from '../../lib/clearError';
 import { EVIDENCE_KINDS, EVIDENCE_OUTCOMES, EvidenceEntry, evidenceCsv, evidenceRow, parseEvidenceFile, selectEvidence, signatureView, summarizeEvidence } from '../../lib/evidenceHistory';
 import { TRUST_FILE_MAX_BYTES, exportTrustFile, formatTrustStore, importTrustFile, loadTrustText, mergeTrustStore, parseTrustStore, saveTrustText } from '../../lib/trustStore';
@@ -25,7 +25,7 @@ import {
 import { retryUntil } from '../../lib/retryUntil';
 
 // The second byte of the map: it starts with the switch that makes the communication watchdog count only frames of the host side (off by default).
-const FEATURE_EXT_BITS: Array<[number, string]> = [[FEATURE_EXT_WATCHDOG_HOST_ONLY, 'feature_watchdog_host_only']];
+const FEATURE_EXT_BITS: Array<[number, string]> = [[FEATURE_EXT_WATCHDOG_HOST_ONLY, 'feature_watchdog_host_only'], [FEATURE_EXT_ALLOW_UPDATE_ACTIVE_ACTUATOR, 'feature_allow_update_active_actuator']];
 const FEATURE_BITS: Array<[number, string]> = [[1, 'feature_motion_ramps'], [2, 'feature_health_profile'], [4, 'feature_hsi_autotrim'], [8, 'feature_thermal_pid'], [16, 'feature_clear_error'], [32, 'feature_comms_watchdog'], [64, 'feature_magnet_release'], [128, 'feature_estop_follow']];
 
 async function collectFrames(ctx: ToolCtx, requestId: number, data: number[], answerId: number, wanted: number, timeoutMs: number, description: string): Promise<number[][] | null> {
@@ -240,6 +240,7 @@ const FeaturesPanelBody: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   const confirm = useConfirmAction();
   const [mask, setMask] = useState(0);
   const [maskExt, setMaskExt] = useState(0);
+  const [storedExt, setStoredExt] = useState(0);   // what the board keeps: a switch that is already on is not asked about again
   const [supportedExt, setSupportedExt] = useState(0);   // 0 until a head says it has a second byte: an older head is written with the five-byte form
   const [status, setStatus] = useState('');
   const names = (m: number, ext = 0) => [
@@ -252,6 +253,7 @@ const FeaturesPanelBody: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
     if (!answer || !data) { setStatus(t('testerextras.features_no_answer', 'No answer (firmware without these functions)')); return; }
     setMask(data[0] & 0xFF);
     setMaskExt(answer.storedExt);
+    setStoredExt(answer.storedExt);
     setSupportedExt(answer.supportedExt);
     setStatus(t('testerextras.features_status', 'Stored: {{stored}} | In force: {{running}} | Supported: {{supported}}', {
       stored: names(answer.stored, answer.storedExt), running: names(answer.running, answer.runningExt), supported: names(answer.supported, answer.supportedExt),
@@ -260,8 +262,12 @@ const FeaturesPanelBody: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
   const query = async () => { const r = await ctx.request(CAN_ID_FEATURES_RESP, FEATURES_QUERY_EXTENDED, CAN_ID_FEATURES_RESP, 1000, 'Query optional functions'); show(r?.data); };
   const write = async () => {
     if (!(await confirm('program_config'))) return;
+    // the end of a slave update with a tool active is a safety relaxation: switching it ON gets a window of its own, and the decision is written to the frame log
+    const relaxes = supportedExt !== 0 && (maskExt & supportedExt & FEATURE_EXT_ALLOW_UPDATE_ACTIVE_ACTUATOR) !== 0 && (storedExt & FEATURE_EXT_ALLOW_UPDATE_ACTIVE_ACTUATOR) === 0;
+    if (relaxes && !(await confirm('update_active_actuator'))) return;
     // the release policy of the electromagnet belongs to the communication watchdog: without it the bit would do nothing
-    const r = await ctx.request(CAN_ID_SET_FEATURES, featuresWriteFor((mask & 32) !== 0 ? mask : mask & ~64, maskExt, supportedExt), CAN_ID_FEATURES_RESP, 1000, 'Write optional functions');
+    const r = await ctx.request(CAN_ID_SET_FEATURES, featuresWriteFor((mask & 32) !== 0 ? mask : mask & ~64, maskExt, supportedExt), CAN_ID_FEATURES_RESP, 1000,
+      relaxes ? 'Write optional functions (CONFIRMED: the end of a slave update is accepted while a tool is active)' : 'Write optional functions');
     show(r?.data);
   };
   const [clearStatus, setClearStatus] = useState('');

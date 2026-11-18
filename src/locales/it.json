@@ -749,7 +749,8 @@
     "raw_actuator": "L'identificatore 0x{{id}} comanda un attuatore; può muovere, scaldare o attivare.",
     "raw_blocked": "L'identificatore 0x{{id}} viene inviato solo dalla scheda stessa; inviarlo da qui andrebbe in collisione con la scheda e fornirebbe dati falsi agli altri dispositivi del bus.",
     "msg_dev_key": "Questa immagine è firmata con la chiave di sviluppo PUBBLICA. Quella chiave non prova nulla su chi ha creato l'immagine: chiunque può firmare con essa, e solo le schede il cui bootloader è stato compilato con la stessa chiave la accettano. Continuare?",
-    "msg_unsigned_image": "L'immagine {{name}} (sha256 {{sha256}}) non ha una firma di rilascio verificata: nulla prova che il maintainer abbia pubblicato questo file esatto. Se continui, viene inviata alla scheda e questa decisione viene scritta nel registro. Inviarla comunque?"
+    "msg_unsigned_image": "L'immagine {{name}} (sha256 {{sha256}}) non ha una firma di rilascio verificata: nulla prova che il maintainer abbia pubblicato questo file esatto. Se continui, viene inviata alla scheda e questa decisione viene scritta nel registro. Inviarla comunque?",
+    "msg_update_active_actuator": "Questo consente di accettare la fine dell'aggiornamento di una scheda slave anche con un utensile della testina attivo (riscaldatore, motore, laser...). Durante il controllo del record di firma, i controlli di sicurezza della scheda restano sospesi per quasi un secondo. Attivarlo solo se in quel tempo nulla e nessuno può subire danni. Scriverlo comunque sulla scheda?"
   },
   "testerextras": {
     "black_title": "Registratore di guasti (scatola nera, 0x1A8/0x1A9)",

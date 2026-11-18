@@ -749,7 +749,8 @@
     "raw_actuator": "O identificador 0x{{id}} comanda um atuador; pode mover, aquecer ou disparar.",
     "raw_blocked": "O identificador 0x{{id}} só é enviado pela própria placa; enviá-lo daqui colidiria com a placa e daria dados falsos aos outros dispositivos do barramento.",
     "msg_dev_key": "Esta imagem está assinada com a chave de desenvolvimento PÚBLICA. Essa chave não prova quem fez a imagem: qualquer pessoa pode assinar com ela, e só as placas cujo bootloader foi compilado com a mesma chave a aceitam. Continuar?",
-    "msg_unsigned_image": "A imagem {{name}} (sha256 {{sha256}}) não tem uma assinatura de lançamento verificada: nada prova que o mantenedor tenha publicado este ficheiro exato. Se continuar, é enviada para a placa e esta decisão é escrita no registo. Enviá-la mesmo assim?"
+    "msg_unsigned_image": "A imagem {{name}} (sha256 {{sha256}}) não tem uma assinatura de lançamento verificada: nada prova que o mantenedor tenha publicado este ficheiro exato. Se continuar, é enviada para a placa e esta decisão é escrita no registo. Enviá-la mesmo assim?",
+    "msg_update_active_actuator": "Isto permite aceitar o fim da atualização de uma placa escrava mesmo com uma ferramenta da cabeça ativa (aquecedor, motor, laser...). Durante a verificação do registo de assinatura, as verificações de segurança da placa ficam suspensas durante quase um segundo. Só deve ser ativado se, nesse tempo, nada nem ninguém puder sofrer danos. Escrever na placa mesmo assim?"
   },
   "testerextras": {
     "black_title": "Registador de falhas (caixa negra, 0x1A8/0x1A9)",

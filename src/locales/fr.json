@@ -749,7 +749,8 @@
     "raw_actuator": "L'identifiant 0x{{id}} commande un actionneur ; il peut déplacer, chauffer ou déclencher.",
     "raw_blocked": "L'identifiant 0x{{id}} n'est émis que par la carte elle-même ; l'envoyer d'ici entrerait en collision avec la carte et fournirait de fausses données aux autres appareils du bus.",
     "msg_dev_key": "Cette image est signée avec la clé de développement PUBLIQUE. Cette clé ne prouve rien sur l'auteur de l'image : n'importe qui peut signer avec elle, et seules les cartes dont le bootloader a été compilé avec la même clé l'acceptent. Continuer ?",
-    "msg_unsigned_image": "L'image {{name}} (sha256 {{sha256}}) n'a pas de signature de publication vérifiée : rien ne prouve que le mainteneur a publié ce fichier exact. Si vous continuez, elle est envoyée à la carte et cette décision est écrite dans le journal. L'envoyer quand même ?"
+    "msg_unsigned_image": "L'image {{name}} (sha256 {{sha256}}) n'a pas de signature de publication vérifiée : rien ne prouve que le mainteneur a publié ce fichier exact. Si vous continuez, elle est envoyée à la carte et cette décision est écrite dans le journal. L'envoyer quand même ?",
+    "msg_update_active_actuator": "Cela permet d'accepter la fin d'une mise à jour d'une carte esclave même quand un outil de la tête est actif (chauffage, moteur, laser...). Pendant la vérification de l'enregistrement de signature, les contrôles de sécurité de la carte sont suspendus pendant presque une seconde. N'activez cette option que si rien ni personne ne peut être blessé ou endommagé pendant ce temps. L'écrire quand même sur la carte ?"
   },
   "testerextras": {
     "black_title": "Enregistreur de défauts (boîte noire, 0x1A8/0x1A9)",
