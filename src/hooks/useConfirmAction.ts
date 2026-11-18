@@ -16,6 +16,7 @@ const FALLBACK: Record<string, string> = {
   msg_erase_fram: "The saved state of the board (its persisted tool setpoints) will be erased.",
   msg_raw_frame: 'This frame is sent to the board as typed.',
   msg_dev_key: 'This image is signed with the PUBLIC development key. That key proves nothing about who made the image: anyone can sign with it, and only boards whose bootloader was built with the same key accept it. Continue?',
+  msg_unsigned_image: 'The image {{name}} (sha256 {{sha256}}) has no verified release signature: nothing proves that the maintainer published this exact file. If you go on, it is sent to the board and this decision is written to the log. Send it anyway?',
   title_caution: 'Please confirm',
   title_danger: 'Dangerous action',
 };
@@ -27,10 +28,10 @@ const FALLBACK: Record<string, string> = {
  */
 export function useConfirmAction() {
   const { t } = useTranslation();
-  return useCallback(async (kind: ActionKind, options: { value?: number; message?: string } = {}): Promise<boolean> => {
+  return useCallback(async (kind: ActionKind, options: { value?: number; message?: string; params?: Record<string, string | number> } = {}): Promise<boolean> => {
     const risk: Risk | null = confirmationRisk(kind, options.value);
     if (!risk) return true;
-    const message = options.message ?? t(`confirm.msg_${kind}`, FALLBACK[`msg_${kind}`] ?? '', { value: options.value });
+    const message = options.message ?? t(`confirm.msg_${kind}`, FALLBACK[`msg_${kind}`] ?? '', { value: options.value, ...options.params });
     return confirmController.ask({
       risk,
       title: t(`confirm.title_${risk}`, FALLBACK[`title_${risk}`]),

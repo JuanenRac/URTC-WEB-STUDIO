@@ -45,7 +45,7 @@ import { planPreset } from './lib/simPresets';
 import { rawSendPolicy, ActionKind } from './lib/dangerousActions';
 import { planControlSend, runControlSend, confirmPlan, stopFrameFor, canHoldTool } from './lib/controlSandbox';
 import { CutReason, clampHoldSeconds, loadHoldSeconds, saveHoldSeconds } from './lib/controlHeartbeat';
-import { loadRealSend, saveRealSend, loadRequireSignature, saveRequireSignature, signatureRefused } from './lib/sendSettings';
+import { loadRealSend, saveRealSend, loadRequireSignature, saveRequireSignature, loadAllowUnsigned, saveAllowUnsigned, unsignedDecision } from './lib/sendSettings';
 import { useControlSession } from './hooks/useControlSession';
 import { runAllSafeOff } from './lib/safeOff';
 import { downloadBlob } from './lib/download';
@@ -364,6 +364,8 @@ export default function App() {
   const [realSendEnabled, setRealSendEnabled] = useState<boolean>(() => loadRealSend(browserStorage()));
   const [requireSignature, setRequireSignature] = useState<boolean>(() => loadRequireSignature(browserStorage()));
   const handleRealSendEnabled = (value: boolean) => { setRealSendEnabled(value); saveRealSend(browserStorage(), value); };
+  const [allowUnsigned, setAllowUnsigned] = useState<boolean>(() => loadAllowUnsigned(browserStorage()));
+  const handleAllowUnsigned = (value: boolean) => { setAllowUnsigned(value); saveAllowUnsigned(browserStorage(), value); };
   const handleRequireSignature = (value: boolean) => { setRequireSignature(value); saveRequireSignature(browserStorage(), value); };
   const handleHoldSecondsChange = (seconds: number) => {
     const clean = clampHoldSeconds(seconds);
@@ -711,9 +713,24 @@ export default function App() {
         refuse(t('flasher.err_release_signature', 'The release signature of this image is not valid: the file was changed or was not published by the maintainer. Nothing was sent to the board.'));
         return;
       }
-      if (signatureRefused(state, requireSignature)) {
+      const decision = unsignedDecision(state, requireSignature, allowUnsigned);
+      if (decision === 'refuse_required') {
         refuse(t('flasher.err_release_signature_required', 'This image has no verified release signature and the setting that requires one is on. Nothing was sent to the board.'));
         return;
+      }
+      if (decision === 'refuse_not_allowed') {
+        refuse(t('flasher.err_release_signature_not_allowed', 'This image has no verified release signature, and going on without one is not allowed (the setting is off). Nothing was sent to the board.'));
+        return;
+      }
+      if (decision === 'confirm') {
+        // Going on without a release signature needs the person's explicit yes, naming the file and its hash; the answer is written to the log either way.
+        const sha256 = await computeSha256Hex(data.slice().buffer as ArrayBuffer);
+        flasher.appendLog(t('flasher.log_unsigned_warning', 'WARNING: the image {{name}} (sha256 {{sha256}}) has no verified release signature.', { name: fileName, sha256 }));
+        if (!(await confirm('unsigned_image', { params: { name: fileName, sha256 } }))) {
+          flasher.setFlasherState(prev => ({ ...prev, mode: 'idle', statusText: t('flasher.status_update_failed', 'Update failed'), log: [...prev.log, t('flasher.log_unsigned_declined', 'Cancelled: the image {{name}} (sha256 {{sha256}}) has no verified release signature and the confirmation was declined. Nothing was sent to the board.', { name: fileName, sha256 })] }));
+          return;
+        }
+        flasher.appendLog(t('flasher.log_unsigned_confirmed', 'CONFIRMED by the person at this page: the image {{name}} (sha256 {{sha256}}) is sent to the board without a verified release signature.', { name: fileName, sha256 }));
       }
       flasher.appendLog(state === 'signed'
         ? t('flasher.log_release_signature_ok', 'Release signature verified: this exact file was published by the maintainer.')
@@ -1131,6 +1148,8 @@ export default function App() {
             onRequest={serialCan.request}
             requireSignature={requireSignature}
             onRequireSignatureChange={handleRequireSignature}
+            allowUnsigned={allowUnsigned}
+            onAllowUnsignedChange={handleAllowUnsigned}
           />
           </Suspense>
         )}

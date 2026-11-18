@@ -2,5 +2,6 @@
   "power_change_reconfirm_percent": 10,
   "clear_error_confirm": true,
   "real_send_enabled": true,
-  "require_release_signature": false
+  "require_release_signature": false,
+  "allow_unsigned_image": false
 }

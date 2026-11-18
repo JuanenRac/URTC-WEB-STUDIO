@@ -47,6 +47,9 @@ interface FlasherStudioProps {
   /** Refuse an image of the bundle or of a GitHub release that has no verified release signature (off by default). */
   requireSignature?: boolean;
   onRequireSignatureChange?: (value: boolean) => void;
+  /** Let an image of the bundle or of a GitHub release without a verified release signature go on after an explicit confirmation (off by default: it is refused). */
+  allowUnsigned?: boolean;
+  onAllowUnsignedChange?: (value: boolean) => void;
 }
 
 // Generated from the URTC release assets by scripts/sync-firmware.mjs: the same files,
@@ -80,7 +83,9 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
   onSendFrame,
   onRequest,
   requireSignature,
-  onRequireSignatureChange
+  onRequireSignatureChange,
+  allowUnsigned,
+  onAllowUnsignedChange
 }) => {
   const { t } = useTranslation();
   const confirm = useConfirmAction();
@@ -476,6 +481,16 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
                         <div>
                           <span className="font-semibold block text-slate-200">{t('flasher.require_signature_label', 'Require a verified release signature')}</span>
                           <span className="text-[10px] text-slate-500 block leading-tight mt-0.5">{t('flasher.require_signature_sub', 'Off by default. When on, an image of the bundle or of a GitHub release without a verified release signature is refused and nothing is sent to the board. A file from disk is not affected.')}</span>
+                        </div>
+                      </label>
+                    )}
+
+                    {onAllowUnsignedChange && (
+                      <label className="flex items-start gap-2 text-xs cursor-pointer text-slate-300">
+                        <input type="checkbox" data-testid="allow-unsigned" checked={allowUnsigned === true} onChange={(e) => onAllowUnsignedChange(e.target.checked)} className="mt-0.5 accent-amber-500 rounded bg-slate-900 border-slate-700" />
+                        <div>
+                          <span className="font-semibold block text-slate-200">{t('flasher.allow_unsigned_label', 'Allow an image without a release signature, after confirming')}</span>
+                          <span className="text-[10px] text-slate-500 block leading-tight mt-0.5">{t('flasher.allow_unsigned_sub', 'Off by default: an image of the bundle or of a GitHub release without a verified release signature is refused. When on, a window names the file and its sha256 and asks for an explicit yes, and the decision is written to the log. A file from disk is not affected.')}</span>
                         </div>
                       </label>
                     )}
