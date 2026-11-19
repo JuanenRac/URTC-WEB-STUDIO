@@ -910,7 +910,14 @@
     "counters_poll": "Lê-los de novo a cada",
     "counters_poll_off": "nunca",
     "counters_poll_seconds": "{{n}} s",
-    "counters_clear": "Limpar o histórico"
+    "counters_clear": "Limpar o histórico",
+    "estop_timeout_label": "Silêncio do mestre antes de a cabeça parar, em ms (0 = predefinição de 100 ms, caso contrário de 40 a 500):",
+    "estop_timeout_read": "Ler o silêncio do mestre",
+    "estop_timeout_write": "Escrever o silêncio do mestre",
+    "estop_timeout_result": "Silêncio do mestre: em vigor {{running}} ms (0 = inativo), guardado {{stored}} ms (0 = predefinição)",
+    "estop_timeout_invalid": "O silêncio tem de ser 0 ou estar entre {{min}} e {{max}} ms: não foi escrito nada",
+    "estop_timeout_mismatch": "A cabeça não guardou o silêncio pedido (guardado {{stored}} ms): o seu firmware pode ser mais antigo ou ter recusado o valor",
+    "estop_timeout_unsupported": "A cabeça não responde à consulta do silêncio: o seu firmware pode ser mais antigo"
   },
   "selfupdate": {
     "new_available": "Está a ser servida uma versão mais recente do Studio ({{served}}; esta página é a {{built}}). Nada recarrega sozinho: recarregue quando não houver uma gravação nem uma sessão de bancada em curso.",

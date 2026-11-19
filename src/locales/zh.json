@@ -910,7 +910,14 @@
     "counters_poll": "每隔以下时间重新读取",
     "counters_poll_off": "从不",
     "counters_poll_seconds": "{{n}} 秒",
-    "counters_clear": "清除历史"
+    "counters_clear": "清除历史",
+    "estop_timeout_label": "主控静默多久后工具头停止，单位毫秒（0 = 默认 100 毫秒，否则 40 至 500）：",
+    "estop_timeout_read": "读取主控静默时间",
+    "estop_timeout_write": "写入主控静默时间",
+    "estop_timeout_result": "主控静默时间：当前生效 {{running}} 毫秒（0 = 未运行），已保存 {{stored}} 毫秒（0 = 默认）",
+    "estop_timeout_invalid": "静默时间必须为 0 或介于 {{min}} 与 {{max}} 毫秒之间：未写入任何内容",
+    "estop_timeout_mismatch": "工具头未保留所请求的静默时间（已保存 {{stored}} 毫秒）：其固件可能较旧，或已拒绝该值",
+    "estop_timeout_unsupported": "工具头未响应静默时间查询：其固件可能较旧"
   },
   "selfupdate": {
     "new_available": "正在提供更新版本的 Studio（{{served}}；当前页面为 {{built}}）。不会自动刷新：请在没有刷写或台架会话进行时再刷新。",

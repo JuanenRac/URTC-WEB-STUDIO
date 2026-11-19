@@ -1168,6 +1168,7 @@ export default function App() {
         {activeTab === 'tester' && (
           <Suspense fallback={tabFallback}>
           <TesterStudio
+            updateInProgress={['erasing', 'receiving', 'verifying', 'flashing'].includes(flasher.flasherState.mode)}
             boardStatus={boardStatus}
             canFrames={canFrames}
             isConnected={serialCan.isConnected}

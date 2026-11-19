@@ -13,6 +13,8 @@ export interface ToolCtx {
   flushFrames: (id?: number) => void;
   subscribe: (id: number, cb: (f: CanFrame) => void) => () => void;
   isConnected: boolean;
+  /** True while a firmware update runs: what is persistent in the board (the optional functions) is not written then. */
+  writesBlocked?: boolean;
 }
 
 const NoHandlerPanelBody: React.FC<{ name: string }> = ({ name }) => {

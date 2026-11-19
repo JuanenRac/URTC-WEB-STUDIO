@@ -4,7 +4,7 @@ import { Section, Field, inputCls, btnCls, btnPrimaryCls, safeInt } from './shar
 import { ToolCtx } from './ToolPanels';
 import { useConfirmAction } from '../../hooks/useConfirmAction';
 import { downloadBlob } from '../../lib/download';
-import { FEATURES_QUERY_EXTENDED, FEATURE_EXT_ALLOW_UPDATE_ACTIVE_ACTUATOR, FEATURE_EXT_WATCHDOG_HOST_ONLY, featuresWriteFor, parseFeaturesAnswer } from '../../lib/featuresMap';
+import { ESTOP_TIMEOUT_MAX_MS, ESTOP_TIMEOUT_MIN_MS, FEATURES_QUERY_ESTOP_IN_FORCE, FEATURES_QUERY_ESTOP_STORED, FEATURES_QUERY_EXTENDED, FEATURE_EXT_ALLOW_UPDATE_ACTIVE_ACTUATOR, FEATURE_EXT_WATCHDOG_HOST_ONLY, estopTimeoutValid, estopTimeoutWrite, featuresWriteFor, parseEstopTimeoutAnswer, parseFeaturesAnswer } from '../../lib/featuresMap';
 import { CLEAR_RESULT_KEYS, ERROR_REASON_KEYS, clearErrorCommand, clearErrorNeedsConfirmation, parseClearErrorAnswer } from '../../lib/clearError';
 import { EVIDENCE_KINDS, EVIDENCE_OUTCOMES, EvidenceEntry, evidenceCsv, evidenceRow, parseEvidenceFile, selectEvidence, signatureView, summarizeEvidence } from '../../lib/evidenceHistory';
 import { TRUST_FILE_MAX_BYTES, exportTrustFile, formatTrustStore, importTrustFile, loadTrustText, mergeTrustStore, parseTrustStore, saveTrustText } from '../../lib/trustStore';
@@ -270,6 +270,29 @@ const FeaturesPanelBody: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
       relaxes ? 'Write optional functions (CONFIRMED: the end of a slave update is accepted while a tool is active)' : 'Write optional functions');
     show(r?.data);
   };
+  // The silence of the master of the emergency stop: read with the queries 3 and 4, written with the eight-byte form after the usual confirmation. Nothing is
+  // written for a value outside the limits, while a firmware update is in progress or to a head that does not answer the query of its stored state.
+  const [timeoutText, setTimeoutText] = useState('');
+  const [timeoutStatus, setTimeoutStatus] = useState('');
+  const readTimeout = async () => {
+    const stored = parseEstopTimeoutAnswer((await ctx.request(CAN_ID_FEATURES_RESP, FEATURES_QUERY_ESTOP_STORED, CAN_ID_FEATURES_RESP, 1000, 'Query the silence of the master (stored)'))?.data);
+    if (!stored) { setTimeoutStatus(t('testerextras.estop_timeout_unsupported')); return null; }
+    const running = parseEstopTimeoutAnswer((await ctx.request(CAN_ID_FEATURES_RESP, FEATURES_QUERY_ESTOP_IN_FORCE, CAN_ID_FEATURES_RESP, 1000, 'Query the silence of the master (in force)'))?.data);
+    setTimeoutStatus(t('testerextras.estop_timeout_result', { running: running ? running.timeoutMs : '?', stored: stored.timeoutMs }));
+    return stored;
+  };
+  const writeTimeout = async () => {
+    const ms = timeoutText.trim() === '' ? 0 : Number(timeoutText);
+    if (!estopTimeoutValid(ms)) { setTimeoutStatus(t('testerextras.estop_timeout_invalid', { min: ESTOP_TIMEOUT_MIN_MS, max: ESTOP_TIMEOUT_MAX_MS })); return; }
+    if (ctx.writesBlocked) return;
+    if (!(await confirm('program_config'))) return;
+    const before = parseEstopTimeoutAnswer((await ctx.request(CAN_ID_FEATURES_RESP, FEATURES_QUERY_ESTOP_STORED, CAN_ID_FEATURES_RESP, 1000, 'Query the silence of the master (stored)'))?.data);
+    if (!before) { setTimeoutStatus(t('testerextras.estop_timeout_unsupported')); return; }
+    const after = parseEstopTimeoutAnswer((await ctx.request(CAN_ID_SET_FEATURES, estopTimeoutWrite(before.stored, before.storedExt, ms), CAN_ID_FEATURES_RESP, 1000, 'Write the silence of the master'))?.data);
+    if (!after) { setTimeoutStatus(t('testerextras.features_no_answer', 'No answer (firmware without these functions)')); return; }
+    if (after.timeoutMs !== ms) { setTimeoutStatus(t('testerextras.estop_timeout_mismatch', { stored: after.timeoutMs })); return; }
+    await readTimeout();
+  };
   const [clearStatus, setClearStatus] = useState('');
   const clearError = async () => {
     if (clearErrorNeedsConfirmation() && !(await confirm('motion', { message: t('testerextras.clear_error_confirm', 'The board lifts its error. Make sure the cause is gone and that nothing near the tool can move, heat up or fire.') }))) return;
@@ -304,6 +327,15 @@ const FeaturesPanelBody: React.FC<{ ctx: ToolCtx }> = ({ ctx }) => {
         <button className={btnCls} onClick={clearError} disabled={!ctx.isConnected}>{t('testerextras.clear_error_button', 'Clear error')}</button>
       </div>
       {status && <div className="text-xs text-slate-300 font-mono">{status}</div>}
+      <div className="flex flex-wrap items-center gap-3 my-3" data-testid="estop-timeout">
+        <label className="text-xs text-slate-300">{t('testerextras.estop_timeout_label')}
+          <input type="number" min={0} max={ESTOP_TIMEOUT_MAX_MS} step={1} value={timeoutText} placeholder="0" onChange={(e) => setTimeoutText(e.target.value)}
+            className={`${inputCls} w-24 ml-2`} data-testid="estop-timeout-input" />
+        </label>
+        <button className={btnCls} onClick={readTimeout} disabled={!ctx.isConnected} data-testid="estop-timeout-read">{t('testerextras.estop_timeout_read')}</button>
+        <button className={btnPrimaryCls} onClick={writeTimeout} disabled={!ctx.isConnected || ctx.writesBlocked === true} data-testid="estop-timeout-write">{t('testerextras.estop_timeout_write')}</button>
+      </div>
+      {timeoutStatus && <div className="text-xs text-slate-300 font-mono" data-testid="estop-timeout-status">{timeoutStatus}</div>}
       {clearStatus && <div className="text-xs text-slate-300 font-mono whitespace-pre-line" data-testid="clear-error-status">{clearStatus}</div>}
     </Section>
   );
