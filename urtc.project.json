@@ -2,8 +2,8 @@
   "schema_version": "1.0",
   "ecosystem": "URTC",
   "name": "URTC-WEB-STUDIO",
-  "version": "0.5.2",
-  "min_common": "0.2.9",
+  "version": "0.5.3",
+  "min_common": "0.3.0",
   "role": "ui",
   "stack": "node",
   "technologies": [

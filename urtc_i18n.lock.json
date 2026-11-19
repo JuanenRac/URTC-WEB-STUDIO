@@ -1,6 +1,6 @@
 {
   "format": 1,
-  "urtc_common_version": "0.2.9",
+  "urtc_common_version": "0.3.0",
   "catalog": "spec/i18n/catalog/web-studio.json",
   "catalog_sha256": "8f60ee8ba68219cc01c37687fd89b13a8f9ea65c80a1c386bab0f99121d0c600",
   "files": {
