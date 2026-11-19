@@ -25,13 +25,15 @@ interface TesterStudioProps {
   onFlushFrames: ToolCtx['flushFrames'];
   subscribe: (id: number, cb: (f: CanFrame) => void) => () => void;
   subscribeAll: (cb: (f: CanFrame) => void) => () => void;
+  /** True while a firmware update runs: the persistent settings of the board are not written then. */
+  updateInProgress?: boolean;
 }
 
 type SubTab = 'tool' | 'global' | 'expansion' | 'fram' | 'blackbox' | 'features' | 'rack' | 'evidence' | 'traces' | 'thermal' | 'selftest' | 'bus' | 'custom';
 
 export const TesterStudio: React.FC<TesterStudioProps> = ({
   boardStatus, canFrames, isConnected,
-  onSendFrame, onWaitForFrame, onRequest, onFlushFrames, subscribe, subscribeAll
+  onSendFrame, onWaitForFrame, onRequest, onFlushFrames, subscribe, subscribeAll, updateInProgress = false
 }) => {
   const { t } = useTranslation();
   const [subTab, setSubTab] = useState<SubTab>('tool');
@@ -40,8 +42,8 @@ export const TesterStudio: React.FC<TesterStudioProps> = ({
 
   // One stable context: panels list it as an effect dependency, so a new object on every render would unsubscribe and resubscribe them all each time a frame arrives.
   const ctx: ToolCtx = useMemo(() => ({
-    sendFrame: onSendFrame, waitForFrame: onWaitForFrame, request: onRequest, flushFrames: onFlushFrames, subscribe, isConnected
-  }), [onSendFrame, onWaitForFrame, onRequest, onFlushFrames, subscribe, isConnected]);
+    sendFrame: onSendFrame, waitForFrame: onWaitForFrame, request: onRequest, flushFrames: onFlushFrames, subscribe, isConnected, writesBlocked: updateInProgress
+  }), [onSendFrame, onWaitForFrame, onRequest, onFlushFrames, subscribe, isConnected, updateInProgress]);
 
   // The tool whose panel is shown is the one the board itself reported.
   const toolId = isConnected ? boardStatus.toolId : null;

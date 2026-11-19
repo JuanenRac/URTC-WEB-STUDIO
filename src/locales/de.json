@@ -910,7 +910,14 @@
     "counters_poll": "Erneut lesen alle",
     "counters_poll_off": "nie",
     "counters_poll_seconds": "{{n}} s",
-    "counters_clear": "Verlauf löschen"
+    "counters_clear": "Verlauf löschen",
+    "estop_timeout_label": "Schweigen des Masters, bevor der Kopf stoppt, in ms (0 = Standard 100 ms, sonst 40 bis 500):",
+    "estop_timeout_read": "Schweigen des Masters lesen",
+    "estop_timeout_write": "Schweigen des Masters schreiben",
+    "estop_timeout_result": "Schweigen des Masters: wirksam {{running}} ms (0 = läuft nicht), gespeichert {{stored}} ms (0 = Standard)",
+    "estop_timeout_invalid": "Das Schweigen muss 0 sein oder zwischen {{min}} und {{max}} ms liegen: es wurde nichts geschrieben",
+    "estop_timeout_mismatch": "Der Kopf hat das gewünschte Schweigen nicht übernommen (gespeichert {{stored}} ms): Seine Firmware ist möglicherweise älter oder hat den Wert abgelehnt",
+    "estop_timeout_unsupported": "Der Kopf beantwortet die Abfrage des Schweigens nicht: Seine Firmware ist möglicherweise älter"
   },
   "selfupdate": {
     "new_available": "Eine neuere Version des Studios wird ausgeliefert ({{served}}; diese Seite ist {{built}}). Nichts lädt von selbst neu: Laden Sie neu, wenn kein Flashvorgang und keine Bench-Sitzung läuft.",

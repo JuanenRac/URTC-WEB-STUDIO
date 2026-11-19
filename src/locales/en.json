@@ -910,7 +910,14 @@
     "counters_poll": "Read them again every",
     "counters_poll_off": "never",
     "counters_poll_seconds": "{{n}} s",
-    "counters_clear": "Clear the history"
+    "counters_clear": "Clear the history",
+    "estop_timeout_label": "Silence of the master before the head stops, in ms (0 = default 100 ms, otherwise 40 to 500):",
+    "estop_timeout_read": "Read the silence of the master",
+    "estop_timeout_write": "Write the silence of the master",
+    "estop_timeout_result": "Silence of the master: in force {{running}} ms (0 = not running), stored {{stored}} ms (0 = default)",
+    "estop_timeout_invalid": "The silence must be 0 or between {{min}} and {{max}} ms: nothing was written",
+    "estop_timeout_mismatch": "The head did not keep the silence that was asked for (stored {{stored}} ms): its firmware may be older or have refused the value",
+    "estop_timeout_unsupported": "The head does not answer the silence query: its firmware may be older"
   },
   "selfupdate": {
     "new_available": "A newer version of the Studio is being served ({{served}}; this page is {{built}}). Nothing reloads by itself: reload when no flash or bench session is running.",

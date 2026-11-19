@@ -910,7 +910,14 @@
     "counters_poll": "Rileggili ogni",
     "counters_poll_off": "mai",
     "counters_poll_seconds": "{{n}} s",
-    "counters_clear": "Cancella lo storico"
+    "counters_clear": "Cancella lo storico",
+    "estop_timeout_label": "Silenzio del master prima che la testa si fermi, in ms (0 = predefinito 100 ms, altrimenti da 40 a 500):",
+    "estop_timeout_read": "Leggi il silenzio del master",
+    "estop_timeout_write": "Scrivi il silenzio del master",
+    "estop_timeout_result": "Silenzio del master: in vigore {{running}} ms (0 = non attivo), memorizzato {{stored}} ms (0 = predefinito)",
+    "estop_timeout_invalid": "Il silenzio deve essere 0 o compreso tra {{min}} e {{max}} ms: non è stato scritto nulla",
+    "estop_timeout_mismatch": "La testa non ha mantenuto il silenzio richiesto (memorizzato {{stored}} ms): il suo firmware potrebbe essere più vecchio o aver rifiutato il valore",
+    "estop_timeout_unsupported": "La testa non risponde alla richiesta del silenzio: il suo firmware potrebbe essere più vecchio"
   },
   "selfupdate": {
     "new_available": "Viene servita una versione più recente dello Studio ({{served}}; questa pagina è la {{built}}). Niente si ricarica da solo: ricarica quando non c'è un flash o una sessione di banco in corso.",

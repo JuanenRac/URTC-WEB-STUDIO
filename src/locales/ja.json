@@ -910,7 +910,14 @@
     "counters_poll": "再読み取りの間隔",
     "counters_poll_off": "しない",
     "counters_poll_seconds": "{{n}} 秒",
-    "counters_clear": "履歴を消去"
+    "counters_clear": "履歴を消去",
+    "estop_timeout_label": "ヘッドが停止するまでのマスターの無通信時間（ms）（0 = 既定の100 ms、それ以外は40～500）：",
+    "estop_timeout_read": "マスターの無通信時間を読み取る",
+    "estop_timeout_write": "マスターの無通信時間を書き込む",
+    "estop_timeout_result": "マスターの無通信時間：有効 {{running}} ms（0 = 動作していない）、保存値 {{stored}} ms（0 = 既定）",
+    "estop_timeout_invalid": "無通信時間は0、または{{min}}～{{max}} msでなければなりません：何も書き込まれませんでした",
+    "estop_timeout_mismatch": "ヘッドは要求された無通信時間を保持しませんでした（保存値 {{stored}} ms）：ファームウェアが古いか、値が拒否された可能性があります",
+    "estop_timeout_unsupported": "ヘッドは無通信時間の問い合わせに応答しません：ファームウェアが古い可能性があります"
   },
   "selfupdate": {
     "new_available": "より新しいバージョンの Studio が配信されています（{{served}}。このページは {{built}}）。自動では再読み込みされません。書き込みやベンチ作業の最中でないときに再読み込みしてください。",
