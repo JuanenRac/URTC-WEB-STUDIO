@@ -39,6 +39,8 @@ test('the pictures of the README', async ({ page }) => {
     ],
   });
   await page.addInitScript(() => { try { window.localStorage.setItem('i18nextLng', 'en'); } catch { /* storage blocked */ } });
+  // nothing is asked of GitHub: the pictures show the Studio alone, not what the newest release was on the day they were taken
+  await page.route(/^https:\/\/[a-z.-]*github(usercontent)?\.com\//, (route) => route.abort());
   await page.goto('/');
   await connectBoard(page);
 
