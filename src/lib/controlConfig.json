@@ -3,5 +3,6 @@
   "clear_error_confirm": true,
   "real_send_enabled": true,
   "require_release_signature": false,
-  "allow_unsigned_image": false
+  "allow_unsigned_image": false,
+  "version_rule_query": false
 }

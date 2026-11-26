@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The page can read how a main bootloader treats an image without a patch number (off by default):** with `version_rule_query` set to true in `controlConfig.json` the flasher asks a bootloader that is about to be updated and writes the rule to the log. With it false, the default, nothing is sent. The page changes nothing in the board and a bootloader without the feature answers nothing. Not tried on a board.
+
 - **The tester panel of the optional functions reads and writes the silence of the master of the emergency stop:** a field for the milliseconds (empty or 0 for the default of 100 ms, otherwise 40 to 500) with a button that reads the silence in force and the stored one (queries 3 and 4 of `0x1AF`, answered with eight bytes) and a button that writes it with the eight-byte form of `0x1AE` after the usual confirmation. The head is asked for its stored state first and its switches of both bytes are carried over; a value outside the limits is refused before anything is sent, nothing is written while a firmware update runs or to a head that does not answer the new form, and a head that does not keep the value is reported. The texts are in the eight languages and the generated tables follow the current common library, with the lowest silence of 40 ms.
 
 
