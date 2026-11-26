@@ -19,6 +19,7 @@ import {
 import { dataChunkData, endUpdateData, hmacChunkData, recordChunkData, RECORD_CHUNK_COUNT, RECORD_SIZE, startUpdateData } from '../lib/flashFrames';
 import { imageKeyId, precheckOutcome } from '../lib/signingKeyCheck';
 import { compareWithRotation, minutesLeft, queryKeyRotation } from '../lib/keyRotation';
+import { queryVersionRule, versionRuleQueryEnabled } from '../lib/versionRule';
 import { queryMainVersion, querySlaveVersion, querySlaveApplicationVersion, BoardVersionInfo, SlaveVersionInfo, SlaveAppVersionInfo } from '../lib/boardVersion';
 import { CAN_ID_ERASE_FRAM, CAN_ID_FRAM_STATE_RESP, ERASE_FRAM_MAGIC, VERIFY_FAIL_CODES } from '../lib/canIds';
 
@@ -182,6 +183,19 @@ export function useFlasher(serialCan: SerialCanBus) {
         boardKeyId = info?.bootKeyId;   // only a bootloader gives one
       } catch {
         boardKeyId = undefined;
+      }
+      // Off unless controlConfig.json asks for it: how this bootloader reads an image without a patch number. Read only; silence is not reported.
+      if (boardIsBootloader && versionRuleQueryEnabled()) {
+        try {
+          const rule = await queryVersionRule(serialCan);
+          if (rule?.mode === 'accept_patchless') {
+            appendLog(t('flasher.log_version_rule_accept', 'The bootloader accepts an image without a patch number (stored in the board, counter {{counter}}).', { counter: rule.counter }));
+          } else if (rule) {
+            appendLog(t('flasher.log_version_rule_strict', 'The bootloader reads an image without a patch number as patch 0.'));
+          }
+        } catch {
+          // an unreadable rule changes nothing in the transfer
+        }
       }
       // During a rotation of the signing key the bootloader trusts two keys: both are shown, and the image matches if it names either of them.
       let rotationVerdict = null as ReturnType<typeof compareWithRotation>;
