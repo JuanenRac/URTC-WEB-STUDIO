@@ -303,6 +303,7 @@
     "browsed_manifest_found": "Manifest selected: {{name}}",
     "browsed_manifest_hint": "To use the published signature, select the .bin together with its .bin.manifest.json (Ctrl-click).",
     "err_manifest_unreadable": "The selected manifest is not valid JSON.",
+    "err_published_unreadable": "{{name}} is next to the image but cannot be read, so the image cannot be checked: nothing was sent. Download the image and its files again, or remove {{name}} only if you know where the image comes from.",
     "error_github_download_blocked": "The browser could not download this file from GitHub (release files are served from a host that does not allow downloads from a web page). Download it from the release page, then pick it with Browse together with its .manifest.json, or use the bundled image.",
     "log_patch_declared": "The bootloader accepts the patch number: declaring version {{version}}.",
     "log_patch_not_declared": "The bootloader does not announce patch support: declaring the version without the patch.",

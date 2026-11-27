@@ -303,6 +303,7 @@
     "browsed_manifest_found": "選択されたマニフェスト：{{name}}",
     "browsed_manifest_hint": "公開された署名を使うには、.bin とその .bin.manifest.json を一緒に選択してください（Ctrl キーを押しながらクリック）。",
     "err_manifest_unreadable": "選択されたマニフェストは有効な JSON ではありません。",
+    "err_published_unreadable": "{{name}} はイメージの隣にありますが読み取れないため、イメージを検証できません。何も送信していません。イメージとそのファイルをもう一度ダウンロードするか、イメージの入手元が分かっている場合に限り {{name}} を削除してください。",
     "error_github_download_blocked": "ブラウザーはこのファイルを GitHub からダウンロードできませんでした（リリースのファイルは、Web ページからのダウンロードを許可しないホストから配信されます）。リリースのページからダウンロードし、.manifest.json と一緒に「参照」で選択するか、同梱のイメージを使用してください。",
     "log_patch_declared": "ブートローダーはパッチ番号に対応しています：バージョン {{version}} を通知します。",
     "log_patch_not_declared": "ブートローダーはパッチ対応を通知していません：パッチなしのバージョンを通知します。",

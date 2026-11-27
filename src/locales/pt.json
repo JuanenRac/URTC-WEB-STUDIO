@@ -303,6 +303,7 @@
     "browsed_manifest_found": "Manifesto selecionado: {{name}}",
     "browsed_manifest_hint": "Para usar a assinatura publicada, selecione o .bin em conjunto com o seu .bin.manifest.json (Ctrl + clique).",
     "err_manifest_unreadable": "O manifesto selecionado não é um JSON válido.",
+    "err_published_unreadable": "{{name}} está junto à imagem mas não pode ser lido, por isso a imagem não pode ser verificada: nada foi enviado. Transfira novamente a imagem e os respetivos ficheiros, ou remova {{name}} apenas se souber de onde vem a imagem.",
     "error_github_download_blocked": "O navegador não conseguiu transferir este ficheiro do GitHub (os ficheiros de uma release são servidos a partir de um anfitrião que não permite transferências a partir de uma página web). Transfira-o da página da release e selecione-o com Procurar em conjunto com o seu .manifest.json, ou use a imagem incluída.",
     "log_patch_declared": "O bootloader aceita o número de patch: a declarar a versão {{version}}.",
     "log_patch_not_declared": "O bootloader não anuncia suporte de patch: a declarar a versão sem o patch.",

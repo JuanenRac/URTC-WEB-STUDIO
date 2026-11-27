@@ -303,6 +303,7 @@
     "browsed_manifest_found": "Manifiesto seleccionado: {{name}}",
     "browsed_manifest_hint": "Para usar la firma publicada, selecciona el .bin junto con su .bin.manifest.json (Ctrl + clic).",
     "err_manifest_unreadable": "El manifiesto seleccionado no es un JSON válido.",
+    "err_published_unreadable": "{{name}} está junto a la imagen pero no se puede leer, así que la imagen no se puede comprobar: no se ha enviado nada. Vuelva a descargar la imagen y sus ficheros, o quite {{name}} solo si sabe de dónde procede la imagen.",
     "error_github_download_blocked": "El navegador no pudo descargar este archivo de GitHub (los archivos de una release se sirven desde un host que no permite descargas desde una página web). Descárgalo desde la página de la release y selecciónalo con Examinar junto con su .manifest.json, o usa la imagen incluida.",
     "log_patch_declared": "El bootloader acepta el número de parche: se declara la versión {{version}}.",
     "log_patch_not_declared": "El bootloader no anuncia soporte de parche: se declara la versión sin el parche.",
