@@ -4,6 +4,8 @@ export interface KeepaliveLoop {
   send: () => void | Promise<void>;
   onFailure?: () => void;
   off?: () => void | Promise<void>;
+  /** Told once, after the "off" action: true when it went out. */
+  onOffDone?: (sent: boolean) => void;
 }
 
 /**
@@ -28,11 +30,14 @@ export function startKeepaliveLoop(intervalMs: number, loop: () => KeepaliveLoop
   const runOff = async () => {
     if (offDone) return;
     offDone = true;
+    let sent = true;
     try {
       await loop().off?.();
     } catch (e) {
+      sent = false;
       console.error("Switching off failed:", e);
     }
+    loop().onOffDone?.(sent);
   };
 
   const unregister = loop().off ? registerSafeOff(runOff) : () => {};

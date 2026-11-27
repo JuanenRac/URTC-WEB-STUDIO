@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Lizenz-GPL%203.0-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-1857-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1860-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
@@ -31,7 +31,7 @@
 
 ---
 
-> **Stand von Sicherheit (Safety) und Security:** Dieses Ökosystem ist kein zertifiziertes Sicherheitssystem, und es existiert noch keine bestückte URTC-Platine. Der Bootloader der Hauptplatine prüft einen Ed25519-Eintrag des Images (`<image>.imgsig`) gegen eine Tabelle öffentlicher Schlüssel und hält kein Geheimnis, und der Bootloader des Erweiterungs-Slaves prüft ein einfaches SHA-256 und installiert nur ein Image, das die Hauptplatine bestätigt; die Tabelle des offiziellen Builds ist leer, bis der Schlüssel zum Signieren der Images erzeugt ist, und ein Bench-Build vertraut einem öffentlichen Entwicklungsschlüssel, sodass jeder ein Image erzeugen kann, das ein solcher Bootloader akzeptiert; an eine echte Platine wurde noch nichts gesendet. Lesen Sie die [Sicherheitsbasis](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md) und das [Bedrohungsmodell](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md), bevor Sie sich bei der Sicherheit einer Person auf eine Aussage in diesem Repository verlassen.
+> **Stand von Sicherheit (Safety) und Security:** Dieses Ökosystem ist kein zertifiziertes Sicherheitssystem, und es existiert noch keine bestückte URTC-Platine. Der Bootloader der Hauptplatine prüft einen Ed25519-Eintrag des Images (`<image>.imgsig`) gegen eine Tabelle öffentlicher Schlüssel und hält kein Geheimnis, und der Bootloader des Erweiterungs-Slaves prüft ein einfaches SHA-256 und installiert nur ein Image, das die Hauptplatine bestätigt; die Tabelle des offiziellen Builds enthält die öffentlichen Image-Signaturschlüssel der Releases, und ein Bench-Build vertraut einem öffentlichen Entwicklungsschlüssel, sodass jeder ein Image erzeugen kann, das ein solcher Bootloader akzeptiert; an eine echte Platine wurde noch nichts gesendet. Lesen Sie die [Sicherheitsbasis](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md) und das [Bedrohungsmodell](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md), bevor Sie sich bei der Sicherheit einer Person auf eine Aussage in diesem Repository verlassen.
 
 ## 📋 Auf einen Blick
 
@@ -39,7 +39,7 @@
 |---|---|
 | Version | `0.5.4` |
 | Reifegrad | Funktionsfähig |
-| Tests | 1857 (`npm test`) |
+| Tests | 1860 (`npm test`) |
 | Technik | Web Serial API / TypeScript |
 | Ziel | Ein Webbrowser auf dem PC des Benutzers |
 | Auf echter Hardware | Nur simuliert: gegen Emulatoren, Attrappen oder Simulatoren getestet; für diese Version ist kein Lauf auf echter Hardware vermerkt |
@@ -431,7 +431,7 @@ Welche Versionen der URTC-Programme zusammenarbeiten und welche Protokollversion
 
 ## 🧪 Tests
 
-`npm test` (Vitest) führt 1857 Tests der reinen Logik aus: SLCAN-Parsing, Zuordnung von Anfragen und Antworten, Prüfungen von Firmware-Images und Manifesten, Release-Signaturen, Werkzeuggrenzen, Bestätigungen, die Regeln, die den Simulator vom echten Bus trennen, Trace-Export und -Wiedergabe, die Knotenauswahl, den Rack-Simulator, die gespeicherte Sitzungsaufzeichnung, die Offline-Kopie, die Firmware-Synchronisierung und die acht Oberflächensprachen. `npm run lint` prüft die Typen des Quelltexts, und `npm run test:e2e` führt 25 End-to-End-Prüfungen in einem echten Chromium gegen einen modellierten Adapter und eine modellierte Platine aus (`npm run test:coverage` fügt eine Abdeckungsschwelle hinzu). Die Bildschirme und der Web-Serial-Transport haben keine eigenen Unit-Tests; die End-to-End-Prüfungen steuern sie an. Nichts davon lief gegen einen echten Adapter oder eine echte Platine.
+`npm test` (Vitest) führt 1860 Tests der reinen Logik aus: SLCAN-Parsing, Zuordnung von Anfragen und Antworten, Prüfungen von Firmware-Images und Manifesten, Release-Signaturen, Werkzeuggrenzen, Bestätigungen, die Regeln, die den Simulator vom echten Bus trennen, Trace-Export und -Wiedergabe, die Knotenauswahl, den Rack-Simulator, die gespeicherte Sitzungsaufzeichnung, die Offline-Kopie, die Firmware-Synchronisierung und die acht Oberflächensprachen. `npm run lint` prüft die Typen des Quelltexts, und `npm run test:e2e` führt 25 End-to-End-Prüfungen in einem echten Chromium gegen einen modellierten Adapter und eine modellierte Platine aus (`npm run test:coverage` fügt eine Abdeckungsschwelle hinzu). Die Bildschirme und der Web-Serial-Transport haben keine eigenen Unit-Tests; die End-to-End-Prüfungen steuern sie an. Nichts davon lief gegen einen echten Adapter oder eine echte Platine.
 
 ## 🏗️ Build und Veröffentlichung
 

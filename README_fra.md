@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Licence-GPL%203.0-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-1857-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1860-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
@@ -31,7 +31,7 @@
 
 ---
 
-> **État de la sûreté et de la cybersécurité :** cet écosystème n'est pas un système de sécurité certifié et aucune carte URTC assemblée n'existe encore. Le bootloader de la carte principale vérifie un enregistrement Ed25519 de l'image (`<image>.imgsig`) par rapport à une table de clés publiques et ne détient aucun secret, et celui de l'esclave d'extension contrôle un simple SHA-256 et n'installe qu'une image que la carte principale confirme ; la table de la compilation officielle est vide tant que la clé de signature des images n'est pas créée, et un compilation de banc fait confiance à une clé publique de développement, si bien que n'importe qui peut produire une image qu'un tel bootloader accepte ; rien n'a été transmis à une carte réelle. Lisez la [base de sécurité](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md) et le [modèle de menaces](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md) avant de vous fier à une affirmation de ce dépôt quant à la sécurité d'une personne.
+> **État de la sûreté et de la cybersécurité :** cet écosystème n'est pas un système de sécurité certifié et aucune carte URTC assemblée n'existe encore. Le bootloader de la carte principale vérifie un enregistrement Ed25519 de l'image (`<image>.imgsig`) par rapport à une table de clés publiques et ne détient aucun secret, et celui de l'esclave d'extension contrôle un simple SHA-256 et n'installe qu'une image que la carte principale confirme ; la table de la compilation officielle contient les clés publiques de signature d'images des versions, et une compilation de banc fait confiance à une clé publique de développement, si bien que n'importe qui peut produire une image qu'un tel bootloader accepte ; rien n'a été transmis à une carte réelle. Lisez la [base de sécurité](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md) et le [modèle de menaces](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md) avant de vous fier à une affirmation de ce dépôt quant à la sécurité d'une personne.
 
 ## 📋 En un coup d'œil
 
@@ -39,7 +39,7 @@
 |---|---|
 | Version | `0.5.4` |
 | Maturité | Fonctionnel |
-| Tests | 1857 (`npm test`) |
+| Tests | 1860 (`npm test`) |
 | Technologie | Web Serial API / TypeScript |
 | Cible | Un navigateur web sur le PC de l'utilisateur |
 | Sur matériel réel | Simulé seulement : testé avec des émulateurs, des doubles de test ou des simulateurs ; aucune exécution sur du matériel réel n'est consignée pour cette version |
@@ -423,7 +423,7 @@ Les versions des programmes URTC qui fonctionnent ensemble, et la version du pro
 
 ## 🧪 Tests
 
-`npm test` (Vitest) exécute 1857 tests de la logique pure : analyse SLCAN, appariement des requêtes et réponses, contrôles des images de firmware et des manifestes, signatures de release, limites d'outil, confirmations, les règles qui séparent le simulateur du vrai bus, export et relecture de traces, le sélecteur de nœuds, le simulateur de râtelier, l'enregistrement de session sauvegardé, la copie hors ligne, la synchronisation du firmware et les huit langues de l'interface. `npm run lint` vérifie les types du code et `npm run test:e2e` exécute 25 contrôles de bout en bout dans un vrai Chromium face à un adaptateur et une carte modélisés (`npm run test:coverage` ajoute un plancher de couverture). Les écrans et le transport Web Serial n'ont pas de tests unitaires propres ; les contrôles de bout en bout les pilotent. Rien de tout cela n'a tourné contre un vrai adaptateur ou une vraie carte.
+`npm test` (Vitest) exécute 1860 tests de la logique pure : analyse SLCAN, appariement des requêtes et réponses, contrôles des images de firmware et des manifestes, signatures de release, limites d'outil, confirmations, les règles qui séparent le simulateur du vrai bus, export et relecture de traces, le sélecteur de nœuds, le simulateur de râtelier, l'enregistrement de session sauvegardé, la copie hors ligne, la synchronisation du firmware et les huit langues de l'interface. `npm run lint` vérifie les types du code et `npm run test:e2e` exécute 25 contrôles de bout en bout dans un vrai Chromium face à un adaptateur et une carte modélisés (`npm run test:coverage` ajoute un plancher de couverture). Les écrans et le transport Web Serial n'ont pas de tests unitaires propres ; les contrôles de bout en bout les pilotent. Rien de tout cela n'a tourné contre un vrai adaptateur ou une vraie carte.
 
 ## 🏗️ Compilation et publication
 

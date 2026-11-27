@@ -14,8 +14,8 @@ export interface ControlSessionOptions {
   /** Real sending is on (the Control tab always sends for real with a board connected). */
   allowed: boolean;
   send: Send;
-  /** Called once when something that was running ends, with why. */
-  onEnd: (reason: CutReason) => void;
+  /** Called once when something that was running ends, with why; `offSent` resolves to whether its off frame went out. */
+  onEnd: (reason: CutReason, offSent: Promise<boolean>) => void;
 }
 
 /**
@@ -45,8 +45,8 @@ export function useControlSession(options: ControlSessionOptions) {
       heartbeat.current = null;
       running.stop(reason);               // sends the off frame and tells onEnd
     } else if (once) {
-      void Promise.resolve().then(() => latest.current.send(once.id, once.offData)).catch(() => undefined);
-      latest.current.onEnd(reason);
+      const offSent = Promise.resolve().then(() => latest.current.send(once.id, once.offData)).then(() => true, () => false);
+      latest.current.onEnd(reason, offSent);
     }
     setHolding(false);
     setActive(false);
@@ -62,8 +62,9 @@ export function useControlSession(options: ControlSessionOptions) {
     if (!once) return;
     disarm();
     single.current = null;
-    try { await latest.current.send(once.id, once.offData); } catch { /* the port may already be gone */ }
-    latest.current.onEnd('stop');
+    let sent = true;
+    try { await latest.current.send(once.id, once.offData); } catch { sent = false; /* the port may already be gone */ }
+    latest.current.onEnd('stop', Promise.resolve(sent));
     setHolding(false);
     setActive(false);
   }, [cut, disarm]);
@@ -86,11 +87,11 @@ export function useControlSession(options: ControlSessionOptions) {
       send: () => latest.current.send(frame.id, frame.data),
       off: () => latest.current.send(frame.id, frame.offData),
       durationMs: seconds * 1000,
-      onEnd: (reason) => {
+      onEnd: (reason, offSent) => {
         heartbeat.current = null;
         setHolding(false);
         setActive(false);
-        latest.current.onEnd(reason);
+        latest.current.onEnd(reason, offSent);
       },
     });
     arm();

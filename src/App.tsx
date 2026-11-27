@@ -48,6 +48,7 @@ import { planControlSend, runControlSend, confirmPlan, stopFrameFor, canHoldTool
 import { CutReason, clampHoldSeconds, loadHoldSeconds, saveHoldSeconds } from './lib/controlHeartbeat';
 import { loadRealSend, saveRealSend, loadRequireSignature, saveRequireSignature, loadAllowUnsigned, saveAllowUnsigned, unsignedDecision } from './lib/sendSettings';
 import { useControlSession } from './hooks/useControlSession';
+import { cutMessage, stopMessage } from './lib/controlCutMessage';
 import { runAllSafeOff } from './lib/safeOff';
 import { downloadBlob } from './lib/download';
 
@@ -375,12 +376,17 @@ export default function App() {
   };
   // What a tool of the Control tab keeps on is cut at once (STOP, the time, focus, the tab, the connection, the switch, the page): see hooks/useControlSession.ts.
   const sendControlFrame = (id: number, data: number[]) => serialCan.sendFrame(id, data, 'Sent from the Control tab');
+  // The STOP button says itself what happened, once every off frame is known to have gone out or not.
+  const stopButtonRef = useRef<{ sessionOff: Promise<boolean> | null } | null>(null);
   const controlSession = useControlSession({
     connected: serialCan.isConnected, tabActive: activeTab === 'control', allowed: realSendEnabled, send: sendControlFrame,
-    onEnd: (reason: CutReason) => {
+    onEnd: (reason: CutReason, offSent: Promise<boolean>) => {
       activePowerRef.current = {};
-      if (reason === 'switch' || reason === 'unmount') return;
-      setRealSendMessage(t(`toolcatalog.real_cut_${reason}`, 'Switched off: {{reason}}. The off frame was sent.', { reason }));
+      if (stopButtonRef.current) { stopButtonRef.current.sessionOff = offSent; return; }
+      void offSent.then((sent) => {
+        const message = cutMessage(reason, sent);
+        if (message) setRealSendMessage(t(message.key, message.fallback, { reason }));
+      });
     },
   });
   const controlPlan = () => planControlSend({
@@ -402,13 +408,17 @@ export default function App() {
     setRealSendMessage(t('toolcatalog.real_held', 'Holding {{value}}: refreshed every 100 ms for {{seconds}} s. It ends on STOP, when the time is up, when the window loses focus, when you leave this tab or when the connection is lost.', { value: plan.value, seconds: holdSeconds }));
   };
   const handleRealStop = async () => {
-    controlSession.stop();
+    const pressed: { sessionOff: Promise<boolean> | null } = { sessionOff: null };
+    stopButtonRef.current = pressed;
+    try { controlSession.stop(); } finally { stopButtonRef.current = null; }
     activePowerRef.current = {};
     const stop = stopFrameFor(activeToolId);
+    let ownOff: boolean | null = null;
     if (stop && serialCan.isConnected) {
-      try { await sendControlFrame(stop.id, stop.data); } catch (error) { console.error(error); }
+      try { await sendControlFrame(stop.id, stop.data); ownOff = true; } catch (error) { ownOff = false; console.error(error); }
     }
-    setRealSendMessage(t('toolcatalog.real_cut_stop', 'Switched off: {{reason}}. The off frame was sent.', { reason: 'stop' }));
+    const message = stopMessage(pressed.sessionOff ? await pressed.sessionOff : null, ownOff);
+    setRealSendMessage(t(message.key, message.fallback, { reason: 'stop' }));
   };
   const handleRealSetpointSend = async () => {
     const plan = controlPlan();

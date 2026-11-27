@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-1857-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1860-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
@@ -31,7 +31,7 @@
 
 ---
 
-> **Estado de segurança (safety e security):** este ecossistema não é um sistema de segurança certificado e ainda não existe nenhuma placa URTC montada. O bootloader da placa principal verifica um registo Ed25519 da imagem (`<image>.imgsig`) contra uma tabela de chaves públicas e não guarda nenhum segredo, e o bootloader do escravo de expansão verifica um SHA-256 simples e só instala uma imagem que a placa principal confirma; a tabela da compilação oficial está vazia até a chave de assinatura de imagens ser criada, e uma compilação de bancada confia numa chave pública de desenvolvimento, pelo que qualquer pessoa pode produzir uma imagem que um bootloader assim aceita; nada foi transmitido a uma placa real. Leia a [base de segurança](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md) e o [modelo de ameaças](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md) antes de confiar em qualquer afirmação deste repositório sobre a segurança de uma pessoa.
+> **Estado de segurança (safety e security):** este ecossistema não é um sistema de segurança certificado e ainda não existe nenhuma placa URTC montada. O bootloader da placa principal verifica um registo Ed25519 da imagem (`<image>.imgsig`) contra uma tabela de chaves públicas e não guarda nenhum segredo, e o bootloader do escravo de expansão verifica um SHA-256 simples e só instala uma imagem que a placa principal confirma; a tabela da compilação oficial contém as chaves públicas de assinatura de imagens das versões, e uma compilação de bancada confia numa chave pública de desenvolvimento, pelo que qualquer pessoa pode produzir uma imagem que um bootloader assim aceita; nada foi transmitido a uma placa real. Leia a [base de segurança](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md) e o [modelo de ameaças](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md) antes de confiar em qualquer afirmação deste repositório sobre a segurança de uma pessoa.
 
 ## 📋 Num relance
 
@@ -39,7 +39,7 @@
 |---|---|
 | Versão | `0.5.4` |
 | Maturidade | Funcional |
-| Testes | 1857 (`npm test`) |
+| Testes | 1860 (`npm test`) |
 | Tecnologia | Web Serial API / TypeScript |
 | Destino | Um navegador web no PC do utilizador |
 | Em hardware real | Só simulado: testado com emuladores, dublês de teste ou simuladores; não há registo de execução em hardware real para esta versão |
@@ -415,7 +415,7 @@ As versões dos programas URTC que funcionam em conjunto, e a versão do protoco
 
 ## 🧪 Testes
 
-`npm test` (Vitest) executa 1857 testes da lógica pura: análise de SLCAN, emparelhamento de pedidos e respostas, verificações de imagens de firmware e manifestos, assinaturas de release, limites de ferramenta, confirmações, as regras que separam o simulador do barramento real, exportação e reprodução de traços, o seletor de nós, o simulador do rack, o registo de sessão guardado, a cópia offline, a sincronização do firmware e os oito idiomas da interface. `npm run lint` verifica os tipos do código e `npm run test:e2e` executa 25 verificações de ponta a ponta num Chromium real contra um adaptador e uma placa modelados (`npm run test:coverage` acrescenta um mínimo de cobertura). Os ecrãs e o transporte Web Serial não têm testes unitários próprios; as verificações de ponta a ponta comandam-nos. Nada disto correu contra um adaptador ou uma placa reais.
+`npm test` (Vitest) executa 1860 testes da lógica pura: análise de SLCAN, emparelhamento de pedidos e respostas, verificações de imagens de firmware e manifestos, assinaturas de release, limites de ferramenta, confirmações, as regras que separam o simulador do barramento real, exportação e reprodução de traços, o seletor de nós, o simulador do rack, o registo de sessão guardado, a cópia offline, a sincronização do firmware e os oito idiomas da interface. `npm run lint` verifica os tipos do código e `npm run test:e2e` executa 25 verificações de ponta a ponta num Chromium real contra um adaptador e uma placa modelados (`npm run test:coverage` acrescenta um mínimo de cobertura). Os ecrãs e o transporte Web Serial não têm testes unitários próprios; as verificações de ponta a ponta comandam-nos. Nada disto correu contra um adaptador ou uma placa reais.
 
 ## 🏗️ Compilação e publicação
 

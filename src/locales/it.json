@@ -90,6 +90,8 @@
     "real_cut_tab": "Spento: hai lasciato la scheda Control. Il frame di spegnimento è stato inviato.",
     "real_cut_connection": "Spento: la connessione è andata persa. Il frame di spegnimento non ha potuto essere inviato; il firmware ferma l'utensile con il proprio timeout.",
     "real_cut_expired": "Spento: il tempo di mantenimento è scaduto. Il frame di spegnimento è stato inviato; conferma di nuovo per mantenere ancora.",
+    "real_off_not_sent": "Non è stato possibile inviare il frame di spegnimento. Nulla conferma che l'utensile sia spento: il firmware lo interrompe con il proprio timeout, e l'arresto fisico è la via sicura.",
+    "real_stop_nothing_sent": "È stato premuto STOP. Nessun frame di spegnimento è stato inviato: non c'è alcuna scheda collegata o questo utensile non ha un frame di spegnimento in questa scheda dell'interfaccia.",
     "real_second_laser": "SECONDA CONFERMA. Il laser verrà armato e sparerà ora al {{value}} %. L'area è libera e la protezione degli occhi è indossata? STOP resta visibile.",
     "real_second_drill": "SECONDA CONFERMA. Il trapano girerà ora a {{value}} giri/min. È tutto lontano dall'utensile? STOP resta visibile.",
     "pin_mapping_title": "Mappatura Pin & Segnali Hardware",

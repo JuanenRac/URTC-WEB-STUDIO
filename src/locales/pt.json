@@ -90,6 +90,8 @@
     "real_cut_tab": "Desligado: o separador Control foi abandonado. A trama de desligar foi enviada.",
     "real_cut_connection": "Desligado: a ligação perdeu-se. A trama de desligar não pôde ser enviada; o firmware corta a ferramenta pelo seu próprio tempo limite.",
     "real_cut_expired": "Desligado: o tempo de manutenção acabou. A trama de desligar foi enviada; confirme de novo para voltar a manter.",
+    "real_off_not_sent": "Não foi possível enviar a trama de desligar. Nada confirma que a ferramenta esteja desligada: o firmware corta-a pelo seu próprio tempo limite, e a paragem física é o caminho seguro.",
+    "real_stop_nothing_sent": "STOP foi premido. Nenhuma trama de desligar foi enviada: não há nenhuma placa ligada ou esta ferramenta não tem trama de desligar neste separador.",
     "real_second_laser": "SEGUNDA CONFIRMAÇÃO. O laser vai ser armado e disparar agora a {{value}} %. A zona está livre e a proteção ocular colocada? PARAGEM continua visível.",
     "real_second_drill": "SEGUNDA CONFIRMAÇÃO. O berbequim vai rodar agora a {{value}} RPM. Está tudo afastado da ferramenta? PARAGEM continua visível.",
     "pin_mapping_title": "Mapeamento de Pinos e Sinais de Hardware",

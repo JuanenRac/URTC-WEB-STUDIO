@@ -39,7 +39,8 @@ export interface HeartbeatOptions {
   off: () => unknown | Promise<unknown>;
   durationMs: number;
   intervalMs?: number;
-  onEnd: (reason: CutReason) => void;
+  /** `offSent` resolves to whether the frame that switches the tool off went out. */
+  onEnd: (reason: CutReason, offSent: Promise<boolean>) => void;
 }
 
 /** Sends at once and then every interval, for at most `durationMs`. A refresh that fails ends it as a lost connection. */
@@ -47,19 +48,22 @@ export function startHeartbeat(options: HeartbeatOptions): Heartbeat {
   let running = true;
   let timer: ReturnType<typeof setTimeout> | undefined;
   let stopLoop: () => void = () => undefined;
+  let offDone: (sent: boolean) => void = () => undefined;
+  const offSent = new Promise<boolean>((resolve) => { offDone = resolve; });
 
   const end = (reason: CutReason) => {
     if (!running) return;
     running = false;
     if (timer !== undefined) clearTimeout(timer);
     stopLoop();
-    options.onEnd(reason);
+    options.onEnd(reason, offSent);
   };
 
   stopLoop = startKeepaliveLoop(options.intervalMs ?? HEARTBEAT_INTERVAL_MS, () => ({
     send: async () => { await options.send(); },
     off: async () => { await options.off(); },
     onFailure: () => end('connection'),
+    onOffDone: offDone,
   }));
   timer = setTimeout(() => end('expired'), options.durationMs);
   return { get running() { return running; }, stop: end };
