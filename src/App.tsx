@@ -25,10 +25,11 @@ import { useFlasher } from './hooks/useFlasher';
 import { useConfirmAction } from './hooks/useConfirmAction';
 import {
   THIS_HARDWARE_ID, SLAVE_HARDWARE_ID, APP_MAX_SIZE, SLAVE_APP_MAX_SIZE,
-  parseManifest, FirmwareManifest, compareVersions, formatVersion, computeSha256Hex
+  FirmwareManifest, compareVersions, formatVersion, computeSha256Hex
 } from './lib/flasher';
 import { BoardVersionInfo, SlaveVersionInfo, SlaveAppVersionInfo, installedVersion } from './lib/boardVersion';
 import { RemoteFirmware, downloadAsset, downloadAssetText, digestMismatch, GithubReleaseError } from './lib/githubRelease';
+import { readPublishedManifest, requireReadableSidecar, UnreadablePublishedFile } from './lib/publishedFiles';
 import { resolveSignature } from './lib/firmwareSignature';
 import { parseImgsig } from './lib/flashFrames';
 import { checkReleaseSignature } from './lib/releaseSignature';
@@ -524,18 +525,28 @@ export default function App() {
   // sidecar among the release assets (a failed download is an error there: going on
   // without it would ask for a signing key instead of using the published signature);
   // a bundled image has it next to it in /firmware/; a browser-picked File has none.
+  const unreadableText = (name: string) => t('flasher.err_published_unreadable', '{{name}} is next to the image but cannot be read, so the image cannot be checked: nothing was sent. Download the image and its files again, or remove {{name}} only if you know where the image comes from.', { name });
+
   const tryFetchManifest = async (fileName: string, remote?: RemoteFirmware): Promise<FirmwareManifest | null> => {
+    let text: string;
     try {
       if (remote) {
         if (!remote.manifest) return null;
-        return parseManifest(JSON.parse(await downloadAssetText(fetch, remote.manifest)));
+        text = await downloadAssetText(fetch, remote.manifest);
+      } else {
+        const res = await fetch(`${import.meta.env.BASE_URL}firmware/${fileName}.manifest.json`);
+        // A server that answers a missing file with its start page has no manifest.
+        if (!res.ok || (res.headers.get('content-type') ?? '').includes('text/html')) return null;
+        text = await res.text();
       }
-      const res = await fetch(`${import.meta.env.BASE_URL}firmware/${fileName}.manifest.json`);
-      if (!res.ok) return null;
-      return parseManifest(await res.json());
     } catch {
       if (remote) throw new Error(t('flasher.err_manifest_download', 'The manifest of this image could not be downloaded from the GitHub release.'));
       return null;
+    }
+    try {
+      return readPublishedManifest(text);
+    } catch {
+      throw new Error(unreadableText(`${fileName}.manifest.json`));
     }
   };
 
@@ -660,9 +671,11 @@ export default function App() {
     let manifest: FirmwareManifest | null = null;
     if (fileObj && manifestFile) {
       try {
-        manifest = parseManifest(JSON.parse(await manifestFile.text()));
-      } catch {
-        refuse(t('flasher.err_manifest_unreadable', 'The selected manifest is not valid JSON.'));
+        const text = (await manifestFile.text()).replace(/^\uFEFF/, '');
+        JSON.parse(text);
+        manifest = readPublishedManifest(text);
+      } catch (e) {
+        refuse(e instanceof UnreadablePublishedFile ? unreadableText(manifestFile.name) : t('flasher.err_manifest_unreadable', 'The selected manifest is not valid JSON.'));
         return;
       }
     } else if (!fileObj) {
@@ -678,6 +691,12 @@ export default function App() {
       let sidecarText: string | null = null;
       if (remote.sha256) {
         try { sidecarText = await downloadAssetText(fetch, remote.sha256); } catch { refuse(t('flasher.err_manifest_download', 'The manifest of this image could not be downloaded from the GitHub release.')); return; }
+      }
+      try {
+        requireReadableSidecar(sidecarText);
+      } catch {
+        refuse(unreadableText(`${fileName}.sha256`));
+        return;
       }
       const expected = digestMismatch(await computeSha256Hex(data.slice().buffer as ArrayBuffer), sidecarText, remote.asset.digest);
       if (expected) {

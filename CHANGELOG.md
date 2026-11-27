@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **A published file that cannot be read stops the flash:** a `.sha256` of a GitHub release that holds no digest was ignored, and a manifest that was not a JSON object, held a `sha256` that was not a digest or (for a bundled image) was not valid JSON was taken as if there were none. The update is now refused before anything is sent, with a message that names the file, in the eight languages.
+
 ## [0.5.4] - Busy bus adapter, emergency stop master silence and version rule query
 
 - **No frame of the serial adapter is thrown away on a busy bus or after a refused command:** a read larger than the limit of an unfinished line was discarded with every complete frame in it, and a frame that arrived behind the bell of a refused command was skipped. An identifier above 0x7FF is no longer taken as a frame.

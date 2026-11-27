@@ -303,6 +303,7 @@
     "browsed_manifest_found": "Manifesto selezionato: {{name}}",
     "browsed_manifest_hint": "Per usare la firma pubblicata, seleziona il .bin insieme al suo .bin.manifest.json (Ctrl + clic).",
     "err_manifest_unreadable": "Il manifesto selezionato non è un JSON valido.",
+    "err_published_unreadable": "{{name}} è accanto all'immagine ma non può essere letto, quindi l'immagine non può essere verificata: non è stato inviato nulla. Scaricate di nuovo l'immagine e i suoi file, oppure rimuovete {{name}} solo se sapete da dove proviene l'immagine.",
     "error_github_download_blocked": "Il browser non è riuscito a scaricare questo file da GitHub (i file di una release sono serviti da un host che non consente download da una pagina web). Scaricalo dalla pagina della release, poi selezionalo con Sfoglia insieme al suo .manifest.json, oppure usa l'immagine inclusa.",
     "log_patch_declared": "Il bootloader accetta il numero di patch: viene dichiarata la versione {{version}}.",
     "log_patch_not_declared": "Il bootloader non annuncia il supporto della patch: la versione viene dichiarata senza patch.",
