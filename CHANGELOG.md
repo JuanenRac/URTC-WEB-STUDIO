@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+## [0.5.5] - Honest STOP message, failed sends for malformed frames and refusal of unreadable published files
+
 - **STOP of the Control tab no longer says that the off frame went out when it did not:** the message now follows the result of every off frame (the one of what was kept on and the one of the active tool), and says so when nothing was sent. The same holds when the tab, the focus or the time end a held setpoint. Texts in the eight languages.
 
 - **A malformed CAN frame is a failed send:** an identifier, length or byte outside the limits showed the banner and returned as if the frame had left; it now fails, like a send without a connection.
