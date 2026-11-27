@@ -37,7 +37,7 @@
 
 | | |
 |---|---|
-| Version | `0.5.3` |
+| Version | `0.5.4` |
 | Maturité | Fonctionnel |
 | Tests | 1811 (`npm test`) |
 | Technologie | Web Serial API / TypeScript |
