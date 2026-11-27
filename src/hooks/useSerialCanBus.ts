@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CanFrame } from '../types';
 import { CAN_ID_QUERY_VERSION, CAN_ID_VERSION_RESPONSE, CAN_ID_BOOTLOADER_VERSION_RESPONSE } from '../lib/flasher';
-import { parseSlcanLine } from '../lib/slcan';
+import { parseSlcanLine, splitSlcanBuffer } from '../lib/slcan';
 import { FrameRouter } from '../lib/frameRouter';
 import { AUTO_RATE, BusDetectIo, chosenRate, detectBusRate, openAtBusRate, passiveIdentifiers } from '../lib/busDetect';
 
@@ -399,10 +399,6 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
           if (value) {
             const chunk = decoder.decode(value, { stream: true });
             rxBufferRef.current += chunk;
-            if (rxBufferRef.current.length > MAX_RX_BUFFER_CHARS) {
-              console.warn('SLCAN rx buffer exceeded max size without a frame terminator - resetting (adapter desync or non-SLCAN data on the port).');
-              rxBufferRef.current = '';
-            }
             processBuffer();
           }
         }
@@ -425,11 +421,12 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
   };
 
   const processBuffer = () => {
-    const lines = rxBufferRef.current.split('\r');
-    if (lines.length > 1) {
-      for (let i = 0; i < lines.length - 1; i++) {
-        const line = lines[i];
-        if (line.startsWith('t') && line.length >= 5) {
+    const { lines, rest, overflowed } = splitSlcanBuffer(rxBufferRef.current, MAX_RX_BUFFER_CHARS);
+    rxBufferRef.current = rest;
+    if (overflowed) console.warn('SLCAN rx buffer exceeded max size without a frame terminator - resetting (adapter desync or non-SLCAN data on the port).');
+    if (lines.length > 0) {
+      for (const line of lines) {
+        if (/^[\u0007\n]*t/.test(line) && line.length >= 5) {
           try {
             // A malformed or truncated SLCAN line used to be accepted here:
             // DLC 9..F produced a non-CAN frame and short/non-hex payloads
@@ -461,7 +458,6 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
           }
         }
       }
-      rxBufferRef.current = lines[lines.length - 1]; // Keep remainder
     }
   };
 

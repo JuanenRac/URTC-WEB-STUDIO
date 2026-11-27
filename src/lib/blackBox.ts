@@ -134,6 +134,7 @@ function recordFromRows(rows: Array<Record<string, unknown>>): BlackBoxRecord {
   if (rows.length > BLACK_BOX_SAMPLES) throw new BlackBoxError(`a record holds at most ${BLACK_BOX_SAMPLES} samples, this one has ${rows.length}`);
   const samples = rows.map((row, i): BlackBoxSample => {
     const where = `sample ${i}`;
+    if (!row || typeof row !== 'object' || Array.isArray(row)) throw new BlackBoxError(`${where} is not an object`);
     const fault = intOf(row.thermal_fault, 3, `${where}: thermal_fault`);
     const error = intOf(row.system_error, 1, `${where}: system_error`);
     const endstop = intOf(row.endstop, 1, `${where}: endstop`);

@@ -42,7 +42,8 @@ const SLCAN_T_FRAME_RE = /^t([0-9a-fA-F]{3})([0-8])([0-9a-fA-F]*)$/;
 // device may append after the payload is ignored, matching the
 // pre-extraction behavior.
 export function parseSlcanLine(line: string): ParsedSlcanFrame | null {
-  const match = SLCAN_T_FRAME_RE.exec(line);
+  // An adapter answers a refused command with a bell and no line end, so it arrives in front of the next frame.
+  const match = SLCAN_T_FRAME_RE.exec(line.replace(/^[\u0007\n]+/, ''));
   if (!match) return null;
 
   const idHex = match[1];
@@ -51,6 +52,7 @@ export function parseSlcanLine(line: string): ParsedSlcanFrame | null {
   if (dataHexStr.length !== dlc * 2) return null;
 
   const id = Number.parseInt(idHex, 16);
+  if (id > 0x7ff) return null; // three digits can say more than a standard identifier holds
   const data: number[] = [];
   for (let j = 0; j < dlc * 2; j += 2) {
     data.push(Number.parseInt(dataHexStr.substring(j, j + 2), 16));
@@ -63,4 +65,15 @@ export function parseSlcanLine(line: string): ParsedSlcanFrame | null {
     data,
     dataHex: data.map((b) => b.toString(16).padStart(2, '0').toUpperCase()).join(' '),
   };
+}
+
+/**
+ * Splits what arrived from the adapter into the complete lines and the unfinished rest. The limit is for the rest only: a large
+ * read of a busy bus loses nothing, while noise without a line end does not grow for the life of the connection.
+ */
+export function splitSlcanBuffer(buffer: string, maxRest: number): { lines: string[]; rest: string; overflowed: boolean } {
+  const lines = buffer.split('\r');
+  const rest = lines.pop() ?? '';
+  const overflowed = rest.length > maxRest;
+  return { lines, rest: overflowed ? '' : rest, overflowed };
 }
