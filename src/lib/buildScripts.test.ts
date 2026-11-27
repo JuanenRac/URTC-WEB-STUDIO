@@ -16,3 +16,11 @@ describe("the build scripts leave the version alone", () => {
     });
   }
 });
+
+describe("the change log", () => {
+  it("has one Unreleased heading, above every release", () => {
+    const headings = readFileSync(resolve(__dirname, "../..", "CHANGELOG.md"), "utf8").split(/\r?\n/).filter(line => line.startsWith("## "));
+    const unreleased = headings.map((line, index) => (line.startsWith("## [Unreleased]") ? index : -1)).filter(index => index >= 0);
+    expect(unreleased).toEqual([0]);
+  });
+});

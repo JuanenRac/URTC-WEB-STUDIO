@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The change log has one "Unreleased" heading:** a second, empty one was left between two releases; a test now allows only the first.
+
 - **A published file that cannot be read stops the flash:** a `.sha256` of a GitHub release that holds no digest was ignored, and a manifest that was not a JSON object, held a `sha256` that was not a digest or (for a bundled image) was not valid JSON was taken as if there were none. The update is now refused before anything is sent, with a message that names the file, in the eight languages.
 
 ## [0.5.4] - Busy bus adapter, emergency stop master silence and version rule query
@@ -86,8 +88,6 @@ All notable changes to this project are documented here.
 - **Flasher Studio reads the header inside the image before it sends a frame:** an image built with the header slot sealed states its board, version, length and CRC-32 inside the file; the page refuses an image for another board, a version that differs from the file name, a length or CRC-32 that does not match, a header nobody sealed and a stamped `.urimg` file, and logs the identity it read. The reading is `src/lib/imageHeader.ts`, held to the same vectors as the Python reference and the C header.
 
 - **The "Image header" selector is the compatibility switch for an image without the header:** accept, accept with a warning (the default) or require a header; the choice is remembered in this browser only, and a header that is there is always checked. The texts are in the eight languages.
-
-## [Unreleased]
 
 ## [0.5.0] - The Spanish texts say "grabar" and "velocidad de bus": the calques "flashear", "flasheo" and "bitrate" are replaced in the window, the guide, the Spanish README and the shared sections, with the gender of the sentence... (and 4 more changes)
 
