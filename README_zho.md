@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-1857-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1860-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
@@ -31,7 +31,7 @@
 
 ---
 
-> **安全与安防现状：**本生态系统不是经认证的安全系统，目前也不存在已组装的 URTC 板卡。主板的引导程序用公钥表校验镜像的 Ed25519 记录（`<image>.imgsig`），自身不保存任何机密；扩展从机的引导程序只检查普通 SHA-256，并且只安装主板确认过的镜像；正式构建的公钥表在创建镜像签名密钥之前为空，而台架构建信任一把公开的开发密钥，因此任何人都可以生成这类引导程序接受的镜像；尚未向任何真实板卡发送过任何内容。在依赖此处任何说法来保障人身安全之前，请先阅读[安全基线](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md)和[威胁模型](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md)。
+> **安全与安防现状：**本生态系统不是经认证的安全系统，目前也不存在已组装的 URTC 板卡。主板的引导程序用公钥表校验镜像的 Ed25519 记录（`<image>.imgsig`），自身不保存任何机密；扩展从机的引导程序只检查普通 SHA-256，并且只安装主板确认过的镜像；正式构建的公钥表中是发布用的镜像签名公钥，而台架构建信任一把公开的开发密钥，因此任何人都可以生成这类引导程序接受的镜像；尚未向任何真实板卡发送过任何内容。在依赖此处任何说法来保障人身安全之前，请先阅读[安全基线](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md)和[威胁模型](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md)。
 
 ## 📋 速览
 
@@ -39,7 +39,7 @@
 |---|---|
 | 版本 | `0.5.4` |
 | 成熟度 | 可用 |
-| 测试 | 1857 (`npm test`) |
+| 测试 | 1860 (`npm test`) |
 | 技术栈 | Web Serial API / TypeScript |
 | 目标 | 使用者电脑上的网页浏览器 |
 | 真实硬件 | 仅模拟：使用模拟器、替身或仿真测试；此版本没有在真实硬件上运行的记录 |
@@ -380,7 +380,7 @@ npm run preview
 
 ## 🧪 测试
 
-`npm test`（Vitest）运行 1857 个纯逻辑测试：SLCAN 解析、请求与应答的匹配、固件镜像和清单检查、发布签名、工具限值、确认、把模拟器与真实总线分开的规则、轨迹的导出和回放、节点选择器、机架模拟器、保存的会话记录、离线副本、固件同步以及八种界面语言。`npm run lint` 检查源码类型，`npm run test:e2e` 在真实的 Chromium 中针对建模的适配器和板卡运行 25 个端到端检查（`npm run test:coverage` 增加覆盖率下限）。界面和 Web Serial 传输没有自己的单元测试，由端到端检查来驱动它们。这一切都没有针对真实的适配器或板卡运行过。
+`npm test`（Vitest）运行 1860 个纯逻辑测试：SLCAN 解析、请求与应答的匹配、固件镜像和清单检查、发布签名、工具限值、确认、把模拟器与真实总线分开的规则、轨迹的导出和回放、节点选择器、机架模拟器、保存的会话记录、离线副本、固件同步以及八种界面语言。`npm run lint` 检查源码类型，`npm run test:e2e` 在真实的 Chromium 中针对建模的适配器和板卡运行 25 个端到端检查（`npm run test:coverage` 增加覆盖率下限）。界面和 Web Serial 传输没有自己的单元测试，由端到端检查来驱动它们。这一切都没有针对真实的适配器或板卡运行过。
 
 ## 🏗️ 构建与发布
 

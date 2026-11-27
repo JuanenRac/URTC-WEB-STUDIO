@@ -4,6 +4,12 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **STOP of the Control tab no longer says that the off frame went out when it did not:** the message now follows the result of every off frame (the one of what was kept on and the one of the active tool), and says so when nothing was sent. The same holds when the tab, the focus or the time end a held setpoint. Texts in the eight languages.
+
+- **A malformed CAN frame is a failed send:** an identifier, length or byte outside the limits showed the banner and returned as if the frame had left; it now fails, like a send without a connection.
+
+- **The README files say that the official trust table of the bootloaders holds the release keys:** they still said it was empty.
+
 - **The change log has one "Unreleased" heading:** a second, empty one was left between two releases; a test now allows only the first.
 
 - **A published file that cannot be read stops the flash:** a `.sha256` of a GitHub release that holds no digest was ignored, and a manifest that was not a JSON object, held a `sha256` that was not a digest or (for a bundled image) was not valid JSON was taken as if there were none. The update is now refused before anything is sent, with a message that names the file, in the eight languages.

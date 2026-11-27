@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/Licenza-GPL%203.0-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-1857-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1860-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
@@ -31,7 +31,7 @@
 
 ---
 
-> **Stato di sicurezza (safety e security):** questo ecosistema non è un sistema di sicurezza certificato e non esiste ancora alcuna scheda URTC assemblata. Il bootloader della scheda principale verifica un record Ed25519 dell'immagine (`<immagine>.imgsig`) rispetto a una tabella di chiavi pubbliche e non custodisce alcun segreto, e quello dello slave di espansione controlla un semplice SHA-256 e installa solo un'immagine che la scheda principale conferma; la tabella della build ufficiale è vuota finché non viene creata la chiave di firma delle immagini, e una build di banco si fida di una chiave pubblica di sviluppo, quindi chiunque può produrre un'immagine che un bootloader del genere accetta; nulla è stato trasmesso a una scheda reale. Leggi la [base di sicurezza](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md) e il [modello delle minacce](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md) prima di fidarti di qualsiasi affermazione qui per la sicurezza di una persona.
+> **Stato di sicurezza (safety e security):** questo ecosistema non è un sistema di sicurezza certificato e non esiste ancora alcuna scheda URTC assemblata. Il bootloader della scheda principale verifica un record Ed25519 dell'immagine (`<immagine>.imgsig`) rispetto a una tabella di chiavi pubbliche e non custodisce alcun segreto, e quello dello slave di espansione controlla un semplice SHA-256 e installa solo un'immagine che la scheda principale conferma; la tabella della build ufficiale contiene le chiavi pubbliche di firma delle immagini delle release, e una build di banco si fida di una chiave pubblica di sviluppo, quindi chiunque può produrre un'immagine che un bootloader del genere accetta; nulla è stato trasmesso a una scheda reale. Leggi la [base di sicurezza](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md) e il [modello delle minacce](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md) prima di fidarti di qualsiasi affermazione qui per la sicurezza di una persona.
 
 ## 📋 In breve
 
@@ -39,7 +39,7 @@
 |---|---|
 | Versione | `0.5.4` |
 | Maturità | Funzionale |
-| Test | 1857 (`npm test`) |
+| Test | 1860 (`npm test`) |
 | Tecnologia | Web Serial API / TypeScript |
 | Destinazione | Un browser web sul PC dell'utente |
 | Su hardware reale | Solo simulato: provato con emulatori, test double o simulatori; per questa versione non risulta alcuna esecuzione su hardware reale |
@@ -418,7 +418,7 @@ Quali versioni dei programmi URTC funzionano insieme, e quale versione del proto
 
 ## 🧪 Test
 
-`npm test` (Vitest) esegue 1857 test della logica pura: parsing SLCAN, abbinamento di richieste e risposte, controlli di immagini firmware e manifesti, firme di release, limiti degli utensili, conferme, le regole che separano il simulatore dal bus reale, esportazione e riproduzione di tracce, il selettore dei nodi, il simulatore del rack, la registrazione di sessione salvata, la copia offline, la sincronizzazione del firmware e le otto lingue dell'interfaccia. `npm run lint` controlla i tipi del codice e `npm run test:e2e` esegue 25 controlli end-to-end in un vero Chromium contro un adattatore e una scheda modellati (`npm run test:coverage` aggiunge una soglia di copertura). Le schermate e il trasporto Web Serial non hanno test unitari propri; i controlli end-to-end li pilotano. Niente di tutto questo è girato contro un vero adattatore o una vera scheda.
+`npm test` (Vitest) esegue 1860 test della logica pura: parsing SLCAN, abbinamento di richieste e risposte, controlli di immagini firmware e manifesti, firme di release, limiti degli utensili, conferme, le regole che separano il simulatore dal bus reale, esportazione e riproduzione di tracce, il selettore dei nodi, il simulatore del rack, la registrazione di sessione salvata, la copia offline, la sincronizzazione del firmware e le otto lingue dell'interfaccia. `npm run lint` controlla i tipi del codice e `npm run test:e2e` esegue 25 controlli end-to-end in un vero Chromium contro un adattatore e una scheda modellati (`npm run test:coverage` aggiunge una soglia di copertura). Le schermate e il trasporto Web Serial non hanno test unitari propri; i controlli end-to-end li pilotano. Niente di tutto questo è girato contro un vero adattatore o una vera scheda.
 
 ## 🏗️ Compilazione e rilascio
 

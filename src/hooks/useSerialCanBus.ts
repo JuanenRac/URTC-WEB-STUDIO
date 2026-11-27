@@ -334,8 +334,10 @@ export function useSerialCanBus(onFrameReceived: (frame: CanFrame) => void) {
       invalidReason = 'every payload value must be an integer from 0x00 to 0xFF';
     }
     if (invalidReason) {
-      setSendError(t('hooks.invalid_frame', 'Refusing malformed CAN frame: {{reason}}', { reason: invalidReason }));
-      return;
+      // It fails like a send without a connection: a caller must never take a refused frame for a sent one.
+      const message = t('hooks.invalid_frame', 'Refusing malformed CAN frame: {{reason}}', { reason: invalidReason });
+      setSendError(message);
+      throw new Error(message);
     }
 
     try {

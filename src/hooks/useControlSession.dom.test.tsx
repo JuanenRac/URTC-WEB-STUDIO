@@ -176,3 +176,28 @@ describe('the global switch-off (STOP ALL, disconnecting) reaches what the Contr
     expect(activeSafeOffCount()).toBe(before);
   });
 });
+
+describe('whether the off frame went out is told, not assumed', () => {
+  async function ended(fail: boolean, held: boolean) {
+    const results: boolean[] = [];
+    const send = vi.fn(async (_id: number, data: number[]) => { if (fail && data[0] === 0) throw new Error('port closed'); });
+    const hook = renderHook(() => useControlSession({
+      connected: true, tabActive: true, allowed: true, send, onEnd: (_reason, offSent) => { void offSent.then((ok) => results.push(ok)); },
+    }));
+    await act(async () => {
+      if (held) hook.result.current.startHold(frame, 30); else hook.result.current.rememberSingle(frame);
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    await act(async () => { hook.result.current.stop(); await vi.advanceTimersByTimeAsync(0); });
+    hook.unmount();
+    return results;
+  }
+
+  it('for a held setpoint and for a single frame', async () => {
+    for (const held of [true, false]) {
+      expect(await ended(false, held)).toEqual([true]);
+      expect(await ended(true, held)).toEqual([false]);
+    }
+  });
+});
+

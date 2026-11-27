@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-1857-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1860-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
@@ -31,7 +31,7 @@
 
 ---
 
-> **Safety and security status:** this ecosystem is not a certified safety system, and no populated URTC board exists yet. The main-board bootloader verifies an Ed25519 record of the image (`<image>.imgsig`) against a table of public keys and holds no secret, and the expansion-slave bootloader checks a plain SHA-256 and installs only an image that the main board confirms; the table of the official build is empty until the image-signing key is created, and a bench build trusts a public development key, so anyone can produce an image such a bootloader accepts; nothing has been transmitted to a real board. Read the [security baseline](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md) and the [threat model](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md) before relying on any statement here for the safety of a person.
+> **Safety and security status:** this ecosystem is not a certified safety system, and no populated URTC board exists yet. The main-board bootloader verifies an Ed25519 record of the image (`<image>.imgsig`) against a table of public keys and holds no secret, and the expansion-slave bootloader checks a plain SHA-256 and installs only an image that the main board confirms; the table of the official build holds the public release image-signing keys, and a bench build trusts a public development key, so anyone can produce an image such a bootloader accepts; nothing has been transmitted to a real board. Read the [security baseline](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md) and the [threat model](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md) before relying on any statement here for the safety of a person.
 
 ## 📋 At a glance
 
@@ -39,7 +39,7 @@
 |---|---|
 | Version | `0.5.4` |
 | Maturity | Functional |
-| Tests | 1857 (`npm test`) |
+| Tests | 1860 (`npm test`) |
 | Stack | Web Serial API / TypeScript |
 | Target | A web browser on the user's PC |
 | On real hardware | Simulated only: tested against emulators, fakes or simulators; no run on real hardware is recorded for this version |
@@ -410,7 +410,7 @@ Which versions of the URTC programs work together, and which protocol version ea
 
 ## 🧪 Testing
 
-`npm test` (Vitest) runs 1857 tests of the pure logic: SLCAN parsing, request and answer matching, firmware image and manifest checks, release signatures, tool limits, confirmations, the rules that keep the simulator apart from the real bus, trace export and replay, the node picker, the rack simulator, the saved session record, the offline copy, the sync of the firmware and the eight interface languages. `npm run lint` type-checks the sources and `npm run test:e2e` runs 25 end-to-end checks in a real Chromium against a modelled adapter and board (`npm run test:coverage` adds a coverage floor). The screens and the Web Serial transport have no unit tests of their own; the end-to-end checks drive them. None of it has run against a real adapter or board.
+`npm test` (Vitest) runs 1860 tests of the pure logic: SLCAN parsing, request and answer matching, firmware image and manifest checks, release signatures, tool limits, confirmations, the rules that keep the simulator apart from the real bus, trace export and replay, the node picker, the rack simulator, the saved session record, the offline copy, the sync of the firmware and the eight interface languages. `npm run lint` type-checks the sources and `npm run test:e2e` runs 25 end-to-end checks in a real Chromium against a modelled adapter and board (`npm run test:coverage` adds a coverage floor). The screens and the Web Serial transport have no unit tests of their own; the end-to-end checks drive them. None of it has run against a real adapter or board.
 
 ## 🏗️ Build & Release
 

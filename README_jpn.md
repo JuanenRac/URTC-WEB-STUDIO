@@ -19,7 +19,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/License-GPL%203.0--or--later-blue.svg" alt="GPL 3.0 or later">
-  <img src="https://img.shields.io/badge/Tests-1857-2ea44f.svg" alt="Tests">
+  <img src="https://img.shields.io/badge/Tests-1860-2ea44f.svg" alt="Tests">
   <img src="https://img.shields.io/badge/Framework-React-61DAFB.svg" alt="React">
   <img src="https://img.shields.io/badge/API-Web%20Serial-green.svg" alt="Web Serial">
   <img src="https://img.shields.io/badge/Tool-Vite-646CFF.svg" alt="Vite">
@@ -31,7 +31,7 @@
 
 ---
 
-> **安全性とセキュリティの現状：** このエコシステムは認証された安全システムではなく、実装済みの URTC ボードもまだ存在しません。メインボードのブートローダーはイメージの Ed25519 レコード（`<image>.imgsig`）を公開鍵の表と照合し、秘密を保持しません。拡張スレーブのブートローダーは単純な SHA-256 を検査し、メインボードが確認したイメージだけをインストールします。公式ビルドの表はイメージ署名鍵が作られるまで空で、ベンチビルドは公開の開発用鍵を信頼するため、誰でもそのようなブートローダーが受け入れるイメージを作れます。実際のボードには何も送信されていません。ここに書かれた内容を人の安全のために頼る前に、[セキュリティベースライン](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md)と[脅威モデル](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md)をお読みください。
+> **安全性とセキュリティの現状：** このエコシステムは認証された安全システムではなく、実装済みの URTC ボードもまだ存在しません。メインボードのブートローダーはイメージの Ed25519 レコード（`<image>.imgsig`）を公開鍵の表と照合し、秘密を保持しません。拡張スレーブのブートローダーは単純な SHA-256 を検査し、メインボードが確認したイメージだけをインストールします。公式ビルドの表にはリリース用のイメージ署名公開鍵が入っており、ベンチビルドは公開の開発用鍵を信頼するため、誰でもそのようなブートローダーが受け入れるイメージを作れます。実際のボードには何も送信されていません。ここに書かれた内容を人の安全のために頼る前に、[セキュリティベースライン](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/SECURITY_BASELINE.md)と[脅威モデル](https://github.com/JuanenRac/URTC-DOCS/blob/main/docs/THREAT_MODEL.md)をお読みください。
 
 ## 📋 ひと目で
 
@@ -39,7 +39,7 @@
 |---|---|
 | バージョン | `0.5.4` |
 | 成熟度 | 機能する |
-| テスト | 1857 (`npm test`) |
+| テスト | 1860 (`npm test`) |
 | 技術 | Web Serial API / TypeScript |
 | 対象 | 利用者の PC 上の Web ブラウザー |
 | 実機での確認 | シミュレーションのみ：エミュレーター、模擬部品、シミュレーターで試験済み。このバージョンについて実機での動作記録はありません |
@@ -419,7 +419,7 @@ npm run preview
 
 ## 🧪 テスト
 
-`npm test`（Vitest）は純粋なロジックの 1857 件を実行します：SLCAN の解析、要求と応答の対応付け、ファームウェアイメージとマニフェストの検査、リリース署名、ツールの上限、確認、シミュレーターを実バスから分けるルール、トレースのエクスポートと再生、ノードピッカー、ラックシミュレーター、保存されたセッション記録、オフラインコピー、ファームウェアの同期、8 つの画面言語です。`npm run lint` はソースの型を検査し、`npm run test:e2e` は実際の Chromium でモデル化したアダプターとボードに対して 25 件のエンドツーエンド検査を実行します（`npm run test:coverage` はカバレッジ下限を加えます）。画面と Web Serial のトランスポートには独自のユニットテストがなく、エンドツーエンド検査がそれらを動かします。実際のアダプターやボードでは一度も動かしていません。
+`npm test`（Vitest）は純粋なロジックの 1860 件を実行します：SLCAN の解析、要求と応答の対応付け、ファームウェアイメージとマニフェストの検査、リリース署名、ツールの上限、確認、シミュレーターを実バスから分けるルール、トレースのエクスポートと再生、ノードピッカー、ラックシミュレーター、保存されたセッション記録、オフラインコピー、ファームウェアの同期、8 つの画面言語です。`npm run lint` はソースの型を検査し、`npm run test:e2e` は実際の Chromium でモデル化したアダプターとボードに対して 25 件のエンドツーエンド検査を実行します（`npm run test:coverage` はカバレッジ下限を加えます）。画面と Web Serial のトランスポートには独自のユニットテストがなく、エンドツーエンド検査がそれらを動かします。実際のアダプターやボードでは一度も動かしていません。
 
 ## 🏗️ ビルドとリリース
 

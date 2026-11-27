@@ -90,6 +90,8 @@
     "real_cut_tab": "Switched off: you left the Control tab. The off frame was sent.",
     "real_cut_connection": "Switched off: the connection was lost. The off frame could not be sent; the firmware cuts the tool by its own timeout.",
     "real_cut_expired": "Switched off: the hold time is up. The off frame was sent; confirm again to hold again.",
+    "real_off_not_sent": "The off frame could not be sent. Nothing confirms that the tool is off: the firmware cuts it by its own timeout, and the physical stop is the safe way.",
+    "real_stop_nothing_sent": "STOP was pressed. No off frame was sent: there is no board connected or this tool has no off frame in this tab.",
     "real_second_laser": "SECOND CONFIRMATION. The laser will be armed and will fire at {{value}} % now. Is the area clear and the eye protection on? STOP stays visible.",
     "real_second_drill": "SECOND CONFIRMATION. The drill will spin at {{value}} RPM now. Is everything clear of the tool? STOP stays visible.",
     "pin_mapping_title": "Hardware Pin Mapping & Signals",
