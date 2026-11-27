@@ -65,7 +65,7 @@ describe('the heartbeat', () => {
     expect(send.mock.calls.length).toBe(sends);
     expect(off).toHaveBeenCalledTimes(1);
     expect(onEnd).toHaveBeenCalledTimes(1);
-    expect(onEnd).toHaveBeenCalledWith('stop');
+    expect(onEnd).toHaveBeenCalledWith('stop', expect.any(Promise));
     expect(beat.running).toBe(false);
     expect(activeSafeOffCount()).toBe(0);
   });
@@ -79,7 +79,7 @@ describe('the heartbeat', () => {
     expect(off).not.toHaveBeenCalled();
     await vi.advanceTimersByTimeAsync(1);
     expect(beat.running).toBe(false);
-    expect(onEnd).toHaveBeenCalledWith('expired');
+    expect(onEnd).toHaveBeenCalledWith('expired', expect.any(Promise));
     expect(off).toHaveBeenCalledTimes(1);
   });
 
@@ -89,7 +89,7 @@ describe('the heartbeat', () => {
     const quiet = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const beat = startHeartbeat({ send: async () => { throw new Error('port closed'); }, off, durationMs: 30_000, onEnd });
     await vi.advanceTimersByTimeAsync(0);
-    expect(onEnd).toHaveBeenCalledWith('connection');
+    expect(onEnd).toHaveBeenCalledWith('connection', expect.any(Promise));
     expect(beat.running).toBe(false);
     quiet.mockRestore();
   });
