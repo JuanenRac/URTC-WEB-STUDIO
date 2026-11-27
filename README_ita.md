@@ -193,9 +193,11 @@ ID:
   con `<file>.manifest.json` (versione, `sha256` e il valore `hmac_sha256` atteso dal bootloader, un HMAC-SHA256 a chiave condivisa che controllano solo i bootloader della generazione precedente; il record Ed25519 che verificano quelli attuali è il file `<file>.imgsig` accanto all'immagine, che l'app invia al bootloader) e `<file>.sha256`. L'app invia la firma pubblicata,
   uno `sha256` del manifest che non corrisponde al file **blocca** il flash,
   e la versione del manifest è quella comunicata al bootloader. Un file
-  scelto dal disco non ha manifest: si può flashare solo con una chiave di
-  firma inserita per quel singolo flash (schede da banco), a meno che non si
-  scelga insieme il suo `.manifest.json`.
+  scelto dal disco ha bisogno del suo record di firma (`<file>.imgsig`), scelto
+  insieme: i bootloader attuali non installano nulla senza. Provato solo con un bootloader simulato. Una chiave di firma
+  inserita per quel singolo flash serve solo a una scheda da banco con un
+  bootloader della generazione precedente, quando non c'è né un record né una firma
+  pubblicata.
 - **Numero di patch del firmware** (`0x7E9`, e il `0x218` esteso dello slave) -
   il firmware installato e l'immagine scelta sono mostrati come
   major.minor.patch. La patch entra nel confronto solo quando la portano
@@ -312,8 +314,9 @@ limita a trasportare quella firma - lo stesso modello del `URTC Flasher` da
 desktop. Il bundle JS non contiene nulla di segreto, quindi la pagina può
 essere pubblicata apertamente.
 
-L'unica eccezione è un'immagine compilata in proprio senza manifest, per una
-scheda da banco: l'app chiede allora la chiave di firma, la tiene in memoria
+L'unica eccezione è un'immagine compilata in proprio senza record né firma
+pubblicata, per una scheda da banco con un bootloader della generazione
+precedente: l'app chiede allora la sua chiave di firma HMAC, la tiene in memoria
 solo per quel flash e non la salva mai. Le immagini firmate con la chiave
 PUBBLICA di sviluppo (`signing_key_kind: "dev"` nel manifest) si installano
 solo su schede il cui bootloader è stato compilato allo stesso modo - il registro

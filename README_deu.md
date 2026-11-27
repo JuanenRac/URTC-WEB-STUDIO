@@ -197,9 +197,11 @@ dieselben CAN-IDs:
   Die App sendet diese veröffentlichte Signatur, ein `sha256` im Manifest,
   das nicht zur Datei passt, **blockiert** das Flashen, und die Version aus
   dem Manifest wird dem Bootloader gemeldet. Eine von der Festplatte gewählte
-  Datei hat kein Manifest: sie lässt sich nur mit einem für dieses eine
-  Flashen eingegebenen Signierschlüssel flashen (Testplatinen), außer ihre
-  `.manifest.json` wird zusammen mit ihr gewählt.
+  Datei braucht ihren Signatureintrag (`<file>.imgsig`), zusammen mit ihr gewählt:
+  die aktuellen Bootloader installieren nichts ohne ihn. Nur gegen einen simulierten Bootloader erprobt. Ein für dieses eine
+  Flashen eingegebener Signierschlüssel dient nur einer Testplatine mit einem
+  Bootloader der früheren Generation, wenn weder ein Eintrag noch eine
+  veröffentlichte Signatur vorhanden ist.
 - **Patch-Nummer der Firmware** (`0x7E9`, und das erweiterte `0x218` des
   Slaves) - die installierte Firmware und das gewählte Image werden als
   Major.Minor.Patch angezeigt. Der Patch geht nur in den Vergleich ein, wenn
@@ -318,9 +320,10 @@ Studio transportiert nur diese Signatur - dasselbe Modell wie der
 Desktop-`URTC Flasher`. Im JS-Paket steckt nichts Geheimes, die Seite kann
 also öffentlich gehostet werden.
 
-Einzige Ausnahme ist ein selbst gebautes Image ohne Manifest für eine
-Testplatine: dann fragt die App nach dem Signierschlüssel, hält ihn nur für
-dieses eine Flashen im Speicher und speichert ihn nie. Images, die mit dem
+Einzige Ausnahme ist ein selbst gebautes Image ohne Eintrag und ohne
+veröffentlichte Signatur für eine Testplatine mit einem Bootloader der früheren
+Generation: dann fragt die App nach seinem HMAC-Signierschlüssel, hält ihn nur
+für dieses eine Flashen im Speicher und speichert ihn nie. Images, die mit dem
 ÖFFENTLICHEN Entwicklungsschlüssel signiert sind (`signing_key_kind: "dev"`
 im Manifest), lassen sich nur auf Platinen installieren, deren Bootloader
 genauso gebaut wurde - das Log weist darauf hin. Siehe

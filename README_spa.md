@@ -192,9 +192,11 @@ CAN ID:
   `<file>.manifest.json` (versión, `sha256` y el valor `hmac_sha256` que espera el bootloader, un HMAC-SHA256 de clave compartida que solo comprueban los bootloaders de la generación anterior; el registro Ed25519 que verifican los actuales es el archivo `<file>.imgsig` junto a la imagen, que la app envía al bootloader) y `<file>.sha256`. La app envía esa firma publicada,
   un `sha256` del manifiesto que no coincide con el archivo **bloquea** la
   grabación, y la versión del manifiesto es la que se informa al bootloader.
-  Un archivo elegido del disco no tiene manifiesto: solo se puede grabar con
-  una clave de firma introducida para esa grabación (placas de banco), salvo
-  que se elija junto con su `.manifest.json`.
+  Un archivo elegido del disco necesita
+  su registro de firma (`<file>.imgsig`), elegido junto a él: los bootloaders
+  actuales no instalan nada sin él. Probado solo contra un bootloader simulado. Una clave de firma introducida para esa
+  grabación solo sirve para una placa de banco con un bootloader de la generación
+  anterior, cuando no hay ni registro ni firma publicada.
 - **Número de parche del firmware** (`0x7E9`, y el `0x218` ampliado del
   esclavo) - el firmware instalado y la imagen elegida se muestran como
   mayor.menor.parche. El parche solo interviene en la comparación cuando los
@@ -310,9 +312,10 @@ Studio solo transporta esa firma - el mismo modelo que el `URTC Flasher` de
 escritorio. El paquete JS no contiene nada secreto, así que la página puede
 publicarse abiertamente.
 
-La única excepción es una imagen compilada por ti sin manifiesto, para una
-placa de banco: la app pide entonces la clave de firma, la guarda en memoria
-solo para esa grabación y nunca la almacena. Las imágenes firmadas con la
+La única excepción es una imagen compilada por ti sin registro ni firma
+publicada, para una placa de banco con un bootloader de la generación anterior: la
+app pide entonces su clave de firma HMAC, la guarda en memoria solo para esa
+grabación y nunca la almacena. Las imágenes firmadas con la
 clave PÚBLICA de desarrollo (`signing_key_kind: "dev"` en el manifiesto)
 solo se instalan en placas cuyo bootloader se compiló igual - el registro lo
 indica. Ver `docs/FIRMWARE_SIGNING.TXT` de URTC.

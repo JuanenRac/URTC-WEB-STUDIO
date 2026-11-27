@@ -807,7 +807,7 @@ export default function App() {
     }
     let runtimeKey: string | null = null;
     if (!manifest?.hmacSha256 && !record) {
-      runtimeKey = window.prompt(t('flasher.prompt_signing_key', 'This image has no published signature (<file>.manifest.json with hmac_sha256). To flash a self-built image to a bench board, enter its {{board}} signing key (64 hex characters). It is not stored.', { board: target === 'slave' ? 'slave' : 'master' }));
+      runtimeKey = window.prompt(t('flasher.prompt_signing_key', 'This image has no signature record (<image>.imgsig) and no published signature. The current bootloaders install only an image with a record. Only a bench board with a bootloader of the earlier generation takes a key instead: enter its {{board}} HMAC signing key (64 hex characters), or cancel. It is not stored.', { board: target === 'slave' ? 'slave' : 'master' }));
     }
     let signature: Uint8Array = new Uint8Array(0);
     try {

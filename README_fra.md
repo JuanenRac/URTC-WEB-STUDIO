@@ -193,10 +193,11 @@ CAN ID :
   livrée avec `<file>.manifest.json` (version, `sha256` et la valeur `hmac_sha256` attendue par le bootloader, un HMAC-SHA256 à clé partagée que seuls les bootloaders de la génération précédente contrôlent ; l'enregistrement Ed25519 que vérifient les actuels est le fichier `<file>.imgsig` à côté de l'image, que l'application envoie au bootloader) et `<file>.sha256`. L'application
   envoie cette signature publiée, un `sha256` du manifeste qui ne correspond
   pas au fichier **bloque** le flashage, et c'est la version du manifeste qui
-  est annoncée au bootloader. Un fichier choisi sur le disque n'a pas de
-  manifeste : il ne peut être flashé qu'avec une clé de signature saisie pour
-  ce seul flashage (cartes de banc), sauf si son `.manifest.json` est choisi
-  avec lui.
+  est annoncée au bootloader. Un fichier choisi sur le disque a besoin de
+  son enregistrement de signature (`<file>.imgsig`), choisi avec lui : les
+  bootloaders actuels n'installent rien sans lui. Essayé uniquement contre un bootloader simulé. Une clé de signature saisie pour
+  ce seul flashage ne sert qu'à une carte de banc avec un bootloader de la
+  génération précédente, quand il n'y a ni enregistrement ni signature publiée.
 - **Numéro de correctif du firmware** (`0x7E9`, et le `0x218` étendu de
   l'esclave) - le firmware installé et l'image choisie sont affichés en
   majeur.mineur.correctif. Le correctif n'intervient dans la comparaison que si
@@ -315,8 +316,9 @@ Flasher Studio ne fait que transporter cette signature - le même modèle que
 le `URTC Flasher` de bureau. Le paquet JS ne contient rien de secret, la page
 peut donc être hébergée publiquement.
 
-La seule exception est une image compilée soi-même sans manifeste, pour une
-carte de banc : l'application demande alors la clé de signature, la garde en
+La seule exception est une image compilée soi-même sans enregistrement ni
+signature publiée, pour une carte de banc avec un bootloader de la génération
+précédente : l'application demande alors sa clé de signature HMAC, la garde en
 mémoire pour ce seul flashage et ne l'enregistre jamais. Les images signées
 avec la clé PUBLIQUE de développement (`signing_key_kind: "dev"` dans le
 manifeste) ne s'installent que sur les cartes dont le bootloader a été

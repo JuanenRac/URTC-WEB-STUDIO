@@ -211,7 +211,7 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
                 {t('flasher.title', 'URTC Flasher Studio (CAN OTA)')}
               </h2>
               <p className="text-xs text-slate-400">
-                {t('flasher.subtitle', 'Golden-Image A/B Backup Slot Architecture • HMAC-SHA256 Signed OTA Updates')}
+                {t('flasher.subtitle', 'Golden-Image A/B Backup Slot Architecture • Ed25519-Signed OTA Updates')}
               </p>
             </div>
           </div>
@@ -686,7 +686,7 @@ export const FlasherStudio: React.FC<FlasherStudioProps> = ({
             </span>
             <span className="text-[10px] text-slate-500 flex items-center gap-1">
               {flasherState.mode === 'idle' && flasherState.progress === 100 ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> : null}
-              {t('flasher.hmac_crc_label', 'HMAC-SHA256 & CRC32')}
+              {t('flasher.hmac_crc_label', 'Ed25519 & CRC32')}
             </span>
           </div>
 
