@@ -303,7 +303,7 @@
     "browsed_manifest_found": "已选择清单：{{name}}",
     "browsed_manifest_hint": "要使用已发布的签名，请同时选择 .bin 及其 .bin.manifest.json（按住 Ctrl 点击）。",
     "err_manifest_unreadable": "所选清单不是有效的 JSON。",
-    "err_published_unreadable": "{{name}} 位于镜像旁边但无法读取，因此无法校验镜像：未发送任何数据。请重新下载镜像及其文件，或仅在您清楚镜像来源时删除 {{name}}。",
+    "err_published_unreadable": "{{name}} 位于镜像旁边但无法读取，因此无法校验镜像：未发送任何数据。请重新下载镜像及其文件，或仅在你清楚镜像来源时删除 {{name}}。",
     "error_github_download_blocked": "浏览器无法从 GitHub 下载此文件（发布版本的文件由不允许网页下载的主机提供）。请从发布页面下载，再通过“浏览”连同其 .manifest.json 一起选择，或使用内置镜像。",
     "log_patch_declared": "引导程序支持补丁号：声明版本 {{version}}。",
     "log_patch_not_declared": "引导程序未声明支持补丁号：将不带补丁号声明版本。",
