@@ -69,3 +69,8 @@ export function unsignedDecision(state: string, required: boolean, allowUnsigned
   if (required) return 'refuse_required';
   return allowUnsigned ? 'confirm' : 'refuse_not_allowed';
 }
+
+/** True when the manifest of an image says that the PUBLIC development key signed it: flashing it is confirmed first. */
+export function signedWithDevKey(signingKeyKind: string | undefined): boolean {
+  return (signingKeyKind ?? '').trim().toLowerCase() === 'dev';
+}

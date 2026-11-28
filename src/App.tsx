@@ -46,7 +46,7 @@ import { planPreset } from './lib/simPresets';
 import { rawSendPolicy, ActionKind } from './lib/dangerousActions';
 import { planControlSend, runControlSend, confirmPlan, stopFrameFor, canHoldTool } from './lib/controlSandbox';
 import { CutReason, clampHoldSeconds, loadHoldSeconds, saveHoldSeconds } from './lib/controlHeartbeat';
-import { loadRealSend, saveRealSend, loadRequireSignature, saveRequireSignature, loadAllowUnsigned, saveAllowUnsigned, unsignedDecision } from './lib/sendSettings';
+import { loadRealSend, saveRealSend, loadRequireSignature, saveRequireSignature, loadAllowUnsigned, saveAllowUnsigned, unsignedDecision, signedWithDevKey } from './lib/sendSettings';
 import { useControlSession } from './hooks/useControlSession';
 import { cutMessage, stopMessage } from './lib/controlCutMessage';
 import { runAllSafeOff } from './lib/safeOff';
@@ -805,6 +805,15 @@ export default function App() {
       refuse(t('flasher.err_no_record', 'This image has no signature record (<image>.imgsig): the bootloader installs nothing without one. Nothing was sent to the board.'));
       return;
     }
+    // An image of the PUBLIC development key proves nothing about who made it: the person is asked whatever carries the signature (the record next to the image,
+    // the value of an older manifest, or the record of the slave image).
+    if (signedWithDevKey(manifest?.signingKeyKind)) {
+      flasher.appendLog(t('flasher.log_dev_key_warning', 'NOTE: signed with the PUBLIC development key - only boards whose bootloader was built with that same key accept it.'));
+      if (!(await confirm('dev_key'))) {
+        flasher.setFlasherState(prev => ({ ...prev, mode: 'idle', statusText: t('flasher.status_update_failed', 'Update failed'), log: [...prev.log, t('flasher.log_dev_key_declined', 'Cancelled: the image is signed with the public development key and the confirmation was declined.')] }));
+        return;
+      }
+    }
     let runtimeKey: string | null = null;
     if (!manifest?.hmacSha256 && !record) {
       runtimeKey = window.prompt(t('flasher.prompt_signing_key', 'This image has no signature record (<image>.imgsig) and no published signature. The current bootloaders install only an image with a record. Only a bench board with a bootloader of the earlier generation takes a key instead: enter its {{board}} HMAC signing key (64 hex characters), or cancel. It is not stored.', { board: target === 'slave' ? 'slave' : 'master' }));
@@ -817,13 +826,6 @@ export default function App() {
         flasher.appendLog(t('flasher.log_record_found', 'Using the signature record published with the image; the bootloader verifies it.'));
       } else if (resolved.source === 'manifest') {
         flasher.appendLog(t('flasher.log_signature_from_manifest', 'Using the signature published in the manifest (key: {{kind}}).', { kind: resolved.keyKind ?? 'unknown' }));
-        if (resolved.keyKind === 'dev') {
-          flasher.appendLog(t('flasher.log_dev_key_warning', 'NOTE: signed with the PUBLIC development key - only boards whose bootloader was built with that same key accept it.'));
-          if (!(await confirm('dev_key'))) {
-            flasher.setFlasherState(prev => ({ ...prev, mode: 'idle', statusText: t('flasher.status_update_failed', 'Update failed'), log: [...prev.log, t('flasher.log_dev_key_declined', 'Cancelled: the image is signed with the public development key and the confirmation was declined.')] }));
-            return;
-          }
-        }
       } else {
         flasher.appendLog(t('flasher.log_signature_runtime_key', 'Signed locally with the key entered for this flash.'));
       }

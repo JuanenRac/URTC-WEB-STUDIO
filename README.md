@@ -171,7 +171,7 @@ IDs:
   handling (including recovering from a lost confirmation frame the same way
   the desktop tool does - it re-queries the version rather than reporting a
   false failure).
-- **CAN-OTA update of the expansion slave** (`0x210`-`0x219`, relayed through
+- **CAN-OTA update of the expansion slave** (`0x210`-`0x21A`, relayed through
   the main board's own I2C bridge) - same signing/CRC scheme, no page-ACK or
   heartbeat on this path (matches the real protocol; progress is polled, not
   pushed).
@@ -189,7 +189,7 @@ IDs:
   responder (app or bootloader), HardwareID, and version, not a simulated
   toggle.
 - **Published signature and digest** - every image from the URTC build ships
-  with `<file>.manifest.json` (version, `sha256`, and the `hmac_sha256` value the bootloader expects, a shared-key HMAC-SHA256 that only the bootloaders of the earlier generation check; the Ed25519 record that the current ones verify is the file `<file>.imgsig` next to the image, which the app sends to the bootloader) and `<file>.sha256`. The app sends that
+  with `<file>.manifest.json` (version, `sha256`, and, only in an image built with a key for the earlier bootloaders, the optional `hmac_sha256` value the bootloader expects, a shared-key HMAC-SHA256 that only the bootloaders of the earlier generation check; the Ed25519 record that the current ones verify is the file `<file>.imgsig` next to the image, which the app sends to the bootloader) and `<file>.sha256`. The app sends that
   published signature, a manifest `sha256` that does not match the file
   **blocks** the flash, and the manifest's version is what gets reported to
   the bootloader. A file picked from disk needs
@@ -304,7 +304,7 @@ STOP ALL is a software command, not an emergency stop, and none of the checks ab
 ### Security note: no signing key in this app
 
 Since 0.2.3 this app contains **no** HMAC-SHA256 signing key. The URTC build
-signs every application image itself (with a private key on release builds only; the published images use the public development key)
+signs every application image itself (an official release is not signed with the public development key, a bench build is; `signing_key_kind` in the manifest says which)
 and publishes the signature next to it; Flasher Studio only transports that
 signature - the same model as the desktop `URTC Flasher`. Nothing secret is
 shipped in the JS bundle, so the page can be hosted publicly.
@@ -419,7 +419,7 @@ Which versions of the URTC programs work together, and which protocol version ea
 
 ### GitHub Pages (switched off until the owner turns it on)
 
-The repository can publish the built site on GitHub Pages (workflow `.github/workflows/pages.yml`: `npm ci`, type check, tests, `npm run build` with the project base path, then `upload-pages-artifact` and `deploy-pages`). **The workflow is switched off**: both jobs run only when the repository variable `URTC_PAGES_ENABLED` is `true` (Settings > Secrets and variables > Actions > Variables), which the owner sets after the first signed official release of URTC. The build then runs `npm run sync-firmware -- --require-official`: it takes the firmware of the newest official release only (never a pre-release), refuses any file without a valid release signature and any application image built with the public development key, so the published page cannot carry development-key images. Pages itself must also be enabled once (Settings > Pages > Source: GitHub Actions); with the variable unset the workflow is skipped. Web Serial needs a Chromium-based browser and https, which Pages provides.
+The repository can publish the built site on GitHub Pages (workflow `.github/workflows/pages.yml`: `npm ci`, type check, tests, `npm run build` with the project base path, then `upload-pages-artifact` and `deploy-pages`). **The workflow is optional**: both jobs run only when the repository variable `URTC_PAGES_ENABLED` is `true` (Settings > Secrets and variables > Actions > Variables), which is the case since the first signed official release of URTC. The build then runs `npm run sync-firmware -- --require-official`: it takes the firmware of the newest official release only (never a pre-release), refuses any file without a valid release signature and any application image built with the public development key, so the published page cannot carry development-key images. Pages itself must also be enabled once (Settings > Pages > Source: GitHub Actions); with the variable unset the workflow is skipped. Web Serial needs a Chromium-based browser and https, which Pages provides.
 
 The `version` of `package.json` and the one of `urtc.project.json` change only with an explicit step (`python bump.py`, which keeps the two equal and writes the entry of the changelog); `build.bat` / `build.sh`, `npm run build`, `npm run dev`, `npm run lint` and `npm run preview` never change the version.
 

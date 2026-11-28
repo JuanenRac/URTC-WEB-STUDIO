@@ -171,7 +171,7 @@ CAN ID:
   declarada, y manejo de estado terminal (incluida la recuperación de una trama de
   confirmación perdida de la misma forma que la herramienta de escritorio - vuelve a
   consultar la versión en vez de indicar un fallo falso).
-- **Actualización CAN-OTA del esclavo de expansión** (`0x210`-`0x219`, retransmitida a
+- **Actualización CAN-OTA del esclavo de expansión** (`0x210`-`0x21A`, retransmitida a
   través del propio puente I2C de la placa principal) - mismo esquema de
   firma/CRC, sin ACK de página ni latido en esta ruta (coincide con el protocolo
   real; el progreso se sondea, no se empuja).
@@ -189,7 +189,7 @@ CAN ID:
   emisor real de la respuesta (app o bootloader), HardwareID, y versión, no un interruptor
   simulado.
 - **Firma y resumen publicados** - cada imagen dla compilación de URTC trae
-  `<file>.manifest.json` (versión, `sha256` y el valor `hmac_sha256` que espera el bootloader, un HMAC-SHA256 de clave compartida que solo comprueban los bootloaders de la generación anterior; el registro Ed25519 que verifican los actuales es el archivo `<file>.imgsig` junto a la imagen, que la app envía al bootloader) y `<file>.sha256`. La app envía esa firma publicada,
+  `<file>.manifest.json` (versión, `sha256` y, solo en una imagen compilada con una clave para los bootloaders anteriores, el valor `hmac_sha256` que espera el bootloader, un HMAC-SHA256 de clave compartida que solo comprueban los bootloaders de la generación anterior; el registro Ed25519 que verifican los actuales es el archivo `<file>.imgsig` junto a la imagen, que la app envía al bootloader) y `<file>.sha256`. La app envía esa firma publicada,
   un `sha256` del manifiesto que no coincide con el archivo **bloquea** la
   grabación, y la versión del manifiesto es la que se informa al bootloader.
   Un archivo elegido del disco necesita
@@ -307,7 +307,7 @@ STOP ALL es una orden de software, no una parada de emergencia, y ninguna de las
 ### Nota de seguridad: esta app no lleva clave de firma
 
 Desde la 0.2.3 esta app **no** contiene ninguna clave de firma HMAC-SHA256.
-La compilación de URTC firma ella misma cada imagen de aplicación (con una clave privada solo en las versiones de release; las imágenes publicadas usan la clave pública de desarrollo) y publica la firma a su lado; Flasher
+La compilación de URTC firma ella misma cada imagen de aplicación (una release oficial no se firma con la clave pública de desarrollo, una compilación de banco sí; `signing_key_kind` en el manifiesto dice cuál) y publica la firma a su lado; Flasher
 Studio solo transporta esa firma - el mismo modelo que el `URTC Flasher` de
 escritorio. El paquete JS no contiene nada secreto, así que la página puede
 publicarse abiertamente.
@@ -424,7 +424,7 @@ Qué versiones de los programas de URTC funcionan juntas, y qué versión del pr
 
 ### GitHub Pages (desactivado hasta que el dueño lo active)
 
-El repositorio puede publicar el sitio compilado en GitHub Pages (flujo `.github/workflows/pages.yml`: `npm ci`, comprobación de tipos, pruebas, `npm run build` con la ruta base del proyecto, y después `upload-pages-artifact` y `deploy-pages`). **El flujo está desactivado**: sus dos trabajos solo se ejecutan cuando la variable del repositorio `URTC_PAGES_ENABLED` vale `true` (Settings > Secrets and variables > Actions > Variables), que el dueño pone tras la primera release oficial firmada de URTC. La compilación ejecuta entonces `npm run sync-firmware -- --require-official`: toma solo el firmware de la última release oficial (nunca una pre-release), rechaza cualquier archivo sin firma de release válida y cualquier imagen de aplicación compilada con la clave pública de desarrollo, de modo que la página publicada no puede llevar imágenes de la clave de desarrollo. Pages también debe activarse una vez (Settings > Pages > Source: GitHub Actions); con la variable sin definir el flujo se omite. Web Serial necesita un navegador basado en Chromium y https, que Pages proporciona.
+El repositorio puede publicar el sitio compilado en GitHub Pages (flujo `.github/workflows/pages.yml`: `npm ci`, comprobación de tipos, pruebas, `npm run build` con la ruta base del proyecto, y después `upload-pages-artifact` y `deploy-pages`). **El flujo es opcional**: sus dos trabajos solo se ejecutan cuando la variable del repositorio `URTC_PAGES_ENABLED` vale `true` (Settings > Secrets and variables > Actions > Variables), como ocurre desde la primera release oficial firmada de URTC. La compilación ejecuta entonces `npm run sync-firmware -- --require-official`: toma solo el firmware de la última release oficial (nunca una pre-release), rechaza cualquier archivo sin firma de release válida y cualquier imagen de aplicación compilada con la clave pública de desarrollo, de modo que la página publicada no puede llevar imágenes de la clave de desarrollo. Pages también debe activarse una vez (Settings > Pages > Source: GitHub Actions); con la variable sin definir el flujo se omite. Web Serial necesita un navegador basado en Chromium y https, que Pages proporciona.
 
 La `version` de `package.json` y la de `urtc.project.json` solo cambian con un paso explícito (`python bump.py`, que mantiene las dos iguales y escribe la entrada del registro de cambios); `build.bat` / `build.sh`, `npm run build`, `npm run dev`, `npm run lint` y `npm run preview` nunca cambian la versión.
 

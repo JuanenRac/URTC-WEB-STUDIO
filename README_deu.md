@@ -174,7 +174,7 @@ dieselben CAN-IDs:
   Wiederherstellung von einem verlorenen Bestätigungs-Frame auf dieselbe
   Weise wie das Desktop-Tool - es fragt die Version erneut ab, statt einen
   falschen Fehlschlag zu melden).
-- **CAN-OTA-Update des Erweiterungs-Slaves** (`0x210`-`0x219`, weitergeleitet
+- **CAN-OTA-Update des Erweiterungs-Slaves** (`0x210`-`0x21A`, weitergeleitet
   über die eigene I2C-Brücke der Hauptplatine) - dasselbe Signier-/CRC-Schema,
   kein Seiten-ACK oder Heartbeat auf diesem Pfad (entspricht dem echten
   Protokoll; der Fortschritt wird abgefragt, nicht gesendet).
@@ -193,7 +193,7 @@ dieselben CAN-IDs:
   echten Absender der Antwort (Anwendung oder Bootloader), die HardwareID, und die
   Version, kein simulierter Umschalter.
 - **Veröffentlichte Signatur und Prüfsumme** - jedes Image aus dem
-  URTC-Build kommt mit `<file>.manifest.json` (Version, `sha256` und der `hmac_sha256`-Wert, den der Bootloader erwartet, ein HMAC-SHA256 mit gemeinsamem Schlüssel, den nur die Bootloader der früheren Generation prüfen; der Ed25519-Eintrag, den die aktuellen prüfen, ist die Datei `<file>.imgsig` neben dem Image, die die App an den Bootloader sendet) und `<file>.sha256`.
+  URTC-Build kommt mit `<file>.manifest.json` (Version, `sha256` und, nur bei einem mit einem Schlüssel für die früheren Bootloader gebauten Image, der `hmac_sha256`-Wert, den der Bootloader erwartet, ein HMAC-SHA256 mit gemeinsamem Schlüssel, den nur die Bootloader der früheren Generation prüfen; der Ed25519-Eintrag, den die aktuellen prüfen, ist die Datei `<file>.imgsig` neben dem Image, die die App an den Bootloader sendet) und `<file>.sha256`.
   Die App sendet diese veröffentlichte Signatur, ein `sha256` im Manifest,
   das nicht zur Datei passt, **blockiert** das Flashen, und die Version aus
   dem Manifest wird dem Bootloader gemeldet. Eine von der Festplatte gewählte
@@ -315,7 +315,7 @@ STOP ALL ist ein Software-Befehl, kein Not-Halt, und keine der obigen Prüfungen
 ### Sicherheitshinweis: kein Signierschlüssel in dieser App
 
 Seit 0.2.3 enthält diese App **keinen** HMAC-SHA256-Signierschlüssel. Der
-URTC-Build signiert jedes Anwendungs-Image selbst (bei Release-Builds mit einem privaten Schlüssel; die veröffentlichten Images verwenden den öffentlichen Entwicklungsschlüssel) und veröffentlicht die Signatur daneben; Flasher
+URTC-Build signiert jedes Anwendungs-Image selbst (ein offizielles Release ist nicht mit dem öffentlichen Entwicklungsschlüssel signiert, ein Bench-Build schon; `signing_key_kind` im Manifest sagt, welcher es ist) und veröffentlicht die Signatur daneben; Flasher
 Studio transportiert nur diese Signatur - dasselbe Modell wie der
 Desktop-`URTC Flasher`. Im JS-Paket steckt nichts Geheimes, die Seite kann
 also öffentlich gehostet werden.
@@ -440,7 +440,7 @@ Welche Versionen der URTC-Programme zusammenarbeiten und welche Protokollversion
 
 ### GitHub Pages (ausgeschaltet, bis der Eigentümer es einschaltet)
 
-Das Repository kann die gebaute Seite auf GitHub Pages veröffentlichen (Workflow `.github/workflows/pages.yml`: `npm ci`, Typprüfung, Tests, `npm run build` mit dem Projekt-Basispfad, dann `upload-pages-artifact` und `deploy-pages`). **Der Workflow ist ausgeschaltet**: Beide Jobs laufen nur, wenn die Repository-Variable `URTC_PAGES_ENABLED` auf `true` steht (Settings > Secrets and variables > Actions > Variables), was der Eigentümer nach dem ersten signierten offiziellen Release von URTC setzt. Der Build führt dann `npm run sync-firmware -- --require-official` aus: Er nimmt nur die Firmware des neuesten offiziellen Releases (nie ein Pre-Release), lehnt jede Datei ohne gültige Release-Signatur und jedes Anwendungs-Image ab, das mit dem öffentlichen Entwicklungsschlüssel gebaut wurde; die veröffentlichte Seite kann also keine Images des Entwicklungsschlüssels enthalten. Pages selbst muss einmal aktiviert werden (Settings > Pages > Source: GitHub Actions); ohne die Variable wird der Workflow übersprungen. Web Serial braucht einen Chromium-basierten Browser und https, was Pages bietet.
+Das Repository kann die gebaute Seite auf GitHub Pages veröffentlichen (Workflow `.github/workflows/pages.yml`: `npm ci`, Typprüfung, Tests, `npm run build` mit dem Projekt-Basispfad, dann `upload-pages-artifact` und `deploy-pages`). **Der Workflow ist optional**: Beide Jobs laufen nur, wenn die Repository-Variable `URTC_PAGES_ENABLED` auf `true` steht (Settings > Secrets and variables > Actions > Variables), was seit dem ersten signierten offiziellen Release von URTC der Fall ist. Der Build führt dann `npm run sync-firmware -- --require-official` aus: Er nimmt nur die Firmware des neuesten offiziellen Releases (nie ein Pre-Release), lehnt jede Datei ohne gültige Release-Signatur und jedes Anwendungs-Image ab, das mit dem öffentlichen Entwicklungsschlüssel gebaut wurde; die veröffentlichte Seite kann also keine Images des Entwicklungsschlüssels enthalten. Pages selbst muss einmal aktiviert werden (Settings > Pages > Source: GitHub Actions); ohne die Variable wird der Workflow übersprungen. Web Serial braucht einen Chromium-basierten Browser und https, was Pages bietet.
 
 Die `version` von `package.json` und die von `urtc.project.json` ändern sich nur durch einen ausdrücklichen Schritt (`python bump.py`, der beide gleich hält und den Eintrag im Changelog schreibt); `build.bat` / `build.sh`, `npm run build`, `npm run dev`, `npm run lint` und `npm run preview` ändern die Version nie.
 
