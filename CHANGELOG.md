@@ -4,6 +4,8 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **The texts about a signing key say which bootloader takes one:** the window that asks for a key, the subtitle and log lines of Flasher Studio, the reasons of a failed verification and the READMEs still described a shared-key HMAC as the way an image is signed. The current bootloaders install only an image with its signature record (`<image>.imgsig`); a key serves only a bench board with a bootloader of the earlier generation. No behaviour changes. Eight languages.
+
 ## [0.5.5] - Honest STOP message, failed sends for malformed frames and refusal of unreadable published files
 
 - **STOP of the Control tab no longer says that the off frame went out when it did not:** the message now follows the result of every off frame (the one of what was kept on and the one of the active tool), and says so when nothing was sent. The same holds when the tab, the focus or the time end a held setpoint. Texts in the eight languages.

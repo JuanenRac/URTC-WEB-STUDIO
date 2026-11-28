@@ -192,9 +192,11 @@ CAN IDs:
   `<file>.manifest.json` (versão, `sha256` e o valor `hmac_sha256` que o bootloader espera, um HMAC-SHA256 de chave partilhada que só os bootloaders da geração anterior verificam; o registo Ed25519 que os atuais verificam é o ficheiro `<file>.imgsig` junto à imagem, que a aplicação envia ao bootloader) e `<file>.sha256`. A aplicação envia essa assinatura publicada,
   um `sha256` do manifesto que não corresponda ao ficheiro **bloqueia** a gravação,
   e a versão do manifesto é a que é comunicada ao bootloader. Um ficheiro escolhido
-  a partir do disco não tem manifesto: só pode ser gravado com uma chave de assinatura
-  introduzida para essa gravação (placas de bancada), a não ser que o seu
-  `.manifest.json` seja escolhido em conjunto.
+  a partir do disco precisa do seu registo de assinatura (`<file>.imgsig`),
+  escolhido em conjunto: os bootloaders atuais não instalam nada sem ele. Experimentado apenas com um bootloader simulado. Uma chave
+  de assinatura introduzida para essa gravação só serve para uma placa de bancada
+  com um bootloader da geração anterior, quando não há nem registo nem assinatura
+  publicada.
 - **Número de patch do firmware** (`0x7E9`, e o `0x218` alargado do escravo) -
   o firmware instalado e a imagem selecionada são mostrados como
   maior.menor.patch. O patch só entra na comparação quando os dois lados o
@@ -310,9 +312,10 @@ Studio apenas transporta essa assinatura - o mesmo modelo do `URTC Flasher` de
 ambiente de trabalho. Nada secreto é incluído no pacote JS, pelo que a página pode
 ser alojada publicamente.
 
-A única exceção é uma imagem compilada por si, sem manifesto, para uma placa de
-bancada: a aplicação pede então a chave de assinatura, mantém-na em memória
-apenas para essa gravação e nunca a armazena. As imagens assinadas com a
+A única exceção é uma imagem compilada por si, sem registo nem assinatura
+publicada, para uma placa de bancada com um bootloader da geração anterior: a
+aplicação pede então a sua chave de assinatura HMAC, mantém-na em memória apenas
+para essa gravação e nunca a armazena. As imagens assinadas com a
 chave de desenvolvimento PÚBLICA (`signing_key_kind: "dev"` no manifesto)
 só se instalam em placas cujo bootloader tenha sido compilado da mesma forma - o
 registo indica-o. Consulte o `docs/FIRMWARE_SIGNING.TXT` do URTC.

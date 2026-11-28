@@ -192,9 +192,11 @@ IDs:
   with `<file>.manifest.json` (version, `sha256`, and the `hmac_sha256` value the bootloader expects, a shared-key HMAC-SHA256 that only the bootloaders of the earlier generation check; the Ed25519 record that the current ones verify is the file `<file>.imgsig` next to the image, which the app sends to the bootloader) and `<file>.sha256`. The app sends that
   published signature, a manifest `sha256` that does not match the file
   **blocks** the flash, and the manifest's version is what gets reported to
-  the bootloader. A file picked from disk has no manifest: it can only be
-  flashed with a signing key typed in for that one flash (bench boards),
-  unless its `.manifest.json` is picked together with it.
+  the bootloader. A file picked from disk needs
+  its signature record (`<file>.imgsig`), picked with it: the current bootloaders
+  install nothing without one. Tried against a simulated bootloader only. A signing key typed in for that one flash serves
+  only a bench board with a bootloader of the earlier generation, when neither a
+  record nor a published signature is there.
 - **Firmware patch number** (`0x7E9`, and the extended `0x218` of the slave) -
   the installed firmware and the selected image are shown as
   major.minor.patch. The patch takes part in the comparison only when both
@@ -307,9 +309,10 @@ and publishes the signature next to it; Flasher Studio only transports that
 signature - the same model as the desktop `URTC Flasher`. Nothing secret is
 shipped in the JS bundle, so the page can be hosted publicly.
 
-The one exception is a self-built image with no manifest, for a bench board:
-the app then asks for the signing key, keeps it in memory for that single
-flash and never stores it. Images built with the PUBLIC development key
+The one exception is a self-built image with neither a record nor a published
+signature, for a bench board with a bootloader of the earlier generation: the app
+then asks for its HMAC signing key, keeps it in memory for that single flash and
+never stores it. Images built with the PUBLIC development key
 (`signing_key_kind: "dev"` in the manifest) only install on boards whose
 bootloader was built the same way - the log says so. See URTC's
 `docs/FIRMWARE_SIGNING.TXT`.

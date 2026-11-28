@@ -79,7 +79,7 @@ export function useFlasher(serialCan: SerialCanBus) {
   // for this attempt, with a clear, translated, actionable message instead.
   const checkSecureContext = () => {
     if (typeof crypto === 'undefined' || !crypto.subtle) {
-      throw new FlashError(t('flasher.err_insecure_context', 'Web Crypto (crypto.subtle) is unavailable, so HMAC signing cannot run - this page must be served over HTTPS or from localhost. Current origin: {{origin}}', { origin: typeof location !== 'undefined' ? location.origin : 'unknown' }));
+      throw new FlashError(t('flasher.err_insecure_context', 'Web Crypto (crypto.subtle) is unavailable, so the image cannot be checked or signed - this page must be served over HTTPS or from localhost. Current origin: {{origin}}', { origin: typeof location !== 'undefined' ? location.origin : 'unknown' }));
     }
   };
 
@@ -148,7 +148,7 @@ export function useFlasher(serialCan: SerialCanBus) {
     setFlasherState(prev => ({
       ...prev, mode: 'erasing', progress: 0,
       statusText: t('flasher.status_resetting_mcu', '1/5: Resetting MCU into CAN bootloader...'),
-      log: [t('flasher.log_computing_crc', 'Computing CRC32 and HMAC-SHA256 over the selected image...')]
+      log: [t('flasher.log_computing_crc', 'Computing the CRC32 of the selected image...')]
     }));
 
     if (opts.triggerBootloader) {
@@ -390,7 +390,7 @@ export function useFlasher(serialCan: SerialCanBus) {
     if (record.length !== RECORD_SIZE) throw new FlashError('The signature record must be 76 bytes');
     const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', data.slice().buffer as ArrayBuffer));
 
-    setFlasherState(prev => ({ ...prev, mode: 'erasing', progress: 0, statusText: t('flasher.status_entering_slave_bootloader', '1/5: Entering slave bootloader (relayed via I2C)...'), log: [t('flasher.log_computing_crc', 'Computing CRC32 and HMAC-SHA256 over the selected image...')] }));
+    setFlasherState(prev => ({ ...prev, mode: 'erasing', progress: 0, statusText: t('flasher.status_entering_slave_bootloader', '1/5: Entering slave bootloader (relayed via I2C)...'), log: [t('flasher.log_computing_crc', 'Computing the CRC32 of the selected image...')] }));
 
     if (opts.triggerBootloader) {
       await serialCan.sendFrame(CAN_ID_SLAVE_ENTER_BOOTLOADER, ENTER_BOOTLOADER_MAGIC, 'Slave: enter bootloader (relayed)');
