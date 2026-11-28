@@ -165,7 +165,7 @@ CAN ID：
   镜像的 Ed25519 记录（仅针对模拟器测试过）、带页面 ACK 流量控制和重试/退避的分页传输、CRC32 +
   声明版本的 END_UPDATE，以及最终状态处理（包括以与桌面工具相同的方式
   从丢失的确认帧中恢复——它会重新查询版本，而不是报告一个错误的失败）。
-- **扩展从机的 CAN-OTA 更新**（`0x210`-`0x219`，经主板自身的 I2C 桥中继）
+- **扩展从机的 CAN-OTA 更新**（`0x210`-`0x21A`，经主板自身的 I2C 桥中继）
   ——相同的签名/CRC 方案，此路径上没有页面 ACK 或心跳（与真实协议一致；
   进度是轮询获取的，而非推送的）。
 - **降级授权**（`0x7FD`）——一个带确认门控的复选框，授权当前尝试绕过
@@ -179,7 +179,7 @@ CAN ID：
 - **实时板卡版本查询**（`0x7F8`/`0x7F9`/`0x7FA`/`0x7E9`）——显示真实的应答方
   （应用或引导程序）、HardwareID 和版本，而非一个模拟的开关。
 - **已发布的签名和摘要**——URTC 构建生成的每个镜像都附带
-  `<file>.manifest.json`（版本、`sha256` 以及引导程序期望的 `hmac_sha256` 值，是共享密钥的 HMAC-SHA256，仅上一代引导程序会检查；当前引导程序验证的 Ed25519 记录是镜像旁的 `<file>.imgsig` 文件，由应用发送给引导程序）和 `<file>.sha256`。应用发送该已发布的签名；如果清单中的 `sha256`
+  `<file>.manifest.json`（版本、`sha256` 以及（仅当镜像是用上一代引导程序的密钥构建时）引导程序期望的 `hmac_sha256` 值，是共享密钥的 HMAC-SHA256，仅上一代引导程序会检查；当前引导程序验证的 Ed25519 记录是镜像旁的 `<file>.imgsig` 文件，由应用发送给引导程序）和 `<file>.sha256`。应用发送该已发布的签名；如果清单中的 `sha256`
   与文件不符，将**阻止**刷写；向引导程序报告的是清单中的版本。从磁盘选择的
   文件需要同时选择它的签名记录（`<file>.imgsig`）：当前的引导程序没有记录就不会
   安装任何东西。仅在模拟的引导程序上试过。为该次刷写输入的签名密钥仅适用于装有上一代引导程序的测试板，且
@@ -279,7 +279,7 @@ STOP ALL 是软件命令，不是紧急停止，以上检查都不是安全功�
 ### 安全说明：本应用不包含签名密钥
 
 自 0.2.3 起，本应用**不**包含任何 HMAC-SHA256 签名密钥。URTC 构建会自行为
-每个应用镜像签名（仅发布版本使用私钥；已发布的镜像使用公开的开发密钥），并把签名发布在镜像旁边；Flasher
+每个应用镜像签名（正式发布版本不使用公开的开发密钥签名，测试构建使用；清单中的 `signing_key_kind` 说明是哪一种），并把签名发布在镜像旁边；Flasher
 Studio 只负责传送该签名——与桌面版 `URTC Flasher` 相同的模式。JS 包中没有
 任何机密，因此页面可以公开托管。
 
@@ -388,7 +388,7 @@ npm run preview
 
 ### GitHub Pages（所有者启用前保持关闭）
 
-本仓库可以把构建好的站点发布到 GitHub Pages（工作流 `.github/workflows/pages.yml`：`npm ci`、类型检查、测试、带项目基础路径的 `npm run build`，然后是 `upload-pages-artifact` 和 `deploy-pages`）。**该工作流目前处于关闭状态**：只有当仓库变量 `URTC_PAGES_ENABLED` 为 `true`（Settings > Secrets and variables > Actions > Variables）时，两个作业才会运行，所有者在 URTC 的第一个已签名正式发布之后设置它。此时构建会执行 `npm run sync-firmware -- --require-official`：只取最新正式发布的固件（绝不使用预发布版本），拒绝任何没有有效发布签名的文件，以及任何用公开开发密钥构建的应用镜像，因此发布的页面不可能带有开发密钥的镜像。Pages 本身也需要启用一次（Settings > Pages > Source: GitHub Actions）；变量未设置时工作流会被跳过。Web Serial 需要基于 Chromium 的浏览器和 https，Pages 提供 https。
+本仓库可以把构建好的站点发布到 GitHub Pages（工作流 `.github/workflows/pages.yml`：`npm ci`、类型检查、测试、带项目基础路径的 `npm run build`，然后是 `upload-pages-artifact` 和 `deploy-pages`）。**该工作流是可选的**：只有当仓库变量 `URTC_PAGES_ENABLED` 为 `true`（Settings > Secrets and variables > Actions > Variables）时，两个作业才会运行，自 URTC 的第一个已签名正式发布起即为如此。此时构建会执行 `npm run sync-firmware -- --require-official`：只取最新正式发布的固件（绝不使用预发布版本），拒绝任何没有有效发布签名的文件，以及任何用公开开发密钥构建的应用镜像，因此发布的页面不可能带有开发密钥的镜像。Pages 本身也需要启用一次（Settings > Pages > Source: GitHub Actions）；变量未设置时工作流会被跳过。Web Serial 需要基于 Chromium 的浏览器和 https，Pages 提供 https。
 
 `package.json` 的 `version` 与 `urtc.project.json` 的 `version` 只会通过明确的步骤（`python bump.py`，它让两者保持一致并写入变更日志条目）改变；`build.bat` / `build.sh`、`npm run build`、`npm run dev`、`npm run lint` 和 `npm run preview` 从不改变版本。
 

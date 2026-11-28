@@ -1,6 +1,7 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
-  allowUnsignedDefault, configFlag, loadAllowUnsigned, loadRealSend, loadRequireSignature, realSendDefault, requireSignatureDefault, saveAllowUnsigned, saveRealSend, saveRequireSignature, signatureRefused, unsignedDecision,
+  allowUnsignedDefault, configFlag, loadAllowUnsigned, loadRealSend, loadRequireSignature, realSendDefault, requireSignatureDefault, saveAllowUnsigned, saveRealSend, saveRequireSignature, signatureRefused, unsignedDecision, signedWithDevKey,
 } from './sendSettings';
 import controlConfig from './controlConfig.json';
 
@@ -60,5 +61,23 @@ describe('send settings', () => {
     expect(unsignedDecision('none', false, true)).toBe('confirm');
     expect(unsignedDecision('none', true, true)).toBe('refuse_required');
     expect(unsignedDecision('none', true, false)).toBe('refuse_required');
+  });
+});
+
+describe('an image of the public development key', () => {
+  it('is known from the manifest, whatever the letters', () => {
+    expect(signedWithDevKey('dev')).toBe(true);
+    expect(signedWithDevKey(' DEV ')).toBe(true);
+    expect(signedWithDevKey('release')).toBe(false);
+    expect(signedWithDevKey(undefined)).toBe(false);
+  });
+
+  it('is confirmed before the update starts, also when the signature is the record and not a value of the manifest', () => {
+    const app = readFileSync(new URL('../App.tsx', import.meta.url), 'utf8');
+    const asked = app.indexOf('if (signedWithDevKey(manifest?.signingKeyKind))');
+    expect(asked).toBeGreaterThan(-1);
+    expect(app.indexOf("confirm('dev_key')", asked)).toBeGreaterThan(asked);
+    expect(app.indexOf('await resolveSignature(', asked)).toBeGreaterThan(asked);
+    expect(app.split("confirm('dev_key')").length).toBe(2);
   });
 });

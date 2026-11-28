@@ -4,6 +4,10 @@ All notable changes to this project are documented here.
 
 ## [Unreleased]
 
+- **An image of the public development key is confirmed again before it is flashed:** the question was asked only when the signature came from the manifest of an older build; with the signature record next to the image (what is published today) and for the expansion slave it was not asked.
+
+- **README facts checked against the code:** which images carry the development key, what an older manifest holds, the frames of the slave update and the GitHub Pages deployment.
+
 - **The texts about a signing key say which bootloader takes one:** the window that asks for a key, the subtitle and log lines of Flasher Studio, the reasons of a failed verification and the READMEs still described a shared-key HMAC as the way an image is signed. The current bootloaders install only an image with its signature record (`<image>.imgsig`); a key serves only a bench board with a bootloader of the earlier generation. No behaviour changes. Eight languages.
 
 ## [0.5.5] - Honest STOP message, failed sends for malformed frames and refusal of unreadable published files

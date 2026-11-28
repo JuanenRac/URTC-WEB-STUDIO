@@ -174,7 +174,7 @@ URTC-WEB-STUDIO は URTC の 2 つのデスクトッププログラム、URTC-FL
   そして終端状態処理（デスクトップツールと同じ方法で、失われた確認
   フレームからの復旧を含む——誤った失敗を報告するのではなく、バージョン
   を再照会します）。
-- **拡張スレーブの CAN-OTA 更新**（`0x210`-`0x219`、メインボード自身の
+- **拡張スレーブの CAN-OTA 更新**（`0x210`-`0x21A`、メインボード自身の
   I2C ブリッジ経由で中継）——同じ署名/CRC 方式、このパスにはページ ACK
   もハートビートもありません（実際のプロトコルと一致；進捗はプッシュ
   されるのではなくポーリングされます）。
@@ -193,7 +193,7 @@ URTC-WEB-STUDIO は URTC の 2 つのデスクトッププログラム、URTC-FL
   HardwareID、バージョンを表示します。
 - **公開された署名とダイジェスト**——URTC のビルドが出力する各イメージには
   `<file>.manifest.json`（バージョン、`sha256`、ブートローダーが期待する
-  `hmac_sha256` の値。共有鍵の HMAC-SHA256 で、前の世代のブートローダーだけが検査します。現行のブートローダーが検証する Ed25519 レコードはイメージの隣の `<file>.imgsig` ファイルで、アプリがブートローダーに送ります）と `<file>.sha256` が付属します。アプリはその公開署名を
+  以前のブートローダー向けの鍵でビルドしたイメージに限り `hmac_sha256` の値。共有鍵の HMAC-SHA256 で、前の世代のブートローダーだけが検査します。現行のブートローダーが検証する Ed25519 レコードはイメージの隣の `<file>.imgsig` ファイルで、アプリがブートローダーに送ります）と `<file>.sha256` が付属します。アプリはその公開署名を
   送信し、マニフェストの `sha256` がファイルと一致しない場合は書き込みを
   **ブロック**し、マニフェストのバージョンをブートローダーに報告します。
   ディスクから選んだファイルには、一緒に選ぶ署名レコード（`<file>.imgsig`）が
@@ -309,7 +309,7 @@ STOP ALL はソフトウェアのコマンドで、非常停止ではなく、�
 ### セキュリティに関する注記：このアプリに署名鍵はありません
 
 0.2.3 以降、このアプリは HMAC-SHA256 署名鍵を**一切**含みません。URTC の
-ビルドが各アプリケーションイメージを自ら署名し（リリースビルドでのみ非公開鍵を使用。公開イメージは公開の開発用鍵を使用）、署名をイメージの隣に公開します。Flasher Studio はその署名を運ぶ
+ビルドが各アプリケーションイメージを自ら署名し（公式リリースは公開の開発用鍵では署名されず、ベンチ用ビルドは署名されます。どちらかはマニフェストの `signing_key_kind` に示されます）、署名をイメージの隣に公開します。Flasher Studio はその署名を運ぶ
 だけで、デスクトップ版 `URTC Flasher` と同じ方式です。JS バンドルに秘密は
 含まれないため、ページを公開ホストしても問題ありません。
 
@@ -426,7 +426,7 @@ npm run preview
 
 ### GitHub Pages（所有者が有効にするまで停止）
 
-このリポジトリは、ビルドしたサイトを GitHub Pages に公開できます（ワークフロー `.github/workflows/pages.yml`：`npm ci`、型チェック、テスト、プロジェクトのベースパスを指定した `npm run build`、続いて `upload-pages-artifact` と `deploy-pages`）。**このワークフローは停止中です**。2 つのジョブは、リポジトリ変数 `URTC_PAGES_ENABLED` が `true` のときだけ実行されます（Settings > Secrets and variables > Actions > Variables）。所有者が URTC の最初の署名済み正式リリースの後に設定します。そのときビルドは `npm run sync-firmware -- --require-official` を実行し、最新の正式リリースのファームウェアだけを取得します（プレリリースは使いません）。有効なリリース署名のないファイルや、公開の開発用鍵で作られたアプリケーションイメージは拒否されるため、公開ページに開発用鍵のイメージが含まれることはありません。Pages 自体も一度有効にする必要があります（Settings > Pages > Source: GitHub Actions）。変数が未設定ならワークフローはスキップされます。Web Serial には Chromium 系ブラウザーと https が必要で、Pages は https を提供します。
+このリポジトリは、ビルドしたサイトを GitHub Pages に公開できます（ワークフロー `.github/workflows/pages.yml`：`npm ci`、型チェック、テスト、プロジェクトのベースパスを指定した `npm run build`、続いて `upload-pages-artifact` と `deploy-pages`）。**このワークフローは任意です**。2 つのジョブは、リポジトリ変数 `URTC_PAGES_ENABLED` が `true` のときだけ実行されます（Settings > Secrets and variables > Actions > Variables）。URTC の最初の署名済み正式リリース以降、この値は `true` です。そのときビルドは `npm run sync-firmware -- --require-official` を実行し、最新の正式リリースのファームウェアだけを取得します（プレリリースは使いません）。有効なリリース署名のないファイルや、公開の開発用鍵で作られたアプリケーションイメージは拒否されるため、公開ページに開発用鍵のイメージが含まれることはありません。Pages 自体も一度有効にする必要があります（Settings > Pages > Source: GitHub Actions）。変数が未設定ならワークフローはスキップされます。Web Serial には Chromium 系ブラウザーと https が必要で、Pages は https を提供します。
 
 `package.json` の `version` と `urtc.project.json` の `version` は、明示的な手順（`python bump.py`。2 つを揃え、変更履歴の項目を書きます）でのみ変わります。`build.bat` / `build.sh`、`npm run build`、`npm run dev`、`npm run lint`、`npm run preview` がバージョンを変えることはありません。
 
